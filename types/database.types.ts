@@ -10,7 +10,6 @@ export interface Expression {
   expression: string;
   meaning: string;
   content: ExpressionContent;
-  origin_url?: string | null;
   tags?: string[] | null;
   published_at: string;
   created_at: string;

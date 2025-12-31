@@ -21,7 +21,6 @@
 | `expression`   | TEXT        |     | -                   | 영어 표현 (예: "Break a leg")           |
 | `meaning`      | TEXT        |     | -                   | 한국어 뜻                               |
 | `content`      | JSONB       |     | `'{}'::jsonb`       | 상세 콘텐츠 (상황, 대화문, 팁, 퀴즈 등) |
-| `origin_url`   | TEXT        |     | `NULL`              | 스크래핑한 원본 URL                     |
 | `tags`         | TEXT[]      |     | `NULL`              | 태그 배열 (예: business, daily)         |
 
 **Indexes**:
@@ -34,30 +33,14 @@
 
 `content` 컬럼의 JSON 구조 예시입니다.
 
-````json
+```json
 {
   "situation": "이 표현이 쓰이는 구체적인 상황이나 감정을 아주 친근하고 재미있게 묘사해주세요",
   "dialogue": [
-    {"en": "영어 대화문 A", "kr": "A 해석"},
-    {"en": "영어 대화문 B", "kr": "B 해석"}
+    { "en": "영어 대화문 A", "kr": "A 해석" },
+    { "en": "영어 대화문 B", "kr": "B 해석" }
   ],
   "tip": "뉘앙스 차이, 주의할 점, 또는 유사 표현을 꿀팁처럼 알려주세요",
-  "quiz": {"question": "간단하고 재미있는 퀴즈 문제", "answer": "정답"}
+  "quiz": { "question": "간단하고 재미있는 퀴즈 문제", "answer": "정답" }
 }
 ```
-
-## 2. Scraping Targets Table (Optional)
-
-스크래핑할 URL 리스트를 관리하고 싶다면 아래 테이블을 추가로 사용하세요.
-
-```sql
-create table scraping_targets (
-  id uuid default gen_random_uuid() primary key,
-  url text not null unique,
-  site_name text,
-  is_active boolean default true,
-  last_scraped_at timestamp with time zone,
-  created_at timestamp with time zone default now()
-);
-```
-````

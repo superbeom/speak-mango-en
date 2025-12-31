@@ -152,16 +152,6 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 </span>
               ))}
             </div>
-            {expression.origin_url && (
-              <a
-                href={expression.origin_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 underline underline-offset-4"
-              >
-                출처 확인하기 ↗
-              </a>
-            )}
           </div>
         </article>
       </main>

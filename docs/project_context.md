@@ -16,11 +16,12 @@
 ```mermaid
 graph TD
     subgraph Automation [n8n Workflow]
-        Scheduler[Daily Trigger] -->|1. Start| Scraper[HTTP Request]
-        Source[Blog URLs] -->|Source| Scraper
-        Scraper -->|2. HTML Content| AI[Gemini 1.5 Flash]
-        AI -->|3. Extract & Format| JSON[Structured Data]
-        JSON -->|4. Insert| DB[(Supabase DB)]
+        Scheduler[Daily Trigger] -->|1. Start| Category[Random Category]
+        Category -->|2. Select Topic| Generator1[Gemini (Generate Expression)]
+        Generator1 -->|3. Expression| DB_Check{Duplicate Check}
+        DB_Check -->|New| Generator2[Gemini (Generate Content)]
+        DB_Check -->|Exists| Skip[End Workflow]
+        Generator2 -->|4. Final Data| DB[(Supabase DB)]
     end
 
     subgraph Service [Next.js App]
@@ -35,7 +36,7 @@ graph TD
 - **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS.
 - **Database**: Supabase (PostgreSQL).
 - **Automation**: n8n (Self-hosted or Cloud).
-- **AI Engine**: Google Gemini 1.5 Flash (Free Tier).
+- **AI Engine**: Google Gemini 2.5 Flash (Free Tier).
 - **Package Manager**: yarn.
 
 ## 4. 디렉토리 구조 (Directory Structure)
