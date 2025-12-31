@@ -2,12 +2,35 @@
 
 이 문서는 n8n을 사용하여 영어 블로그를 자동화하는 워크플로우 설정을 안내합니다.
 
+## 🚀 n8n 실행 방법 (Docker)
+
+프로젝트 루트 디렉토리에서 다음 명령어를 실행하여 n8n을 기동합니다.
+
+```bash
+# n8n 컨테이너 실행
+docker-compose up -d
+
+# 실행 확인
+docker-compose ps
+```
+
+실행 후 브라우저에서 **[http://localhost:5678](http://localhost:5678)** 에 접속하여 초기 설정을 완료하세요.
+
 ## 🏗️ 전체 워크플로우 구조
 
 1. **Schedule Trigger**: 주기적 실행 (예: 매일 오전 9시)
 2. **HTTP Request**: 블로그 URL에서 HTML 가져오기
 3. **Gemini Node (LLM)**: 가져온 텍스트에서 표현 추출 및 가공
 4. **Supabase Node**: 가공된 데이터를 DB에 저장
+
+---
+
+## 📥 워크플로우 가져오기 (Import)
+
+1. n8n 접속 후 왼쪽 메뉴의 **Workflows** 클릭
+2. 오른쪽 상단의 **Add Workflow** -> **Import from File** 선택
+3. `docs/n8n_workflow_template.json` 파일 선택
+4. 각 노드의 **Credential**을 본인의 설정에 맞게 등록 (Gemini API Key, Supabase URL/Key)
 
 ---
 
@@ -21,25 +44,7 @@
 
 ## ✍️ AI 프롬프트 (가공 양식)
 
-Gemini 노드의 프롬프트에 아래 내용을 입력하여 일관된 데이터를 얻습니다.
-
-**Prompt:**
-
-```text
-당신은 최고의 영어 교육 콘텐츠 에디터입니다.
-제공된 HTML 텍스트에서 학습자가 배우기에 가장 유용한 실용 영어 표현을 딱 하나만 선정해주세요.
-
-결과는 반드시 아래의 JSON 형식으로만 답변하세요:
-{
-  "expression": "영어 표현",
-  "meaning": "한국어 뜻",
-  "example_en": "영어 예문 (표현이 포함된 자연스러운 문장)",
-  "example_kr": "위 예문의 한국어 해석",
-  "tags": ["카테고리1", "카테고리2"]
-}
-
-입력 데이터: {{ $json.body }}
-```
+현재 워크플로우 템플릿에는 **친절하고 유머러스한 영어 강사** 컨셉의 프롬프트가 포함되어 있습니다. 1020 학생들에게 적합한 말투와 이모지를 사용하도록 설정되어 있습니다.
 
 ---
 
@@ -48,7 +53,7 @@ Gemini 노드의 프롬프트에 아래 내용을 입력하여 일관된 데이�
 n8n의 `Supabase` 노드를 사용하여 추출된 JSON 데이터를 `expressions` 테이블에 Insert 합니다.
 
 - **Table**: `expressions`
-- **Columns**: `expression`, `meaning`, `example_en`, `example_kr`, `origin_url`
+- **Columns**: `expression`, `meaning`, `content`, `origin_url`, `tags`
 
 ---
 
