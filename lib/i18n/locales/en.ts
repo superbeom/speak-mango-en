@@ -1,0 +1,25 @@
+export const en = {
+  common: {
+    back: "Back",
+    loading: "Loading...",
+    notFound: "Data not found.",
+  },
+  home: {
+    title: "Today's Expressions",
+    description: "Learn useful English expressions easily and fun.",
+    subHeader: "Every day, one new expression.",
+    emptyState: "No expressions found. Come back later!",
+  },
+  detail: {
+    situationTitle: "💡 What's the situation?",
+    dialogueTitle: "💬 Learn with dialogue!",
+    tipTitle: "🍯 Teacher's Tip!",
+    missionTitle: "🔥 Today's Mission!",
+    checkAnswer: "Check Answer",
+  },
+  card: {
+    label: "Today's Expression",
+    situationQuestion: "What's the situation?",
+    noDescription: "No description available.",
+  },
+};

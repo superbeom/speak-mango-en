@@ -2,6 +2,40 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.6.0: 콘텐츠 분류 체계 고도화 (2026-01-01)
+
+### 1. 2단계 분류 체계 도입 (Dual-Category)
+
+- **Schema Expansion**: `domain`(대분류)과 `category`(소분류) 컬럼을 `expressions` 테이블에 추가하여 콘텐츠 확장성 확보.
+- **Migration**: 기존 데이터를 `conversation` 도메인 및 `daily` 카테고리로 일괄 업데이트하는 스크립트 작성 (`database/005_add_category_columns.sql`).
+
+### 2. n8n 워크플로우 최적화
+
+- **Structured Picking**: 'Pick Category' 노드에서 단순 문자열 배열 대신 `domain`, `category`, `topic`을 포함한 객체 배열을 사용하도록 리팩토링.
+- **Global Context**: 특정 언어권에 국한된 '콩글리시' 카테고리를 제거하고, 전 세계 공통 주제인 '쇼핑' 등을 추가.
+
+### 3. 다국어 데이터 동시 생성
+
+- **Prompt Engineering**: Gemini Content Generator가 한국어, 일본어, 스페인어 데이터를 한 번에 생성하도록 프롬프트 고도화.
+- **Data Integrity**: JSONB 구조(`meaning`, `content`)에 맞춰 각 언어별 키(`ko`, `ja`, `es`)를 동적으로 매핑하도록 n8n 노드 설정 변경.
+
+## v0.5.0: 다국어(i18n) 지원 인프라 구축 (2025-12-31)
+
+### 1. 데이터베이스 스키마 확장
+
+- **i18n Schema**: `meaning` 컬럼을 `JSONB`로 변경하고, `content` 구조를 언어 코드별로 계층화(`{ "ko": { ... } }`)함.
+- **Generic Keys**: `dialogue` 내부의 언어별 키(`kr`, `jp` 등)를 중립적인 `translation` 키로 통일하여 확장성 확보.
+
+### 2. 동적 언어 감지 및 미들웨어
+
+- **`middleware.ts`**: 브라우저의 `Accept-Language` 헤더를 분석하여 커스텀 헤더(`x-locale`)를 전달하는 로직 구현.
+- **Server-side Helper**: 서버 컴포넌트에서 언어와 딕셔너리를 쉽게 가져올 수 있는 `getI18n()` 헬퍼 함수 (`lib/i18n/server.ts`) 추가.
+
+### 3. 중앙 집중식 문자열 관리
+
+- **Locales**: `lib/i18n/locales/` 내에 `ko.ts`, `en.ts` 등으로 다국어 문자열 분리 관리.
+- **Refactoring**: 메인 페이지, 상세 페이지, 카드 컴포넌트의 하드코딩된 문자열을 딕셔너리 기반으로 전면 교체.
+
 ## v0.4.2: AI 프롬프트 고도화 및 파이프라인 최적화 (2025-12-31)
 
 ### 1. 프롬프트 페르소나 일관성 강화
@@ -56,7 +90,7 @@
 
 ### 1. 데이터 타입 정의
 
-- **`types/database.types.ts`**: `Expression` 인터페이스 정의.
+- **`types/database.ts`**: `Expression` 인터페이스 정의.
 
 ### 2. UI 컴포넌트 구현
 

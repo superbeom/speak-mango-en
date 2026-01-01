@@ -13,34 +13,55 @@
 
 영어 표현과 예문을 저장하는 핵심 테이블입니다.
 
-| Column Name    | Type        | Key | Default             | Description                             |
-| -------------- | ----------- | --- | ------------------- | --------------------------------------- |
-| `id`           | UUID        | PK  | `gen_random_uuid()` | 표현 고유 식별자                        |
-| `created_at`   | TIMESTAMPTZ |     | `now()`             | 데이터 생성 일시                        |
-| `published_at` | TIMESTAMPTZ |     | `now()`             | 표현이 게시된 일시 (정렬 기준)          |
-| `expression`   | TEXT        |     | -                   | 영어 표현 (예: "Break a leg")           |
-| `meaning`      | TEXT        |     | -                   | 한국어 뜻                               |
-| `content`      | JSONB       |     | `'{}'::jsonb`       | 상세 콘텐츠 (상황, 대화문, 팁, 퀴즈 등) |
-| `tags`         | TEXT[]      |     | `NULL`              | 태그 배열 (예: business, daily)         |
+| Column Name    | Type        | Key | Default             | Description                              |
+| -------------- | ----------- | --- | ------------------- | ---------------------------------------- |
+| `id`           | UUID        | PK  | `gen_random_uuid()` | 표현 고유 식별자                         |
+| `created_at`   | TIMESTAMPTZ |     | `now()`             | 데이터 생성 일시                         |
+| `published_at` | TIMESTAMPTZ |     | `now()`             | 표현이 게시된 일시 (정렬 기준)           |
+| `domain`       | TEXT        |     | 'conversation'      | 대분류 (예: conversation, test, voca)    |
+| `category`     | TEXT        |     | 'daily'             | 소분류 (예: business, travel, shopping)  |
+| `expression`   | TEXT        |     | -                   | 영어 표현 (예: "Break a leg")            |
+| `meaning`      | JSONB       |     | -                   | 다국어 뜻 (예: `{"ko": "..."}`)          |
+| `content`      | JSONB       |     | `'{}'::jsonb`       | 다국어 상세 콘텐츠 (예: `{"ko": {...}}`) |
+| `tags`         | TEXT[]      |     | `NULL`              | 태그 배열 (예: business, daily)          |
 
 **Indexes**:
 
 - `idx_expressions_published_at`: 최신순 정렬 조회 성능 최적화.
+- `idx_expressions_domain`: 대분류별 필터링 성능 최적화.
+- `idx_expressions_category`: 소분류별 필터링 성능 최적화.
 - `idx_expressions_tags`: 태그별 필터링 성능 최적화 (GIN).
 - `idx_expressions_content`: JSONB 내부 데이터 검색 최적화 (GIN).
 
-### Content JSONB Structure
+### Dual-Category System
 
-`content` 컬럼의 JSON 구조 예시입니다.
+다양한 학습 요구에 대응하기 위해 2단계 분류 체계를 사용합니다.
+
+1. **Domain (대분류)**: 콘텐츠의 큰 성격 (`conversation`, `test`, `vocabulary` 등)
+2. **Category (소분류)**: 구체적인 상황이나 주제 (`travel`, `business`, `shopping`, `toeic` 등)
+
+### Content JSONB Structure (i18n)
+
+`content` 컬럼은 언어 코드를 최상위 키로 갖는 구조입니다.
+내부 `dialogue` 배열에서는 `translation`이라는 통일된 키를 사용하여 다국어 확장을 용이하게 합니다.
 
 ```json
 {
-  "situation": "이 표현이 쓰이는 구체적인 상황이나 감정을 아주 친근하고 재미있게 묘사해주세요",
+  "ko": {
+    "situation": "이 표현이 쓰이는 구체적인 상황이나 감정을 아주 친근하고 재미있게 묘사해주세요",
   "dialogue": [
-    { "en": "영어 대화문 A", "kr": "A 해석" },
-    { "en": "영어 대화문 B", "kr": "B 해석" }
+    { "en": "영어 대화문 A", "translation": "한국어 A 해석" },
+    { "en": "영어 대화문 B", "translation": "한국어 B 해석" },
   ],
   "tip": "뉘앙스 차이, 주의할 점, 또는 유사 표현을 꿀팁처럼 알려주세요",
   "quiz": { "question": "간단하고 재미있는 퀴즈 문제", "answer": "정답" }
+  },
+  "ja": {
+    "situation": "일본어 상황 설명...",
+    "dialogue": [
+      { "en": "영어 대화문", "translation": "일본어 해석" }
+    ],
+    ...
+  }
 }
 ```

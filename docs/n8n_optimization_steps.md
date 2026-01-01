@@ -20,25 +20,57 @@
 ### 1단계: 기존 HTTP Request 제거 및 Code 노드 추가
 
 1.  기존의 `HTTP Request` 노드를 삭제합니다.
-2.  **Code** 노드를 추가하고 이름을 `Pick Category`로 설정합니다.
+2.  **Code** 노드를 추가하고 다음과 같이 설정합니다.
+    - **Name**: `Pick Category`
 3.  다음 코드를 입력하여 실행 때마다 카테고리를 랜덤하게 하나 뽑도록 합니다.
 
+    - **Domain**: 대분류 (conversation, test 등)
+    - **Category**: 소분류 (business, travel, shopping 등)
+    - **Topic**: AI 프롬프트에 전달할 구체적인 주제 설명
+
     ```javascript
-    const categories = [
-      "미국 원어민이 매일 쓰는 생활 표현",
-      "비즈니스 미팅에서 꼭 필요한 영어 표현",
-      "여행지에서 유용한 필수 영어 표현",
-      "미드나 영화에 자주 나오는 트렌디한 표현",
-      "감정을 표현하는 섬세한 영어 단어",
-      "자주 틀리는 콩글리시 교정",
+    // 주제 목록 정의 (대분류/소분류 체계 적용)
+    const topics = [
+      {
+        domain: "conversation",
+        category: "daily",
+        topic: "미국 원어민이 매일 쓰는 생활 영어 표현",
+      },
+      {
+        domain: "conversation",
+        category: "business",
+        topic: "비즈니스 미팅이나 이메일에서 꼭 필요한 정중한 영어 표현",
+      },
+      {
+        domain: "conversation",
+        category: "travel",
+        topic: "해외 여행할 때 유용한 필수 영어 표현",
+      },
+      {
+        domain: "conversation",
+        category: "shopping",
+        topic: "해외 직구 쇼핑이나 매장에서 사용하는 쇼핑 관련 영어 표현",
+      },
+      {
+        domain: "conversation",
+        category: "emotion",
+        topic: "기쁨, 슬픔, 화남 등 감정을 섬세하게 표현하는 영어 단어",
+      },
+      {
+        domain: "conversation",
+        category: "slang",
+        topic: "미드나 영화에 자주 나오는 최신 트렌디한 슬랭",
+      },
     ];
 
-    const randomCategory =
-      categories[Math.floor(Math.random() * categories.length)];
+    // 랜덤 선택
+    const selected = topics[Math.floor(Math.random() * topics.length)];
 
     return {
       json: {
-        category: randomCategory,
+        domain: selected.domain,
+        category: selected.category,
+        topic: selected.topic, // AI 프롬프트용
       },
     };
     ```
@@ -54,6 +86,7 @@
   Role: Professional English Teacher
   Task: Suggest ONE useful English expression related to the category below.
 
+  Domain: {{ $('Pick Category').item.json.domain }}
   Category: {{ $('Pick Category').item.json.category }}
 
   Requirements:
@@ -98,92 +131,68 @@
 - **Prompt (Define below)**:
 
   ```text
-  Role: Professional English Content Creator.
-  Task: Create a detailed study card for the following English expression.
+  Role: Professional English Content Creator & Polyglot Teacher.
+  Task: Create a detailed study card for the following English expression in three languages: Korean (ko), Japanese (ja), and Spanish (es).
 
   Expression: {{ $('Gemini Expression Generator').item.json.expression }}
-  Meaning: {{ $('Gemini Expression Generator').item.json.meaning }}
+  Domain: {{ $('Pick Category').item.json.domain }}
   Category: {{ $('Pick Category').item.json.category }}
 
   Requirements:
-  1. Tone: Friendly, humorous, and engaging (target audience: 20-30s). Use emojis appropriately.
-  2. Constraint: Do NOT address the reader as "Kids", "Students", or "Children". Use a general, relatable tone suitable for young adults.
+  1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language (존댓말/Desu-Masu form) consistently**.
+  2. Constraint:
+     - **NEVER use casual speech (반말)** in the explanation, tips, or situation description.
+     - Do NOT mix polite and casual styles. Keep the tone consistent throughout.
+     - Do NOT address the reader as specific groups like "Kids" or "Students". Use a general, relatable tone suitable for young adults.
   3. Output MUST be a valid JSON object matching the schema below.
-  4. 'content' field must be a nested JSON object.
-  5. Refer to the 'Example Output' below to maintain consistency in style and tone.
+  4. 'meaning' and 'content' fields must contain keys for 'ko', 'ja', 'es'.
+  5. In the dialogue section, use the key 'translation' for the translated sentence.
+  6. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to Japanese and Spanish.
+  7. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
 
-  Example Output (Reference this style):
-  [
-    {
-      "expression": "under the weather",
-      "meaning": "몸이 좀 안 좋아",
-      "content": {
+  Example Output (Reference this style for ALL languages):
+  {
+    "expression": "under the weather",
+    "domain": "conversation",
+    "category": "daily",
+    "meaning": {
+      "ko": "몸이 좀 안 좋아",
+      "ja": "体調が少し悪い",
+      "es": "sentirse un poco mal"
+    },
+    "content": {
+      "ko": {
+        "situation": "🌟 아침에 일어났는데 왠지 모르게 몸이 축 처지고, 컨디션이 별로일 때! 😱 '아, 나 오늘 뭔가 좀 별론데... 병든 병아리 같아...' 할 때 쓰는 핵인싸 표현이에요! 진짜 아픈 건 아닌데 그렇다고 완전 쌩쌩하지도 않을 때, 가볍게 내 상태를 말하고 싶을 때 찰떡같이 쓸 수 있답니다! 🤒✨",
+        "dialogue": [
+          { "en": "Hey, you look a bit down. Are you okay?", "translation": "저기, 좀 기분이 안 좋아 보이는데. 괜찮아요?" },
+          { "en": "I'm feeling a bit under the weather today, so I think I'll just head home early.", "translation": "오늘 몸이 좀 안 좋아서, 일찍 집에 가려고요." }
+        ],
         "tip": "🚨 **꿀팁 방출!** 'under the weather'는 진짜 심각하게 아플 때보다는 가볍게 '컨디션이 안 좋다', '감기 기운이 있다' 정도의 느낌이에요. 😷 만약 진짜 심하게 아프다면 'I'm sick' 또는 'I have a fever'처럼 구체적으로 말하는 게 좋아요. 😉 그리고 이 표현은 뱃사람들이 배에서 날씨가 안 좋을 때 아픈 사람을 갑판 아래로 보내 '날씨 아래'에 있게 했다는 유래가 있대요! 완전 신기하죠? ⚓️🌊",
         "quiz": {
-          "answer": "B",
-          "question": "다음 중 'I'm feeling a bit under the weather.'와 가장 비슷한 상황은?\n\nA. 🥳 파티에서 신나게 춤추고 있다.\nB. 😴 침대에서 밍기적거리며 몸이 좀 으슬으슬하다.\nC. 🏋️‍♀️ 헬스장에서 역기를 들고 운동하고 있다."
-        },
-        "dialogue": [
-          { "en": "Hey, you look a bit down. Are you okay?", "kr": "야, 너 좀 시무룩해 보인다. 괜찮아?" },
-          { "en": "I'm feeling a bit under the weather today, so I think I'll just head home early.", "kr": "오늘 몸이 좀 안 좋아서, 일찍 집에 가려고 해." }
-        ],
-        "situation": "🌟 아침에 일어났는데 왠지 모르게 몸이 축 처지고, 컨디션이 별로일 때! 😱 '아, 나 오늘 뭔가 좀 별론데... 병든 병아리 같아...' 할 때 쓰는 핵인싸 표현이에요! 진짜 아픈 건 아닌데 그렇다고 완전 쌩쌩하지도 않을 때, 가볍게 내 상태를 말하고 싶을 때 찰떡같이 쓸 수 있답니다! 🤒✨"
+          "question": "다음 중 'I'm feeling a bit under the weather.'와 가장 비슷한 상황은?\n\nA. 🥳 파티에서 신나게 춤추고 있다.\nB. 😴 침대에서 밍기적거리며 몸이 좀 으슬으슬하다.\nC. 🏋️‍♀️ 헬스장에서 역기를 들고 운동하고 있다.",
+          "answer": "B"
+        }
       },
-      "tags": ["daily", "health"]
-    },
-    {
-      "expression": "I'm swamped.",
-      "meaning": "일이 너무 많아서 정신없이 바빠요! 🤯",
-      "content": {
-        "tip": "'I'm busy'도 맞지만, 'swamped'는 '너무 바빠서 감당하기 힘들다'는 느낌을 더 강하게 전달해요. 😵‍💫 마치 일에 잠겨서 허우적거리는 그림을 떠올리면 좋아요. 시험 기간이나 마감일이 코앞일 때 써먹기 딱 좋답니다! 🚀",
-        "quiz": {
-          "answer": "swamped",
-          "question": "주말에 약속이 있는데, 갑자기 일이 쏟아져서 못 갈 것 같아요. 이럴 때 쓸 수 있는 가장 적절한 표현은? 🤔 'I'm ______.'"
-        },
+      "ja": {
+        "situation": "朝起きた時に、なんとなく体がだるくて「今日はなんだか調子が悪いな…」と感じる時にぴったりの表現です！😷 本当にひどい病気ではないけれど、100%元気でもない時に、自分の状態をカジュアルに伝えることができます。✨",
         "dialogue": [
-          { "en": "Hey, wanna grab some coffee after work?", "kr": "저기, 퇴근하고 커피 한 잔 할래요?" },
-          { "en": "Oh, I'd love to, but I'm totally swamped with reports right now.", "kr": "아, 그러고 싶은데 지금 보고서 때문에 완전 정신이 없어요." }
+          { "en": "Hey, you look a bit down. Are you okay?", "translation": "ねえ、なんだか元気がないみたいだけど大丈夫？" },
+          { "en": "I'm feeling a bit under the weather today.", "translation": "今日はちょっと体調が悪くて。" }
         ],
-        "situation": "가끔 업무나 과제, 약속이 한꺼번에 몰려서 정신이 하나도 없을 때 있죠? 😱 마치 늪에 빠진 것처럼 할 일이 머리 위까지 차오를 때! '나 완전 바빠요!' 대신 이 표현을 써보세요. 훨씬 생생하게 내 상황을 전달할 수 있어요. 😉"
+        "tip": "💡 **豆知識!** この表現は、昔の船乗りが天候が悪くて体調を崩した時に、甲板の下（Under the deck）に避難したことから「Under the weather」になったという説があります。⚓️ 本当に体調が悪い時は「I'm sick」を使いましょう！",
+        "quiz": { "question": "体調が少し悪い時に使う表現は？", "answer": "under the weather" }
       },
-      "tags": ["daily", "emotion", "business"]
-    },
-    {
-      "expression": "Hang in there!",
-      "meaning": "힘내! / 버텨! / 조금만 더 참고 견뎌!",
-      "content": {
-        "tip": "이 표현은 'Keep going!' (계속해!), 'Don't give up!' (포기하지 마!)와 비슷한 뉘앙스를 가지고 있어요. 🗣️ 좌절하지 않고 끈기 있게 버티라는 응원의 메시지를 담고 있죠! 너무 심각한 상황보다는 친구나 동료에게 가볍게 용기를 줄 때 아주 유용하답니다! 😊 'Never give up!' 보다는 조금 더 부드러운 느낌이에요. 💖",
-        "quiz": {
-          "answer": "b) Hang in there!",
-          "question": "중요한 시험이나 마감 직전 너무 힘들어하고 있을 때, '조금만 더 버텨! 넌 할 수 있어!'라고 응원하고 싶다면 다음 중 어떤 표현이 가장 적절할까요?"
-        },
+      "es": {
+        "situation": "¡Cuando te despiertas y te sientes un poco cansado o sin energía! 😱 Es una expresión muy común para decir que no te sientes al 100%, pero tampoco estás gravemente enfermo. 🤒✨",
         "dialogue": [
-          { "en": "I'm so stressed about this final exam. I just want to give up!", "kr": "나 이 시험 때문에 너무 스트레스받아. 그냥 포기하고 싶어!" },
-          { "en": "Hang in there! You've studied so hard, I'm sure you'll do great!", "kr": "힘내! 너 정말 열심히 공부했잖아, 분명 잘할 거야!" }
+          { "en": "Hey, you look a bit down. Are you okay?", "translation": "Oye, te ves un poco desanimado. ¿Estás bien?" },
+          { "en": "I'm feeling a bit under the weather today.", "translation": "Hoy me siento un poco mal." }
         ],
-        "situation": "시험 기간에 밤샘 공부하다가 지쳐 쓰러질 것 같을 때! 😵‍💫 아니면 새로운 도전에 직면해서 '아, 진짜 포기하고 싶다...'라는 생각이 들 때 있잖아요? 그럴 때 쓰는 마법의 주문이에요! ✨ '조금만 더 힘내!', '조금만 더 버텨!'라고 응원하고 싶을 때 이 표현이 딱이랍니다! 💪 마치 게임에서 마지막 보스를 잡으러 가는 길에 서로에게 포기하지 말라고 외치는 것과 같아요! 🎮"
-      },
-      "tags": ["daily", "encouragement", "friends", "motivation", "study"]
-    }
-  ]
-
-  Output Format (JSON):
-  {
-    "expression": "Expression here",
-    "meaning": "Korean meaning",
-    "content": {
-      "situation": "Detailed description of the situation where this expression is used (in Korean).",
-      "dialogue": [
-        { "en": "English sentence A", "kr": "Korean translation A" },
-        { "en": "English sentence B", "kr": "Korean translation B" }
-      ],
-      "tip": "Usage tips, nuances, or similar expressions (in Korean).",
-      "quiz": {
-        "question": "A short quiz question",
-        "answer": "Answer"
+        "tip": "🚨 **¡Dato curioso!** El origen viene de los marineros. Cuando el clima era malo y se sentían mal, bajaban debajo de la cubierta para estar 'bajo el clima'. 🌊⚓️ Si estás realmente enfermo, es mejor usar 'I'm sick'.",
+        "quiz": { "question": "¿Qué dices cuando no te sientes bien pero no es grave?", "answer": "under the weather" }
       }
     },
-    "tags": ["tag1", "tag2", "Category Name"]
+    "tags": ["daily", "health", "lifestyle"]
   }
   ```
 
@@ -222,10 +231,13 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
 
 `Parse JSON` 노드 뒤에 **Supabase** 노드를 연결하여 최종 데이터를 저장합니다.
 
+- **Name**: `Supabase Insert`
+- **Schema**: `daily_english`
+- **Resource**: `Row`
 - **Operation**: `Create`
-- **Table**: `expressions`
-- **Columns to Ignore**: `id`, `created_at` (DB 자동 생성)
-- **Mapping**: `Parse JSON`의 JSON 출력값을 각 컬럼(`expression`, `meaning`, `content`, `tags`)에 매핑합니다.
+- **Table Name or ID**: `expressions`
+- **Data to Send**: `Auto-Map Input Data to Columns`
+- **Mapping**: `expression`, `domain`, `category`, `meaning`, `content`, `tags` 등 모든 컬럼이 `Parse JSON`의 출력값과 자동으로 매핑됩니다.
 
 ---
 

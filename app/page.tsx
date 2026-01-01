@@ -1,11 +1,13 @@
-import { ExpressionCard } from "@/components/ExpressionCard";
+import { getI18n } from "@/lib/i18n/server";
 import { getExpressions } from "@/lib/expressions";
+import { ExpressionCard } from "@/components/ExpressionCard";
 
 // Revalidate every hour
 export const revalidate = 3600;
 
 export default async function Home() {
   const expressions = await getExpressions();
+  const { locale, dict } = await getI18n();
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
@@ -18,7 +20,7 @@ export default async function Home() {
             </h1>
             <nav className="flex items-center gap-4">
               <span className="text-sm text-zinc-500">
-                Every day, one new expression.
+                {dict.home.subHeader}
               </span>
             </nav>
           </div>
@@ -29,23 +31,21 @@ export default async function Home() {
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-            Today&apos;s Expressions
+            {dict.home.title}
           </h2>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Learn useful English expressions collected from top blogs.
+            {dict.home.description}
           </p>
         </div>
 
         {expressions.length === 0 ? (
           <div className="flex h-64 items-center justify-center rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-            <p className="text-zinc-500">
-              No expressions found. Come back later!
-            </p>
+            <p className="text-zinc-500">{dict.home.emptyState}</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {expressions.map((item) => (
-              <ExpressionCard key={item.id} item={item} />
+              <ExpressionCard key={item.id} item={item} locale={locale} />
             ))}
           </div>
         )}
