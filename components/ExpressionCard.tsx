@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Expression } from "@/types/database";
 import { getDictionary } from "@/lib/i18n";
 import { getExpressionUIConfig } from "@/lib/ui-config";
+import Tag from "@/components/Tag";
 
 interface ExpressionCardProps {
   item: Expression;
@@ -78,13 +79,11 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
         {item.tags && item.tags.length > 0 && (
           <div className="mt-6 flex flex-wrap gap-2">
             {item.tags.map((tag) => (
-              <button
+              <Tag
                 key={tag}
+                label={tag}
                 onClick={(e) => handleTagClick(e, tag)}
-                className="rounded-lg bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-500 dark:bg-zinc-800/50 dark:text-zinc-400 border border-zinc-100 dark:border-zinc-800 transition-all hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 dark:hover:border-blue-800 cursor-pointer"
-              >
-                #{tag}
-              </button>
+              />
             ))}
           </div>
         )}

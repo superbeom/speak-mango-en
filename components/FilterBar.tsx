@@ -2,27 +2,29 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, X, Filter } from "lucide-react";
+import { Filter } from "lucide-react";
 import { getCategoryConfig } from "@/lib/ui-config";
 import { CATEGORIES } from "@/lib/constants";
+import { getDictionary } from "@/lib/i18n";
+import { formatMessage } from "@/lib/utils";
+import SearchBar from "@/components/SearchBar";
 
-export default function FilterBar() {
+interface FilterBarProps {
+  locale: string;
+}
+
+export default function FilterBar({ locale }: FilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dict = getDictionary(locale);
 
   const currentCategory = searchParams.get("category") || "all";
   const currentSearch = searchParams.get("search") || "";
   const currentTag = searchParams.get("tag") || "";
 
-  const [searchInput, setSearchInput] = useState(currentSearch);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // URL 파라미터가 외부에서 변경될 때 (예: 뒤로가기 또는 태그 클릭) 동기화
-  useEffect(() => {
-    setSearchInput(currentSearch);
-  }, [currentSearch]);
 
   const checkScroll = () => {
     const el = scrollContainerRef.current;
@@ -53,42 +55,44 @@ export default function FilterBar() {
     router.push(`/?${params.toString()}`);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateFilters({ search: searchInput, tag: null }); // 검색 시 기존 태그 필터는 해제
+  const handleSearch = (term: string) => {
+    if (!term) {
+      updateFilters({ search: null, tag: null });
+      return;
+    }
+
+    // 태그 검색 지원 (#으로 시작하면 태그 필터로 처리)
+    if (term.startsWith("#")) {
+      const tagQuery = term.slice(1).trim();
+      if (tagQuery) {
+        updateFilters({ search: null, tag: tagQuery });
+      } else {
+        // #만 입력된 경우 초기화
+        updateFilters({ search: null, tag: null });
+      }
+    } else {
+      updateFilters({ search: term, tag: null });
+    }
   };
 
-  const clearSearch = () => {
-    setSearchInput("");
+  const handleClear = () => {
     updateFilters({ search: null, tag: null });
   };
 
   return (
     <div className="space-y-6 mb-10">
       {/* Search Bar */}
-      <form onSubmit={handleSearchSubmit} className="relative group max-w-2xl">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-blue-500 transition-colors" />
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder={
-            currentTag
-              ? `Filtering by tag: #${currentTag}`
-              : "Search expressions..."
-          }
-          className="w-full pl-12 pr-12 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg"
-        />
-        {(searchInput || currentTag) && (
-          <button
-            type="button"
-            onClick={clearSearch}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
-      </form>
+      <SearchBar
+        initialValue={currentSearch}
+        hasActiveFilter={!!currentTag}
+        placeholder={
+          currentTag
+            ? formatMessage(dict.filter.filteringByTag, { tag: currentTag })
+            : dict.filter.searchPlaceholder
+        }
+        onSearch={handleSearch}
+        onClear={handleClear}
+      />
 
       <div className="space-y-4">
         {/* Category Chips */}
@@ -115,10 +119,15 @@ export default function FilterBar() {
               {CATEGORIES.map((cat) => {
                 const config =
                   cat === "all"
-                    ? { Icon: Filter, textStyles: "text-zinc-500" }
+                    ? {
+                        icon: Filter,
+                        textStyles: "text-zinc-500",
+                        label: dict.filter.all,
+                      }
                     : {
-                        Icon: getCategoryConfig(cat).icon,
+                        icon: getCategoryConfig(cat).icon,
                         textStyles: getCategoryConfig(cat).textStyles,
+                        label: cat.charAt(0).toUpperCase() + cat.slice(1),
                       };
 
                 const isActive = currentCategory === cat;
@@ -136,12 +145,12 @@ export default function FilterBar() {
                       }
                     `}
                   >
-                    <config.Icon
+                    <config.icon
                       className={`w-3.5 h-3.5 ${
                         !isActive && config.textStyles
                       }`}
                     />
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    {config.label}
                   </button>
                 );
               })}

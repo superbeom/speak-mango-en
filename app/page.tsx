@@ -57,7 +57,7 @@ export default async function Home({ searchParams }: PageProps) {
             <div className="h-20 bg-zinc-100 animate-pulse rounded-2xl mb-10" />
           }
         >
-          <FilterBar />
+          <FilterBar locale={locale} />
         </Suspense>
 
         {expressions.length === 0 ? (

@@ -1,0 +1,63 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Search, X } from "lucide-react";
+
+interface SearchBarProps {
+  placeholder: string;
+  initialValue: string;
+  hasActiveFilter?: boolean;
+  onSearch: (value: string) => void;
+  onClear?: () => void;
+}
+
+export default function SearchBar({
+  placeholder,
+  initialValue,
+  hasActiveFilter = false,
+  onSearch,
+  onClear,
+}: SearchBarProps) {
+  const [value, setValue] = useState(initialValue);
+
+  // URL이 변경되거나 초기값이 바뀔 때 내부 상태 동기화
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch(value);
+  };
+
+  const handleClear = () => {
+    setValue("");
+    if (onClear) {
+      onClear();
+    } else {
+      onSearch("");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="relative group w-full">
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-blue-500 transition-colors" />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={placeholder}
+        className="w-full pl-12 pr-12 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg"
+      />
+      {(value || hasActiveFilter) && (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
+    </form>
+  );
+}

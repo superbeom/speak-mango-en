@@ -10,6 +10,12 @@ export const ko = {
     subHeader: "매일 만나는 영어 한 문장",
     emptyState: "표현을 찾을 수 없습니다. 나중에 다시 와주세요!",
   },
+  filter: {
+    searchPlaceholder: "표현 검색...",
+    filteringByTag: "태그 필터링 중: #{tag}",
+    categoryLabel: "카테고리",
+    all: "전체",
+  },
   detail: {
     situationTitle: "💡 어떤 상황인가요?",
     dialogueTitle: "💬 실전 대화로 배워봐요!",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getI18n } from "@/lib/i18n/server";
 import { getExpressionById } from "@/lib/expressions";
 import { getExpressionUIConfig } from "@/lib/ui-config";
+import Tag from "@/components/Tag";
 
 interface PageProps {
   params: Promise<{
@@ -161,12 +162,10 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
           </section>
 
           {/* Tags & Source */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 pb-4">
             <div className="flex flex-wrap gap-2">
               {expression.tags?.map((tag) => (
-                <span key={tag} className="text-sm font-medium text-zinc-400">
-                  #{tag}
-                </span>
+                <Tag key={tag} label={tag} href={`/?tag=${tag}`} />
               ))}
             </div>
           </div>

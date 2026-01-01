@@ -24,8 +24,10 @@
     - **Name**: `Pick Category`
 3.  다음 코드를 입력하여 실행 때마다 카테고리를 랜덤하게 하나 뽑도록 합니다.
 
-    - **Domain**: 대분류 (conversation, test 등)
-    - **Category**: 소분류 (business, travel, shopping 등)
+    - **주의**: 여기서 사용하는 `category` 값은 웹 앱의 `lib/constants.ts`에 정의된 `CATEGORIES`와 일치해야 필터링이 정상적으로 작동합니다.
+
+    - **Domain**: 대분류 (conversation, test, vocabulary 등)
+    - **Category**: 소분류 (daily, business, travel, shopping 등)
     - **Topic**: AI 프롬프트에 전달할 구체적인 주제 설명
 
     ```javascript

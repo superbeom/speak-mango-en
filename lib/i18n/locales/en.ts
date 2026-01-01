@@ -10,6 +10,12 @@ export const en = {
     subHeader: "Every day, one new expression.",
     emptyState: "No expressions found. Come back later!",
   },
+  filter: {
+    searchPlaceholder: "Search expressions...",
+    filteringByTag: "Filtering by tag: #{tag}",
+    categoryLabel: "Category",
+    all: "All",
+  },
   detail: {
     situationTitle: "💡 What's the situation?",
     dialogueTitle: "💬 Learn with dialogue!",
