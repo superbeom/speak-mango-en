@@ -5,24 +5,30 @@
 ## 🏗️ 목표 구조 (Target Architecture)
 
 1.  **Schedule Trigger** (매일 9시 실행)
-2.  **Code Node** (카테고리 랜덤 선택 - Business, Travel, Native Slang 등)
-3.  **Gemini (Expression Generator)** (선택된 카테고리에 맞는 표현 1개 생성)
-4.  **Supabase (Check Duplicate)** (DB 중복 확인)
-5.  **If Node** (중복 여부 판단)
-6.  **Gemini (Content Generator)** (상세 콘텐츠 생성 - 중복이 아닐 때만 실행)
-7.  **Code Node (Parse JSON)** (Gemini 응답을 순수 JSON 객체로 변환)
-8.  **Supabase (Insert)** (저장)
+2.  **Pick Category** (카테고리 랜덤 선택 - Business, Travel, Native Slang 등)
+3.  **Gemini Expression Generator** (선택된 카테고리에 맞는 표현 1개 생성)
+4.  **Parse Expression JSON** (Gemini 응답을 순수 JSON 객체로 변환)
+5.  **Check Duplicate (Supabase)** (DB 중복 확인)
+6.  **If New** (중복 여부 판단)
+7.  **Gemini Content Generator** (상세 콘텐츠 생성 - 중복이 아닐 때만 실행)
+8.  **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
+9.  **Supabase Insert** (데이터 저장)
 
 ---
 
 ## 🛠️ 단계별 설정 가이드 (Step-by-Step)
 
-### 1단계: 기존 HTTP Request 제거 및 Code 노드 추가
+### 1단계: Schedule Trigger 설정
 
-1.  기존의 `HTTP Request` 노드를 삭제합니다.
-2.  **Code** 노드를 추가하고 다음과 같이 설정합니다.
-    - **Name**: `Pick Category`
-3.  다음 코드를 입력하여 실행 때마다 카테고리를 랜덤하게 하나 뽑도록 합니다.
+워크플로우의 시작점입니다. **Schedule Trigger** 노드를 추가합니다.
+
+- **Trigger Interval**: `Custom (Cron)`
+- **Expression**: `0 9 * * *`
+
+### 2단계: Pick Category
+
+1.  **Code** 노드를 추가하고 이름을 `Pick Category`로 설정합니다.
+2.  다음 코드를 입력하여 실행 때마다 카테고리를 랜덤하게 하나 뽑도록 합니다.
 
     - **주의**: 여기서 사용하는 `category` 값은 웹 앱의 `lib/constants.ts`에 정의된 `CATEGORIES`와 일치해야 필터링이 정상적으로 작동합니다.
 
@@ -102,9 +108,41 @@
   }
   ```
 
-### 3단계: Supabase 중복 체크 노드 추가
+### 3단계: Parse Expression JSON
 
-`Gemini Expression Generator` 뒤에 **Supabase** 노드를 추가합니다.
+Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등)로 반환될 수 있으므로, 이를 순수 JSON 객체로 변환하는 과정이 반드시 필요합니다.
+
+`Gemini Expression Generator` 뒤에 **Code** 노드를 추가하고 연결합니다.
+
+- **Name**: `Parse Expression JSON`
+- **Code**:
+
+  ````javascript
+  // Gemini의 응답에서 JSON 문자열 부분만 추출하여 파싱합니다.
+  const rawText = $input.first().json.text;
+  // 마크다운 코드 블록(```json ... ```) 제거
+  const cleanJson = rawText
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+  try {
+    return {
+      json: JSON.parse(cleanJson),
+    };
+  } catch (error) {
+    return {
+      json: {
+        error: "JSON Parsing Failed",
+        raw: rawText,
+      },
+    };
+  }
+  ````
+
+### 4단계: Supabase 중복 체크 노드 추가
+
+`Parse Expression JSON` 노드 뒤에 **Supabase** 노드를 추가합니다.
 
 - **Name**: `Check Duplicate`
 - **Operation**: `Get All`
@@ -114,9 +152,9 @@
 - **Filters**:
   - **Column**: `expression`
   - **Operator**: `Equal`
-  - **Value**: `{{ $('Gemini Expression Generator').item.json.expression }}`
+  - **Value**: `{{ $('Parse Expression JSON').item.json.expression }}`
 
-### 4단계: If 노드 추가 (조건 분기)
+### 5단계: If 노드 추가 (조건 분기)
 
 `Check Duplicate` 뒤에 **If** 노드를 추가합니다.
 
@@ -125,7 +163,7 @@
   - Number: `{{ $items('Check Duplicate').length }}` **Equal** `0`
   - (데이터가 없으면 0이므로 새로운 표현임)
 
-### 5단계: Gemini Content Generator 설정 (상세 내용 생성)
+### 6단계: Gemini Content Generator 설정 (상세 내용 생성)
 
 `If New` 노드의 **True** (위쪽) 출력에 새로운 **Google Gemini Chat Model** 노드를 연결합니다.
 
@@ -136,7 +174,7 @@
   Role: Professional English Content Creator & Polyglot Teacher.
   Task: Create a detailed study card for the following English expression in three languages: Korean (ko), Japanese (ja), and Spanish (es).
 
-  Expression: {{ $('Gemini Expression Generator').item.json.expression }}
+  Expression: {{ $('Parse Expression JSON').item.json.expression }}
   Domain: {{ $('Pick Category').item.json.domain }}
   Category: {{ $('Pick Category').item.json.category }}
 
@@ -198,12 +236,12 @@
   }
   ```
 
-### 6단계: JSON Parsing (문자열 -> JSON 변환)
+### 7단계: JSON Parsing (문자열 -> JSON 변환)
 
 Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code** 노드를 추가합니다.
 `Gemini Content Generator`와 `Supabase Insert` 사이에 연결하세요.
 
-- **Name**: `Parse JSON`
+- **Name**: `Parse Content JSON`
 - **Code**:
 
   ````javascript
@@ -229,7 +267,7 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
   }
   ````
 
-### 7단계: Supabase Insert 설정
+### 8단계: Supabase Insert 설정
 
 `Parse JSON` 노드 뒤에 **Supabase** 노드를 연결하여 최종 데이터를 저장합니다.
 
