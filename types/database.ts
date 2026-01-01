@@ -21,6 +21,8 @@ export interface I18nContent {
 
 export interface Expression {
   id: string;
+  domain: string; // 대분류 (conversation, test, vocabulary)
+  category: string; // 소분류 (business, travel, shopping)
   expression: string;
   meaning: I18nString;
   content: I18nContent;

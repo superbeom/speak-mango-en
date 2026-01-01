@@ -79,6 +79,20 @@ daily-english/
 - **언어**: TypeScript 엄수. `any` 사용 지양.
 - **절대 경로**: `@/` alias 사용 (예: `import { createClient } from '@/lib/supabase/server'`).
 
+### Naming Conventions
+
+- **Components (`components/`)**: `PascalCase` (예: `ExpressionCard.tsx`)
+- **Utilities & Logic (`lib/`)**: `kebab-case` (예: `ui-config.ts`, `expressions.ts`)
+- **Pages (`app/`)**: Next.js App Router 규칙 준수 (`page.tsx`, `layout.tsx` 등)
+
+### Component Architecture
+
+- **모듈화 및 재사용성 (Modularity)**: 독립적으로 구성 가능한 요소는 반드시 컴포넌트로 분리합니다. 함수와 유틸리티는 재사용성을 최우선으로 설계합니다.
+- **관심사 분리 (Separation of Concerns)**:
+  - **Presentational Component**: UI 렌더링에만 집중하며, 데이터는 `props`로 주입받습니다. 비즈니스 로직을 포함하지 않습니다.
+  - **Container Component**: 데이터 페칭 및 비즈니스 로직을 처리하고, 결과를 Presentational 컴포넌트에 전달합니다.
+- **독립성 (Independence)**: 컴포넌트는 외부 상태에 의존하지 않고 주입받은 `props`만으로 렌더링되어야 합니다.
+
 ### Frontend
 
 - **스타일링**: Tailwind CSS 유틸리티 클래스 사용. 커스텀 CSS 지양.

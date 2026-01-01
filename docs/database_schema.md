@@ -18,6 +18,8 @@
 | `id`           | UUID        | PK  | `gen_random_uuid()` | 표현 고유 식별자                         |
 | `created_at`   | TIMESTAMPTZ |     | `now()`             | 데이터 생성 일시                         |
 | `published_at` | TIMESTAMPTZ |     | `now()`             | 표현이 게시된 일시 (정렬 기준)           |
+| `domain`       | TEXT        |     | 'conversation'      | 대분류 (예: conversation, test, voca)    |
+| `category`     | TEXT        |     | 'daily'             | 소분류 (예: business, travel, shopping)  |
 | `expression`   | TEXT        |     | -                   | 영어 표현 (예: "Break a leg")            |
 | `meaning`      | JSONB       |     | -                   | 다국어 뜻 (예: `{"ko": "..."}`)          |
 | `content`      | JSONB       |     | `'{}'::jsonb`       | 다국어 상세 콘텐츠 (예: `{"ko": {...}}`) |
@@ -26,8 +28,17 @@
 **Indexes**:
 
 - `idx_expressions_published_at`: 최신순 정렬 조회 성능 최적화.
+- `idx_expressions_domain`: 대분류별 필터링 성능 최적화.
+- `idx_expressions_category`: 소분류별 필터링 성능 최적화.
 - `idx_expressions_tags`: 태그별 필터링 성능 최적화 (GIN).
 - `idx_expressions_content`: JSONB 내부 데이터 검색 최적화 (GIN).
+
+### Dual-Category System
+
+다양한 학습 요구에 대응하기 위해 2단계 분류 체계를 사용합니다.
+
+1. **Domain (대분류)**: 콘텐츠의 큰 성격 (`conversation`, `test`, `vocabulary` 등)
+2. **Category (소분류)**: 구체적인 상황이나 주제 (`travel`, `business`, `shopping`, `toeic` 등)
 
 ### Content JSONB Structure (i18n)
 
