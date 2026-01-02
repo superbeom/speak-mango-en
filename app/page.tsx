@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getI18n } from "@/lib/i18n/server";
 import { getExpressions } from "@/lib/expressions";
+import AnimatedList from "@/components/AnimatedList";
 import ExpressionCard from "@/components/ExpressionCard";
 import FilterBar from "@/components/FilterBar";
 
@@ -72,11 +73,11 @@ export default async function Home({ searchParams }: PageProps) {
             )}
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <AnimatedList>
             {expressions.map((item) => (
               <ExpressionCard key={item.id} item={item} locale={locale} />
             ))}
-          </div>
+          </AnimatedList>
         )}
       </main>
 

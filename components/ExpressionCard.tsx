@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import { Expression } from "@/types/database";
 import { getDictionary } from "@/lib/i18n";
 import { getExpressionUIConfig } from "@/lib/ui-config";
@@ -12,6 +13,18 @@ interface ExpressionCardProps {
   item: Expression;
   locale: string;
 }
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.21, 0.47, 0.32, 0.98] as const,
+    },
+  },
+};
 
 export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
   const router = useRouter();
@@ -51,56 +64,67 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
   };
 
   return (
-    <Link href={`/expressions/${item.id}`} className="block h-full">
-      <div className="group h-full overflow-hidden rounded-3xl border border-zinc-200 bg-white p-7 shadow-sm transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-blue-200/50 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-500/30 dark:hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]">
-        <div className="mb-5">
-          <div className="mb-4 flex items-center justify-between">
-            {/* Domain Tag */}
-            <span
-              className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${domain.styles}`}
-            >
-              <domain.icon className="w-3.5 h-3.5 mr-2 transition-transform duration-300 group-hover:scale-110" />
-              {domain.label}
-            </span>
-            {/* Category Label with Icon */}
-            <CategoryLabel
-              label={item.category}
-              icon={category.icon}
-              textStyles={category.textStyles}
-              onClick={handleCategoryClick}
-            />
-          </div>
-          <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-            {item.expression}
-          </h3>
-          <p className="mt-2 text-lg font-medium text-zinc-600 dark:text-zinc-400">
-            {meaning}
-          </p>
-        </div>
-
-        <div className="space-y-3 border-t border-zinc-100 pt-5 dark:border-zinc-800">
-          <div>
-            <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
-              {dict.card.situationQuestion}
-            </p>
-            <p className="text-zinc-800 dark:text-zinc-200 leading-relaxed line-clamp-2 text-sm">
-              {content?.situation || dict.card.noDescription}
-            </p>
-          </div>
-        </div>
-
-        {item.tags && item.tags.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-2">
-            {item.tags.map((tag) => (
-              <Tag
-                key={tag}
-                label={tag}
-                onClick={(e) => handleTagClick(e, tag)}
+    <motion.div
+      variants={itemVariants}
+      layout
+      initial="hidden"
+      animate="visible"
+      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+      whileHover={{ y: -5 }}
+      whileTap={{ scale: 0.98 }}
+      className="h-full"
+    >
+      <Link href={`/expressions/${item.id}`} className="block h-full">
+        <div className="group h-full overflow-hidden rounded-3xl border border-zinc-200 bg-white p-7 shadow-sm transition-all duration-300 ease-out hover:border-blue-200/50 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-500/30 dark:hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]">
+          <div className="mb-5">
+            <div className="mb-4 flex items-center justify-between">
+              {/* Domain Tag */}
+              <span
+                className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${domain.styles}`}
+              >
+                <domain.icon className="w-3.5 h-3.5 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                {domain.label}
+              </span>
+              {/* Category Label with Icon */}
+              <CategoryLabel
+                label={item.category}
+                icon={category.icon}
+                textStyles={category.textStyles}
+                onClick={handleCategoryClick}
               />
-            ))}
+            </div>
+            <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              {item.expression}
+            </h3>
+            <p className="mt-2 text-lg font-medium text-zinc-600 dark:text-zinc-400">
+              {meaning}
+            </p>
           </div>
-        )}
-      </div>
-    </Link>
+
+          <div className="space-y-3 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+            <div>
+              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
+                {dict.card.situationQuestion}
+              </p>
+              <p className="text-zinc-800 dark:text-zinc-200 leading-relaxed line-clamp-2 text-sm">
+                {content?.situation || dict.card.noDescription}
+              </p>
+            </div>
+          </div>
+
+          {item.tags && item.tags.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {item.tags.map((tag) => (
+                <Tag
+                  key={tag}
+                  label={tag}
+                  onClick={(e) => handleTagClick(e, tag)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </Link>
+    </motion.div>
   );
 }

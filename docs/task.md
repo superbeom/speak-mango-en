@@ -32,7 +32,7 @@
 - [x] **Category**: 2단계 분류 체계(`domain`, `category`) 도입 및 DB 스키마 확장
 - [x] **UI/UX**: 태그 및 카테고리별 필터링 기능 구현
 - [x] **UI/UX**: 표현 검색(Search) 기능 구현
-- [ ] **UI/UX**: Framer Motion을 활용한 리스트 애니메이션 적용
+- [x] **UI/UX**: Framer Motion을 활용한 리스트 애니메이션 적용
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 
 ## Phase 5: Monetization (수익화)

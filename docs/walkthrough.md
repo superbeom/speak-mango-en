@@ -2,6 +2,21 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.6.4: Framer Motion을 활용한 애니메이션 고도화 (2026-01-02)
+
+### 1. 애니메이션 인프라 구축
+
+- **Dependencies**: `framer-motion` 패키지 설치.
+- **`components/AnimatedList.tsx`**: 리스트의 Staggered 애니메이션(순차적 등장)과 레이아웃 전환(Layout Animation)을 처리하는 전용 클라이언트 컴포넌트 구현. `AnimatePresence`를 통해 요소 추가/삭제 시 부드러운 전환 지원.
+
+### 2. 컴포넌트 애니메이션 적용
+
+- **`ExpressionCard`**:
+  - `motion.div`를 도입하여 카드 진입 시 Fade-in & Slide-up 효과 적용.
+  - `whileHover`(살짝 떠오름) 및 `whileTap`(눌림 효과) 인터랙션 추가.
+  - `layout` 속성을 통해 필터링 시 카드가 부드럽게 재배치되도록 개선.
+- **`app/page.tsx`**: 기존의 정적 그리드를 `AnimatedList`로 교체하여 전체적인 사용자 경험(UX) 상향.
+
 ## v0.6.3: CategoryLabel 컴포넌트 추가 및 인터랙션 강화 (2026-01-01)
 
 ### 1. CategoryLabel 컴포넌트
