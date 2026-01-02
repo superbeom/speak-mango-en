@@ -23,13 +23,14 @@ docker-compose ps
 
 1. **Schedule Trigger**: 매일 오전 9시 실행.
 2. **Pick Category**: 미리 정의된 주제(비즈니스, 생활회화 등) 중 하나를 랜덤 선택.
-3. **Gemini Expression Generator**: 선택된 주제에 맞는 유용한 영어 표현 1개 생성.
-4. **Parse Expression JSON**: AI가 생성한 표현 데이터를 JSON 객체로 변환.
-5. **Check Duplicate (Supabase)**: 생성된 표현이 DB에 있는지 확인.
-6. **If New**: 중복이 아닐 경우에만 다음 단계 진행.
-7. **Gemini Content Generator**: 전체 콘텐츠(뜻, 예문, 퀴즈 등) 상세 생성.
-8. **Parse Content JSON**: 상세 콘텐츠 데이터를 JSON 객체로 변환.
-9. **Supabase Insert**: 최종 데이터 저장.
+3. **Get Existing Expressions (Supabase)**: 선택된 카테고리의 기존 표현들을 조회하여 중복 생성을 방지.
+4. **Gemini Expression Generator**: 선택된 주제에 맞는 유용한 영어 표현 1개 생성 (기존 표현 제외).
+5. **Parse Expression JSON**: AI가 생성한 표현 데이터를 JSON 객체로 변환.
+6. **Check Duplicate (Supabase)**: 생성된 표현이 DB에 있는지 확인 (2차 안전장치).
+7. **If New**: 중복이 아닐 경우에만 다음 단계 진행.
+8. **Gemini Content Generator**: 전체 콘텐츠(뜻, 예문, 퀴즈 등) 상세 생성.
+9. **Parse Content JSON**: 상세 콘텐츠 데이터를 JSON 객체로 변환.
+10. **Supabase Insert**: 최종 데이터 저장.
 
 ---
 

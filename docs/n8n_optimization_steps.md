@@ -6,13 +6,14 @@
 
 1.  **Schedule Trigger** (매일 9시 실행)
 2.  **Pick Category** (카테고리 랜덤 선택 - Business, Travel, Native Slang 등)
-3.  **Gemini Expression Generator** (선택된 카테고리에 맞는 표현 1개 생성)
-4.  **Parse Expression JSON** (Gemini 응답을 순수 JSON 객체로 변환)
-5.  **Check Duplicate (Supabase)** (DB 중복 확인)
-6.  **If New** (중복 여부 판단)
-7.  **Gemini Content Generator** (상세 콘텐츠 생성 - 중복이 아닐 때만 실행)
-8.  **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
-9.  **Supabase Insert** (데이터 저장)
+3.  **Get Existing Expressions (Supabase)** (선택된 카테고리의 기존 표현 조회)
+4.  **Gemini Expression Generator** (기존 표현을 제외하고 새로운 표현 1개 생성)
+5.  **Parse Expression JSON** (Gemini 응답을 순수 JSON 객체로 변환)
+6.  **Check Duplicate (Supabase)** (DB 중복 확인 - 안전장치)
+7.  **If New** (중복 여부 판단)
+8.  **Gemini Content Generator** (상세 콘텐츠 생성 - 중복이 아닐 때만 실행)
+9.  **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
+10. **Supabase Insert** (데이터 저장)
 
 ---
 
@@ -83,31 +84,52 @@
     };
     ```
 
-### 3단계: Gemini Expression Generator 설정 (표현 생성)
+### 3단계: Get Existing Expressions 설정 (중복 방지용 조회)
 
-`Pick Category` 노드 뒤에 **Google Gemini Chat Model** 노드를 연결합니다.
+`Pick Category` 뒤에 **Supabase** 노드를 추가하여, 해당 카테고리에 이미 존재하는 표현들을 미리 가져옵니다. 이를 AI에게 전달하여 중복 생성을 원천 차단합니다.
+
+- **Name**: `Get Existing Expressions`
+- **Schema**: `speak_mango_en`
+- **Operation**: `Get Many`
+- **Table Name or ID**: `expressions`
+- **Return All**: `True`
+- **Filters**:
+  - **Filter**: `Build Manually`
+  - **Must Match**: `All Filters`
+  - **Field Name or ID**: `category - (string)`
+  - **Condition**: `Equal`
+  - **Field Value**: `{{ $('Pick Category').item.json.category }}`
+
+### 4단계: Gemini Expression Generator 설정 (표현 생성)
+
+`Get Existing Expressions` 노드 뒤에 **Google Gemini Chat Model** 노드를 연결합니다.
 
 - **Name**: `Gemini Expression Generator`
+- **Settings**: `Execute Once` 토글을 **On**으로 켜주세요. (매우 중요! 입력 데이터가 여러 개라도 AI는 한 번만 실행되어야 합니다.)
 - **Prompt**:
 
   ```text
   Role: Professional English Teacher
   Task: Suggest ONE useful English expression related to the category below.
 
-  Domain: {{ $('Pick Category').item.json.domain }}
-  Category: {{ $('Pick Category').item.json.category }}
+  Domain: {{ $('Pick Category').first().json.domain }}
+  Category: {{ $('Pick Category').first().json.category }}
+
+  # EXCLUDED EXPRESSIONS (Do NOT generate these):
+  {{ $items("Get Existing Expressions").map(item => item.json.expression).join(", ") }}
 
   Requirements:
   1. The expression must be practical and widely used.
-  2. Capitalization for 'expression':
+  2. **Do NOT use any expression listed in the 'EXCLUDED EXPRESSIONS' list.**
+  3. Capitalization for 'expression':
      - Start with an UPPERCASE letter for standalone sentences (e.g., "Don't take it personally", "No cap").
      - Start with a lowercase letter for general phrases or idioms (e.g., "spill the tea", "hit the road").
-  3. Punctuation for 'expression': Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
-  4. For the 'meaning' field:
+  4. Punctuation for 'expression': Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
+  5. For the 'meaning' field:
      - Provide a concise definition in a casual tone (반말).
      - If there are multiple meanings, separate them with ' · ' (middle dot).
      - Do NOT end with a period (.).
-  5. Output MUST be a clean JSON object.
+  6. Output MUST be a clean JSON object.
 
   Output Format (JSON):
   {
@@ -116,7 +138,9 @@
   }
   ```
 
-### 4단계: Parse Expression JSON
+  > **💡 팁**: `# EXCLUDED EXPRESSIONS` 아래의 `{{ ... }}` 코드는 n8n의 Expression 기능입니다. 별도의 Code Node 없이도, 이전 노드(`Get Existing Expressions`)에서 가져온 수많은 데이터 중 `expression` 필드만 추출하여 쉼표로 연결된 문자열로 변환해 줍니다. Gemini에게는 제외해야 할 표현 목록만 깔끔하게 전달됩니다.
+
+### 5단계: Parse Expression JSON
 
 Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등)로 반환될 수 있으므로, 이를 순수 JSON 객체로 변환하는 과정이 반드시 필요합니다.
 
@@ -148,9 +172,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   }
   ````
 
-### 5단계: Supabase 중복 체크 노드 추가
+### 6단계: Supabase 중복 체크 노드 추가
 
-`Parse Expression JSON` 노드 뒤에 **Supabase** 노드를 추가합니다.
+`Parse Expression JSON` 노드 뒤에 **Supabase** 노드를 추가합니다. (AI가 제외 목록을 무시했을 경우를 대비한 2차 안전장치입니다.)
 
 - **Name**: `Check Duplicate`
 - **Schema**: `speak_mango_en`
@@ -165,7 +189,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   - **Field Value**: `*{{ $('Parse Expression JSON').item.json.expression }}*`
   - _(참고: 'Equal' 대신 'Like'를 사용하여 "touch base"가 생성될 때 기존의 "Let's touch base"도 중복으로 감지하도록 함)_
 
-### 6단계: If 노드 추가 (조건 분기)
+### 7단계: If 노드 추가 (조건 분기)
 
 `Check Duplicate` 뒤에 **If** 노드를 추가합니다.
 
@@ -174,7 +198,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   - Number: `{{ $items('Check Duplicate').length }}` **Equal** `0`
   - (데이터가 없으면 0이므로 새로운 표현임)
 
-### 7단계: Gemini Content Generator 설정 (상세 내용 생성)
+### 8단계: Gemini Content Generator 설정 (상세 내용 생성)
 
 `If New` 노드의 **True** (위쪽) 출력에 새로운 **Google Gemini Chat Model** 노드를 연결합니다.
 
@@ -186,8 +210,8 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   Task: Create a detailed study card for the following English expression in three languages: Korean (ko), Japanese (ja), and Spanish (es).
 
   Expression: {{ $('Parse Expression JSON').item.json.expression }}
-  Domain: {{ $('Pick Category').item.json.domain }}
-  Category: {{ $('Pick Category').item.json.category }}
+  Domain: {{ $('Pick Category').first().json.domain }}
+  Category: {{ $('Pick Category').first().json.category }}
 
   Requirements:
   1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language (존댓말/Desu-Masu form) consistently** for explanations.
