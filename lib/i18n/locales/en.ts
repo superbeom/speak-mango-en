@@ -22,6 +22,7 @@ export const en = {
     tipTitle: "🍯 Teacher's Tip!",
     missionTitle: "🔥 Today's Mission!",
     checkAnswer: "Check Answer",
+    relatedTitle: "📚 How about these expressions?",
   },
   card: {
     label: "Today's Expression",

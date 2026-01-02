@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getI18n } from "@/lib/i18n/server";
-import { getExpressionById } from "@/lib/expressions";
+import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { getExpressionUIConfig } from "@/lib/ui-config";
+import Header from "@/components/Header";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
+import RelatedExpressions from "@/components/RelatedExpressions";
 
 interface PageProps {
   params: Promise<{
@@ -32,6 +34,13 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // 관련 표현 가져오기 (같은 카테고리)
+  const relatedExpressions = await getRelatedExpressions(
+    id,
+    expression.category,
+    6 // 넉넉하게 6개까지 가져와서 스크롤 가능하게 함
+  );
+
   // UI Config 통합 가져오기
   const { domain, category } = getExpressionUIConfig(
     expression.domain,
@@ -40,21 +49,19 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black pb-20">
-      <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-black/80">
-        <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="group flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
-            >
-              <span className="transition-transform group-hover:-translate-x-1">
-                ←
-              </span>{" "}
-              {dict.common.back}
-            </Link>
-          </div>
+      <Header>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="group flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
+          >
+            <span className="transition-transform group-hover:-translate-x-1">
+              ←
+            </span>{" "}
+            {dict.common.back}
+          </Link>
         </div>
-      </header>
+      </Header>
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <article className="space-y-6">
@@ -164,13 +171,22 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
           </section>
 
           {/* Tags & Source */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
             <div className="flex flex-wrap gap-2">
               {expression.tags?.map((tag) => (
                 <Tag key={tag} label={tag} href={`/?tag=${tag}`} />
               ))}
             </div>
           </div>
+
+          {/* Related Expressions Section */}
+          {relatedExpressions.length > 0 && (
+            <RelatedExpressions
+              expressions={relatedExpressions}
+              locale={locale}
+              title={dict.detail.relatedTitle}
+            />
+          )}
         </article>
       </main>
     </div>

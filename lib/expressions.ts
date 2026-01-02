@@ -68,3 +68,33 @@ export async function getExpressionById(
     return null;
   }
 }
+
+export async function getRelatedExpressions(
+  currentId: string,
+  category: string,
+  limit = 4
+): Promise<Expression[]> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase
+      .from("expressions")
+      .select("*")
+      .eq("category", category)
+      .neq("id", currentId)
+      .limit(limit)
+      .order("published_at", { ascending: false });
+
+    if (error) {
+      console.warn(
+        "Supabase fetch error for related expressions:",
+        error.message
+      );
+      return [];
+    }
+
+    return (data as Expression[]) || [];
+  } catch (error) {
+    console.warn("Failed to fetch related expressions:", error);
+    return [];
+  }
+}

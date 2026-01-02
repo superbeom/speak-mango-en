@@ -22,6 +22,7 @@ export const ko = {
     tipTitle: "🍯 선생님의 꿀팁!",
     missionTitle: "🔥 오늘의 미션!",
     checkAnswer: "정답 확인하기",
+    relatedTitle: "📚 이런 표현은 어때요?",
   },
   card: {
     label: "오늘의 표현",
