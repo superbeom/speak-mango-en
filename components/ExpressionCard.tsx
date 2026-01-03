@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Expression } from "@/types/database";
-import { getDictionary } from "@/lib/i18n";
+import { getDictionary } from "@/i18n";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getI18n } from "@/lib/i18n/server";
+import { getI18n } from "@/i18n/server";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import Header from "@/components/Header";
@@ -48,7 +48,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black pb-20">
+    <div className="min-h-screen bg-layout pb-20">
       <Header>
         <div className="flex items-center gap-4">
           <Link

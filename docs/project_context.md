@@ -43,13 +43,16 @@ graph TD
 
 ```
 speak-mango-en/
-├── .agent/              # Agent workflows & configuration
+├── .agent/              # 에이전트 워크플로우 및 설정
 ├── app/                 # Next.js App Router Pages
 │   ├── page.tsx         # 메인 페이지 (표현 리스트)
 │   ├── layout.tsx       # 레이아웃
 │   └── globals.css      # 전역 스타일
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
+├── database/            # 데이터베이스 마이그레이션 스크립트 (SQL)
+├── hooks/               # 커스텀 React 훅
+├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
 │   ├── supabase/        # Supabase 클라이언트 설정 (server/client)
 │   └── utils.ts         # 공통 유틸리티 함수
@@ -104,7 +107,10 @@ speak-mango-en/
 ### Frontend
 
 - **스타일링**: Tailwind CSS 유틸리티 클래스 사용. 커스텀 CSS 지양.
-- **Global Variables**: 페이지 레이아웃의 일관성을 위해 `app/globals.css`에 정의된 커스텀 유틸리티(`max-w-layout`)를 사용합니다.
+- **Global Variables & Utilities**:
+  - **Theme Variables (`@theme`)**: 여러 속성에서 재사용되는 디자인 토큰(예: `height`, `top`, `padding` 등에서 쓰이는 `--header-height`)은 `app/globals.css`의 `@theme` 블록에 CSS 변수로 정의하여 사용합니다.
+  - **Custom Utilities (`@utility`)**: 특정 속성 조합이 반복될 때(예: `max-width` 설정)는 `@utility` 블록에 커스텀 유틸리티 클래스(예: `max-w-layout`)를 정의하여 사용합니다.
+  - 하드코딩된 값 대신 위에서 정의한 변수와 유틸리티를 사용하여 레이아웃 일관성을 유지합니다.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
 

@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter } from "lucide-react";
+import { getDictionary } from "@/i18n";
+import { useScroll } from "@/hooks/useScroll";
 import { getCategoryConfig } from "@/lib/ui-config";
 import { CATEGORIES } from "@/lib/constants";
-import { getDictionary } from "@/lib/i18n";
-import { formatMessage } from "@/lib/utils";
+import { cn, formatMessage } from "@/lib/utils";
 import SearchBar from "@/components/SearchBar";
 
 interface FilterBarProps {
@@ -24,6 +25,7 @@ export default function FilterBar({ locale }: FilterBarProps) {
 
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
+  const isStuck = useScroll(80);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const checkScroll = () => {
@@ -80,7 +82,12 @@ export default function FilterBar({ locale }: FilterBarProps) {
   };
 
   return (
-    <div className="space-y-6 mb-10">
+    <div
+      className={cn(
+        "sticky top-(--header-height) z-40 space-y-4 pt-2 pb-4 mb-8 bg-layout-transparent backdrop-blur-xl -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 transition-all duration-200",
+        isStuck ? "border-layout" : "border-none-layout"
+      )}
+    >
       {/* Search Bar */}
       <SearchBar
         key={`${currentSearch}-${currentTag}`}

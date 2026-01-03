@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getI18n } from "@/lib/i18n/server";
+import { getI18n } from "@/i18n/server";
 import { getExpressions } from "@/lib/expressions";
 import { SERVICE_NAME } from "@/lib/constants";
 import Header from "@/components/Header";
@@ -27,7 +27,7 @@ export default async function Home({ searchParams }: PageProps) {
   const { locale, dict } = await getI18n();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-layout">
       {/* Header */}
       <Header>
         <div className="flex items-center justify-between">

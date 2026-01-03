@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --header-height: 61px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,4 +36,20 @@ body {
 
 @utility max-w-layout {
   max-width: 64rem;
+}
+
+@utility bg-layout {
+  @apply bg-zinc-50 dark:bg-black;
+}
+
+@utility bg-layout-transparent {
+  @apply bg-zinc-50/80 dark:bg-black/80;
+}
+
+@utility border-layout {
+  @apply border-b border-zinc-200 dark:border-zinc-800;
+}
+
+@utility border-none-layout {
+  @apply border-b border-transparent;
 }
