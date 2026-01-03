@@ -216,11 +216,11 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   Requirements:
   1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language (존댓말/Desu-Masu form) consistently** for explanations.
   2. For the 'meaning' field in ALL languages:
-     - Provide concise definitions in a casual tone (e.g., Korean: 반말).
+     - **Tone**: Use a casual tone (e.g., Korean: 반말) by default. **HOWEVER, if the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a polite tone (존댓말/Desu-Masu).**
+     - **Punctuation**: If the English expression is a question (?), the meaning MUST also end with a question mark (?) or be phrased as a question. Do NOT use trailing periods (.) for statements.
      - If there are multiple meanings, separate them with ' · ' (middle dot).
-     - Do NOT end with a period (.).
   3. Formatting for 'expression':
-     - Capitalization: Start with an UPPERCASE letter for standalone sentences (e.g., "Don't take it personally", "No cap"). Start with a lowercase letter for general phrases or idioms (e.g., "spill the tea", "hit the road").
+     - **Capitalization**: **Start with an UPPERCASE letter** if the expression is a standalone sentence or interjection (e.g., "No worries", "Never mind", "Don't take it personally"). **Start with a lowercase letter** ONLY if it is a phrase or idiom used within a sentence (e.g., "spill the tea", "hit the road").
      - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
   4. Constraint for content:
      - **NEVER use casual speech (반말)** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
