@@ -60,6 +60,7 @@ speak-mango-en/
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── future_todos.md      # 기술 부채, 아이디어, 개선 사항 백로그
 │   ├── feature_ideas.md     # 추가 기능 아이디어 및 브레인스토밍
+│   ├── features_list.md     # 구현 완료된 기능 목록 정리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
     ├── database_schema.md   # DB 스키마 정의
     ├── monetization_brainstorming.md # 수익화 브레인스토밍 및 Q&A (원본)
@@ -102,6 +103,7 @@ speak-mango-en/
 ### Frontend
 
 - **스타일링**: Tailwind CSS 유틸리티 클래스 사용. 커스텀 CSS 지양.
+- **Global Variables**: 페이지 레이아웃의 일관성을 위해 `app/globals.css`에 정의된 커스텀 유틸리티(`max-w-layout`)를 사용합니다.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
 

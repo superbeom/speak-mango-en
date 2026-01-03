@@ -40,7 +40,7 @@ export default async function Home({ searchParams }: PageProps) {
       </Header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-10">
           <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
             {dict.home.title}
@@ -81,7 +81,7 @@ export default async function Home({ searchParams }: PageProps) {
 
       {/* Footer */}
       <footer className="mt-16 border-t border-zinc-200 py-12 dark:border-zinc-800">
-        <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-layout px-4 text-center sm:px-6 lg:px-8">
           <p className="text-sm text-zinc-500">
             &copy; {new Date().getFullYear()} {SERVICE_NAME}. All rights
             reserved.

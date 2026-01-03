@@ -223,7 +223,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
      - Capitalization: Start with an UPPERCASE letter for standalone sentences (e.g., "Don't take it personally", "No cap"). Start with a lowercase letter for general phrases or idioms (e.g., "spill the tea", "hit the road").
      - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
   4. Constraint for content:
-     - **NEVER use casual speech (반말)** in the explanation, tips, or situation description (except for the 'meaning' field and dialogue).
+     - **NEVER use casual speech (반말)** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
      - Do NOT mix polite and casual styles. Keep the tone consistent throughout.
      - Do NOT address the reader as specific groups like "Kids" or "Students". Use a general, relatable tone suitable for young adults.
   5. Output MUST be a valid JSON object matching the schema below.

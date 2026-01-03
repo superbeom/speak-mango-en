@@ -63,8 +63,8 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
         </div>
       </Header>
 
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <article className="space-y-6">
+      <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
+        <article className="mx-auto max-w-3xl space-y-6">
           {/* Main Card */}
           <section className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <div className="p-8 sm:p-12">
@@ -178,16 +178,16 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
               ))}
             </div>
           </div>
-
-          {/* Related Expressions Section */}
-          {relatedExpressions.length > 0 && (
-            <RelatedExpressions
-              expressions={relatedExpressions}
-              locale={locale}
-              title={dict.detail.relatedTitle}
-            />
-          )}
         </article>
+
+        {/* Related Expressions Section */}
+        {relatedExpressions.length > 0 && (
+          <RelatedExpressions
+            expressions={relatedExpressions}
+            locale={locale}
+            title={dict.detail.relatedTitle}
+          />
+        )}
       </main>
     </div>
   );
