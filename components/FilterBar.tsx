@@ -83,6 +83,7 @@ export default function FilterBar({ locale }: FilterBarProps) {
     <div className="space-y-6 mb-10">
       {/* Search Bar */}
       <SearchBar
+        key={`${currentSearch}-${currentTag}`}
         initialValue={currentSearch}
         hasActiveFilter={!!currentTag}
         placeholder={

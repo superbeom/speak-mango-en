@@ -3,6 +3,7 @@ import { getI18n } from "@/lib/i18n/server";
 import { getExpressions } from "@/lib/expressions";
 import { SERVICE_NAME } from "@/lib/constants";
 import Header from "@/components/Header";
+import Logo from "@/components/Logo";
 import AnimatedList from "@/components/AnimatedList";
 import ExpressionCard from "@/components/ExpressionCard";
 import FilterBar from "@/components/FilterBar";
@@ -30,9 +31,7 @@ export default async function Home({ searchParams }: PageProps) {
       {/* Header */}
       <Header>
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {SERVICE_NAME}
-          </h1>
+          <Logo name={SERVICE_NAME} />
           <nav className="flex items-center gap-4">
             <span className="text-sm text-zinc-500">{dict.home.subHeader}</span>
           </nav>

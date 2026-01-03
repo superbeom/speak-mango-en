@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Search, X } from "lucide-react";
 
 interface SearchBarProps {
@@ -19,11 +19,6 @@ export default function SearchBar({
   onClear,
 }: SearchBarProps) {
   const [value, setValue] = useState(initialValue);
-
-  // URL이 변경되거나 초기값이 바뀔 때 내부 상태 동기화
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

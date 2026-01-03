@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-02
+**최종 수정일**: 2026-01-03
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -43,6 +43,7 @@ graph TD
 
 ```
 speak-mango-en/
+├── .agent/              # Agent workflows & configuration
 ├── app/                 # Next.js App Router Pages
 │   ├── page.tsx         # 메인 페이지 (표현 리스트)
 │   ├── layout.tsx       # 레이아웃
@@ -62,12 +63,12 @@ speak-mango-en/
 │   ├── feature_ideas.md     # 추가 기능 아이디어 및 브레인스토밍
 │   ├── features_list.md     # 구현 완료된 기능 목록 정리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
-    ├── database_schema.md   # DB 스키마 정의
-    ├── monetization_brainstorming.md # 수익화 브레인스토밍 및 Q&A (원본)
-    ├── monetization_ideas.md # 수익화 및 성장 전략 아이디어 요약
-    ├── monetization_strategy.md # 수익화 및 성장 전략 구현 로드맵
-    ├── n8n_optimization_steps.md # AI 기반 생성 가이드
-    ├── n8n_workflow_guide.md # n8n 자동화 설정 가이드
+│   ├── database_schema.md   # DB 스키마 정의
+│   ├── monetization_brainstorming.md # 수익화 브레인스토밍 및 Q&A (원본)
+│   ├── monetization_ideas.md # 수익화 및 성장 전략 아이디어 요약
+│   ├── monetization_strategy.md # 수익화 및 성장 전략 구현 로드맵
+│   ├── n8n_optimization_steps.md # AI 기반 생성 가이드
+│   ├── n8n_workflow_guide.md # n8n 자동화 설정 가이드
 │   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
 │   ├── supabase_strategy.md # Supabase 다중 프로젝트 관리 전략
 │   ├── git_convention.md    # 커밋 메시지 작성 규칙
@@ -133,7 +134,7 @@ speak-mango-en/
     - DB 스키마 변경 시 `docs/database_schema.md`를 반드시 최신화합니다.
     - Supabase 운영 방식은 `docs/supabase_strategy.md`를 따릅니다.
 6.  **에이전트 활용**:
-    - `.agent/workflows/` 내의 워크플로우(`@restore_context` 등)를 적극 활용하여 작업 효율성을 높입니다 (`docs/agent_workflows.md` 참조).
+    - `.agent/workflows/` 내의 워크플로우(`@restore_context`, `@generate_commit`, `@update_docs`)를 적극 활용하여 작업 효율성을 높입니다 (`docs/agent_workflows.md` 참조).
 
 ## 7. 주요 제약 사항 & 이슈
 
