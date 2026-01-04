@@ -2,6 +2,25 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-04: n8n 퀴즈 생성 로직 고도화 및 데이터 무결성 확보
+
+### ✅ 진행 사항
+
+- **Quiz Logic 재정립**: `docs/n8n_optimization_steps.md`의 Gemini 프롬프트를 전면 개편.
+  - 기존의 모호하거나 잘못된 패턴(Target Language -> Target Language)을 제거하고, 3가지 명확한 패턴(Situation->EN, Expression->Situation, Negative Logic)으로 정립.
+  - 모든 언어(KO, JA, ES)에 대해 3지 선다(A/B/C)와 정답 포맷(단일 알파벳)을 강제하는 **Strict Formatting Rules** 추가.
+- **데이터 보정**: 기존 DB에 쌓인 잘못된 형식의 퀴즈 데이터(`How's it going?`, `down in the dumps` 등)와 논리적으로 부적절한 데이터(`Is there a fitting room?` 등)를 올바른 패턴으로 수정하는 SQL 스크립트 작성 (`database/009_fix_invalid_quizzes.sql`).
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 기존 퀴즈 패턴(Pattern 3)을 삭제했나?**
+
+- **A.** 기존 Pattern 3은 "한국어 상황"을 주고 "한국어 대사"를 고르는 방식이었는데, 이는 영어 학습 목적에 부합하지 않음. 대신 '부적절한 상황 고르기(Negative Logic)'를 Pattern 3으로 새로 정의하여 학습 효과를 높임.
+
+**Q. SQL에서 Dollar Quoting(`$$`)을 사용한 이유는?**
+
+- **A.** JSONB 데이터 내부에 싱글 쿼테이션(`'`)이 포함된 텍스트(예: `How's it going?`)를 업데이트할 때, 일반적인 이스케이핑 방식으로는 구문 오류가 발생하기 쉬움. `$$`를 사용하여 쿼리의 가독성을 높이고 이스케이프 문제를 원천 차단함.
+
 ## 2026-01-03: n8n 프롬프트 최적화 및 문서 워크플로우 개선
 
 ### ✅ 진행 사항

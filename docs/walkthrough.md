@@ -2,6 +2,20 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.7.4: 퀴즈 로직 고도화 및 데이터 정합성 확보 (2026-01-04)
+
+### 1. n8n Quiz Logic Optimization
+
+- **Pattern Refinement**: 퀴즈 생성 패턴을 3가지로 명확히 재정의하여 학습 효과 극대화.
+  - **Pattern 1 (Situation -> EN)**: 상황에 맞는 영어 표현 고르기.
+  - **Pattern 2 (Expression -> Situation)**: 영어 표현에 맞는 상황 고르기.
+  - **Pattern 3 (Negative Logic)**: 영어 표현에 적절하지 _않은_ 상황 고르기.
+- **Strict Formatting**: 모든 언어(KO, JA, ES)에 대해 3지 선다(A/B/C)와 정답 포맷(단일 알파벳)을 강제하는 규칙 적용.
+
+### 2. Data Integrity
+
+- **Corrective SQL**: 기존 데이터 중 논리적 오류(한국어 대사 고르기)나 포맷 오류(선택지 누락)가 있는 항목을 올바른 패턴으로 일괄 수정하는 SQL 스크립트(`database/009_fix_invalid_quizzes.sql`) 작성 및 적용.
+
 ## v0.7.3: n8n 프롬프트 최적화 (2026-01-03)
 
 ### 1. n8n Prompt Engineering
