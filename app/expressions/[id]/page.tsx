@@ -158,7 +158,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             <h2 className="mb-4 flex items-center gap-2 text-[11px] sm:text-sm font-bold uppercase tracking-wide text-zinc-400">
               {dict.detail.missionTitle}
             </h2>
-            <p className="text-xl sm:text-2xl font-bold mb-6">
+            <p className="text-xl sm:text-2xl font-bold mb-6 whitespace-pre-wrap">
               {content?.quiz.question}
             </p>
             <details className="group cursor-pointer">

@@ -2,6 +2,18 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.7.5: 사용자 가이드 및 퀴즈 UI 가독성 개선 (2026-01-04)
+
+### 1. New Documentation: User Guide
+
+- **`docs/n8n_user_guide.md`**: 서비스의 핵심 기능 소개부터 n8n 워크플로우 운영 가이드까지 포함한 종합 사용자 가이드 작성.
+- **Operator focus**: n8n을 통한 자동화 프로세스(프롬프트 설정, Credentials 연결, 트러블슈팅)를 상세히 설명하여 운영 효율성 제고.
+
+### 2. UI Polish (Quiz)
+
+- **Line Break Support**: 상세 페이지 퀴즈 질문 섹션에 `whitespace-pre-wrap`을 적용하여 n8n에서 생성된 다중 개행(`\n`)이 의도한 대로 렌더링되도록 수정.
+- **Enhanced Readability**: 질문과 선택지가 뭉쳐 보이던 문제를 해결하여 모바일 환경에서의 가독성을 대폭 향상.
+
 ## v0.7.4: 퀴즈 로직 고도화 및 데이터 정합성 확보 (2026-01-04)
 
 ### 1. n8n Quiz Logic Optimization

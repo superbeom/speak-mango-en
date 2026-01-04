@@ -36,7 +36,9 @@
 - [x] **UI/UX**: 관련 표현 추천 (Related Expressions) 구현
 - [x] **UI/UX**: Sticky Header 및 FilterBar 고도화
 - [x] **UI/UX**: UI 스타일 중앙 관리 및 모바일 최적화 (유틸리티 클래스 & useIsMobile)
+- [x] **UI/UX**: 퀴즈 개행 문자(`\n`) 지원 및 가독성 개선
 - [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 최적화
+- [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n_user_guide.md`) 작성
 - [ ] **UI/UX**: 리스트 탐색 경험 개선 ('더 보기' 버튼)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)

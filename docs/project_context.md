@@ -72,6 +72,7 @@ speak-mango-en/
 │   ├── monetization_strategy.md # 수익화 및 성장 전략 구현 로드맵
 │   ├── n8n_optimization_steps.md # AI 기반 생성 가이드
 │   ├── n8n_workflow_guide.md # n8n 자동화 설정 가이드
+│   ├── n8n_user_guide.md    # 서비스 및 n8n 워크플로우 운영자 가이드
 │   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
 │   ├── supabase_strategy.md # Supabase 다중 프로젝트 관리 전략
 │   ├── git_convention.md    # 커밋 메시지 작성 규칙
