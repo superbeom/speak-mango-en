@@ -17,12 +17,12 @@ interface ExpressionCardProps {
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, scale: 0.96 },
   visible: {
     opacity: 1,
-    y: 0,
+    scale: 1,
     transition: {
-      duration: 0.5,
+      duration: 0.4,
       ease: [0.21, 0.47, 0.32, 0.98] as const,
     },
   },

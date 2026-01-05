@@ -36,6 +36,20 @@ Framer Motion 애니메이션이나 복잡한 상태 변경이 필요한 경우 
 // components/ExpressionCard.tsx
 const enableHover = useEnableHover(); // !isMobile || isMobile === undefined
 
+// 카드 진입(Entrance) 애니메이션
+const itemVariants = {
+  hidden: { opacity: 0, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: [0.21, 0.47, 0.32, 0.98],
+    },
+  },
+};
+
+// 인터랙션 애니메이션
 <motion.div
   whileHover={enableHover ? { y: -5 } : undefined}
   whileTap={enableHover ? { scale: 0.98 } : undefined}
