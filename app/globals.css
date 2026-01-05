@@ -89,3 +89,11 @@ body {
 @utility fade-mask-base {
   @apply from-zinc-50 to-transparent dark:from-black z-10 pointer-events-none transition-opacity duration-300;
 }
+
+@utility fade-mask-visible {
+  @apply opacity-100 pointer-events-auto;
+}
+
+@utility fade-mask-hidden {
+  @apply opacity-0 pointer-events-none;
+}

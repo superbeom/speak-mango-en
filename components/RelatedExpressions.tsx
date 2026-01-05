@@ -44,6 +44,9 @@ export default function RelatedExpressions({
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [hoverDirection, setHoverDirection] = useState<"left" | "right" | null>(
+    null
+  );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
 
@@ -70,35 +73,40 @@ export default function RelatedExpressions({
     if (!el) return;
 
     // 현재 스크롤 위치를 기준으로 정밀 누적값 초기화
-    // 브라우저가 scrollLeft를 정수로 관리할 경우, 0.3 같은 작은 값을 더하면
-    // 버림 처리되어 스크롤이 움직이지 않는 현상을 방지하기 위해 변수로 관리함.
     let accumulatedScroll = el.scrollLeft;
 
     const autoScroll = () => {
-      // 스크롤 속도 조절 (0.3: 매우 느림, 0.5: 느림, 1.0: 보통)
-      const speed = 0.3;
+      // 기본 속도 0.3, 페이드 호버 시 속도 4.0 (약 13배 가속)
+      let speed = 0.3;
+      if (hoverDirection === "left") speed = -4.0;
+      else if (hoverDirection === "right") speed = 4.0;
+
       accumulatedScroll += speed;
       el.scrollLeft = accumulatedScroll;
 
-      // 절반 지점(원본의 끝)에 도달하면 처음으로 순간 이동 (무한 루프 트릭)
-      // scrollWidth의 절반은 원본 아이템들의 총 너비입니다.
-      if (accumulatedScroll >= el.scrollWidth / 2) {
-        accumulatedScroll = 0;
-        el.scrollLeft = 0;
+      // 무한 루프 트릭 (양방향 대응)
+      const halfWidth = el.scrollWidth / 2;
+      if (accumulatedScroll >= halfWidth) {
+        accumulatedScroll -= halfWidth;
+        el.scrollLeft = accumulatedScroll;
+      } else if (accumulatedScroll < 0) {
+        accumulatedScroll += halfWidth;
+        el.scrollLeft = accumulatedScroll;
       }
 
       checkScroll();
       animationRef.current = requestAnimationFrame(autoScroll);
     };
 
-    if (!isHovered && expressions.length > 0) {
+    // 호버 중이 아니거나, 특정 방향(페이드)으로 호버 중일 때 애니메이션 실행
+    if ((!isHovered || hoverDirection) && expressions.length > 0) {
       animationRef.current = requestAnimationFrame(autoScroll);
     } else {
       cancelAnimationFrame(animationRef.current);
     }
 
     return () => cancelAnimationFrame(animationRef.current);
-  }, [isHovered, expressions, checkScroll, isMobile]);
+  }, [isHovered, hoverDirection, expressions, checkScroll, isMobile]);
 
   useEffect(() => {
     if (isMobile === undefined || isMobile) return;
@@ -133,21 +141,11 @@ export default function RelatedExpressions({
       <div
         className="relative group/scroll"
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setHoverDirection(null);
+        }}
       >
-        {/* Left Fade */}
-        <div
-          className={`absolute left-0 top-0 bottom-0 w-16 bg-linear-to-r fade-mask-base ${
-            showLeftFade ? "opacity-100" : "opacity-0"
-          }`}
-        />
-        {/* Right Fade */}
-        <div
-          className={`absolute right-0 top-0 bottom-0 w-16 bg-linear-to-l fade-mask-base ${
-            showRightFade ? "opacity-100" : "opacity-0"
-          }`}
-        />
-
         <motion.div
           ref={scrollContainerRef}
           onScroll={checkScroll}
@@ -168,6 +166,26 @@ export default function RelatedExpressions({
             ))}
           </AnimatePresence>
         </motion.div>
+
+        {/* Left Fade */}
+
+        <div
+          onMouseEnter={() => setHoverDirection("left")}
+          onMouseLeave={() => setHoverDirection(null)}
+          className={`absolute left-0 top-0 bottom-0 w-24 z-20 bg-linear-to-r fade-mask-base cursor-w-resize ${
+            showLeftFade ? "fade-mask-visible" : "fade-mask-hidden"
+          }`}
+        />
+
+        {/* Right Fade */}
+
+        <div
+          onMouseEnter={() => setHoverDirection("right")}
+          onMouseLeave={() => setHoverDirection(null)}
+          className={`absolute right-0 top-0 bottom-0 w-24 z-20 bg-linear-to-l fade-mask-base cursor-e-resize ${
+            showRightFade ? "fade-mask-visible" : "fade-mask-hidden"
+          }`}
+        />
       </div>
     </section>
   );
