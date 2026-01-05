@@ -97,3 +97,9 @@ body {
 @utility fade-mask-hidden {
   @apply opacity-0 pointer-events-none;
 }
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .safe-hover-rotate-12 {
+    transform: rotate(12deg);
+  }
+}

@@ -18,6 +18,7 @@
   - **카테고리 필터**: `Daily`, `Business`, `Travel` 등 주제별 필터링.
   - **검색**: 표현(Expression) 텍스트 검색 및 `#태그` 검색 지원.
   - **URL 동기화**: 검색어와 필터 상태가 URL 쿼리 파라미터(`?category=...&search=...`)와 연동되어 공유 가능.
+  - **Auto Scroll**: 필터 선택 시 해당 카테고리 칩이 화면 중앙에 오도록 자동으로 스크롤되어 선택 상태를 명확히 인지시킴.
 
 ### 표현 상세 (Detail Page)
 
@@ -40,6 +41,7 @@
 ### 프론트엔드 (Next.js & UI)
 
 - **모바일 최적화 (Mobile First)**: `useIsMobile` 훅을 통한 기기별 맞춤형 레이아웃 및 인터랙션 제공.
+  - **Touch Optimization**: 터치 디바이스에서는 카드의 호버 효과(크기 변경, 테두리 색상)를 비활성화하여 깔끔한 스크롤 경험 제공.
 - **시맨틱 스타일 관리**: `bg-surface`, `text-body` 등 의미 기반의 유틸리티 클래스를 통한 전역 테마 관리.
 - **ISR (Incremental Static Regeneration)**: 1시간마다 정적 페이지를 갱신하여 최신 데이터와 빠른 속도 동시 제공.
 - **Framer Motion**: 리스트 정렬, 카드 등장, 호버 효과 등 부드러운 인터랙션 구현.

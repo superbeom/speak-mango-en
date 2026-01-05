@@ -43,6 +43,28 @@ export default function FilterBar({ locale }: FilterBarProps) {
     return () => window.removeEventListener("resize", checkScroll);
   }, []);
 
+  // 선택된 카테고리가 변경될 때 자동으로 스크롤하여 화면 중앙에 위치시킴
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+
+    const activeBtn = scrollContainerRef.current.querySelector(
+      `button[data-category="${currentCategory}"]`
+    ) as HTMLElement;
+
+    if (activeBtn) {
+      const container = scrollContainerRef.current;
+      const { offsetLeft, offsetWidth } = activeBtn;
+      const { clientWidth } = container;
+
+      const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
+
+      container.scrollTo({
+        left: scrollLeft,
+        behavior: "smooth",
+      });
+    }
+  }, [currentCategory]);
+
   const updateFilters = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -143,6 +165,7 @@ export default function FilterBar({ locale }: FilterBarProps) {
                 return (
                   <button
                     key={cat}
+                    data-category={cat}
                     onClick={() => updateFilters({ category: cat })}
                     className={`
                       flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer
