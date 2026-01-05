@@ -2,6 +2,7 @@ export const en = {
   common: {
     back: "Back",
     loading: "Loading...",
+    loadMore: "Load More",
     notFound: "Data not found.",
   },
   home: {
@@ -9,6 +10,7 @@ export const en = {
     description: "Learn useful English expressions easily and fun.",
     subHeader: "Every day, one new expression.",
     emptyState: "No expressions found. Come back later!",
+    emptyStateSub: "Try adjusting your filters or search query.",
   },
   filter: {
     searchPlaceholder: "Search expressions...",

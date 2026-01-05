@@ -6,6 +6,8 @@ export interface ExpressionFilters {
   category?: string;
   search?: string;
   tag?: string;
+  page?: number;
+  limit?: number;
 }
 
 export async function getExpressions(
@@ -30,9 +32,15 @@ export async function getExpressions(
       query = query.ilike("expression", `%${filters.search}%`);
     }
 
-    const { data, error } = await query.order("published_at", {
-      ascending: false,
-    });
+    // 페이지네이션 처리
+    const limit = filters?.limit || 12;
+    const page = filters?.page || 1;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error } = await query
+      .order("published_at", { ascending: false })
+      .range(from, to);
 
     if (error) {
       console.warn("Supabase fetch error:", error.message);
