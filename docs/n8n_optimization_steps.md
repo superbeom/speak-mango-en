@@ -245,6 +245,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
         2. You **MUST** provide 3 distinct options labeled A, B, and C.
         3. You **MUST** use `\n` (newline) to separate the question and each option.
         4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
+  11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
 
   Example Output (Reference this style for ALL languages):
   {

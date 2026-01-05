@@ -2,6 +2,13 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.7.8: n8n 생성 로직 고도화 - 태그 생성 의무화 (2026-01-05)
+
+### 1. n8n Prompt Optimization (Tags)
+
+- **Mandatory Tags**: `docs/n8n_optimization_steps.md` 및 `docs/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
+- **Strict Formatting**: 3~5개의 소문자 문자열 배열 형식을 강제하고, '#' 기호 사용을 금지하여 DB 저장 및 필터링 시의 데이터 정합성을 확보함.
+
 ## v0.7.7: 모바일 호버 효과 제거 및 관련 표현 추천 개선 (2026-01-05)
 
 ### 1. Mobile Hover UX Fix
