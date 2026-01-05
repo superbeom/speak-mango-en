@@ -15,7 +15,7 @@ export default function Tag({
   className = "",
 }: TagProps) {
   const baseStyles =
-    "inline-flex items-center rounded-lg bg-zinc-50 px-2.5 py-1 text-xs font-semibold text-zinc-500 border border-zinc-100 transition-all hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:bg-zinc-800/50 dark:text-zinc-400 dark:border-zinc-800 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 dark:hover:border-blue-800 cursor-pointer";
+    "inline-flex items-center rounded-lg bg-subtle px-2.5 py-1 text-xs font-semibold text-zinc-500 border border-subtle transition-all hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:text-zinc-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 dark:hover:border-blue-800 cursor-pointer";
 
   if (href) {
     return (

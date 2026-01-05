@@ -4,9 +4,8 @@
 
 ## Improvements
 
-- [ ] **Mobile Optimization**: 모바일 환경에서의 카드 리스트 뷰 최적화 (스와이프 제스처 등).
-- [ ] **Search**: 표현 검색 기능 추가.
-- [ ] **Category Filter**: 대분류(`domain`) 및 소분류(`category`)별 필터링 기능 구현.
+- [ ] **Mobile Interaction**: 모바일 환경에서의 카드 리스트 뷰 최적화 (스와이프 제스처, 긴 탭 인터랙션 등).
+- [ ] **Category Expansion**: 현재 비활성화된 대분류(`domain`) 필터 활성화 및 데이터 연동.
   - [ ] **Domain Filter Restoration**: 현재는 `conversation` 도메인만 존재하므로 UI에서 비활성화함. 추후 `test`, `vocabulary` 데이터가 쌓이면 다시 활성화 필요.
 - [ ] **Content Expansion**:
   - `domain`: `test`(TOEIC, TOEFL), `vocabulary`(주제별 단어장) 등 추가.

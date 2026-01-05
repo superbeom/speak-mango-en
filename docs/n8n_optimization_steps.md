@@ -216,14 +216,14 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   Requirements:
   1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language (존댓말/Desu-Masu form) consistently** for explanations.
   2. For the 'meaning' field in ALL languages:
-     - Provide concise definitions in a casual tone (e.g., Korean: 반말).
+     - **Tone**: Use a casual tone (e.g., Korean: 반말) by default. **HOWEVER, if the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a polite tone (존댓말/Desu-Masu).**
+     - **Punctuation**: If the English expression is a question (?), the meaning MUST also end with a question mark (?) or be phrased as a question. Do NOT use trailing periods (.) for statements.
      - If there are multiple meanings, separate them with ' · ' (middle dot).
-     - Do NOT end with a period (.).
   3. Formatting for 'expression':
-     - Capitalization: Start with an UPPERCASE letter for standalone sentences (e.g., "Don't take it personally", "No cap"). Start with a lowercase letter for general phrases or idioms (e.g., "spill the tea", "hit the road").
+     - **Capitalization**: **Start with an UPPERCASE letter** if the expression is a standalone sentence or interjection (e.g., "No worries", "Never mind", "Don't take it personally"). **Start with a lowercase letter** ONLY if it is a phrase or idiom used within a sentence (e.g., "spill the tea", "hit the road").
      - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
   4. Constraint for content:
-     - **NEVER use casual speech (반말)** in the explanation, tips, or situation description (except for the 'meaning' field and dialogue).
+     - **NEVER use casual speech (반말)** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
      - Do NOT mix polite and casual styles. Keep the tone consistent throughout.
      - Do NOT address the reader as specific groups like "Kids" or "Students". Use a general, relatable tone suitable for young adults.
   5. Output MUST be a valid JSON object matching the schema below.
@@ -231,6 +231,21 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   7. In the dialogue section, use the key 'translation' for the translated sentence.
   8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to Japanese and Spanish.
   9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
+  10. **Quiz Logic (CRITICAL)**:
+      - The quiz must test the understanding of the English expression.
+      - **Randomly select one of the following patterns**:
+        - **Pattern 1 (Situation -> English)**: Describe a situation in [Target Language] and ask "Which English expression fits this situation?". -> The options (A, B, C) MUST be **English expressions**.
+          *   *Example (Target Language: ko)*: Q: "친구가 \"이번 주말에 영화 볼까요?\"라고 제안했을 때, 긍정적으로 동의하는 가장 자연스러운 영어 표현은?\n\nA. Sounds bad\nB. Sounds good\nC. Sounds angry"
+        - **Pattern 2 (Expression -> Situation)**: Show the expression and ask "When would you use this?" in [Target Language]. -> The options (A, B, C) MUST be **situations described in [Target Language]**.
+          *   *Example (Target Language: ko)*: Q: "다음 중 'What's up?'을 가장 자연스럽게 사용할 수 있는 상황은?\n\nA. 💰 은행에서 대출 상담을 받고 있다.\nB. 🚀 회사 중역 회의에서 발표를 시작한다.\nC. 🚶‍♀️ 길을 걷다가 친구와 눈이 마주쳤다."
+        - **Pattern 3 (Negative Logic)**: Ask "Which situation is **NOT** appropriate for this expression?" in [Target Language]. -> The options (A, B, C) MUST be **situations described in [Target Language]**.
+          *   *Example (Target Language: ko)*: Q: "다음 중 'Let's touch base.'의 사용이 적절하지 않은 상황은?\n\nA. 🙋‍♀️ 팀원과 주간 보고서에 대해 짧게 이야기할 때.\nB. 🥳 친구들과 주말에 놀러 갈 계획을 세울 때.\nC. 🧑‍💻 고객과 다음 단계 논의를 위해 연락할 때."
+      - **Strict Formatting & Validation Rules**:
+        1. **These rules apply to ALL languages (ko, ja, es).**
+        2. You **MUST** provide 3 distinct options labeled A, B, and C.
+        3. You **MUST** use `\n` (newline) to separate the question and each option.
+        4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
+  11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
 
   Example Output (Reference this style for ALL languages):
   {
@@ -251,7 +266,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
         ],
         "tip": "🚨 **꿀팁 방출!** 'under the weather'는 진짜 심각하게 아플 때보다는 가볍게 '컨디션이 안 좋다', '감기 기운이 있다' 정도의 느낌이에요. 😷 만약 진짜 심하게 아프다면 'I'm sick' 또는 'I have a fever'처럼 구체적으로 말하는 게 좋아요. 😉 그리고 이 표현은 뱃사람들이 배에서 날씨가 안 좋을 때 아픈 사람을 갑판 아래로 보내 '날씨 아래'에 있게 했다는 유래가 있대요! 완전 신기하죠? ⚓️🌊",
         "quiz": {
-          "question": "다음 중 'I'm feeling a bit under the weather.'와 가장 비슷한 상황은?\n\nA. 🥳 파티에서 신나게 춤추고 있다.\nB. 😴 침대에서 밍기적거리며 몸이 좀 으슬으슬하다.\nC. 🏋️‍♀️ 헬스장에서 역기를 들고 운동하고 있다.",
+          "question": "다음 중 'under the weather'를 사용하기 가장 적절한 상황은?\n\nA. 🥳 파티에서 신나게 춤추고 있다.\nB. 😴 침대에서 밍기적거리며 몸이 좀 으슬으슬하다.\nC. 🏋️‍♀️ 헬스장에서 역기를 들고 운동하고 있다.",
           "answer": "B"
         }
       },
@@ -262,7 +277,10 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
           { "en": "I'm feeling a bit under the weather today.", "translation": "今日はちょっと体調が悪くて。" }
         ],
         "tip": "💡 **豆知識!** この表現は、昔の船乗りが天候が悪くて体調を崩した時に、甲板の下（Under the deck）に避難したことから「Under the weather」になったという説があります。⚓️ 本当に体調が悪い時は「I'm sick」を使いましょう！",
-        "quiz": { "question": "体調が少し悪い時に使う表現は？", "answer": "under the weather" }
+        "quiz": {
+          "question": "「under the weather」を使うのに最も適した状況は？\n\nA. 🥳 パーティーで楽しく踊っている。\nB. 😴 風邪気味で、ベッドで休んでいる。\nC. 🏋️‍♀️ ジムで元気にトレーニングしている。",
+          "answer": "B"
+        }
       },
       "es": {
         "situation": "¡Cuando te despiertas y te sientes un poco cansado o sin energía! 😱 Es una expresión muy común para decir que no te sientes al 100%, pero tampoco estás gravemente enfermo. 🤒✨",
@@ -271,7 +289,10 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
           { "en": "I'm feeling a bit under the weather today.", "translation": "Hoy me siento un poco mal." }
         ],
         "tip": "🚨 **¡Dato curioso!** El origen viene de los marineros. Cuando el clima era malo y se sentían mal, bajaban debajo de la cubierta para estar 'bajo el clima'. 🌊⚓️ Si estás realmente enfermo, es mejor usar 'I'm sick'.",
-        "quiz": { "question": "¿Qué dices cuando no te sientes bien pero no es grave?", "answer": "under the weather" }
+        "quiz": {
+          "question": "¿En qué situación usarías \"under the weather\"?\n\nA. 🥳 En una fiesta bailando alegremente.\nB. 😴 Descansando en la cama porque te sientes un poco mal.\nC. 🏋️‍♀️ Entrenando con mucha energía en el gimnasio.",
+          "answer": "B"
+        }
       }
     },
     "tags": ["daily", "health", "lifestyle"]

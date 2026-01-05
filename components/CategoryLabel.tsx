@@ -27,7 +27,7 @@ export default function CategoryLabel({
 
   const content = (
     <>
-      <Icon className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-12" />
+      <Icon className="w-3.5 h-3.5 transition-transform duration-300 safe-hover-rotate-12" />
       {label}
     </>
   );

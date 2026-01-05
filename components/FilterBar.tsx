@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter } from "lucide-react";
+import { getDictionary } from "@/i18n";
+import { useScroll } from "@/hooks/useScroll";
 import { getCategoryConfig } from "@/lib/ui-config";
 import { CATEGORIES } from "@/lib/constants";
-import { getDictionary } from "@/lib/i18n";
-import { formatMessage } from "@/lib/utils";
+import { cn, formatMessage } from "@/lib/utils";
 import SearchBar from "@/components/SearchBar";
 
 interface FilterBarProps {
@@ -24,6 +25,7 @@ export default function FilterBar({ locale }: FilterBarProps) {
 
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
+  const isStuck = useScroll(80);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const checkScroll = () => {
@@ -40,6 +42,28 @@ export default function FilterBar({ locale }: FilterBarProps) {
     window.addEventListener("resize", checkScroll);
     return () => window.removeEventListener("resize", checkScroll);
   }, []);
+
+  // 선택된 카테고리가 변경될 때 자동으로 스크롤하여 화면 중앙에 위치시킴
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+
+    const activeBtn = scrollContainerRef.current.querySelector(
+      `button[data-category="${currentCategory}"]`
+    ) as HTMLElement;
+
+    if (activeBtn) {
+      const container = scrollContainerRef.current;
+      const { offsetLeft, offsetWidth } = activeBtn;
+      const { clientWidth } = container;
+
+      const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
+
+      container.scrollTo({
+        left: scrollLeft,
+        behavior: "smooth",
+      });
+    }
+  }, [currentCategory]);
 
   const updateFilters = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -80,9 +104,15 @@ export default function FilterBar({ locale }: FilterBarProps) {
   };
 
   return (
-    <div className="space-y-6 mb-10">
+    <div
+      className={cn(
+        "sticky top-(--header-height) z-40 space-y-4 pt-2 pb-4 mb-8 bg-layout-transparent backdrop-blur-xl -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 transition-all duration-200",
+        isStuck ? "border-layout" : "border-none-layout"
+      )}
+    >
       {/* Search Bar */}
       <SearchBar
+        key={`${currentSearch}-${currentTag}`}
         initialValue={currentSearch}
         hasActiveFilter={!!currentTag}
         placeholder={
@@ -99,13 +129,13 @@ export default function FilterBar({ locale }: FilterBarProps) {
         <div className="relative">
           {/* Left Fade */}
           <div
-            className={`absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-zinc-50 to-transparent dark:from-black z-10 pointer-events-none transition-opacity duration-300 ${
+            className={`absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r fade-mask-base ${
               showLeftFade ? "opacity-100" : "opacity-0"
             }`}
           />
           {/* Right Fade */}
           <div
-            className={`absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-zinc-50 to-transparent dark:from-black z-10 pointer-events-none transition-opacity duration-300 ${
+            className={`absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l fade-mask-base ${
               showRightFade ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -135,13 +165,14 @@ export default function FilterBar({ locale }: FilterBarProps) {
                 return (
                   <button
                     key={cat}
+                    data-category={cat}
                     onClick={() => updateFilters({ category: cat })}
                     className={`
                       flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer
                       ${
                         isActive
                           ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black border-zinc-900 dark:border-zinc-100 shadow-sm"
-                          : "bg-white dark:bg-zinc-900 text-zinc-500 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                          : "bg-surface text-zinc-500 border border-main hover:border-zinc-300 dark:hover:border-zinc-700"
                       }
                     `}
                   >

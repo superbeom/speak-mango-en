@@ -60,6 +60,33 @@
 
 ---
 
+## 3. 문서 현행화 (`@update_docs`)
+
+**파일 경로**: `.agent/workflows/update_docs.md`
+
+### 💡 목적
+
+- 코드 변경 사항 발생 시, 관련된 프로젝트 문서(`project_history.md`, `task.md` 등)가 함께 업데이트되었는지 점검하고 누락된 내용을 채워 넣습니다.
+- 문서와 코드의 싱크가 맞지 않는 상황(Documentation Drift)을 방지합니다.
+
+### 🚀 사용법
+
+단독으로 실행하거나, 커밋 전 점검 용도로 사용합니다.
+
+```bash
+@.agent/workflows/update_docs.md
+```
+
+> **참고**: `@generate_commit` 워크플로우 실행 시, 이 워크플로우가 **자동으로 먼저 실행**되어 문서를 최신화합니다.
+
+### 📋 실행되는 작업
+
+1. `git status`로 변경된 파일 목록을 확인합니다.
+2. `project_history.md`, `task.md`, `walkthrough.md`, `features_list.md` 등 핵심 문서를 순회하며 업데이트가 필요한지 검토합니다.
+3. 업데이트가 필요한 경우 문서 내용을 수정하고 `git add` 하여 변경 사항을 반영합니다.
+
+---
+
 ## 💡 팁 (Tips)
 
 - 워크플로우 파일은 단순한 마크다운 문서이므로, 프로젝트 규칙이 바뀌면 내용을 직접 수정하여 AI의 행동을 교정할 수 있습니다.

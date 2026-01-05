@@ -41,7 +41,7 @@ export const getDomainConfig = (domain: string) => {
       return {
         icon: Tag,
         label: domain,
-        styles: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400",
+        styles: "bg-muted text-zinc-800 dark:text-zinc-400",
       };
   }
 };

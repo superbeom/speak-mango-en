@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-02
+**최종 수정일**: 2026-01-05
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -43,12 +43,16 @@ graph TD
 
 ```
 speak-mango-en/
+├── .agent/              # 에이전트 워크플로우 및 설정
 ├── app/                 # Next.js App Router Pages
 │   ├── page.tsx         # 메인 페이지 (표현 리스트)
 │   ├── layout.tsx       # 레이아웃
 │   └── globals.css      # 전역 스타일
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
+├── database/            # 데이터베이스 마이그레이션 스크립트 (SQL)
+├── hooks/               # 커스텀 React 훅
+├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
 │   ├── supabase/        # Supabase 클라이언트 설정 (server/client)
 │   └── utils.ts         # 공통 유틸리티 함수
@@ -57,16 +61,19 @@ speak-mango-en/
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
+│   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── future_todos.md      # 기술 부채, 아이디어, 개선 사항 백로그
 │   ├── feature_ideas.md     # 추가 기능 아이디어 및 브레인스토밍
+│   ├── features_list.md     # 구현 완료된 기능 목록 정리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
-    ├── database_schema.md   # DB 스키마 정의
-    ├── monetization_brainstorming.md # 수익화 브레인스토밍 및 Q&A (원본)
-    ├── monetization_ideas.md # 수익화 및 성장 전략 아이디어 요약
-    ├── monetization_strategy.md # 수익화 및 성장 전략 구현 로드맵
-    ├── n8n_optimization_steps.md # AI 기반 생성 가이드
-    ├── n8n_workflow_guide.md # n8n 자동화 설정 가이드
+│   ├── database_schema.md   # DB 스키마 정의
+│   ├── monetization_brainstorming.md # 수익화 브레인스토밍 및 Q&A (원본)
+│   ├── monetization_ideas.md # 수익화 및 성장 전략 아이디어 요약
+│   ├── monetization_strategy.md # 수익화 및 성장 전략 구현 로드맵
+│   ├── n8n_optimization_steps.md # AI 기반 생성 가이드
+│   ├── n8n_workflow_guide.md # n8n 자동화 설정 가이드
+│   ├── n8n_user_guide.md    # 서비스 및 n8n 워크플로우 운영자 가이드
 │   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
 │   ├── supabase_strategy.md # Supabase 다중 프로젝트 관리 전략
 │   ├── git_convention.md    # 커밋 메시지 작성 규칙
@@ -102,6 +109,13 @@ speak-mango-en/
 ### Frontend
 
 - **스타일링**: Tailwind CSS 유틸리티 클래스 사용. 커스텀 CSS 지양.
+- **Global Variables & Utilities**:
+  - **Theme Variables (`@theme`)**: 여러 속성에서 재사용되는 디자인 토큰(예: `height`, `top`, `padding` 등에서 쓰이는 `--header-height`)은 `app/globals.css`의 `@theme` 블록에 CSS 변수로 정의하여 사용합니다.
+  - **Custom Utilities (`@utility`)**: 특정 속성 조합이 반복될 때(예: `max-width` 설정)는 `@utility` 블록에 커스텀 유틸리티 클래스(예: `max-w-layout`)를 정의하여 사용합니다.
+  - 하드코딩된 값 대신 위에서 정의한 변수와 유틸리티를 사용하여 레이아웃 일관성을 유지합니다.
+- **모바일 최적화 (Mobile Optimization)**: 새로운 페이지나 컴포넌트 추가 시 모바일 환경을 최우선으로 고려합니다. Tailwind의 반응형 유틸리티(`sm:`, `md:` 등)를 활용하여 작은 화면에서도 가독성과 사용성이 확보되도록 패딩, 텍스트 크기, 레이아웃을 최적화합니다.
+  - **Hover Effects**: 모바일(터치 디바이스)에서는 호버 효과(`hover:` 클래스, `whileHover` 애니메이션 등)를 비활성화해야 합니다. 터치 스크롤 시 의도치 않은 시각적 피드백이나 애니메이션이 발생하는 것을 방지하기 위해 `useIsMobile` 훅을 사용하여 조건부로 적용합니다.
+- **Reusable UI Logic**: 스크롤 감지, 화면 크기 확인 등 반복되는 UI 동작 로직은 커스텀 훅(예: `useScroll`, `useIsMobile`)으로 추출하여 `hooks/` 디렉토리에서 관리합니다. 이를 통해 컴포넌트 코드를 간결하게 유지하고 로직 중복을 최소화합니다.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
 
@@ -131,7 +145,7 @@ speak-mango-en/
     - DB 스키마 변경 시 `docs/database_schema.md`를 반드시 최신화합니다.
     - Supabase 운영 방식은 `docs/supabase_strategy.md`를 따릅니다.
 6.  **에이전트 활용**:
-    - `.agent/workflows/` 내의 워크플로우(`@restore_context` 등)를 적극 활용하여 작업 효율성을 높입니다 (`docs/agent_workflows.md` 참조).
+    - `.agent/workflows/` 내의 워크플로우(`@restore_context`, `@generate_commit`, `@update_docs`)를 적극 활용하여 작업 효율성을 높입니다 (`docs/agent_workflows.md` 참조).
 
 ## 7. 주요 제약 사항 & 이슈
 

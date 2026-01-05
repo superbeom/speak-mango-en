@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --header-height: 61px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,5 +31,75 @@ body {
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@utility max-w-layout {
+  max-width: 64rem;
+}
+
+@utility bg-layout {
+  @apply bg-zinc-50 dark:bg-black;
+}
+
+@utility bg-layout-transparent {
+  @apply bg-zinc-50/80 dark:bg-black/80;
+}
+
+@utility bg-surface {
+  @apply bg-white dark:bg-zinc-900;
+}
+
+@utility bg-subtle {
+  @apply bg-zinc-50 dark:bg-zinc-800/50;
+}
+
+@utility bg-muted {
+  @apply bg-zinc-100 dark:bg-zinc-800;
+}
+
+@utility border-layout {
+  @apply border-b border-main;
+}
+
+@utility border-none-layout {
+  @apply border-b border-transparent;
+}
+
+@utility border-main {
+  @apply border-zinc-200 dark:border-zinc-800;
+}
+
+@utility border-subtle {
+  @apply border-zinc-100 dark:border-zinc-800;
+}
+
+@utility text-main {
+  @apply text-zinc-900 dark:text-zinc-50;
+}
+
+@utility text-body {
+  @apply text-zinc-800 dark:text-zinc-200;
+}
+
+@utility text-secondary {
+  @apply text-zinc-600 dark:text-zinc-400;
+}
+
+@utility fade-mask-base {
+  @apply from-zinc-50 to-transparent dark:from-black z-10 pointer-events-none transition-opacity duration-300;
+}
+
+@utility fade-mask-visible {
+  @apply opacity-100 pointer-events-auto;
+}
+
+@utility fade-mask-hidden {
+  @apply opacity-0 pointer-events-none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .safe-hover-rotate-12 {
+    transform: rotate(12deg);
   }
 }

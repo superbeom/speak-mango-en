@@ -1,8 +1,9 @@
 import { Suspense } from "react";
-import { getI18n } from "@/lib/i18n/server";
+import { getI18n } from "@/i18n/server";
 import { getExpressions } from "@/lib/expressions";
 import { SERVICE_NAME } from "@/lib/constants";
 import Header from "@/components/Header";
+import Logo from "@/components/Logo";
 import AnimatedList from "@/components/AnimatedList";
 import ExpressionCard from "@/components/ExpressionCard";
 import FilterBar from "@/components/FilterBar";
@@ -26,13 +27,11 @@ export default async function Home({ searchParams }: PageProps) {
   const { locale, dict } = await getI18n();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-layout">
       {/* Header */}
       <Header>
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {SERVICE_NAME}
-          </h1>
+          <Logo name={SERVICE_NAME} />
           <nav className="flex items-center gap-4">
             <span className="text-sm text-zinc-500">{dict.home.subHeader}</span>
           </nav>
@@ -40,14 +39,10 @@ export default async function Home({ searchParams }: PageProps) {
       </Header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-10">
-          <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-            {dict.home.title}
-          </h2>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            {dict.home.description}
-          </p>
+          <h2 className="text-3xl font-bold text-main">{dict.home.title}</h2>
+          <p className="mt-2 text-secondary">{dict.home.description}</p>
         </div>
 
         {/* Filter & Search Bar */}
@@ -60,7 +55,7 @@ export default async function Home({ searchParams }: PageProps) {
         </Suspense>
 
         {expressions.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+          <div className="flex h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-main">
             <p className="text-zinc-500 text-lg font-medium">
               {dict.home.emptyState}
             </p>
@@ -81,7 +76,7 @@ export default async function Home({ searchParams }: PageProps) {
 
       {/* Footer */}
       <footer className="mt-16 border-t border-zinc-200 py-12 dark:border-zinc-800">
-        <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-layout px-4 text-center sm:px-6 lg:px-8">
           <p className="text-sm text-zinc-500">
             &copy; {new Date().getFullYear()} {SERVICE_NAME}. All rights
             reserved.
