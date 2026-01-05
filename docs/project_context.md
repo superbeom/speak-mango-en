@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-03
+**최종 수정일**: 2026-01-05
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -61,6 +61,7 @@ speak-mango-en/
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
+│   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── future_todos.md      # 기술 부채, 아이디어, 개선 사항 백로그
 │   ├── feature_ideas.md     # 추가 기능 아이디어 및 브레인스토밍

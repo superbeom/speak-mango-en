@@ -1,0 +1,158 @@
+# Technical Implementation Details
+
+> 이 문서는 프로젝트의 주요 기능에 적용된 기술적인 구현 상세, 알고리즘, 트러블슈팅 내역을 다룹니다.
+
+## 1. Mobile Optimization & Interaction (모바일 최적화 및 인터랙션)
+
+모바일(터치) 환경과 데스크탑(마우스) 환경의 경험을 분리하여 최적화하기 위한 구현 전략입니다.
+
+### 1.1 Mobile Detection Strategy (모바일 감지)
+
+- **Hook**: `hooks/useMediaQuery.ts` -> `hooks/useIsMobile.ts`
+- **Logic**: `window.matchMedia`와 React 18의 `useSyncExternalStore`를 결합하여 구현했습니다.
+- **Hydration Safety**:
+  - 서버 사이드 렌더링(SSR) 시에는 화면 크기를 알 수 없으므로 초기값을 `undefined`로 반환합니다.
+  - 이를 통해 Server-Client 간 HTML 불일치(Hydration Mismatch) 오류를 방지합니다.
+  - 컴포넌트에서는 `isMobile === undefined`일 경우 데스크탑 뷰를 기본으로 렌더링하여 CLS(Layout Shift)를 최소화합니다.
+
+```typescript
+// hooks/useIsMobile.ts
+const MOBILE_BREAKPOINT = "(max-width: 639px)"; // Tailwind 'sm' 기준
+
+export function useIsMobile() {
+  return useMediaQuery(MOBILE_BREAKPOINT);
+}
+```
+
+### 1.2 Conditional Hover Effects (조건부 호버 효과)
+
+모바일 터치 시 `:hover` 상태가 유지되는 문제(Sticky Hover)를 해결하기 위한 두 가지 접근 방식을 사용합니다.
+
+#### A. JavaScript 제어 (Logic Intensive)
+
+Framer Motion 애니메이션이나 복잡한 상태 변경이 필요한 경우 `useEnableHover` 훅을 사용합니다.
+
+```typescript
+// components/ExpressionCard.tsx
+const enableHover = useEnableHover(); // !isMobile || isMobile === undefined
+
+<motion.div
+  whileHover={enableHover ? { y: -5 } : undefined}
+  whileTap={enableHover ? { scale: 0.98 } : undefined}
+/>;
+```
+
+#### B. CSS Media Query (Style Only)
+
+단순한 스타일 변경(회전, 색상 변경 등)은 CSS 미디어 쿼리를 사용하여 성능을 최적화합니다. `(pointer: fine)` 조건을 추가하여 마우스가 연결된 환경만 타겟팅합니다.
+
+```css
+/* app/globals.css */
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .safe-hover-rotate-12 {
+    transform: rotate(12deg);
+  }
+}
+```
+
+## 2. UI Automation Logic (UI 자동화)
+
+### 2.1 Auto-Scroll to Active Filter (필터 자동 스크롤)
+
+사용자가 필터(카테고리)를 선택했을 때, 해당 버튼이 화면 밖(오버플로우 영역)에 있더라도 자동으로 중앙으로 스크롤되는 로직입니다.
+
+- **File**: `components/FilterBar.tsx`
+- **Implementation**:
+  1.  각 카테고리 버튼에 `data-category={categoryName}` 속성을 부여합니다.
+  2.  `useEffect`에서 현재 선택된 카테고리(`currentCategory`)가 변경될 때마다 실행됩니다.
+  3.  `scrollContainerRef` 내부에서 해당 `data-category`를 가진 DOM 요소를 찾습니다(`querySelector`).
+  4.  요소의 위치(`offsetLeft`, `offsetWidth`)와 컨테이너의 크기(`clientWidth`)를 계산하여, 요소를 중앙에 위치시키기 위한 `scrollLeft` 값을 산출합니다.
+  5.  `scrollTo({ left: calculatedLeft, behavior: 'smooth' })`로 부드럽게 이동시킵니다.
+
+```typescript
+// Center Alignment Logic
+const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
+```
+
+## 3. Animation Logic (애니메이션 로직)
+
+### 3.1 Bidirectional Infinite Scroll (양방향 무한 스크롤)
+
+`RelatedExpressions` 컴포넌트의 Marquee 효과는 단순 CSS 애니메이션이 아닌, `requestAnimationFrame`을 사용한 JavaScript 기반 로직입니다.
+
+- **Data Cloning**: 데이터 배열을 2배로 복제(`[...data, ...data]`)하여 렌더링합니다.
+- **Loop Trick**:
+  - 스크롤이 컨텐츠 전체 길이의 절반(원본 데이터 길이)에 도달하면 `scrollLeft`를 0으로 초기화하여 처음으로 되돌립니다. (오른쪽 이동 시)
+  - 스크롤이 0보다 작아지면 절반 지점으로 이동시킵니다. (왼쪽 이동 시)
+  - 이 과정이 순식간에 일어나 사용자에게는 무한히 이어지는 것처럼 보입니다.
+
+### 3.2 Drag Acceleration (드래그 가속)
+
+- **Interaction**: 데스크탑에서 마우스를 좌/우 페이드 영역에 올리면 스크롤 속도가 가속됩니다.
+- **Implementation**:
+  - 평상시 속도: `0.3`
+  - 가속시 속도: `4.0` (방향에 따라 `+/-`)
+  - `hoverDirection` 상태를 통해 가속 여부와 방향을 결정하고, `requestAnimationFrame` 루프 내에서 `scrollLeft`에 더하는 값을 동적으로 변경합니다.
+
+## 4. Internationalization (i18n) Engine
+
+외부 라이브러리(`next-intl` 등) 없이 Next.js Middleware와 Server Components만으로 구현한 경량화된 다국어 시스템입니다.
+
+### 4.1 Middleware Locale Detection
+
+- **File**: `middleware.ts`
+- **Logic**: 브라우저의 `Accept-Language` 헤더를 파싱하여 `ko`, `en`, `ja`, `es` 중 가장 적합한 언어를 선택하고, 요청 헤더에 `x-locale`을 추가하여 서버로 전달합니다.
+
+### 4.2 Server-Side Dictionary Loading
+
+- **File**: `lib/i18n/server.ts`
+- **Helper**: `getI18n()` 함수는 `headers()`에서 `x-locale`을 읽어 해당 언어의 JSON/TS 딕셔너리(`lib/i18n/locales/*.ts`)를 반환합니다.
+- **Benefit**: 클라이언트 사이드 번들 크기를 줄이고, 검색 엔진(SEO)에 최적화된 다국어 콘텐츠를 제공합니다.
+
+## 5. Data Architecture & Optimization
+
+### 5.1 ISR (Incremental Static Regeneration)
+
+- **Strategy**: 매 요청마다 DB를 조회하지 않고, 1시간(`revalidate = 3600`)마다 정적 페이지를 재생성합니다.
+- **Implementation**: `app/page.tsx` 등 페이지 컴포넌트에서 `export const revalidate` 상수를 정의하여 적용합니다.
+- **Effect**: 데이터베이스 부하를 최소화하면서도 사용자에게 빠른 로딩 속도(TTFB)를 제공합니다.
+
+### 5.2 Supabase Client Separation
+
+- **Files**: `lib/supabase/client.ts`, `lib/supabase/server.ts`
+- **Reason**: Next.js 환경에서 쿠키 접근 방식이 다르기 때문에, 브라우저 환경(`createBrowserClient`)과 서버 환경(`createServerClient`)용 유틸리티를 분리하여 구현했습니다.
+- **Multi-Schema**: `createBrowserSupabase(schema?)`와 같이 스키마를 인자로 받아 다국어 확장에 유연하게 대응하도록 설계되었습니다.
+
+## 6. Search & Navigation Logic
+
+### 6.1 URL Query Parameter State
+
+- **Principle**: 모든 필터 및 검색 상태(Category, Tag, Search Term)는 URL Query Parameter(`?category=...&tag=...`)를 Single Source of Truth로 사용합니다.
+- **Benefit**: 사용자가 현재 보고 있는 필터 상태를 URL 복사만으로 공유할 수 있습니다.
+
+### 6.2 Smart Tag Detection
+
+- **Logic**: 사용자가 검색창에 `#`으로 시작하는 단어를 입력하면(`SearchBar.tsx`), 이를 일반 검색어가 아닌 '태그 필터'로 인식하여 URL을 `?tag=...`로 변환합니다.
+
+### 6.3 Sticky UI Interaction
+
+- **Hook**: `hooks/useScroll.ts`
+- **Logic**: 윈도우 스크롤 이벤트를 감지하여 특정 임계값(예: 80px)을 넘으면 `isStuck` 상태를 반환합니다.
+- **Visual**: `FilterBar`는 이 상태에 따라 테두리(`border-b`)를 표시하거나 배경 투명도를 조절하여, 헤더와 자연스럽게 연결되는 시각적 효과를 줍니다.
+
+## 7. Automation Pipeline (n8n & AI)
+
+### 7.1 Pre-fetch Duplicate Check
+
+- **Problem**: AI가 이미 존재하는 표현을 중복 생성하는 비효율성 발생.
+- **Solution**: 생성 단계(Generate) 이전에 Supabase에서 기존 표현 리스트를 조회(Pre-fetch)하여 프롬프트의 '제외 목록'으로 전달함으로써 중복을 원천 차단합니다.
+
+### 7.2 Strict JSON Parsing
+
+- **Problem**: LLM이 JSON 응답에 마크다운 코드 블록(``json ... `)을 포함하여 파싱 에러 발생.
+- **Solution**: n8n 워크플로우 내에서 정규식(` replace(/```json|```/g, '') `)을 사용하여 순수 JSON 문자열만 추출한 뒤 파싱하는 로직을 추가했습니다.
+
+### 7.3 Structured Prompt Engineering
+
+- **File**: `docs/n8n_optimization_steps.md`
+- **Context**: 3단계(상황->표현, 표현->상황, 부정 로직)의 퀴즈 패턴을 정의하고, 문장 부호 및 대소문자 규칙(문장은 대문자, 구절은 소문자 시작)을 명시하여 데이터의 일관성을 확보했습니다.
