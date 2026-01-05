@@ -105,6 +105,11 @@ speak-mango-en/
   - **Presentational Component**: UI 렌더링에만 집중하며, 데이터는 `props`로 주입받습니다. 비즈니스 로직을 포함하지 않습니다.
   - **Container Component**: 데이터 페칭 및 비즈니스 로직을 처리하고, 결과를 Presentational 컴포넌트에 전달합니다.
 - **독립성 (Independence)**: 컴포넌트는 외부 상태에 의존하지 않고 주입받은 `props`만으로 렌더링되어야 합니다.
+- **스켈레톤 로딩 전략 (Skeleton Loading Strategy)**:
+  - **목적**: 데이터 페칭 중 사용자 경험(UX) 향상 및 레이아웃 흔들림(CLS) 방지.
+  - **적용 대상**: 서버에서 데이터를 가져오는 모든 주요 컴포넌트 및 레이아웃 유지를 위해 필요한 상단 요소(`SearchBar`, `FilterBar`, `ExpressionCard` 등).
+  - **구현 원칙**: 새로운 데이터 의존 컴포넌트 생성 시, 해당 컴포넌트의 레이아웃을 모사하는 스켈레톤 컴포넌트를 반드시 세트로 함께 구현합니다.
+  - **관리**: `components/ui/Skeletons.tsx`에 재사용 가능한 스켈레톤 컴포넌트들을 모아 관리합니다.
 
 ### Frontend
 
