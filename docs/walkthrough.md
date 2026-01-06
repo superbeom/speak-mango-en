@@ -2,6 +2,63 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.3: 네비게이션 상태 보존 및 스크롤 복원 (2026-01-06)
+
+### 1. Multi-Cache Global State
+
+- **Architecture**: `context/ExpressionContext.tsx`에서 필터별 상태를 저장하는 맵 구조(`cache`) 도입. 검색, 카테고리, 태그 검색 결과가 각각 독립적인 데이터와 스크롤 위치를 가짐.
+- **Optimization**: `useCallback`, `useMemo`를 통한 컨텍스트 함수 메모이제이션 및 얕은 비교를 통한 불필요한 리렌더링 방지.
+
+### 2. Real-time Scroll Tracking
+
+- **Tracking**: `ExpressionList.tsx`에서 스크롤 리스너를 통해 현재 위치를 실시간으로 캐시에 기록 (200ms 디바운스 적용).
+- **Data Integrity**: 스크롤 복원 중에는 저장 로직을 차단하여 캐시 오염을 방지. 데이터 변경(`items`) 시에도 스크롤 위치는 보존되도록 메서드 분리(`updateCacheData`).
+
+### 3. Robust Scroll Restoration (Recursive RAF)
+
+- **Recursive RAF**: `requestAnimationFrame`을 사용하여 브라우저 페인팅 주기에 맞춰 최대 60프레임 동안 반복적으로 스크롤 이동 시도. 레이아웃 안정화 지연에 완벽 대응.
+- **Component Lifecycle Control**: `app/page.tsx`에서 필터별 `key` prop을 `ExpressionList`에 전달하여, 필터 변경 시 컴포넌트 강제 리마운트 및 깨끗한 상태 초기화 보장.
+
+### 4. Navigation UX
+
+- **`components/BackButton.tsx`**: `router.back()` 기반의 뒤로가기 구현. 히스토리가 없는 직접 진입 시에도 홈으로 안전하게 이동하는 Fallback 처리.
+
+## v0.8.2: 리스트 애니메이션 최적화 및 UI/UX 폴리싱 (2026-01-05)
+
+### 1. Layout Stability Optimization
+
+- **`components/AnimatedList.tsx`**: `motion.div`에서 `layout` 속성을 제거.
+  - **Reason**: '더 보기' 기능을 통해 리스트가 동적으로 확장될 때, 기존 아이템들이 불필요하게 재계산되어 위치를 이동하려는 시도를 차단. 이를 통해 새로운 아이템 추가 시 발생하는 미세한 레이아웃 흔들림(Jitter)을 방지하고 성능을 최적화함.
+
+### 2. Entrance Animation Refinement
+
+- **`components/ExpressionCard.tsx`**: 카드 등장 애니메이션의 핵심 속성을 변경.
+  - **Scale-based Entrance**: 기존 Slide-up(`y: 20`) 대신 Scale-up(`scale: 0.96 -> 1.0`)을 적용하여 콘텐츠가 화면에 더 부드럽고 집중력 있게 안착하도록 개선.
+  - **Timing & Easing**: 애니메이션 지속 시간을 `0.5s`에서 `0.4s`로 단축하고, 정교한 베지어 곡선(`[0.21, 0.47, 0.32, 0.98]`)을 적용하여 리스트 로딩 시의 리듬감을 향상시킴.
+
+## v0.8.1: 리스트 '더 보기(Load More)' 기능 구현 및 스크롤 리셋 최적화 (2026-01-05)
+
+### 1. Pagination Logic
+
+- **Server-side Range**: `lib/expressions.ts`의 `getExpressions` 함수에 `page`와 `limit` 파라미터를 추가하고, Supabase의 `.range(from, to)`를 사용하여 필요한 데이터만 효율적으로 페칭하도록 개선.
+- **Initial Load**: 홈 페이지 첫 진입 시 최신순으로 12개의 아이템을 먼저 로드함.
+
+### 2. Server Actions for Client Interaction
+
+- **`lib/actions.ts`**: 클라이언트 컴포넌트에서 추가 데이터를 요청할 수 있도록 `"use server"` 지시어를 사용한 `fetchMoreExpressions` 액션 구현. 이를 통해 API route 생성 없이도 타입 안정성을 유지하며 비동기 데이터 페칭 가능.
+
+### 3. Client-side State Management
+
+- **`components/ExpressionList.tsx`**:
+  - `useState`를 사용하여 서버에서 받은 초기 데이터와 추가 페칭된 데이터를 통합 관리.
+  - `useEffect`를 통해 카테고리나 검색어 필터가 변경될 때 리스트를 즉시 초기화하도록 구현.
+  - `hasMore` 상태를 통해 데이터 소진 여부를 판단하고 버튼 노출 여부를 동적으로 제어.
+- **`components/LoadMoreButton.tsx`**: 독립적인 버튼 컴포넌트로 분리. 다크모드 시인성 개선 및 `useEnableHover`를 통한 모바일 UX 최적화 적용.
+
+### 4. Automatic Scroll Reset
+
+- **`template.tsx`**: 상세 페이지(`[id]`) 진입 시 이전 스크롤 위치가 유지되는 문제를 해결하기 위해 Next.js Template 도입. 페이지 전환 시마다 `window.scrollTo(0, 0)`를 실행하여 사용자 경험 일관성 확보.
+
 ## v0.8.0: 스켈레톤 로딩 (Skeleton Loading) 도입 및 UX 정교화 (2026-01-05)
 
 ### 1. Reusable Skeleton Components

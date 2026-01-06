@@ -17,18 +17,21 @@ interface ExpressionCardProps {
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, scale: 0.96 },
   visible: {
     opacity: 1,
-    y: 0,
+    scale: 1,
     transition: {
-      duration: 0.5,
+      duration: 0.4,
       ease: [0.21, 0.47, 0.32, 0.98] as const,
     },
   },
 };
 
-export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
+export default function ExpressionCard({
+  item,
+  locale,
+}: ExpressionCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const enableHover = useEnableHover();
@@ -77,7 +80,10 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
       whileTap={enableHover ? { scale: 0.98 } : undefined}
       className="h-full"
     >
-      <Link href={`/expressions/${item.id}`} className="block h-full">
+      <Link
+        href={`/expressions/${item.id}`}
+        className="block h-full"
+      >
         <div
           className={cn(
             "group h-full overflow-hidden rounded-3xl border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",

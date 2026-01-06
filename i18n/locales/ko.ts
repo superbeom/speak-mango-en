@@ -2,6 +2,7 @@ export const ko = {
   common: {
     back: "뒤로가기",
     loading: "로딩 중...",
+    loadMore: "더 보기",
     notFound: "데이터를 찾을 수 없습니다.",
   },
   home: {
@@ -9,6 +10,7 @@ export const ko = {
     description: "유용한 영어 표현들을 쉽고 재미있게 배워보세요.",
     subHeader: "매일 만나는 영어 한 문장",
     emptyState: "표현을 찾을 수 없습니다. 나중에 다시 와주세요!",
+    emptyStateSub: "필터나 검색어를 조정해 보세요.",
   },
   filter: {
     searchPlaceholder: "표현 검색...",

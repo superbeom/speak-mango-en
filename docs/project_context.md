@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-05
+**최종 수정일**: 2026-01-06
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -47,9 +47,11 @@ speak-mango-en/
 ├── app/                 # Next.js App Router Pages
 │   ├── page.tsx         # 메인 페이지 (표현 리스트)
 │   ├── layout.tsx       # 레이아웃
+│   ├── template.tsx     # 페이지 전환 초기화 (스크롤 리셋 등)
 │   └── globals.css      # 전역 스타일
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
+├── context/             # 전역 상태 관리 (Context API)
 ├── database/            # 데이터베이스 마이그레이션 스크립트 (SQL)
 ├── hooks/               # 커스텀 React 훅
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
@@ -120,6 +122,7 @@ speak-mango-en/
   - 하드코딩된 값 대신 위에서 정의한 변수와 유틸리티를 사용하여 레이아웃 일관성을 유지합니다.
 - **모바일 최적화 (Mobile Optimization)**: 새로운 페이지나 컴포넌트 추가 시 모바일 환경을 최우선으로 고려합니다. Tailwind의 반응형 유틸리티(`sm:`, `md:` 등)를 활용하여 작은 화면에서도 가독성과 사용성이 확보되도록 패딩, 텍스트 크기, 레이아웃을 최적화합니다.
   - **Hover Effects**: 모바일(터치 디바이스)에서는 호버 효과(`hover:` 클래스, `whileHover` 애니메이션 등)를 비활성화해야 합니다. 터치 스크롤 시 의도치 않은 시각적 피드백이나 애니메이션이 발생하는 것을 방지하기 위해 `useIsMobile` 훅을 사용하여 조건부로 적용합니다.
+  - **Clickable Elements**: 버튼, 링크, 칩 등 클릭 가능한 모든 요소에는 `cursor-pointer` 클래스를 명시적으로 적용하여 데스크탑 환경에서의 Affordance를 보장합니다.
 - **Reusable UI Logic**: 스크롤 감지, 화면 크기 확인 등 반복되는 UI 동작 로직은 커스텀 훅(예: `useScroll`, `useIsMobile`)으로 추출하여 `hooks/` 디렉토리에서 관리합니다. 이를 통해 컴포넌트 코드를 간결하게 유지하고 로직 중복을 최소화합니다.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.

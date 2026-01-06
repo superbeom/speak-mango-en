@@ -11,6 +11,7 @@
   - `domain`: `test`(TOEIC, TOEFL), `vocabulary`(주제별 단어장) 등 추가.
   - `category`: `toeic`, `toefl`, `animal`, `plant`, `home` 등 구체적인 테마 확장.
   - [ ] **Independent Workflows**: `test` 및 `vocabulary` 도메인은 생성 로직과 프롬프트가 다르므로, `conversation` 워크플로우와 분리하여 별도의 n8n 워크플로우로 구축.
+- [ ] **i18n UI Expansion**: 현재 KO, EN 중심의 UI를 일본어(JA), 스페인어(ES)로 확장하여 다국어 학습자들에게 최적화된 인터페이스 제공.
 - [ ] **i18n Client Transition**: 추후 북마크, 사용자 설정 등 **클라이언트 상호작용이 많아지면** 현재의 Server Helper 방식에서 `Client Context` 기반 라이브러리(`next-intl` 등)로 전환 고려.
 - [ ] **Shared Schema Implementation**: 사용자 가입, 프로필 통합 등 공유 데이터 관리가 필요한 시점에 `speak_mango_shared` 스키마를 생성하고 `auth.users`와 연동된 통합 시스템 구축.
 

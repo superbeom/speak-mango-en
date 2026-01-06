@@ -2,11 +2,11 @@ import { Suspense } from "react";
 import { getI18n } from "@/i18n/server";
 import { getExpressions } from "@/lib/expressions";
 import { SERVICE_NAME } from "@/lib/constants";
+import { serializeFilters } from "@/lib/utils";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
-import AnimatedList from "@/components/AnimatedList";
-import ExpressionCard from "@/components/ExpressionCard";
 import FilterBar from "@/components/FilterBar";
+import ExpressionList from "@/components/ExpressionList";
 
 // Revalidate every hour
 export const revalidate = 3600;
@@ -23,7 +23,15 @@ export default async function Home({ searchParams }: PageProps) {
   const search = typeof params.search === "string" ? params.search : undefined;
   const tag = typeof params.tag === "string" ? params.tag : undefined;
 
-  const expressions = await getExpressions({ category, search, tag });
+  const filters = { category, search, tag };
+  const cacheKey = serializeFilters(filters);
+
+  // 초기 1페이지 데이터 페칭 (limit 12)
+  const expressions = await getExpressions({
+    ...filters,
+    page: 1,
+    limit: 12,
+  });
   const { locale, dict } = await getI18n();
 
   return (
@@ -61,16 +69,18 @@ export default async function Home({ searchParams }: PageProps) {
             </p>
             {(category || search || tag) && (
               <p className="text-zinc-400 text-sm mt-2">
-                Try adjusting your filters or search query.
+                {dict.home.emptyStateSub}
               </p>
             )}
           </div>
         ) : (
-          <AnimatedList>
-            {expressions.map((item) => (
-              <ExpressionCard key={item.id} item={item} locale={locale} />
-            ))}
-          </AnimatedList>
+          <ExpressionList
+            key={cacheKey}
+            initialItems={expressions}
+            filters={filters}
+            locale={locale}
+            loadMoreText={dict.common.loadMore}
+          />
         )}
       </main>
 
