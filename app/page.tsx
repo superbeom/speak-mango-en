@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getI18n } from "@/i18n/server";
 import { getExpressions } from "@/lib/expressions";
 import { SERVICE_NAME } from "@/lib/constants";
+import { serializeFilters } from "@/lib/utils";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
 import FilterBar from "@/components/FilterBar";
@@ -22,11 +23,12 @@ export default async function Home({ searchParams }: PageProps) {
   const search = typeof params.search === "string" ? params.search : undefined;
   const tag = typeof params.tag === "string" ? params.tag : undefined;
 
+  const filters = { category, search, tag };
+  const cacheKey = serializeFilters(filters);
+
   // 초기 1페이지 데이터 페칭 (limit 12)
   const expressions = await getExpressions({
-    category,
-    search,
-    tag,
+    ...filters,
     page: 1,
     limit: 12,
   });
@@ -73,8 +75,9 @@ export default async function Home({ searchParams }: PageProps) {
           </div>
         ) : (
           <ExpressionList
+            key={cacheKey}
             initialItems={expressions}
-            filters={{ category, search, tag }}
+            filters={filters}
             locale={locale}
             loadMoreText={dict.common.loadMore}
           />

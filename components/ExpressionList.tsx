@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Expression } from "@/types/database";
+import { useExpressionStore } from "@/context/ExpressionContext";
 import { fetchMoreExpressions } from "@/lib/actions";
+import { serializeFilters } from "@/lib/utils";
 import { ExpressionFilters } from "@/lib/expressions";
 import { SkeletonCard } from "./ui/Skeletons";
-import { useExpressionStore } from "@/context/ExpressionContext";
 import AnimatedList from "./AnimatedList";
 import ExpressionCard from "./ExpressionCard";
 import LoadMoreButton from "./LoadMoreButton";
@@ -23,59 +24,113 @@ export default function ExpressionList({
   locale,
   loadMoreText,
 }: ExpressionListProps) {
-  const { state, setState, updateState } = useExpressionStore();
+  const { cache, updateCacheData, updateScrollPosition } = useExpressionStore();
 
-  // 1. 초기 상태 결정 로직 (동기적)
-  // 필터가 같고 스토어에 데이터가 있다면 스토어 데이터를 사용해 초기 렌더링 시점부터 DOM 높이를 확보합니다.
-  const shouldUseStore =
-    JSON.stringify(state.filters) === JSON.stringify(filters) &&
-    state.items.length > 0;
+  // 1. 캐시 키 생성 및 저장된 상태 확인
+  // 부모(Home)에서 filters를 기반으로 'key' prop을 주입하므로,
+  // 필터가 변경되면 이 컴포넌트는 완전히 언마운트 후 새로 마운트됩니다.
+  const cacheKey = serializeFilters(filters);
+  const cachedState = cache[cacheKey];
 
+  // 2. 초기 상태 설정
+  // 캐시된 데이터가 있다면 즉시 초기값으로 사용하여 첫 렌더링부터 올바른 DOM 높이를 확보합니다.
+  // 이는 브라우저가 스크롤 위치를 복원할 수 있는 물리적 공간을 만드는데 필수적입니다.
   const [items, setItems] = useState<Expression[]>(
-    shouldUseStore ? state.items : initialItems
+    cachedState ? cachedState.items : initialItems
   );
-  const [page, setPage] = useState(shouldUseStore ? state.page : 1);
+  const [page, setPage] = useState(cachedState ? cachedState.page : 1);
   const [hasMore, setHasMore] = useState(
-    shouldUseStore ? state.hasMore : initialItems.length >= 12
+    cachedState ? cachedState.hasMore : initialItems.length >= 12
   );
   const [loading, setLoading] = useState(false);
 
-  // 2. 스토어 상태 동기화 및 초기화
+  // 스크롤 복원 작업이 진행 중인지 여부를 추적합니다.
+  // 복원 도중에 현재 위치(보통 0)를 캐시에 저장하여 이전 위치를 날려버리는 것을 방지합니다.
+  const isRestored = useRef(false);
+
+  // 3. 실시간 스크롤 위치 저장 (Throttled)
+  // 상세 페이지 이동뿐만 아니라 브라우저 뒤로가기 등 모든 상황에 대응하기 위해 실시간으로 추적합니다.
   useEffect(() => {
-    // 스토어 데이터와 현재 props가 다르면(새로운 검색/필터 등), 스토어를 초기화합니다.
-    if (!shouldUseStore) {
-      setState({
-        items: initialItems,
-        page: 1,
-        hasMore: initialItems.length >= 12,
-        filters: filters,
-        scrollPosition: 0,
+    let timeoutId: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      // 스크롤 복원이 완료된 후에만 현재 위치를 캐시에 기록합니다.
+      if (!isRestored.current) return;
+
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        updateScrollPosition(cacheKey, window.scrollY);
+      }, 200); // 잦은 업데이트를 방지하기 위해 200ms 디바운스 적용
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [cacheKey, updateScrollPosition]);
+
+  // 4. 상태 저장 (데이터 변경 시점)
+  // '더 보기' 등으로 아이템이 추가될 때마다 캐시를 업데이트합니다.
+  // 이때 스크롤 위치는 건드리지 않고 데이터(items, page)만 부분 업데이트합니다.
+  useEffect(() => {
+    if (items.length > 0) {
+      updateCacheData(cacheKey, {
+        items,
+        page,
+        hasMore,
       });
-      // 로컬 상태도 props로 동기화
-      setItems(initialItems);
-      setPage(1);
-      setHasMore(initialItems.length >= 12);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, initialItems]);
+  }, [items, page, hasMore, cacheKey]);
 
-  // 3. 스크롤 위치 저장 및 복원
-  useEffect(() => {
-    // 컴포넌트 언마운트 시(상세 페이지 이동 등) 현재 스크롤 위치 저장
+  // 5. 스크롤 복원 (재귀적 RAF 방식)
+  // 레이아웃이 잡히고 브라우저가 페인팅을 완료할 때까지 여러 프레임에 걸쳐 스크롤 이동을 시도합니다.
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const targetPosition = cachedState?.scrollPosition || 0;
+
+    // 브라우저의 기본 스크롤 복원 기능과 충돌하지 않도록 수동(manual) 모드로 설정합니다.
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+
+    if (targetPosition <= 0) {
+      isRestored.current = true;
+      return;
+    }
+
+    let rafId: number;
+    let attempts = 0;
+    const maxAttempts = 60; // 약 1초(60fps 기준) 동안 복원을 시도합니다.
+
+    const performScroll = () => {
+      window.scrollTo(0, targetPosition);
+
+      attempts++;
+      // 목표 위치에 도달했거나 시도 횟수를 초초과하면 종료합니다.
+      if (
+        Math.abs(window.scrollY - targetPosition) < 5 ||
+        attempts >= maxAttempts
+      ) {
+        // 복원 완료 표시 (약간의 유예 시간을 두어 스크롤 이벤트가 무시되도록 함)
+        setTimeout(() => {
+          isRestored.current = true;
+        }, 100);
+        return;
+      }
+
+      rafId = requestAnimationFrame(performScroll);
+    };
+
+    rafId = requestAnimationFrame(performScroll);
+
     return () => {
-      updateState({ scrollPosition: window.scrollY });
+      if (rafId) cancelAnimationFrame(rafId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useLayoutEffect(() => {
-    // 데이터 복원 모드이고 저장된 스크롤 위치가 있다면 복원 시도
-    // 브라우저의 자동 복원(history)이 실패하거나 동작하지 않을 경우를 대비
-    if (shouldUseStore && state.scrollPosition > 0) {
-      window.scrollTo(0, state.scrollPosition);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [cacheKey]);
 
   const loadMore = async () => {
     if (loading || !hasMore) return;
@@ -88,22 +143,13 @@ export default function ExpressionList({
 
       if (nextItems && nextItems.length > 0) {
         const newItems = [...items, ...nextItems];
-        const newHasMore = nextItems.length >= 12; // 가져온 개수가 12개 미만이면 다음 데이터는 없음
+        const newHasMore = nextItems.length >= 12;
 
-        // 로컬 상태 업데이트
         setItems(newItems);
         setPage(nextPage);
         setHasMore(newHasMore);
-
-        // 스토어 상태 업데이트
-        updateState({
-          items: newItems,
-          page: nextPage,
-          hasMore: newHasMore,
-        });
       } else {
         setHasMore(false);
-        updateState({ hasMore: false });
       }
     } catch (error) {
       console.error("Failed to load more items:", error);

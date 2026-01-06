@@ -170,3 +170,26 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 
 - **File**: `docs/n8n_optimization_steps.md`
 - **Context**: 3단계(상황->표현, 표현->상황, 부정 로직)의 퀴즈 패턴을 정의하고, 문장 부호 및 대소문자 규칙(문장은 대문자, 구절은 소문자 시작)을 명시하여 데이터의 일관성을 확보했습니다.
+
+## 8. Navigation State Persistence (네비게이션 상태 보존)
+
+'더 보기(Load More)'로 로드된 리스트와 스크롤 위치를 페이지 이동 간에도 유지하기 위한 복합 전략입니다.
+
+### 8.1 Multi-Cache Architecture
+
+- **Context**: `context/ExpressionContext.tsx`
+- **Structure**: 단일 상태가 아닌, 필터 조합(URL)을 키로 사용하는 맵 구조(`Record<string, ExpressionState>`)를 사용하여 각 화면의 상태를 독립적으로 저장합니다.
+- **Key Generation**: `serializeFilters` 유틸리티를 통해 `category=business&search=hello`와 같은 고유 키를 생성합니다. 이때 빈 문자열 필터는 제외하여 서버/클라이언트 간 키 일관성을 유지합니다.
+
+### 8.2 Real-time Scroll Tracking
+
+- **Mechanism**: 상세 페이지 이동 시점뿐만 아니라, 사용자가 리스트를 스크롤할 때마다 실시간으로 위치를 캐시에 저장합니다.
+- **Optimization**: 브라우저 부하를 줄이기 위해 200ms 디바운스(Debounce)를 적용하여 업데이트 빈도를 조절합니다.
+- **Safety**: 스크롤 복원이 진행 중일 때는 저장 로직을 일시 차단하여, 복원 도중 0(상단) 위치가 캐시에 덮어씌워지는 문제를 방지합니다.
+
+### 8.3 Robust Scroll Restoration (Recursive RAF)
+
+- **Manual Control**: 브라우저의 기본 스크롤 복원 동작(`history.scrollRestoration = 'manual'`)을 차단하여 React의 렌더링 사이클과 충돌하는 것을 방지합니다.
+- **Recursive requestAnimationFrame**: 리스트의 데이터가 실제로 화면에 그려져서 높이가 확보될 때까지 브라우저의 페인팅 주기에 맞춰 여러 프레임에 걸쳐 반복적으로 스크롤 이동을 시도합니다.
+- **Termination Condition**: 목표 위치에 도달하거나, 약 1초(60프레임) 이상의 시도가 실패할 경우 자동으로 종료하여 성능을 보존합니다.
+- **Separation of Concerns**: 데이터 업데이트(`updateCacheData`)와 스크롤 저장(`updateScrollPosition`) 메서드를 분리하여, 데이터 추가 로드 시 스크롤 위치가 초기화되지 않도록 보호합니다.

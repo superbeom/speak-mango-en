@@ -41,6 +41,7 @@
 - [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n_user_guide.md`) 작성
 - [x] **UI/UX**: 스켈레톤 로딩 (Skeleton Loading) 도입
 - [x] **UI/UX**: 리스트 탐색 경험 개선 ('더 보기' 버튼 및 레이아웃 안정화)
+- [x] **UI/UX**: 필터별 독립 캐싱 및 정밀 스크롤 복원 구현
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

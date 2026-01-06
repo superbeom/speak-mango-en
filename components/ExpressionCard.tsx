@@ -28,7 +28,10 @@ const itemVariants = {
   },
 };
 
-export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
+export default function ExpressionCard({
+  item,
+  locale,
+}: ExpressionCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const enableHover = useEnableHover();
@@ -77,7 +80,10 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
       whileTap={enableHover ? { scale: 0.98 } : undefined}
       className="h-full"
     >
-      <Link href={`/expressions/${item.id}`} className="block h-full">
+      <Link
+        href={`/expressions/${item.id}`}
+        className="block h-full"
+      >
         <div
           className={cn(
             "group h-full overflow-hidden rounded-3xl border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",

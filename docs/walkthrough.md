@@ -4,22 +4,24 @@
 
 ## v0.8.3: 네비게이션 상태 보존 및 스크롤 복원 (2026-01-06)
 
-### 1. Global State Management (`ExpressionContext`)
+### 1. Multi-Cache Global State
 
-- **Architecture**: `context/ExpressionContext.tsx`를 생성하여 `ExpressionProvider` 구현. 리스트 아이템(`items`), 페이지(`page`), 더 보기 여부(`hasMore`), 필터(`filters`), 스크롤 위치(`scrollPosition`)를 전역 상태로 관리.
-- **Integration**: `app/layout.tsx`에서 전체 애플리케이션을 Provider로 감싸, 페이지 네비게이션 간에도 상태가 유지되도록 설정.
+- **Architecture**: `context/ExpressionContext.tsx`에서 필터별 상태를 저장하는 맵 구조(`cache`) 도입. 검색, 카테고리, 태그 검색 결과가 각각 독립적인 데이터와 스크롤 위치를 가짐.
+- **Optimization**: `useCallback`, `useMemo`를 통한 컨텍스트 함수 메모이제이션 및 얕은 비교를 통한 불필요한 리렌더링 방지.
 
-### 2. Smart Scroll Restoration
+### 2. Real-time Scroll Tracking
 
-- **Persistence Logic**: `components/ExpressionList.tsx`에서 컴포넌트 언마운트 시점(상세 페이지 진입 전)에 현재 스크롤 위치(`window.scrollY`)를 Context에 저장.
-- **Restoration Logic**: 컴포넌트 마운트 시, 저장된 필터와 현재 필터가 일치하면 `useLayoutEffect`를 통해 저장된 위치로 즉시 스크롤 이동. 이를 통해 '더 보기'로 길어진 리스트의 중간 위치로 정확히 돌아갈 수 있음.
-- **Performance**: `useState` 초기값에 스토어 데이터를 동기적으로 주입하여, 첫 렌더링부터 올바른 DOM 높이를 확보함으로써 스크롤 점프(Layout Shift) 방지.
+- **Tracking**: `ExpressionList.tsx`에서 스크롤 리스너를 통해 현재 위치를 실시간으로 캐시에 기록 (200ms 디바운스 적용).
+- **Data Integrity**: 스크롤 복원 중에는 저장 로직을 차단하여 캐시 오염을 방지. 데이터 변경(`items`) 시에도 스크롤 위치는 보존되도록 메서드 분리(`updateCacheData`).
 
-### 3. Back Navigation Improvement
+### 3. Robust Scroll Restoration (Recursive RAF)
 
-- **`components/BackButton.tsx`**:
-  - 기존의 `<Link href="/">` 방식을 `router.back()` 기반의 클라이언트 컴포넌트로 대체.
-  - **Fallback**: 브라우저 히스토리가 없을 경우(Deep Link 진입 등) 안전하게 홈으로 이동하는 분기 처리(`history.length > 1`) 추가.
+- **Recursive RAF**: `requestAnimationFrame`을 사용하여 브라우저 페인팅 주기에 맞춰 최대 60프레임 동안 반복적으로 스크롤 이동 시도. 레이아웃 안정화 지연에 완벽 대응.
+- **Component Lifecycle Control**: `app/page.tsx`에서 필터별 `key` prop을 `ExpressionList`에 전달하여, 필터 변경 시 컴포넌트 강제 리마운트 및 깨끗한 상태 초기화 보장.
+
+### 4. Navigation UX
+
+- **`components/BackButton.tsx`**: `router.back()` 기반의 뒤로가기 구현. 히스토리가 없는 직접 진입 시에도 홈으로 안전하게 이동하는 Fallback 처리.
 
 ## v0.8.2: 리스트 애니메이션 최적화 및 UI/UX 폴리싱 (2026-01-05)
 
