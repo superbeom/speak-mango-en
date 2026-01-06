@@ -2,6 +2,21 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.5: 라우트 중앙 관리 및 필터 누적 시스템 (2026-01-06)
+
+### 1. Centralized Route Management
+
+- **File**: `lib/routes.ts` 생성.
+- **Implementation**: 앱 내 모든 경로(`ROUTES`)와 필터 기반 홈 경로 생성 함수(`getHomeWithFilters`)를 정의. 모든 컴포넌트에서 하드코딩된 경로를 제거하고 이 시스템을 사용하도록 리팩토링.
+
+### 2. Additive Filtering UX
+
+- **Logic**: `ExpressionCard.tsx`에서 카테고리/태그 클릭 시 `useSearchParams`를 통해 기존 필터 상태를 읽어와 조합.
+- **Behavior**:
+  - 카테고리 클릭: 기존 검색어/태그 유지 + 카테고리 변경.
+  - 태그 클릭: 기존 카테고리 유지 + 태그 변경 (검색어는 초기화).
+  - 결과적으로 사용자가 원하는 대로 필터를 겹쳐서 적용할 수 있는 강력한 탐색 기능 제공.
+
 ## v0.8.4: 카테고리 필터링 최적화 (2026-01-06)
 
 ### 1. Smart Category Toggling

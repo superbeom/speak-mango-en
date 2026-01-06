@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/routes";
 
 interface BackButtonProps {
   label: string;
@@ -16,7 +17,7 @@ export default function BackButton({ label, className }: BackButtonProps) {
     if (window.history.length > 1) {
       router.back();
     } else {
-      router.push("/");
+      router.push(ROUTES.HOME);
     }
   };
 
