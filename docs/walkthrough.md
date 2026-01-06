@@ -2,6 +2,25 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.3: 네비게이션 상태 보존 및 스크롤 복원 (2026-01-06)
+
+### 1. Global State Management (`ExpressionContext`)
+
+- **Architecture**: `context/ExpressionContext.tsx`를 생성하여 `ExpressionProvider` 구현. 리스트 아이템(`items`), 페이지(`page`), 더 보기 여부(`hasMore`), 필터(`filters`), 스크롤 위치(`scrollPosition`)를 전역 상태로 관리.
+- **Integration**: `app/layout.tsx`에서 전체 애플리케이션을 Provider로 감싸, 페이지 네비게이션 간에도 상태가 유지되도록 설정.
+
+### 2. Smart Scroll Restoration
+
+- **Persistence Logic**: `components/ExpressionList.tsx`에서 컴포넌트 언마운트 시점(상세 페이지 진입 전)에 현재 스크롤 위치(`window.scrollY`)를 Context에 저장.
+- **Restoration Logic**: 컴포넌트 마운트 시, 저장된 필터와 현재 필터가 일치하면 `useLayoutEffect`를 통해 저장된 위치로 즉시 스크롤 이동. 이를 통해 '더 보기'로 길어진 리스트의 중간 위치로 정확히 돌아갈 수 있음.
+- **Performance**: `useState` 초기값에 스토어 데이터를 동기적으로 주입하여, 첫 렌더링부터 올바른 DOM 높이를 확보함으로써 스크롤 점프(Layout Shift) 방지.
+
+### 3. Back Navigation Improvement
+
+- **`components/BackButton.tsx`**:
+  - 기존의 `<Link href="/">` 방식을 `router.back()` 기반의 클라이언트 컴포넌트로 대체.
+  - **Fallback**: 브라우저 히스토리가 없을 경우(Deep Link 진입 등) 안전하게 홈으로 이동하는 분기 처리(`history.length > 1`) 추가.
+
 ## v0.8.2: 리스트 애니메이션 최적화 및 UI/UX 폴리싱 (2026-01-05)
 
 ### 1. Layout Stability Optimization

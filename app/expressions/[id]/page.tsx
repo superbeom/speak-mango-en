@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { getI18n } from "@/i18n/server";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { getExpressionUIConfig } from "@/lib/ui-config";
@@ -7,6 +6,7 @@ import Header from "@/components/Header";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
 import RelatedExpressions from "@/components/RelatedExpressions";
+import BackButton from "@/components/BackButton";
 
 interface PageProps {
   params: Promise<{
@@ -51,15 +51,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
     <div className="min-h-screen bg-layout pb-20">
       <Header>
         <div className="flex items-center">
-          <Link
-            href="/"
-            className="group flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
-          >
-            <span className="transition-transform group-hover:-translate-x-1">
-              ←
-            </span>{" "}
-            {dict.common.back}
-          </Link>
+          <BackButton label={dict.common.back} />
         </div>
       </Header>
 

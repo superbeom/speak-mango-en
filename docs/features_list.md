@@ -28,6 +28,9 @@
   - 서버 액션(Server Actions)을 활용한 효율적인 데이터 보충 로직.
 - **Scroll Reset Strategy**:
   - 상세 페이지 등 새로운 경로 진입 시 Next.js `template.tsx`를 통해 스크롤 위치를 자동으로 최상단으로 초기화하여 일관된 사용자 경험 제공.
+- **Navigation State Persistence (상태 보존)**:
+  - '더 보기'로 로드된 리스트 상태와 스크롤 위치를 전역 컨텍스트(`Context API`)에 저장.
+  - 상세 페이지에서 뒤로가기(`Back`) 시, 이전의 리스트 상태와 스크롤 위치를 완벽하게 복원하여 끊김 없는 학습 경험 제공.
 
 ### 표현 상세 (Detail Page)
 

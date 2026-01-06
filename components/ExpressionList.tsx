@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { Expression } from "@/types/database";
 import { fetchMoreExpressions } from "@/lib/actions";
 import { ExpressionFilters } from "@/lib/expressions";
 import { SkeletonCard } from "./ui/Skeletons";
+import { useExpressionStore } from "@/context/ExpressionContext";
 import AnimatedList from "./AnimatedList";
 import ExpressionCard from "./ExpressionCard";
 import LoadMoreButton from "./LoadMoreButton";
@@ -22,18 +23,59 @@ export default function ExpressionList({
   locale,
   loadMoreText,
 }: ExpressionListProps) {
-  const [items, setItems] = useState<Expression[]>(initialItems);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  // 초기 로드된 개수가 limit(12)보다 적으면 다음 페이지가 없는 것으로 간주
-  const [hasMore, setHasMore] = useState(initialItems.length >= 12);
+  const { state, setState, updateState } = useExpressionStore();
 
-  // 검색어나 카테고리 등 필터가 변경되어 서버에서 새로운 initialItems를 내려주면 리스트 초기화
+  // 1. 초기 상태 결정 로직 (동기적)
+  // 필터가 같고 스토어에 데이터가 있다면 스토어 데이터를 사용해 초기 렌더링 시점부터 DOM 높이를 확보합니다.
+  const shouldUseStore =
+    JSON.stringify(state.filters) === JSON.stringify(filters) &&
+    state.items.length > 0;
+
+  const [items, setItems] = useState<Expression[]>(
+    shouldUseStore ? state.items : initialItems
+  );
+  const [page, setPage] = useState(shouldUseStore ? state.page : 1);
+  const [hasMore, setHasMore] = useState(
+    shouldUseStore ? state.hasMore : initialItems.length >= 12
+  );
+  const [loading, setLoading] = useState(false);
+
+  // 2. 스토어 상태 동기화 및 초기화
   useEffect(() => {
-    setItems(initialItems);
-    setPage(1);
-    setHasMore(initialItems.length >= 12);
-  }, [initialItems]);
+    // 스토어 데이터와 현재 props가 다르면(새로운 검색/필터 등), 스토어를 초기화합니다.
+    if (!shouldUseStore) {
+      setState({
+        items: initialItems,
+        page: 1,
+        hasMore: initialItems.length >= 12,
+        filters: filters,
+        scrollPosition: 0,
+      });
+      // 로컬 상태도 props로 동기화
+      setItems(initialItems);
+      setPage(1);
+      setHasMore(initialItems.length >= 12);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, initialItems]);
+
+  // 3. 스크롤 위치 저장 및 복원
+  useEffect(() => {
+    // 컴포넌트 언마운트 시(상세 페이지 이동 등) 현재 스크롤 위치 저장
+    return () => {
+      updateState({ scrollPosition: window.scrollY });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useLayoutEffect(() => {
+    // 데이터 복원 모드이고 저장된 스크롤 위치가 있다면 복원 시도
+    // 브라우저의 자동 복원(history)이 실패하거나 동작하지 않을 경우를 대비
+    if (shouldUseStore && state.scrollPosition > 0) {
+      window.scrollTo(0, state.scrollPosition);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadMore = async () => {
     if (loading || !hasMore) return;
@@ -45,14 +87,23 @@ export default function ExpressionList({
       const nextItems = await fetchMoreExpressions(filters, nextPage);
 
       if (nextItems && nextItems.length > 0) {
-        setItems((prev) => [...prev, ...nextItems]);
+        const newItems = [...items, ...nextItems];
+        const newHasMore = nextItems.length >= 12; // 가져온 개수가 12개 미만이면 다음 데이터는 없음
+
+        // 로컬 상태 업데이트
+        setItems(newItems);
         setPage(nextPage);
-        // 가져온 개수가 12개 미만이면 다음 데이터는 없음
-        if (nextItems.length < 12) {
-          setHasMore(false);
-        }
+        setHasMore(newHasMore);
+
+        // 스토어 상태 업데이트
+        updateState({
+          items: newItems,
+          page: nextPage,
+          hasMore: newHasMore,
+        });
       } else {
         setHasMore(false);
+        updateState({ hasMore: false });
       }
     } catch (error) {
       console.error("Failed to load more items:", error);

@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-05
+**최종 수정일**: 2026-01-06
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -51,6 +51,7 @@ speak-mango-en/
 │   └── globals.css      # 전역 스타일
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
+├── context/             # 전역 상태 관리 (Context API)
 ├── database/            # 데이터베이스 마이그레이션 스크립트 (SQL)
 ├── hooks/               # 커스텀 React 훅
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
