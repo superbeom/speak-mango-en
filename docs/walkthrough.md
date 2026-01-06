@@ -119,7 +119,7 @@
 
 ### 1. n8n Prompt Optimization (Tags)
 
-- **Mandatory Tags**: `docs/n8n_optimization_steps.md` 및 `docs/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
+- **Mandatory Tags**: `docs/n8n_optimization_steps.md` 및 `n8n/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
 - **Strict Formatting**: 3~5개의 소문자 문자열 배열 형식을 강제하고, '#' 기호 사용을 금지하여 DB 저장 및 필터링 시의 데이터 정합성을 확보함.
 
 ## v0.7.7: 모바일 호버 효과 제거 및 관련 표현 추천 개선 (2026-01-05)
@@ -421,7 +421,7 @@
 
 ### 2. 워크플로우 템플릿 제공
 
-- **`docs/n8n_workflow_template.json`**: Schedule -> HTTP -> Gemini -> Supabase로 이어지는 핵심 파이프라인 템플릿 생성.
+- **`n8n/n8n_workflow_template.json`**: Schedule -> HTTP -> Gemini -> Supabase로 이어지는 핵심 파이프라인 템플릿 생성.
 - **Gemini 프롬프트**: JSON 구조 응답을 강제하여 DB 데이터 정합성 확보.
 
 ## v0.3.0: 상세 페이지 및 데이터 페칭 개선 (2025-12-30)

@@ -168,7 +168,7 @@
 
 ### ✅ 진행 사항
 
-- **태그 생성 규칙 명문화**: `docs/n8n_optimization_steps.md` 및 `docs/n8n_workflow_template.json`에 태그 생성 필수 요건(Requirement 11)을 추가. AI가 3~5개의 소문자 키워드를 포함하도록 명시하여 데이터 품질 및 필터링 효율성을 높임.
+- **태그 생성 규칙 명문화**: `docs/n8n_optimization_steps.md` 및 `n8n/n8n_workflow_template.json`에 태그 생성 필수 요건(Requirement 11)을 추가. AI가 3~5개의 소문자 키워드를 포함하도록 명시하여 데이터 품질 및 필터링 효율성을 높임.
 - **모바일 호버 이슈 해결**: 모바일에서 스크롤 시 카드의 호버 효과(크기 변경, 테두리 색상)가 유지되거나 깜빡이는 문제를 해결하기 위해 `useIsMobile` 훅을 활용.
 - **조건부 렌더링**: 모바일 환경(`isMobile === true`)에서는 `whileHover`, `whileTap` 애니메이션과 CSS `hover:` 클래스가 적용되지 않도록 `ExpressionCard` 컴포넌트 로직 수정.
 - **안정성 확보**: 초기 렌더링 시(`undefined`) 데스크탑을 기본값으로 간주하여 하이드레이션 불일치 방지 및 점진적 적용.
@@ -240,7 +240,7 @@
 
 - **Gemini 프롬프트 고도화**: `Gemini Content Generator` 프롬프트를 수정하여 영어 표현의 대소문자(문장 vs 구절), 의미의 톤(반말 vs 존댓말), 문장 부호(물음표 등) 규칙을 명확히 정의함.
 - **컨텍스트 복원 강화**: `.agent/workflows/restore_context.md`가 로드하는 파일 목록에 `features_list.md`, `database_schema.md`를 추가하여 에이전트의 이해도 향상.
-- **문서 동기화**: `n8n_optimization_steps.md`와 `n8n_workflow_template.json`을 최신 프롬프트 변경 사항에 맞춰 업데이트.
+- **문서 동기화**: `n8n_optimization_steps.md`와 `n8n/n8n_workflow_template.json`을 최신 프롬프트 변경 사항에 맞춰 업데이트.
 
 ### 💬 주요 Q&A 및 의사결정
 
@@ -650,7 +650,7 @@
 ### ✅ 진행 사항
 
 - `docker-compose.yml`을 통한 로컬 n8n 실행 환경 설정.
-- `docs/n8n_workflow_template.json` 생성 (가져오기용 워크플로우 템플릿).
+- `n8n/n8n_workflow_template.json` 생성 (가져오기용 워크플로우 템플릿).
 - Gemini API 프롬프트 최적화 및 Supabase 연동 로직 설계.
 - `feat/n8n-automation-setup` 브랜치 생성 및 작업 시작.
 

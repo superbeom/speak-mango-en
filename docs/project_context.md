@@ -59,6 +59,8 @@ speak-mango-en/
 │   ├── supabase/        # Supabase 클라이언트 설정 (server/client)
 │   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수
+├── n8n/                 # n8n 자동화 관련 설정 및 템플릿
+│   └── n8n_workflow_template.json # 워크플로우 가져오기용 템플릿
 ├── types/               # TypeScript 타입 정의
 │   └── database.ts      # Supabase Generated Types
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
