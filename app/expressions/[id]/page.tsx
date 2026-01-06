@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getI18n } from "@/i18n/server";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
+import { getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import Header from "@/components/Header";
 import CategoryLabel from "@/components/CategoryLabel";
@@ -73,7 +74,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                   label={expression.category}
                   icon={category.icon}
                   textStyles={category.textStyles}
-                  href={`/?category=${expression.category}`}
+                  href={getHomeWithFilters({ category: expression.category })}
                   className="text-[10px] sm:text-xs"
                 />
               </div>
@@ -170,7 +171,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
             <div className="flex flex-wrap gap-2">
               {expression.tags?.map((tag) => (
-                <Tag key={tag} label={tag} href={`/?tag=${tag}`} />
+                <Tag key={tag} label={tag} href={getHomeWithFilters({ tag })} />
               ))}
             </div>
           </div>

@@ -8,6 +8,7 @@ import { useScroll } from "@/hooks/useScroll";
 import { getCategoryConfig } from "@/lib/ui-config";
 import { CATEGORIES } from "@/lib/constants";
 import { cn, formatMessage } from "@/lib/utils";
+import { getHomeWithFilters } from "@/lib/routes";
 import SearchBar from "@/components/SearchBar";
 
 interface FilterBarProps {
@@ -66,17 +67,19 @@ export default function FilterBar({ locale }: FilterBarProps) {
   }, [currentCategory]);
 
   const updateFilters = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
+    // 현재 필터 상태 유지하면서 업데이트
+    const newFilters = {
+      category: currentCategory,
+      search: currentSearch,
+      tag: currentTag,
+      ...Object.fromEntries(
+        Object.entries(updates).map(([k, v]) => [k, v === null ? undefined : v])
+      ),
+    };
 
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === null || value === "all" || value === "") {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-    });
-
-    router.push(`/?${params.toString()}`);
+    router.push(
+      getHomeWithFilters(newFilters as Parameters<typeof getHomeWithFilters>[0])
+    );
   };
 
   const handleSearch = (term: string) => {
@@ -162,11 +165,21 @@ export default function FilterBar({ locale }: FilterBarProps) {
 
                 const isActive = currentCategory === cat;
 
+                const handleCategoryClick = () => {
+                  if (isActive) {
+                    // 이미 선택된 카테고리를 다시 누른 경우
+                    if (cat === "all") return; // '전체'는 아무 동작 안 함 (중복 페칭 방지)
+                    updateFilters({ category: "all" }); // 다른 카테고리는 선택 해제
+                  } else {
+                    updateFilters({ category: cat });
+                  }
+                };
+
                 return (
                   <button
                     key={cat}
                     data-category={cat}
-                    onClick={() => updateFilters({ category: cat })}
+                    onClick={handleCategoryClick}
                     className={`
                       flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer
                       ${

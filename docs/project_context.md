@@ -57,7 +57,10 @@ speak-mango-en/
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
 │   ├── supabase/        # Supabase 클라이언트 설정 (server/client)
+│   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수
+├── n8n/                 # n8n 자동화 관련 설정 및 템플릿
+│   └── n8n_workflow_template.json # 워크플로우 가져오기용 템플릿
 ├── types/               # TypeScript 타입 정의
 │   └── database.ts      # Supabase Generated Types
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
@@ -99,6 +102,13 @@ speak-mango-en/
 - **Export Style**:
   - **Components**: `export default function ComponentName` (Default Export)
   - **Utilities**: `export const functionName` (Named Export)
+
+### Routing
+
+- **중앙 관리**: 앱 내의 모든 경로는 `lib/routes.ts` 파일의 `ROUTES` 상수를 통해 관리해야 합니다.
+- **하드코딩 금지**: 컴포넌트나 함수 내부에서 경로 문자열(예: `"/expressions/..."`)을 직접 작성하는 것을 엄격히 금지합니다.
+- **동적 경로**: 상세 페이지 등 매개변수가 필요한 경로는 `ROUTES.EXPRESSION_DETAIL(id)`와 같은 생성 함수를 사용합니다.
+- **필터 조합**: 검색어, 카테고리 등 쿼리 파라미터가 포함된 홈 경로는 `getHomeWithFilters()` 헬퍼 함수를 사용하여 생성합니다.
 
 ### Component Architecture
 

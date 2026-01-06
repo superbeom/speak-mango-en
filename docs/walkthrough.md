@@ -2,6 +2,29 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.5: 라우트 중앙 관리 및 필터 누적 시스템 (2026-01-06)
+
+### 1. Centralized Route Management
+
+- **File**: `lib/routes.ts` 생성.
+- **Implementation**: 앱 내 모든 경로(`ROUTES`)와 필터 기반 홈 경로 생성 함수(`getHomeWithFilters`)를 정의. 모든 컴포넌트에서 하드코딩된 경로를 제거하고 이 시스템을 사용하도록 리팩토링.
+
+### 2. Additive Filtering UX
+
+- **Logic**: `ExpressionCard.tsx`에서 카테고리/태그 클릭 시 `useSearchParams`를 통해 기존 필터 상태를 읽어와 조합.
+- **Behavior**:
+  - 카테고리 클릭: 기존 검색어/태그 유지 + 카테고리 변경.
+  - 태그 클릭: 기존 카테고리 유지 + 태그 변경 (검색어는 초기화).
+  - 결과적으로 사용자가 원하는 대로 필터를 겹쳐서 적용할 수 있는 강력한 탐색 기능 제공.
+
+## v0.8.4: 카테고리 필터링 최적화 (2026-01-06)
+
+### 1. Smart Category Toggling
+
+- **Logic**: `FilterBar.tsx`의 카테고리 선택 핸들러(`handleCategoryClick`)를 고도화.
+- **Toggling**: 특정 카테고리(예: `Business`)가 활성화된 상태에서 다시 클릭 시, `category` 파라미터를 제거하고 `all` 상태로 자동 전환.
+- **Duplicate Prevention**: 현재 상태가 `all`인 경우, `all` 버튼 클릭 시 라우팅 동작을 중단(`return`)하여 불필요한 데이터 페칭 및 리렌더링 방지.
+
 ## v0.8.3: 네비게이션 상태 보존 및 스크롤 복원 (2026-01-06)
 
 ### 1. Multi-Cache Global State
@@ -96,7 +119,7 @@
 
 ### 1. n8n Prompt Optimization (Tags)
 
-- **Mandatory Tags**: `docs/n8n_optimization_steps.md` 및 `docs/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
+- **Mandatory Tags**: `docs/n8n_optimization_steps.md` 및 `n8n/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
 - **Strict Formatting**: 3~5개의 소문자 문자열 배열 형식을 강제하고, '#' 기호 사용을 금지하여 DB 저장 및 필터링 시의 데이터 정합성을 확보함.
 
 ## v0.7.7: 모바일 호버 효과 제거 및 관련 표현 추천 개선 (2026-01-05)
@@ -398,7 +421,7 @@
 
 ### 2. 워크플로우 템플릿 제공
 
-- **`docs/n8n_workflow_template.json`**: Schedule -> HTTP -> Gemini -> Supabase로 이어지는 핵심 파이프라인 템플릿 생성.
+- **`n8n/n8n_workflow_template.json`**: Schedule -> HTTP -> Gemini -> Supabase로 이어지는 핵심 파이프라인 템플릿 생성.
 - **Gemini 프롬프트**: JSON 구조 응답을 강제하여 DB 데이터 정합성 확보.
 
 ## v0.3.0: 상세 페이지 및 데이터 페칭 개선 (2025-12-30)

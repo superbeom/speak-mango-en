@@ -7,6 +7,7 @@ import { Expression } from "@/types/database";
 import { useEnableHover } from "@/hooks/useIsMobile";
 import { getDictionary } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { ROUTES, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
@@ -28,10 +29,7 @@ const itemVariants = {
   },
 };
 
-export default function ExpressionCard({
-  item,
-  locale,
-}: ExpressionCardProps) {
+export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const enableHover = useEnableHover();
@@ -50,23 +48,29 @@ export default function ExpressionCard({
     e.preventDefault();
     e.stopPropagation();
 
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tag", tag);
-    params.delete("search"); // 태그 클릭 시 일반 검색어는 제거
-
-    router.push(`/?${params.toString()}`);
+    // 현재 필터 상태 유지 (카테고리 등)
+    router.push(
+      getHomeWithFilters({
+        category: searchParams.get("category") || undefined,
+        tag: tag,
+        // 태그 클릭 시 일반 검색어는 혼동을 줄 수 있으므로 제거
+        search: undefined,
+      })
+    );
   };
 
   const handleCategoryClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("category", item.category);
-    params.delete("search");
-    params.delete("tag");
-
-    router.push(`/?${params.toString()}`);
+    // 현재 필터 상태 유지 (태그 등)
+    router.push(
+      getHomeWithFilters({
+        category: item.category,
+        tag: searchParams.get("tag") || undefined,
+        search: searchParams.get("search") || undefined,
+      })
+    );
   };
 
   return (
@@ -80,10 +84,7 @@ export default function ExpressionCard({
       whileTap={enableHover ? { scale: 0.98 } : undefined}
       className="h-full"
     >
-      <Link
-        href={`/expressions/${item.id}`}
-        className="block h-full"
-      >
+      <Link href={ROUTES.EXPRESSION_DETAIL(item.id)} className="block h-full">
         <div
           className={cn(
             "group h-full overflow-hidden rounded-3xl border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",
