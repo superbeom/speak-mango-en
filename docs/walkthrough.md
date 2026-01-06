@@ -2,6 +2,14 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.4: 카테고리 필터링 최적화 (2026-01-06)
+
+### 1. Smart Category Toggling
+
+- **Logic**: `FilterBar.tsx`의 카테고리 선택 핸들러(`handleCategoryClick`)를 고도화.
+- **Toggling**: 특정 카테고리(예: `Business`)가 활성화된 상태에서 다시 클릭 시, `category` 파라미터를 제거하고 `all` 상태로 자동 전환.
+- **Duplicate Prevention**: 현재 상태가 `all`인 경우, `all` 버튼 클릭 시 라우팅 동작을 중단(`return`)하여 불필요한 데이터 페칭 및 리렌더링 방지.
+
 ## v0.8.3: 네비게이션 상태 보존 및 스크롤 복원 (2026-01-06)
 
 ### 1. Multi-Cache Global State

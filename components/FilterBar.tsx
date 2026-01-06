@@ -162,11 +162,21 @@ export default function FilterBar({ locale }: FilterBarProps) {
 
                 const isActive = currentCategory === cat;
 
+                const handleCategoryClick = () => {
+                  if (isActive) {
+                    // 이미 선택된 카테고리를 다시 누른 경우
+                    if (cat === "all") return; // '전체'는 아무 동작 안 함 (중복 페칭 방지)
+                    updateFilters({ category: "all" }); // 다른 카테고리는 선택 해제
+                  } else {
+                    updateFilters({ category: cat });
+                  }
+                };
+
                 return (
                   <button
                     key={cat}
                     data-category={cat}
-                    onClick={() => updateFilters({ category: cat })}
+                    onClick={handleCategoryClick}
                     className={`
                       flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer
                       ${
