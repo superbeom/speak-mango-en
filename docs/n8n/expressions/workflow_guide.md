@@ -31,12 +31,11 @@ docker-compose ps
 8. **Gemini Content Generator**: 전체 콘텐츠(뜻, 예문, 퀴즈 등) 상세 생성.
 9. **Parse Content JSON**: 상세 콘텐츠 데이터를 JSON 객체로 변환.
 10. **Generate ID (Code)**: 저장 경로 및 DB 고유 키로 사용할 UUID 미리 생성.
-11. **TTS Pipeline (음성 합성 및 저장)**:
-    - **Prepare TTS Requests**: 영어 대화문을 추출하고 화자(A/B)별 목소리를 할당하여 개별 요청으로 분해.
-    - **Groq Orpheus TTS**: Orpheus V1 모델을 호출하여 텍스트를 고품질 음성(WAV)으로 초고속 변환.
-    - **Upload to Storage**: 생성된 오디오 파일을 Supabase Storage의 `speak-mango-en` 버킷 내 `expressions/` 폴더에 업로드.
-    - **Aggregate Results**: 분산되었던 오디오 파일 경로들을 원본 데이터 구조에 다시 병합.
-12. **Supabase Insert**: 오디오 경로가 포함된 최종 데이터를 DB에 저장.
+11. **Prepare TTS Requests (Code)**: 영어 대화문을 추출하고 화자(A/B)별 목소리를 할당하여 개별 요청으로 분해.
+12. **Groq Orpheus TTS (HTTP)**: Orpheus V1 모델을 호출하여 텍스트를 고품질 음성(WAV)으로 초고속 변환.
+13. **Upload to Storage (Supabase)**: 생성된 오디오 파일을 Supabase Storage의 `speak-mango-en` 버킷 내 `expressions/` 폴더에 업로드.
+14. **Aggregate TTS Results (Code)**: 분산되었던 오디오 파일 경로들을 원본 데이터 구조에 다시 병합.
+15. **Supabase Insert**: 오디오 경로가 포함된 최종 데이터를 DB에 저장.
 
 ---
 

@@ -88,12 +88,17 @@ Speak Mango는 AI 기반의 영어 표현 자동 생성 및 학습 서비스입�
 - **역할**: Gemini가 생성한 표현 데이터(문자열)를 순수 JSON 객체로 변환합니다.
 - **로직**: 마크다운 코드 블록(```json)을 제거하고 `JSON.parse()`를 수행합니다.
 
-#### 6. Check Duplicate & If New
+#### 6. Check Duplicate (Supabase)
 
-- **역할**: 2차 중복 검사를 수행합니다.
+- **역할**: 생성된 표현이 DB에 있는지 확인하는 2차 안전장치입니다.
+- **설정**: `ILIKE` 연산자를 사용하여 대소문자 구분 없이 유사 중복을 체크합니다.
+
+#### 7. If New
+
+- **역할**: 중복 여부를 판단하여 분기 처리합니다.
 - **로직**: `expression`이 DB에 이미 존재하면 워크플로우를 종료(False)하고, 없으면 진행(True)합니다.
 
-#### 7. Gemini Content Generator
+#### 8. Gemini Content Generator
 
 - **역할**: 선정된 표현에 대한 상세 학습 콘텐츠(뜻, 상황, 대화, 팁, 퀴즈)를 3개 국어(KO, JA, ES)로 생성합니다.
 - **주요 설정 (Prompt Details)**:
@@ -110,25 +115,35 @@ Speak Mango는 AI 기반의 영어 표현 자동 생성 및 학습 서비스입�
     - **Format**: 반드시 A, B, C 선택지와 알파벳 정답(예: "B") 형식을 따라야 하며, 질문과 선택지 사이 줄바꿈(`\n`) 필수.
   - **Output Structure**: `meaning`, `content` (situation, dialogue, tip, quiz), `tags` 등을 포함한 JSON 구조.
 
-#### 8. Parse Content JSON
+#### 9. Parse Content JSON
 
 - **역할**: 상세 콘텐츠 데이터(문자열)를 순수 JSON 객체로 변환합니다.
 
-#### 9. Generate ID (Code)
+#### 10. Generate ID (Code)
 
 - **역할**: 오디오 저장 경로 및 DB 고유 키로 사용할 UUID를 미리 생성합니다.
 - **이유**: TTS 생성과 상세 콘텐츠 생성을 병렬 혹은 순차로 진행할 때 동일한 ID를 공유하기 위함입니다.
 
-#### 10. TTS Pipeline (음성 합성 및 저장)
+#### 11. Prepare TTS Requests (Code)
 
-- **역할**: 생성된 대화문을 원어민 음성으로 변환하여 저장합니다.
-- **단계별 상세 (Steps)**:
-  - **Prepare TTS Requests**: 영어 대화문을 추출하고, 화자(A/B)에 따라 적절한 목소리(Hannah/Troy)를 할당하여 개별 요청 아이템으로 분해합니다.
-  - **Groq Orpheus TTS**: Orpheus V1 모델을 호출하여 초고속으로 텍스트를 음성(WAV) 바이너리로 변환합니다.
-  - **Upload to Storage**: 생성된 오디오 파일을 Supabase Storage의 `speak-mango-en` 버킷 내 `expressions/` 폴더에 업로드합니다.
-  - **Aggregate Results**: 분산되었던 오디오 파일 경로(`audio_url`)들을 원본 JSON 데이터 구조의 적절한 위치(`dialogue` 배열)에 다시 병합합니다.
+- **역할**: 영어 대화문을 추출하고, 화자(A/B)에 따라 적절한 목소리(Hannah/Troy)를 할당하여 개별 요청 아이템으로 분해합니다.
+- **로직**: `dialogue` 배열을 순회하며 각 문장을 `tts_input`으로 변환하고 `storage_path`를 지정합니다.
 
-#### 11. Supabase Insert
+#### 12. Groq Orpheus TTS (HTTP)
+
+- **역할**: Groq API를 호출하여 텍스트를 초고속으로 음성(WAV) 바이너리로 변환합니다.
+- **설정**: `canopylabs/orpheus-v1-english` 모델을 사용하며, 응답 형식을 `Binary File`로 받습니다.
+
+#### 13. Upload to Storage (Supabase)
+
+- **역할**: 생성된 오디오 파일을 Supabase Storage의 `speak-mango-en` 버킷 내 `expressions/` 폴더에 업로드합니다.
+
+#### 14. Aggregate TTS Results (Code)
+
+- **역할**: 분산되었던 오디오 파일 경로(`audio_url`)들을 원본 JSON 데이터 구조의 적절한 위치(`dialogue` 배열)에 다시 병합합니다.
+- **결과**: 하나의 완성된 JSON 객체(표현 정보 + 콘텐츠 + 오디오 경로)가 생성됩니다.
+
+#### 15. Supabase Insert
 
 - **역할**: 최종 생성된 데이터를 DB에 저장합니다.
 - **매핑**: `expression`, `meaning`, `content`, `tags` 등의 필드가 정확히 매핑되었는지 확인합니다.
