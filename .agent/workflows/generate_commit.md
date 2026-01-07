@@ -1,6 +1,6 @@
 # Auto-Generate Commit Message Workflow
 
-이 워크플로우는 현재 Staging된 변경 사항을 분석하여 `git_convention.md` 규칙에 맞는 커밋 메시지를 생성하고, 이를 바로 실행할 수 있는 쉘 스크립트로 만들어줍니다.
+이 워크플로우는 현재 Staging된 변경 사항을 분석하여 `git/convention.md` 규칙에 맞는 커밋 메시지를 생성하고, 이를 바로 실행할 수 있는 쉘 스크립트로 만들어줍니다.
 
 ## 0. Prerequisites (사전 작업)
 
@@ -16,7 +16,7 @@
 
 ## 2. Load Convention (규칙 로드)
 
-1.  `docs/git_convention.md` 파일을 읽고 다음 규칙을 숙지하십시오:
+1.  `docs/git/convention.md` 파일을 읽고 다음 규칙을 숙지하십시오:
     - **Format**: `type(scope): Subject` + `Problem / Solution / Effect` 구조.
     - **Language**: 영어 우선, 하단에 한글 요약 병기.
     - **Type**: `feat`, `fix`, `refactor`, `docs`, `chore` 등 적절한 타입 선택.

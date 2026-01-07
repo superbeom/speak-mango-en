@@ -6,12 +6,19 @@
 
 ### ✅ 진행 사항
 
+- **문서 구조 재편 (Documentation Reorganization)**:
+  - `docs/` 폴더 내의 문서들을 주제별 하위 폴더(`n8n/`, `monetization/`, `git/`, `database/`, `product/`)로 분류하여 관리 효율성 증대.
+  - `docs/n8n/` 하위에 `expressions/` 폴더를 신설하여 워크플로우별 문서 격리 및 확장성 확보.
 - **코드 노드 개별 파일화**: n8n 워크플로우 내의 복잡한 JavaScript 로직과 AI 프롬프트를 `n8n/expressions/code/` 폴더 내의 개별 파일(`*.js`, `*.txt`)로 분리하여 관리 효율성 증대.
 - **워크플로우 구조 정교화**: 템플릿 파일명을 `expressions_workflow_template.json`으로 변경하고 전용 폴더로 이동하여 향후 `vocas` 등 다른 도메인 확장을 위한 구조적 기반 마련.
 - **보안성 향상**: 워크플로우 템플릿 내의 특정 Credential ID를 플레이스홀더로 교체하여 공유 및 커밋 시 보안 위험 제거.
 - **백업 체계 개선**: 로컬 백업 파일명을 `speak_mango_n8n_expressions_workflow.json`으로 변경하여 명확성 확보.
 
 ### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 문서 폴더 구조를 재편했나?**
+
+- **A.** 프로젝트 문서가 많아짐에 따라 `docs/` 루트에 모든 파일이 나열되어 있어 가독성이 떨어짐. `n8n`, `database`, `product` 등 주제별로 폴더를 나누고, 특히 `n8n`은 워크플로우 종류(`expressions`, `vocas` 등)에 따라 하위 폴더를 두어 확장성을 고려함.
 
 **Q. 왜 코드 노드를 별도 파일로 분리했나?**
 
@@ -30,8 +37,8 @@
   - 버킷명을 `speak-mango-en`으로 설정하여 프로젝트 단위 통합 저장소로 격상.
   - 하위 폴더 구조를 `expressions/{id}/{index}.wav`로 정규화하여 확장성 확보.
 - **문서 현행화**:
-  - `docs/n8n_optimization_steps.md`, `docs/n8n_user_guide.md`, `docs/n8n_workflow_guide.md`에 TTS 관련 상세 설정 및 트러블슈팅 가이드 추가.
-  - `docs/supabase_strategy.md`에 Storage 폴더 격리 전략 및 향후 유료화(Feature Gating) 시 보안 전환 가이드 수립.
+  - `docs/n8n/expressions/optimization_steps.md`, `docs/n8n/expressions/user_guide.md`, `docs/n8n/expressions/workflow_guide.md`에 TTS 관련 상세 설정 및 트러블슈팅 가이드 추가.
+  - `docs/database/supabase_strategy.md`에 Storage 폴더 격리 전략 및 향후 유료화(Feature Gating) 시 보안 전환 가이드 수립.
 
 ### 💬 주요 Q&A 및 의사결정
 
@@ -41,7 +48,7 @@
 
 **Q. TTS 음성 파일은 왜 Public 버킷에 저장하나?**
 
-- **A.** 초기 개발 단계에서의 접근 편의성과 CDN 캐싱 효율을 위해 Public으로 설정함. 단, `docs/future_todos.md`에 기록한 대로 추후 유료 사용자 전용 기능(Feature Gating) 도입 시 Private 전환 및 RLS 설정을 적용할 예정임.
+- **A.** 초기 개발 단계에서의 접근 편의성과 CDN 캐싱 효율을 위해 Public으로 설정함. 단, `docs/product/future_todos.md`에 기록한 대로 추후 유료 사용자 전용 기능(Feature Gating) 도입 시 Private 전환 및 RLS 설정을 적용할 예정임.
 
 ## 2026-01-06: 라우트 중앙 관리 및 필터 누적 시스템 (Centralized Routing & Additive Filtering)
 
@@ -209,7 +216,7 @@
 
 ### ✅ 진행 사항
 
-- **태그 생성 규칙 명문화**: `docs/n8n_optimization_steps.md` 및 `n8n/n8n_workflow_template.json`에 태그 생성 필수 요건(Requirement 11)을 추가. AI가 3~5개의 소문자 키워드를 포함하도록 명시하여 데이터 품질 및 필터링 효율성을 높임.
+- **태그 생성 규칙 명문화**: `docs/n8n/expressions/optimization_steps.md` 및 `n8n/n8n_workflow_template.json`에 태그 생성 필수 요건(Requirement 11)을 추가. AI가 3~5개의 소문자 키워드를 포함하도록 명시하여 데이터 품질 및 필터링 효율성을 높임.
 - **모바일 호버 이슈 해결**: 모바일에서 스크롤 시 카드의 호버 효과(크기 변경, 테두리 색상)가 유지되거나 깜빡이는 문제를 해결하기 위해 `useIsMobile` 훅을 활용.
 - **조건부 렌더링**: 모바일 환경(`isMobile === true`)에서는 `whileHover`, `whileTap` 애니메이션과 CSS `hover:` 클래스가 적용되지 않도록 `ExpressionCard` 컴포넌트 로직 수정.
 - **안정성 확보**: 초기 렌더링 시(`undefined`) 데스크탑을 기본값으로 간주하여 하이드레이션 불일치 방지 및 점진적 적용.
@@ -247,7 +254,7 @@
 
 ### ✅ 진행 사항
 
-- **사용자 가이드 작성**: 서비스 개요부터 n8n 워크플로우 설정 방법까지 상세히 안내하는 `docs/n8n_user_guide.md` 생성. 운영자가 워크플로우를 직접 설정하고 운영하는 데 필요한 모든 단계(Credentials, Node Logic, Troubleshooting)를 문서화함.
+- **사용자 가이드 작성**: 서비스 개요부터 n8n 워크플로우 설정 방법까지 상세히 안내하는 `docs/n8n/expressions/user_guide.md` 생성. 운영자가 워크플로우를 직접 설정하고 운영하는 데 필요한 모든 단계(Credentials, Node Logic, Troubleshooting)를 문서화함.
 - **퀴즈 UI 가독성 개선**: 상세 페이지의 퀴즈 질문(`question`) 영역에 `whitespace-pre-wrap` 속성을 추가하여, n8n에서 생성된 줄바꿈(`\n`)이 UI에 그대로 반영되도록 수정. 이를 통해 질문과 선택지가 섞여 보이던 문제를 해결함.
 
 ### 💬 주요 Q&A 및 의사결정
@@ -260,7 +267,7 @@
 
 ### ✅ 진행 사항
 
-- **Quiz Logic 재정립**: `docs/n8n_optimization_steps.md`의 Gemini 프롬프트를 전면 개편.
+- **Quiz Logic 재정립**: `docs/n8n/expressions/optimization_steps.md`의 Gemini 프롬프트를 전면 개편.
   - 기존의 모호하거나 잘못된 패턴(Target Language -> Target Language)을 제거하고, 3가지 명확한 패턴(Situation->EN, Expression->Situation, Negative Logic)으로 정립.
   - 모든 언어(KO, JA, ES)에 대해 3지 선다(A/B/C)와 정답 포맷(단일 알파벳)을 강제하는 **Strict Formatting Rules** 추가.
 - **데이터 보정**: 기존 DB에 쌓인 잘못된 형식의 퀴즈 데이터(`How's it going?`, `down in the dumps` 등)와 논리적으로 부적절한 데이터(`Is there a fitting room?` 등)를 올바른 패턴으로 수정하는 SQL 스크립트 작성 (`database/009_fix_invalid_quizzes.sql`).
@@ -280,7 +287,7 @@
 ### ✅ 진행 사항
 
 - **Gemini 프롬프트 고도화**: `Gemini Content Generator` 프롬프트를 수정하여 영어 표현의 대소문자(문장 vs 구절), 의미의 톤(반말 vs 존댓말), 문장 부호(물음표 등) 규칙을 명확히 정의함.
-- **컨텍스트 복원 강화**: `.agent/workflows/restore_context.md`가 로드하는 파일 목록에 `features_list.md`, `database_schema.md`를 추가하여 에이전트의 이해도 향상.
+- **컨텍스트 복원 강화**: `.agent/workflows/restore_context.md`가 로드하는 파일 목록에 `features_list.md`, `database/schema.md`를 추가하여 에이전트의 이해도 향상.
 - **문서 동기화**: `n8n_optimization_steps.md`와 `n8n/n8n_workflow_template.json`을 최신 프롬프트 변경 사항에 맞춰 업데이트.
 
 ### 💬 주요 Q&A 및 의사결정
@@ -337,7 +344,7 @@
 
 ### ✅ 진행 사항
 
-- **문서화**: 프로젝트의 현재 구현된 기능들을 일목요연하게 정리한 `docs/features_list.md` 생성.
+- **문서화**: 프로젝트의 현재 구현된 기능들을 일목요연하게 정리한 `docs/product/features_list.md` 생성.
 - **범위**: 사용자 인터페이스(메인, 상세)부터 백엔드 인프라(Supabase, n8n)까지 전체 시스템 기능 명세 포함.
 
 ### 💬 주요 Q&A 및 의사결정
@@ -365,7 +372,7 @@
 ### ✅ 진행 사항
 
 - **로직 개선**: 기존의 사후 중복 체크(Check Duplicate) 방식이 Gemini의 반복 생성을 막지 못하는 문제를 해결하기 위해, 생성 전 기존 데이터를 조회하여 제외 목록으로 전달하는 **사전 예방(Pre-fetch)** 단계를 추가함.
-- **문서 업데이트**: `docs/n8n_optimization_steps.md` 및 `docs/n8n_workflow_guide.md`에 'Get Existing Expressions' 단계 추가.
+- **문서 업데이트**: `docs/n8n/expressions/optimization_steps.md` 및 `docs/n8n/expressions/workflow_guide.md`에 'Get Existing Expressions' 단계 추가.
 
 ### 💬 주요 Q&A 및 의사결정
 
@@ -454,7 +461,7 @@
 
 **Q. 왜 의미(Meaning) 필드에서 마침표를 제거하고 반말로 통일했나?**
 
-- **A.** `docs/n8n_optimization_steps.md`에서 정의한 '간결한 뜻풀이'와 '캐주얼한 톤' 원칙을 지키기 위함임. 특히 모바일 카드 UI에서는 텍스트의 간결함이 가독성에 큰 영향을 미치므로 마침표 같은 불필요한 문장 부호를 최소화함.
+- **A.** `docs/n8n/expressions/optimization_steps.md`에서 정의한 '간결한 뜻풀이'와 '캐주얼한 톤' 원칙을 지키기 위함임. 특히 모바일 카드 UI에서는 텍스트의 간결함이 가독성에 큰 영향을 미치므로 마침표 같은 불필요한 문장 부호를 최소화함.
 
 ## 2026-01-01: CategoryLabel 호버 애니메이션 고도화
 
@@ -646,8 +653,8 @@
 - **n8n 데이터 지속성 확보**: `docker-compose.yml` 수정 (Bind Mount 적용) 및 `.gitignore` 설정 추가 (`n8n_data/`).
 - **자동화 전략 대전환**: 기존 외부 블로그 스크래핑 방식에서 **AI 기반 자체 생성 방식**으로 변경.
 - **문서 업데이트**:
-  - `docs/n8n_optimization_steps.md`: AI 기반 생성 및 중복 방지 가이드로 전면 수정.
-  - `docs/n8n_workflow_guide.md`: 변경된 아키텍처(Category Selection -> Generator) 반영.
+  - `docs/n8n/expressions/optimization_steps.md`: AI 기반 생성 및 중복 방지 가이드로 전면 수정.
+  - `docs/n8n/expressions/workflow_guide.md`: 변경된 아키텍처(Category Selection -> Generator) 반영.
   - `docs/project_context.md`: 시스템 아키텍처 다이어그램 업데이트.
 
 ### 💬 주요 Q&A 및 의사결정

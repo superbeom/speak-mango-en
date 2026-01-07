@@ -1,7 +1,7 @@
 # Monetization Ideas & Concepts
 
-> 이 문서는 수익화 관련 브레인스토밍 및 전략적 조언(`monetization_brainstorming.md`)을 정리한 문서입니다.
-> 실제 구현 로드맵은 `docs/monetization_strategy.md`를 참고하세요.
+> 이 문서는 수익화 관련 브레인스토밍 및 전략적 조언(`docs/monetization/brainstorming.md`)을 정리한 문서입니다.
+> 실제 구현 로드맵은 `docs/monetization/strategy.md`를 참고하세요.
 
 ## 1. 핵심 철학: "From Blog to SaaS"
 

@@ -10,11 +10,11 @@
 - `docs/project_context.md` (프로젝트 개요 및 아키텍처, 규칙)
 - `docs/project_history.md` (히스토리 및 Q&A)
 - `docs/task.md` (작업 목록)
-- `docs/features_list.md` (구현된 기능 명세)
-- `docs/future_todos.md` (기술 부채 및 아이디어)
-- `docs/database_schema.md` (DB 스키마 정의)
-- `docs/git_convention.md` (커밋 컨벤션)
-- `docs/git_branch_strategy.md` (브랜치 전략)
+- `docs/product/features_list.md` (구현된 기능 명세)
+- `docs/product/future_todos.md` (기술 부채 및 아이디어)
+- `docs/database/schema.md` (DB 스키마 정의)
+- `docs/git/convention.md` (커밋 컨벤션)
+- `docs/git/branch_strategy.md` (브랜치 전략)
 - `docs/walkthrough.md` (구현 상세 내역)
 
 ## 2. Summarize & Internalize
@@ -36,7 +36,7 @@
     - 코드 작성 중 개선이 필요한 부분이나 나중으로 미룰 사항이 생기면, 단순히 주석만 남기지 말고 **반드시 `future_todos.md` 파일에도 항목을 추가**하십시오.
     - 예: `// TODO: 중복 체크 로직 개선` -> `future_todos.md`에 `[ ] 중복 체크 로직 개선 (n8n workflow)` 추가.
 3.  **일관성 유지**:
-    - `project_context.md`에 정의된 아키텍처와 `git_convention.md`의 규칙을 항상 먼저 고려하십시오.
+    - `project_context.md`에 정의된 아키텍처와 `git/convention.md`의 규칙을 항상 먼저 고려하십시오.
 
 ---
 

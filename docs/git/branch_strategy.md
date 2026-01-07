@@ -19,7 +19,7 @@
 
 ### 타입 (Types)
 
-커밋 컨벤션(`git_convention.md`)의 타입과 동일하게 사용합니다.
+커밋 컨벤션(`docs/git/convention.md`)의 타입과 동일하게 사용합니다.
 
 - `feat`: 새로운 기능 추가
 - `fix`: 버그 수정

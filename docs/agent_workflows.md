@@ -37,7 +37,7 @@
 
 ### 💡 목적
 
-- `docs/git_convention.md`에 정의된 복잡한 커밋 메시지 규칙(Problem-Solution-Effect)을 고민할 필요 없이 자동으로 작성합니다.
+- `docs/git/convention.md`에 정의된 복잡한 커밋 메시지 규칙(Problem-Solution-Effect)을 고민할 필요 없이 자동으로 작성합니다.
 - 터미널에서 바로 실행 가능한 스크립트 파일(`commit_msg.sh`)을 만들어줍니다.
 
 ### 🚀 사용법

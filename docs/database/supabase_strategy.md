@@ -329,7 +329,7 @@ export async function createServerSupabase(schema: string = DATABASE_SCHEMA) {
 3.  **루트 혼잡 방지**: 파일 종류별로 폴더를 강제함으로써 루트 경로가 수많은 파일로 어지럽혀지는 것을 방지합니다.
 
 > **⚠️ 보안 고도화 주의사항 (Audio Feature Gating)**
-> 현재 음성 파일 버킷은 개발 편의 및 MVP 단계를 위해 **Public**으로 설정되어 있습니다. 향후 `docs/future_todos.md`에 정의된 **'유료 사용자에게만 음성 제공'** 기능을 구현할 때는 다음의 절차를 반드시 준수해야 합니다.
+> 현재 음성 파일 버킷은 개발 편의 및 MVP 단계를 위해 **Public**으로 설정되어 있습니다. 향후 `docs/product/future_todos.md`에 정의된 **'유료 사용자에게만 음성 제공'** 기능을 구현할 때는 다음의 절차를 반드시 준수해야 합니다.
 > - **버킷 전환**: 버킷 권한을 `Public`에서 **`Private`**으로 변경.
 > - **RLS 적용**: `storage.objects` 테이블에 유료 사용자 여부(프로필 티어 등)를 확인하는 **Storage Policy(RLS)**를 추가하여 접근 제어.
 > - **접근 방식**: 프론트엔드에서 직통 URL 대신 Supabase SDK의 `createSignedUrl`을 사용하거나 정책 기반의 인증 세션을 통해 파일에 접근.

@@ -10,12 +10,17 @@
 - **File Naming**: 실행 순서에 따라 번호 접두사를 부여하여 가독성 확보 (예: `02_pick_category.js`, `04_gemini_expression_generator_prompt.txt`).
 - **Benefits**: 외부 에디터 사용 가능, 버전 관리 용이성, 코드 재사용성 향상.
 
-### 2. Scalable Workflow Organization
+### 2. Documentation Reorganization
+
+- **Categorization**: `docs/` 내의 평면적인 파일 구조를 `n8n/`, `monetization/`, `git/`, `database/`, `product/` 등 주제별 하위 폴더로 재편.
+- **Scalability**: `docs/n8n/expressions/`와 같이 워크플로우별 전용 문서 폴더를 생성하여, 향후 `vocas` 등 새로운 기능 추가 시 문서 혼재를 방지.
+
+### 3. Scalable Workflow Organization
 
 - **Directory Relocation**: 기존 루트의 n8n 관련 파일들을 `n8n/expressions/` 하위로 이동.
 - **Template Renaming**: `n8n_workflow_template.json`을 `expressions_workflow_template.json`으로 변경하여 향후 `vocas`, `images` 등 다른 도메인의 워크플로우가 추가될 때 충돌 없이 확장 가능한 구조 마련.
 
-### 3. Template Sanitization & Security
+### 4. Template Sanitization & Security
 
 - **Credential Cleanup**: 워크플로우 템플릿 내에 포함된 특정 Credential ID들을 `your-http-header-auth-id` 등과 같은 플레이스홀더로 교체하여 공용 저장소 커밋 시 보안 위험 원천 차단.
 
@@ -136,7 +141,7 @@
 
 ### 1. n8n Prompt Optimization (Tags)
 
-- **Mandatory Tags**: `docs/n8n_optimization_steps.md` 및 `n8n/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
+- **Mandatory Tags**: `docs/n8n/expressions/optimization_steps.md` 및 `n8n/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
 - **Strict Formatting**: 3~5개의 소문자 문자열 배열 형식을 강제하고, '#' 기호 사용을 금지하여 DB 저장 및 필터링 시의 데이터 정합성을 확보함.
 
 ## v0.7.7: 모바일 호버 효과 제거 및 관련 표현 추천 개선 (2026-01-05)
@@ -174,7 +179,7 @@
 
 ### 1. New Documentation: User Guide
 
-- **`docs/n8n_user_guide.md`**: 서비스의 핵심 기능 소개부터 n8n 워크플로우 운영 가이드까지 포함한 종합 사용자 가이드 작성.
+- **`docs/n8n/expressions/user_guide.md`**: 서비스의 핵심 기능 소개부터 n8n 워크플로우 운영 가이드까지 포함한 종합 사용자 가이드 작성.
 - **Operator focus**: n8n을 통한 자동화 프로세스(프롬프트 설정, Credentials 연결, 트러블슈팅)를 상세히 설명하여 운영 효율성 제고.
 
 ### 2. UI Polish (Quiz)
@@ -206,7 +211,7 @@
 
 ### 2. Agent Workflow Enhancement
 
-- **Context Restoration**: `.agent/workflows/restore_context.md`를 업데이트하여 `features_list.md`, `database_schema.md` 등 핵심 문서를 추가 로드하도록 개선. 이를 통해 에이전트가 프로젝트의 기능과 데이터 구조를 더 정확히 이해하게 됨.
+- **Context Restoration**: `.agent/workflows/restore_context.md`를 업데이트하여 `features_list.md`, `database/schema.md` 등 핵심 문서를 추가 로드하도록 개선. 이를 통해 에이전트가 프로젝트의 기능과 데이터 구조를 더 정확히 이해하게 됨.
 
 ## v0.7.2: UI 스타일 중앙 관리 및 모바일 최적화 (2026-01-03)
 
@@ -281,7 +286,7 @@
   - `auth.users`를 공유하되 스키마별 `profiles` 테이블(외래키 참조)을 통해 서비스 가입자를 구분하는 보안 전략 수립.
 - **클라이언트 고도화**:
   - `createBrowserSupabase` 및 `createServerSupabase` 함수가 스키마 이름을 인자로 받아 동적으로 전환할 수 있도록 리팩토링.
-  - 단일 스키마(Scenario A)와 다중 스키마(Scenario B) 사용 예시를 문서화(`docs/supabase_strategy.md`).
+  - 단일 스키마(Scenario A)와 다중 스키마(Scenario B) 사용 예시를 문서화(`docs/database/supabase_strategy.md`).
 
 ### 3. 데이터베이스 마이그레이션
 
@@ -420,7 +425,7 @@
 
 ### 3. n8n 백업 체계 수립
 
-- **`docs/n8n_workflow_guide.md`**: 워크플로우 Export/Import 가이드 추가.
+- **`docs/n8n/expressions/workflow_guide.md`**: 워크플로우 Export/Import 가이드 추가.
 
 ## v0.4.1: n8n 데이터 지속성 설정 개선 (2025-12-31)
 
@@ -496,8 +501,8 @@
 
 ### 2. 문서화 (Documentation)
 
-- **`docs/database_schema.md`**: Supabase `expressions` 테이블 스키마 정의 (UUID, 영어 표현, 뜻, 예문 등).
-- **`docs/n8n_workflow_guide.md`**: n8n 자동화 로직 설계 (HTTP Request -> Gemini AI -> Supabase).
+- **`docs/database/schema.md`**: Supabase `expressions` 테이블 스키마 정의 (UUID, 영어 표현, 뜻, 예문 등).
+- **`docs/n8n/expressions/workflow_guide.md`**: n8n 자동화 로직 설계 (HTTP Request -> Gemini AI -> Supabase).
 - **`docs/project_context.md`**: 프로젝트 규칙 및 아키텍처 정의.
 
 ### 3. 향후 계획 (Next Steps)

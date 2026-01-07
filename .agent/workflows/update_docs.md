@@ -24,19 +24,19 @@
 - **`docs/task.md`**:
   - 완료된 작업(`Task`)이 있다면 체크박스를 `[x]`로 변경하십시오.
   - 새로운 작업이 발견되면 목록에 추가하십시오.
-- **`docs/future_todos.md`**:
+- **`docs/product/future_todos.md`**:
   - 작업 중 발견한 기술 부채나 추후 개선 사항이 있나요?
-- **`docs/feature_ideas.md`**:
+- **`docs/product/feature_ideas.md`**:
   - 새롭게 제안된 기능이나 브레인스토밍 내용이 있나요?
   - 아이디어를 추가하거나 구체화하십시오. **이미 구현된 기능은 목록에서 제거하십시오.**
-- **`docs/features_list.md`**:
+- **`docs/product/features_list.md`**:
   - 기능의 동작 방식이나 스펙이 변경되었나요?
   - 최신 스펙으로 업데이트하십시오.
 - **`docs/agent_workflows.md`**:
   - 에이전트 워크플로우 파일(`*.md`)이 추가되거나 수정되었나요?
-- **`docs/supabase_strategy.md`**:
+- **`docs/database/supabase_strategy.md`**:
   - 데이터베이스 운영 전략이나 스키마 관리 방식이 변경되었나요?
-- **`docs/database_schema.md`**:
+- **`docs/database/schema.md`**:
   - 데이터베이스 스키마나 테이블 명세에 변경 사항이 있었나요?
 
 ## 3. Stage Changes (변경 사항 반영)

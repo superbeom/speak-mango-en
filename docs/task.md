@@ -27,7 +27,7 @@
 
 ## Phase 4: Optimization & Polish (최적화 및 고도화)
 
-- [x] **Automation**: AI 기반 생성 및 중복 방지 워크플로우 설계 완료 (`docs/n8n_optimization_steps.md`)
+- [x] **Automation**: AI 기반 생성 및 중복 방지 워크플로우 설계 완료 (`docs/n8n/expressions/optimization_steps.md`)
 - [x] **i18n**: 다국어 지원 인프라 및 중앙 집중식 문자열 관리 구현
 - [x] **Category**: 2단계 분류 체계(`domain`, `category`) 도입 및 DB 스키마 확장
 - [x] **UI/UX**: 태그 및 카테고리별 필터링 기능 구현
@@ -40,7 +40,7 @@
 - [x] **Automation**: TTS 파이프라인 구축 (Groq API + Supabase Storage 연동)
 - [x] **Automation**: n8n 코드 및 프롬프트 모듈화 (개별 파일 분리 및 구조 최적화)
 - [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 최적화
-- [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n_user_guide.md`) 작성
+- [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n/expressions/user_guide.md`) 작성
 - [x] **UI/UX**: 스켈레톤 로딩 (Skeleton Loading) 도입
 - [x] **UI/UX**: 리스트 탐색 경험 개선 ('더 보기' 버튼 및 레이아웃 안정화)
 - [x] **UI/UX**: 필터별 독립 캐싱 및 정밀 스크롤 복원 구현

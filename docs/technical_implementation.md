@@ -168,7 +168,7 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 
 ### 7.3 Structured Prompt Engineering
 
-- **File**: `docs/n8n_optimization_steps.md`
+- **File**: `docs/n8n/expressions/optimization_steps.md`
 - **Context**: 3단계(상황->표현, 표현->상황, 부정 로직)의 퀴즈 패턴을 정의하고, 문장 부호 및 대소문자 규칙(문장은 대문자, 구절은 소문자 시작)을 명시하여 데이터의 일관성을 확보했습니다.
 
 ## 8. Navigation State Persistence (네비게이션 상태 보존)
