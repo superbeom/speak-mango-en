@@ -2,6 +2,23 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.6: n8n 워크플로우 모듈화 및 확장성 강화 (2026-01-07)
+
+### 1. Modular Code & Prompt Management
+
+- **Structure**: n8n 워크플로우의 각 노드에 분산되어 있던 JavaScript 코드와 Gemini 프롬프트를 로컬 파일로 분리하여 `n8n/expressions/code/` 폴더에 저장.
+- **File Naming**: 실행 순서에 따라 번호 접두사를 부여하여 가독성 확보 (예: `02_pick_category.js`, `04_gemini_expression_generator_prompt.txt`).
+- **Benefits**: 외부 에디터 사용 가능, 버전 관리 용이성, 코드 재사용성 향상.
+
+### 2. Scalable Workflow Organization
+
+- **Directory Relocation**: 기존 루트의 n8n 관련 파일들을 `n8n/expressions/` 하위로 이동.
+- **Template Renaming**: `n8n_workflow_template.json`을 `expressions_workflow_template.json`으로 변경하여 향후 `vocas`, `images` 등 다른 도메인의 워크플로우가 추가될 때 충돌 없이 확장 가능한 구조 마련.
+
+### 3. Template Sanitization & Security
+
+- **Credential Cleanup**: 워크플로우 템플릿 내에 포함된 특정 Credential ID들을 `your-http-header-auth-id` 등과 같은 플레이스홀더로 교체하여 공용 저장소 커밋 시 보안 위험 원천 차단.
+
 ## v0.8.5: 라우트 중앙 관리 및 필터 누적 시스템 (2026-01-06)
 
 ### 1. Centralized Route Management

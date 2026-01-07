@@ -46,7 +46,7 @@ Speak Mango는 AI 기반의 영어 표현 자동 생성 및 학습 서비스입�
 ### 워크플로우 가져오기 (Import)
 
 1.  n8n 대시보드에서 `Import from File`을 선택합니다.
-2.  프로젝트 내 `n8n/n8n_workflow_template.json` 파일을 업로드합니다.
+2.  프로젝트 내 `n8n/expressions/expressions_workflow_template.json` 파일을 업로드합니다.
 3.  가져온 워크플로우 내의 주요 노드들에 **Credentials**를 연결합니다.
     - `googlePalmApi`: Gemini AI 연동을 위해 발급받은 Google AI Studio API 키를 연결합니다.
     - `supabaseApi`: Supabase 프로젝트의 API URL과 Service Role Key를 입력하여 연결합니다.

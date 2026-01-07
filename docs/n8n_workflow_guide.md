@@ -44,7 +44,7 @@ docker-compose ps
 
 1. n8n 접속 후 왼쪽 메뉴의 **Workflows** 클릭
 2. 오른쪽 상단의 **Add Workflow** -> **Import from File** 선택
-3. `n8n/n8n_workflow_template.json` 파일 선택
+3. `n8n/expressions/expressions_workflow_template.json` 파일 선택
 4. 각 노드의 **Credential**을 본인의 설정에 맞게 등록 (Gemini API Key, Supabase URL/Key, Groq API Key)
 
 ---
@@ -94,8 +94,8 @@ n8n의 `Supabase` 노드를 사용하여 최종 데이터를 `expressions` 테�
 워크플로우 데이터 유실에 대비하여 주기적으로 설정을 내보내기 하는 것이 좋습니다.
 
 1. **내보내기 (Export)**: 워크플로우 화면 상단 메뉴 -> **Download** 클릭.
-2. **공유용 저장**: API Key가 제거된 템플릿은 `n8n/n8n_workflow_template.json`에 저장하여 공유합니다.
-3. **개인 백업 저장**: 본인의 실제 Credential 정보가 포함된 전체 백업은 **`n8n_data/n8n_workflow_daily_english.json`** 경로에 저장하는 것을 권장합니다. (해당 폴더는 `.gitignore` 처리되어 있어 보안상 안전합니다.)
+2. **공유용 저장**: API Key가 제거된 템플릿은 `n8n/expressions/expressions_workflow_template.json`에 저장하여 공유합니다.
+3. **개인 백업 저장**: 본인의 실제 Credential 정보가 포함된 전체 백업은 **`n8n_data/speak_mango_n8n_expressions_workflow.json`** 경로에 저장하는 것을 권장합니다. (해당 폴더는 `.gitignore` 처리되어 있어 보안상 안전합니다.)
 4. **가져오기 (Import)**: 새로운 n8n 환경에서 **Import from File** 클릭 -> 저장된 JSON 파일 선택.
 5. **재연동**: 가져오기 후 Gemini API Key 및 Supabase Credential을 다시 연결하면 즉시 가동 가능합니다.
 

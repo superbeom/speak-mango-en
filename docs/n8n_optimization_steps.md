@@ -199,9 +199,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
 `Check Duplicate` 뒤에 **If** 노드를 추가합니다.
 
 - **Name**: `If New`
-- **Conditions**:
-  - Number: `{{ $items('Check Duplicate').length }}` **Equal** `0`
-  - (데이터가 없으면 0이므로 새로운 표현임)
+- **Conditions**: `{{ $('Check Duplicate').first().json.expression }}`
+- **String**: `is empty`
+  - (데이터가 없으면 'is empty'이므로 새로운 표현임)
 
 ### 8단계: Gemini Content Generator (상세 내용 생성)
 
@@ -412,7 +412,7 @@ return results;
 
 공식 Supabase 노드는 파일 업로드를 지원하지 않으므로, **HTTP Request** 노드를 사용하여 직접 업로드합니다.
 
-- **사전 작업**: Supabase Dashboard > Storage에서 **`speak-mango-en`**라는 이름의 Bucket을 미리 생성해야 합니다. (폴더는 자동으로 생성되므로Bucket만 있으면 됩니다.)
+- **사전 작업**: Supabase Dashboard > Storage에서 **`speak-mango-en`**라는 이름의 Bucket을 미리 생성해야 합니다. (폴더는 자동으로 생성되므로 Bucket만 있으면 됩니다.)
 - **Name**: `Upload to Storage`
 - **Method**: `POST`
 - **URL**: `https://<YOUR_PROJECT_REF>.supabase.co/storage/v1/object/speak-mango-en/{{ $json.storage_path }}`

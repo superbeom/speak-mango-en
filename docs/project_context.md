@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-06
+**최종 수정일**: 2026-01-07
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -60,7 +60,9 @@ speak-mango-en/
 │   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수
 ├── n8n/                 # n8n 자동화 관련 설정 및 템플릿
-│   └── n8n_workflow_template.json # 워크플로우 가져오기용 템플릿
+│   └── expressions/     # 영어 표현(Expressions) 생성 워크플로우
+│       ├── code/        # 각 노드의 JavaScript 코드 파일 (단계별 분리)
+│       └── expressions_workflow_template.json # 워크플로우 템플릿
 ├── types/               # TypeScript 타입 정의
 │   └── database.ts      # Supabase Generated Types
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
