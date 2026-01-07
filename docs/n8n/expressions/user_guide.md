@@ -91,12 +91,15 @@ Speak Mango는 AI 기반의 영어 표현 자동 생성 및 학습 서비스입�
 #### 6. Check Duplicate (Supabase)
 
 - **역할**: 생성된 표현이 DB에 있는지 확인하는 2차 안전장치입니다.
-- **설정**: `ILIKE` 연산자를 사용하여 대소문자 구분 없이 유사 중복을 체크합니다.
+- **설정**: 
+  - `ILIKE` 연산자를 사용하여 대소문자 구분 없이 유사 중복을 체크합니다.
+  - **최적화**: `Return All`을 끄고(`False`), `Limit`를 `1`로 설정하여 성능을 높입니다.
+  - **필수**: `Always Output Data` 옵션을 **On**으로 설정하여 중복이 없을 때도 빈 객체를 반환해 워크플로우가 멈추지 않게 합니다.
 
 #### 7. If New
 
 - **역할**: 중복 여부를 판단하여 분기 처리합니다.
-- **로직**: `expression`이 DB에 이미 존재하면 워크플로우를 종료(False)하고, 없으면 진행(True)합니다.
+- **로직**: `Check Duplicate` 노드의 결과가 비어있으면(True) 진행하고, 데이터가 발견되면(False) 중복으로 판단하여 종료합니다.
 
 #### 8. Gemini Content Generator
 
@@ -107,6 +110,7 @@ Speak Mango는 AI 기반의 영어 표현 자동 생성 및 학습 서비스입�
   - **Requirements**:
     - **Tone**: 친근하고 유머러스한 2030 타겟 톤 (단, 설명은 경어체 사용).
     - **Meaning**: 기본 반말, 존대 표현은 존댓말 허용.
+    - **Currency & Numbers**: 통화는 항상 **`$` (USD)** 기호를 사용하며, 1,000 이상의 숫자에는 **쉼표(,)**를 사용합니다.
     - **No Markdown**: JSON 응답에 마크다운 태그 포함 금지.
   - **Quiz Logic (Critical)**:
     - **Pattern 1**: [상황] 주어짐 -> 알맞은 [영어 표현] 고르기.
@@ -133,6 +137,7 @@ Speak Mango는 AI 기반의 영어 표현 자동 생성 및 학습 서비스입�
 
 - **역할**: Groq API를 호출하여 텍스트를 초고속으로 음성(WAV) 바이너리로 변환합니다.
 - **설정**: `canopylabs/orpheus-v1-english` 모델을 사용하며, 응답 형식을 `Binary File`로 받습니다.
+- **주의**: 해당 모델을 처음 사용하는 경우, [Groq Console](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english)에서 이용 약관(Terms)을 반드시 승인해야 합니다. (미승인 시 400 에러 발생)
 
 #### 13. Upload to Storage (Supabase)
 
@@ -152,6 +157,7 @@ Speak Mango는 AI 기반의 영어 표현 자동 생성 및 학습 서비스입�
 
 - **JSON 파싱 에러**: Gemini가 가끔 마크다운 코드 블록(```json)을 포함하여 응답할 수 있습니다. `Parse Content JSON` 노드가 이를 처리하지만, 형식이 너무 많이 깨진 경우 프롬프트를 재확인하세요.
 - **퀴즈 포맷 오류**: 특정 언어에서 선택지가 누락되거나 정답이 텍스트로 나오는 경우, `Gemini Content Generator` 프롬프트의 `Strict Formatting Rules`를 다시 한번 강조해서 입력하세요.
+- **Groq 400 Bad Request Error**: `model_terms_required` 에러가 발생하면, Groq Console에 접속하여 `orpheus-v1-english` 모델의 약관에 동의했는지 확인하세요.
 
 ---
 

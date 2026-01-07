@@ -185,7 +185,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
 - **Schema**: `speak_mango_en`
 - **Operation**: `Get Many`
 - **Table Name or ID**: `expressions`
-- **Return All**: `True`
+- **Return All**: `False`
+- **Limit**: `1`
+- **Always Output Data**: `On` (중요: 중복된 데이터가 없을 때도 빈 객체를 반환하여 워크플로우가 멈추지 않게 해야 합니다.)
 - **Filters**:
   - **Filter**: `Build Manually`
   - **Must Match**: `Any Filter`
@@ -235,6 +237,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   6. 'meaning' and 'content' fields must contain keys for 'ko', 'ja', 'es'.
   7. **Dialogue & Roles (CRITICAL)**:
      - Create a **coherent, natural conversation** between two people (A and B).
+     - **The dialogue MUST consist of 2 or 3 turns (A -> B or A -> B -> A).**
      - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
      - Each entry in the `dialogue` array MUST include:
        - `"role"`: Value "A" or "B" to distinguish speakers.
@@ -257,6 +260,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
         3. You **MUST** use `\n` (newline) to separate the question and each option.
         4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
   11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
+  12. **Currency & Numbers**:
+      - Always use **`$` (USD)** for currency to maintain consistency (e.g., "$10", "$50.50"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.
+      - Use commas for numbers larger than 1,000 (e.g., "1,000", "10,000").
 
   Example Output (Reference this style for ALL languages):
   {
@@ -407,6 +413,8 @@ return results;
   - `voice`: `{{ $json.tts_voice }}`
   - `response_format`: `wav`
 - **Response Format**: `File` (중요: 응답을 바이너리 파일로 받아야 합니다.)
+
+> **⚠️ 중요 (400 Bad Request 에러 발생 시)**: `canopylabs/orpheus-v1-english` 모델을 처음 사용하는 경우, 반드시 **[Groq Console](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english)**에 접속하여 해당 모델의 이용 약관(Terms)을 **승인(Accept)**해야 합니다. 승인하지 않으면 API 호출 시 에러가 발생합니다.
 
 ### 13단계: Upload to Storage (Supabase REST API)
 

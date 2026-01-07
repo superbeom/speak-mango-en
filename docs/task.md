@@ -41,6 +41,7 @@
 - [x] **Automation**: n8n 코드 및 프롬프트 모듈화 (개별 파일 분리 및 구조 최적화)
 - [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 최적화
 - [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n/expressions/user_guide.md`) 작성
+- [x] **Automation**: n8n 워크플로우 성능(중복 체크) 및 콘텐츠 품질(대화 턴수, 통화 표기) 고도화
 - [x] **UI/UX**: 스켈레톤 로딩 (Skeleton Loading) 도입
 - [x] **UI/UX**: 리스트 탐색 경험 개선 ('더 보기' 버튼 및 레이아웃 안정화)
 - [x] **UI/UX**: 필터별 독립 캐싱 및 정밀 스크롤 복원 구현

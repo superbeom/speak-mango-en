@@ -22,6 +22,7 @@ Requirements:
 6. 'meaning' and 'content' fields must contain keys for 'ko', 'ja', 'es'.
 7. **Dialogue & Roles (CRITICAL)**:
    - Create a **coherent, natural conversation** between two people (A and B).
+   - **The dialogue MUST consist of 2 or 3 turns (A -> B or A -> B -> A).**
    - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
    - Each entry in the `dialogue` array MUST include:
      - `"role"`: Value "A" or "B" to distinguish speakers.
@@ -44,6 +45,9 @@ Requirements:
       3. You **MUST** use `\n` (newline) to separate the question and each option.
       4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
 11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
+12. **Currency & Numbers**:
+    - Always use **`$` (USD)** for currency to maintain consistency (e.g., "$10", "$50.50"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.
+    - Use commas for numbers larger than 1,000 (e.g., "1,000", "10,000").
 
 Example Output (Reference this style for ALL languages):
 {

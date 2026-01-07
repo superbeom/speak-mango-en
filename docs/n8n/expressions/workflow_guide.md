@@ -26,13 +26,13 @@ docker-compose ps
 3. **Get Existing Expressions (Supabase)**: 선택된 카테고리의 기존 표현들을 조회하여 중복 생성을 방지.
 4. **Gemini Expression Generator**: 선택된 주제에 맞는 유용한 영어 표현 1개 생성 (기존 표현 제외).
 5. **Parse Expression JSON**: AI가 생성한 표현 데이터를 JSON 객체로 변환.
-6. **Check Duplicate (Supabase)**: 생성된 표현이 DB에 있는지 확인 (2차 안전장치).
+6. **Check Duplicate (Supabase)**: 생성된 표현이 DB에 있는지 확인 (2차 안전장치). (최적화: `Limit: 1`, `Always Output Data: On` 설정)
 7. **If New**: 중복이 아닐 경우에만 다음 단계 진행.
 8. **Gemini Content Generator**: 전체 콘텐츠(뜻, 예문, 퀴즈 등) 상세 생성.
 9. **Parse Content JSON**: 상세 콘텐츠 데이터를 JSON 객체로 변환.
 10. **Generate ID (Code)**: 저장 경로 및 DB 고유 키로 사용할 UUID 미리 생성.
 11. **Prepare TTS Requests (Code)**: 영어 대화문을 추출하고 화자(A/B)별 목소리를 할당하여 개별 요청으로 분해.
-12. **Groq Orpheus TTS (HTTP)**: Orpheus V1 모델을 호출하여 텍스트를 고품질 음성(WAV)으로 초고속 변환.
+12. **Groq Orpheus TTS (HTTP)**: Orpheus V1 모델을 호출하여 텍스트를 고품질 음성(WAV)으로 초고속 변환. (⚠️ **[Groq Console](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english)에서 약관 승인 필수**)
 13. **Upload to Storage (Supabase)**: 생성된 오디오 파일을 Supabase Storage의 `speak-mango-en` 버킷 내 `expressions/` 폴더에 업로드.
 14. **Aggregate TTS Results (Code)**: 분산되었던 오디오 파일 경로들을 원본 데이터 구조에 다시 병합.
 15. **Supabase Insert**: 오디오 경로가 포함된 최종 데이터를 DB에 저장.
@@ -107,4 +107,4 @@ n8n의 `Supabase` 노드를 사용하여 최종 데이터를 `expressions` 테�
 - **JSON Parsing Error**: 워크플로우 템플릿의 `prompt` 필드는 줄바꿈(`\n`)과 따옴표(`\"`)가 이스케이프 처리된 단일 문자열이어야 합니다. 수정 시 JSON 문법이 깨지지 않도록 주의하세요.
 - **Quota Management**:
   - **Gemini**: 2.5 Flash 무료 티어를 효율적으로 사용하기 위해, 중복된 표현은 Generator 단계를 건너뛰도록 설계되었습니다.
-  - **Groq**: Orpheus V1은 매우 빠르지만 API 한도가 있을 수 있습니다. 대화문이 너무 길어질 경우 프롬프트에서 글자 수를 제한하는 것이 좋습니다.
+  - **Groq**: Orpheus V1은 매우 빠르지만 API 한도가 있을 수 있습니다. 대화문이 너무 길어질 경우 프롬프트에서 글자 수를 제한하는 것이 좋습니다. 또한 해당 모델 사용 전 **[Groq Console](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english)**에서 약관 동의가 필요합니다.
