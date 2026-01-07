@@ -1,6 +1,6 @@
-# n8n Optimization Guide: AI-Driven Generation & Duplicate Check
+# n8n Optimization Guide: AI-Driven Generation & TTS Integration
 
-이 문서는 외부 블로그 스크래핑 방식에서 벗어나, **AI가 스스로 카테고리별 유용한 표현을 선정하고 생성하는 방식**으로 전환하는 가이드입니다. 이 구조는 외부 의존성을 제거하여 워크플로우의 안정성을 극대화합니다.
+이 문서는 외부 블로그 스크래핑 방식에서 벗어나, **AI가 스스로 카테고리별 유용한 표현을 선정하고 생성하며, 원어민 음성(TTS)까지 자동으로 합성하는 방식**으로 전환하는 가이드입니다. 이 구조는 외부 의존성을 제거하여 워크플로우의 안정성을 극대화하고 학습 경험을 고도화합니다.
 
 ## 🏗️ 목표 구조 (Target Architecture)
 
@@ -11,9 +11,14 @@
 5.  **Parse Expression JSON** (Gemini 응답을 순수 JSON 객체로 변환)
 6.  **Check Duplicate (Supabase)** (DB 중복 확인 - 안전장치)
 7.  **If New** (중복 여부 판단)
-8.  **Gemini Content Generator** (상세 콘텐츠 생성 - 중복이 아닐 때만 실행)
-9.  **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
-10. **Supabase Insert** (데이터 저장)
+8.  **Generate ID (Code)** (저장 경로용 UUID 미리 생성)
+9.  **Gemini Content Generator** (상세 콘텐츠 생성 - Role A/B 포함)
+10. **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
+11. **Prepare TTS Requests (Code)** (대화문 분리 및 목소리 할당)
+12. **Groq Orpheus TTS (HTTP)** (음성 합성 호출)
+13. **Upload to Storage (Supabase)** (오디오 파일 업로드)
+14. **Aggregate TTS Results (Code)** (오디오 경로를 데이터에 병합)
+15. **Supabase Insert** (데이터 저장)
 
 ---
 
@@ -84,7 +89,7 @@
     };
     ```
 
-### 3단계: Get Existing Expressions 설정 (중복 방지용 조회)
+### 3단계: Get Existing Expressions (중복 방지용 조회)
 
 `Pick Category` 뒤에 **Supabase** 노드를 추가하여, 해당 카테고리에 이미 존재하는 표현들을 미리 가져옵니다. 이를 AI에게 전달하여 중복 생성을 원천 차단합니다.
 
@@ -100,7 +105,7 @@
   - **Condition**: `Equal`
   - **Field Value**: `{{ $('Pick Category').item.json.category }}`
 
-### 4단계: Gemini Expression Generator 설정 (표현 생성)
+### 4단계: Gemini Expression Generator (표현 생성)
 
 `Get Existing Expressions` 노드 뒤에 **Google Gemini Chat Model** 노드를 연결합니다.
 
@@ -198,9 +203,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   - Number: `{{ $items('Check Duplicate').length }}` **Equal** `0`
   - (데이터가 없으면 0이므로 새로운 표현임)
 
-### 8단계: Gemini Content Generator 설정 (상세 내용 생성)
+### 8단계: Gemini Content Generator (상세 내용 생성)
 
-`If New` 노드의 **True** (위쪽) 출력에 새로운 **Google Gemini Chat Model** 노드를 연결합니다.
+`If New` 노드의 **True** 출력에 새로운 **Google Gemini Chat Model** 노드를 연결합니다.
 
 - **Name**: `Gemini Content Generator`
 - **Prompt (Define below)**:
@@ -228,7 +233,13 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
      - Do NOT address the reader as specific groups like "Kids" or "Students". Use a general, relatable tone suitable for young adults.
   5. Output MUST be a valid JSON object matching the schema below.
   6. 'meaning' and 'content' fields must contain keys for 'ko', 'ja', 'es'.
-  7. In the dialogue section, use the key 'translation' for the translated sentence.
+  7. **Dialogue & Roles (CRITICAL)**:
+     - Create a **coherent, natural conversation** between two people (A and B).
+     - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
+     - Each entry in the `dialogue` array MUST include:
+       - `"role"`: Value "A" or "B" to distinguish speakers.
+       - `"en"`: The English sentence.
+       - `"translation"`: The translated sentence in the target language.
   8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to Japanese and Spanish.
   9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
   10. **Quiz Logic (CRITICAL)**:
@@ -261,8 +272,8 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
       "ko": {
         "situation": "🌟 아침에 일어났는데 왠지 모르게 몸이 축 처지고, 컨디션이 별로일 때! 😱 '아, 나 오늘 뭔가 좀 별론데... 병든 병아리 같아...' 할 때 쓰는 핵인싸 표현이에요! 진짜 아픈 건 아닌데 그렇다고 완전 쌩쌩하지도 않을 때, 가볍게 내 상태를 말하고 싶을 때 찰떡같이 쓸 수 있답니다! 🤒✨",
         "dialogue": [
-          { "en": "Hey, you look a bit down. Are you okay?", "translation": "저기, 좀 기분이 안 좋아 보이는데. 괜찮아요?" },
-          { "en": "I'm feeling a bit under the weather today, so I think I'll just head home early.", "translation": "오늘 몸이 좀 안 좋아서, 일찍 집에 가려고요." }
+          { "en": "Hey, you look a bit down. Are you okay?", "translation": "저기, 좀 기분이 안 좋아 보이는데. 괜찮아요?", "role": "A" },
+          { "en": "I'm feeling a bit under the weather today, so I think I'll just head home early.", "translation": "오늘 몸이 좀 안 좋아서, 일찍 집에 가려고요.", "role": "B" }
         ],
         "tip": "🚨 **꿀팁 방출!** 'under the weather'는 진짜 심각하게 아플 때보다는 가볍게 '컨디션이 안 좋다', '감기 기운이 있다' 정도의 느낌이에요. 😷 만약 진짜 심하게 아프다면 'I'm sick' 또는 'I have a fever'처럼 구체적으로 말하는 게 좋아요. 😉 그리고 이 표현은 뱃사람들이 배에서 날씨가 안 좋을 때 아픈 사람을 갑판 아래로 보내 '날씨 아래'에 있게 했다는 유래가 있대요! 완전 신기하죠? ⚓️🌊",
         "quiz": {
@@ -273,8 +284,8 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
       "ja": {
         "situation": "朝起きた時に、なんとなく体がだるくて「今日はなんだか調子が悪いな…」と感じる時にぴったりの表現です！😷 本当にひどい病気ではないけれど、100%元気でもない時に、自分の状態をカジュアルに伝えることができます。✨",
         "dialogue": [
-          { "en": "Hey, you look a bit down. Are you okay?", "translation": "ねえ、なんだか元気がないみたいだけど大丈夫？" },
-          { "en": "I'm feeling a bit under the weather today.", "translation": "今日はちょっと体調が悪くて。" }
+          { "en": "Hey, you look a bit down. Are you okay?", "translation": "ねえ、なんだか元気がないみたいだけど大丈夫？", "role": "A" },
+          { "en": "I'm feeling a bit under the weather today.", "translation": "今日はちょっと体調が悪くて。", "role": "B" }
         ],
         "tip": "💡 **豆知識!** この表現は、昔の船乗りが天候が悪くて体調を崩した時に、甲板の下（Under the deck）に避難したことから「Under the weather」になったという説があります。⚓️ 本当に体調が悪い時は「I'm sick」を使いましょう！",
         "quiz": {
@@ -285,8 +296,8 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
       "es": {
         "situation": "¡Cuando te despiertas y te sientes un poco cansado o sin energía! 😱 Es una expresión muy común para decir que no te sientes al 100%, pero tampoco estás gravemente enfermo. 🤒✨",
         "dialogue": [
-          { "en": "Hey, you look a bit down. Are you okay?", "translation": "Oye, te ves un poco desanimado. ¿Estás bien?" },
-          { "en": "I'm feeling a bit under the weather today.", "translation": "Hoy me siento un poco mal." }
+          { "en": "Hey, you look a bit down. Are you okay?", "translation": "Oye, te ves un poco desanimado. ¿Estás bien?", "role": "A" },
+          { "en": "I'm feeling a bit under the weather today.", "translation": "Hoy me siento un poco mal.", "role": "B" }
         ],
         "tip": "🚨 **¡Dato curioso!** El origen viene de los marineros. Cuando el clima era malo y se sentían mal, bajaban debajo de la cubierta para estar 'bajo el clima'. 🌊⚓️ Si estás realmente enfermo, es mejor usar 'I'm sick'.",
         "quiz": {
@@ -299,7 +310,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   }
   ```
 
-### 8단계: Parse Content JSON
+### 9단계: Parse Content JSON
 
 Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code** 노드를 추가합니다.
 `Gemini Content Generator`와 `Supabase Insert` 사이에 연결하세요.
@@ -330,7 +341,102 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
   }
   ````
 
-### 9단계: Supabase Insert 설정
+### 10단계: Generate ID (Code)
+
+저장 경로 및 DB ID로 사용할 UUID를 여기서 생성해야 데이터가 덮어씌워지지 않습니다.
+
+- **Name**: `Generate ID`
+- **Code**:
+
+  ```javascript
+  const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+    /[xy]/g,
+    function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    }
+  );
+
+  return { json: { ...$input.first().json, id: uuid } };
+  ```
+
+### 11단계: Prepare TTS Requests
+
+대화문을 개별 오디오 요청으로 분리합니다.
+
+```javascript
+const items = $input.all();
+let results = [];
+items.forEach((item, itemIndex) => {
+  const data = item.json;
+  const dialogueEntries = data.content?.ko?.dialogue || [];
+  const expressionId = data.id;
+  dialogueEntries.forEach((entry, lineIndex) => {
+    const rawText = entry.en || "";
+    const role = (entry.role || "A").toUpperCase();
+    const voice = role === "B" ? "troy" : "hannah";
+    results.push({
+      json: {
+        ...data,
+        tts_input: rawText.replace(/\n/g, " ").trim(),
+        tts_voice: voice,
+        tts_line_index: lineIndex,
+        storage_path: `expressions/${expressionId}/${lineIndex}.wav`,
+      },
+    });
+  });
+});
+return results;
+```
+
+### 12단계: Groq Orpheus TTS (HTTP Request)
+
+11단계에서 분리된 각 대화 문장을 실제 오디오 파일(WAV)로 변환하는 단계입니다.
+
+- **Name**: `Groq Orpheus TTS`
+- **Method**: `POST`
+- **URL**: `https://api.groq.com/openai/v1/audio/speech`
+- **Authentication**: `Header Auth` 선택
+  - **Name**: `Authorization`
+  - **Value**: `Bearer <YOUR_GROQ_API_KEY>`
+- **Body Content Type**: `JSON`
+- **Body Parameters**:
+  - `model`: `canopylabs/orpheus-v1-english`
+  - `input`: `{{ $json.tts_input }}`
+  - `voice`: `{{ $json.tts_voice }}`
+  - `response_format`: `wav`
+- **Response Format**: `File` (중요: 응답을 바이너리 파일로 받아야 합니다.)
+
+### 13단계: Upload to Storage (Supabase REST API)
+
+공식 Supabase 노드는 파일 업로드를 지원하지 않으므로, **HTTP Request** 노드를 사용하여 직접 업로드합니다.
+
+- **사전 작업**: Supabase Dashboard > Storage에서 **`speak-mango-en`**라는 이름의 Bucket을 미리 생성해야 합니다. (폴더는 자동으로 생성되므로Bucket만 있으면 됩니다.)
+- **Name**: `Upload to Storage`
+- **Method**: `POST`
+- **URL**: `https://<YOUR_PROJECT_REF>.supabase.co/storage/v1/object/speak-mango-en/{{ $json.storage_path }}`
+  - (참고: `storage_path`에 `expressions/...`가 포함되어 있음)
+- **Authentication**: `Generic Credential Type`
+- **Generic Auth Type**: `Header Auth`
+- **Header Auth**: `Supabase Header Auth`
+  - `Name`: `Authorization`
+  - `Value`: `Bearer <YOUR_SERVICE_ROLE_KEY>`
+- **Send Body**: `Binary`
+  - `Body Content Type`: `n8n Binary File`
+  - `Input Data Field Name`: `data` (12단계 Groq TTS 노드에서 받은 바이너리 필드명)
+- **Options**: `Response`
+  - **Response Format**: `JSON`
+
+### 14단계: Aggregate TTS Results (Code)
+
+업로드된 오디오 파일들의 경로(`storage_path`)를 원본 데이터 구조의 각 대화문(`dialogue`) 항목에 다시 주입하고, 하나로 합칩니다.
+
+- **Name**: `Aggregate TTS Results`
+- **Code**: `n8n/aggregate_tts_results.js` 파일의 코드 입력
+- **역할**: 분산된 여러 아이템을 다시 1개의 아이템으로 병합하여 최종 저장을 준비합니다.
+
+### 15단계: Supabase Insert 설정
 
 `Parse JSON` 노드 뒤에 **Supabase** 노드를 연결하여 최종 데이터를 저장합니다.
 
@@ -349,3 +455,5 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
 1.  **Execute Workflow**를 실행합니다.
 2.  `Pick Category`가 랜덤한 주제를 뽑고, Gemini가 그에 맞는 표현을 생성하는지 확인합니다.
 3.  이미 DB에 있는 표현이라면 `If New`에서 False로 빠지는지 확인합니다.
+4.  **Supabase Storage**에 `speak-mango-en` 버킷 생성 여부 확인.
+5.  DB `expressions` 테이블의 `content` 내 `audio_url` 경로 정상 저장 확인.

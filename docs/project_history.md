@@ -2,6 +2,28 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-07: TTS 파이프라인 통합 및 문서화 (TTS Integration & Documentation)
+
+### ✅ 진행 사항
+
+- **TTS 파이프라인 구축**: n8n 워크플로우에 `Groq Orpheus TTS`를 연동하여 영어 대화문 생성 시 원어민 음성(WAV)을 자동 합성하고 Supabase Storage에 저장하는 로직 구현.
+- **Storage 구조 최적화**:
+  - 버킷명을 `speak-mango-en`으로 설정하여 프로젝트 단위 통합 저장소로 격상.
+  - 하위 폴더 구조를 `expressions/{id}/{index}.wav`로 정규화하여 확장성 확보.
+- **문서 현행화**:
+  - `docs/n8n_optimization_steps.md`, `docs/n8n_user_guide.md`, `docs/n8n_workflow_guide.md`에 TTS 관련 상세 설정 및 트러블슈팅 가이드 추가.
+  - `docs/supabase_strategy.md`에 Storage 폴더 격리 전략 및 향후 유료화(Feature Gating) 시 보안 전환 가이드 수립.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Storage 버킷 이름을 `speak-mango-en`으로 설정했나?**
+
+- **A.** `expression-audio`는 오디오 전용이라는 느낌이 강했음. 향후 이미지(`images/`), 사용자 프로필(`users/`) 등 다양한 자산을 하나의 버킷에서 효율적으로 관리하기 위해 프로젝트명과 동일한 버킷을 생성하고 하위 폴더로 격리하는 전략(`Folder-based Isolation`)을 채택함.
+
+**Q. TTS 음성 파일은 왜 Public 버킷에 저장하나?**
+
+- **A.** 초기 개발 단계에서의 접근 편의성과 CDN 캐싱 효율을 위해 Public으로 설정함. 단, `docs/future_todos.md`에 기록한 대로 추후 유료 사용자 전용 기능(Feature Gating) 도입 시 Private 전환 및 RLS 설정을 적용할 예정임.
+
 ## 2026-01-06: 라우트 중앙 관리 및 필터 누적 시스템 (Centralized Routing & Additive Filtering)
 
 ### ✅ 진행 사항

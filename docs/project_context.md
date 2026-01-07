@@ -110,6 +110,14 @@ speak-mango-en/
 - **동적 경로**: 상세 페이지 등 매개변수가 필요한 경로는 `ROUTES.EXPRESSION_DETAIL(id)`와 같은 생성 함수를 사용합니다.
 - **필터 조합**: 검색어, 카테고리 등 쿼리 파라미터가 포함된 홈 경로는 `getHomeWithFilters()` 헬퍼 함수를 사용하여 생성합니다.
 
+### Audio Asset Management
+
+- **저장소**: 모든 원어민 대화 음성 파일(TTS)은 Supabase Storage의 `speak-mango-en` 버킷에 저장합니다.
+- **경로 규칙**: `expressions/{expression_id}/{line_index}.wav` 형식을 엄수합니다.
+- **데이터 바인딩**: DB의 `content` JSONB 데이터 내 `audio_url` 필드에 해당 경로 또는 Public URL을 저장합니다.
+- **확장성 가이드**: 버킷명을 특정 용도(예: `audio`)가 아닌 프로젝트명(`speak-mango-en`)으로 설정함으로써, 향후 `users/`, `images/`, `vocabulary/` 등 다른 종류의 파일들도 동일한 버킷 하위 폴더로 격리하여 관리할 수 있습니다. 이는 루트 경로의 혼잡을 방지하고 관리 효율성을 높입니다.
+- **보안 전환 주의**: 현재는 **Public** 버킷을 사용 중이나, 향후 유료 기능(Feature Gating) 도입 시 버킷을 **Private**으로 전환하고 **RLS(Storage Policies)** 설정을 통해 접근 권한을 제어해야 합니다 (`docs/supabase_strategy.md` 참조).
+
 ### Component Architecture
 
 - **모듈화 및 재사용성 (Modularity)**: 독립적으로 구성 가능한 요소는 반드시 컴포넌트로 분리합니다. 함수와 유틸리티는 재사용성을 최우선으로 설계합니다.
