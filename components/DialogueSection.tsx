@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Play, Square } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Play, Square, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import DialogueAudioButton, {
@@ -19,6 +19,7 @@ interface DialogueSectionProps {
   dialogue: DialogueItem[];
   playAllLabel?: string;
   stopLabel?: string;
+  loadingLabel?: string;
 }
 
 export default function DialogueSection({
@@ -26,11 +27,27 @@ export default function DialogueSection({
   dialogue,
   playAllLabel = "Play All",
   stopLabel = "Stop",
+  loadingLabel = "Loading...",
 }: DialogueSectionProps) {
   const isMobile = useIsMobile();
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const buttonRefs = useRef<(DialogueAudioButtonHandle | null)[]>([]);
+
+  // State to track ready status of each audio
+  const [readyIndices, setReadyIndices] = useState<Set<number>>(new Set());
+
+  // Count items that have audio_url
+  const totalAudioCount = dialogue.filter((item) => item.audio_url).length;
+  const isAllReady = readyIndices.size >= totalAudioCount && totalAudioCount > 0;
+
+  const handleAudioReady = useCallback((index: number) => {
+    setReadyIndices((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(index);
+      return newSet;
+    });
+  }, []);
 
   const handlePlayAll = () => {
     if (isAutoPlaying) {
@@ -83,25 +100,33 @@ export default function DialogueSection({
           {/* Play All Button - Moved next to title */}
           <button
             onClick={handlePlayAll}
+            disabled={!isAllReady}
             className={cn(
               "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold transition-all cursor-pointer border",
-              isAutoPlaying
-                ? cn(
-                  "bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400",
-                  !isMobile &&
-                  "hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
-                )
-                : cn(
-                  "bg-white border-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400",
-                  !isMobile &&
-                  "hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
-                )
+              !isAllReady
+                ? "bg-zinc-100 border-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500"
+                : isAutoPlaying
+                  ? cn(
+                    "bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400",
+                    !isMobile &&
+                    "hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
+                  )
+                  : cn(
+                    "bg-white border-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400",
+                    !isMobile &&
+                    "hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                  )
             )}
           >
             {isAutoPlaying ? (
               <>
                 <Square className="w-2.5 h-2.5 fill-current" />
                 <span>{stopLabel}</span>
+              </>
+            ) : !isAllReady ? (
+              <>
+                <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                <span>{loadingLabel}</span>
               </>
             ) : (
               <>
@@ -153,6 +178,7 @@ export default function DialogueSection({
                       )
                   }
                   variant={idx % 2 === 0 ? "default" : "blue"}
+                  onReady={() => handleAudioReady(idx)}
                 />
               </div>
               <p

@@ -37,6 +37,7 @@ interface DialogueAudioButtonProps {
   onEnded?: () => void;
   onPlay?: () => void;
   onStop?: () => void;
+  onReady?: () => void;
 }
 
 const FIXED_VOLUME = 2.0;
@@ -75,7 +76,7 @@ const DialogueAudioIcon = ({
 const DialogueAudioButton = forwardRef<
   DialogueAudioButtonHandle,
   DialogueAudioButtonProps
->(({ audioUrl, className, variant = "default", stopBehavior = "reset", onPlayAttempt, onEnded, onPlay, onStop }, ref) => {
+>(({ audioUrl, className, variant = "default", stopBehavior = "reset", onPlayAttempt, onEnded, onPlay, onStop, onReady }, ref) => {
   const isMobile = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -86,10 +87,12 @@ const DialogueAudioButton = forwardRef<
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const onEndedRef = useRef(onEnded);
+  const onReadyRef = useRef(onReady);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
-  }, [onEnded]);
+    onReadyRef.current = onReady;
+  }, [onEnded, onReady]);
 
   const togglePlay = async (forcePlay = false) => {
     if (!audioRef.current) return;
@@ -191,12 +194,16 @@ const DialogueAudioButton = forwardRef<
       setIsPaused(false);
       onEndedRef.current?.();
     };
-    const handleCanPlayThrough = () => setIsLoading(false);
+    const handleCanPlayThrough = () => {
+      setIsLoading(false);
+      onReadyRef.current?.();
+    };
     const handleLoadStart = () => setIsLoading(true);
     const handleError = (e: Event) => {
       setIsLoading(false);
       setIsPlaying(false);
       console.error("Audio playback error", e);
+      onReadyRef.current?.();
     };
 
     // Listen for custom event to stop other audios
@@ -262,6 +269,7 @@ const DialogueAudioButton = forwardRef<
               !isMobile && "hover:bg-blue-500 hover:text-white"
             ),
         ],
+        isLoading && "cursor-not-allowed opacity-70",
         className
       )}
       disabled={isLoading}

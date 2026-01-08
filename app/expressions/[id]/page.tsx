@@ -104,6 +104,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                   dialogue={content?.dialogue || []}
                   playAllLabel={dict.detail.playAll}
                   stopLabel={dict.detail.stop}
+                  loadingLabel={dict.common.loading}
                 />
 
                 {/* Tip */}
