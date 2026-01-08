@@ -2,6 +2,19 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-08: 오디오 재생 권한 제어 기반 마련 (Audio Feature Gating Infrastructure)
+
+### ✅ 진행 사항
+
+- **Feature Gating 기반 구현**: `DialogueAudioButton` 컴포넌트에 `onPlayAttempt` 콜백 프로퍼티 추가. 이를 통해 재생 전 사용자 티어(Free/Pro)나 권한을 체크할 수 있는 확장 가능한 구조 확보.
+- **기술 부채 해결**: `future_todos.md`에 기록되었던 'Scalable Architecture' 항목을 구현하여 향후 수익화 모델(Freemium) 도입을 위한 기술적 준비 완료.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `DialogueAudioButton` 내부에 직접 권한 체크 로직을 넣지 않았나?**
+
+- **A.** 컴포넌트는 UI와 재생 로직에만 집중하고, 권한 체크 로직은 외부(Container 또는 Context)에서 주입받도록 함으로써 컴포넌트의 재사용성을 높이고 비즈니스 로직과의 결합도를 낮추기 위함임.
+
 ## 2026-01-08: 원어민 대화 듣기 기능 구현 및 구조 개선 (Native Audio Playback & Structural Refactoring)
 
 ### ✅ 진행 사항

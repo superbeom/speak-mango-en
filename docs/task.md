@@ -53,6 +53,9 @@
 
 ## Phase 5: Monetization (수익화)
 
+- [ ] **Feature Gating (Audio Support)**: 음성 지원(TTS) 기능을 사용자 티어(`free`/`pro`)에 따라 차별화하여 제공.
+  - [x] **Scalable Architecture**: `DialogueAudioButton`에 `onPlayAttempt` 콜백을 추가하여 부동한 권한 체크 로직을 주입할 수 있는 구조로 개선.
+  - [ ] **UI Logic**: 무료 사용자가 '원어민 대화 듣기' 버튼 클릭 시 유료 기능 안내 모달 팝업 및 결제 유도.
 - [ ] **MVP**: '북마크' 기능 구현 (Local Storage)
 - [ ] **MVP**: 'My Voca' 페이지 구현
 - [ ] **Auth**: Supabase Auth 연동 및 프로필 테이블 생성

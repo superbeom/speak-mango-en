@@ -16,7 +16,6 @@
 - [ ] **Shared Schema Implementation**: 사용자 가입, 프로필 통합 등 공유 데이터 관리가 필요한 시점에 `speak_mango_shared` 스키마를 생성하고 `auth.users`와 연동된 통합 시스템 구축.
 - [ ] **Feature Gating (Audio Support)**: 음성 지원(TTS) 기능을 사용자 티어(`free`/`pro`)에 따라 차별화하여 제공.
   - [ ] **UI Logic**: 무료 사용자가 '원어민 대화 듣기' 버튼 클릭 시 유료 기능 안내 모달(Payment Prompt) 팝업 및 결제 페이지 유도.
-  - [ ] **Scalable Architecture**: `DialogueAudioButton`에 `onPlayAttempt` 콜백을 추가하여 부동한 권한 체크 로직을 주입할 수 있는 구조로 개선.
   - [ ] **Security (RLS)**: Supabase Storage 정책을 강화하여 유료 사용자만 오디오 파일 다운로드/접근이 가능하도록 보안 고도화.
     - **실행 지침**: 버킷 권한을 `Public`에서 **`Private`**으로 전환하고, `storage.objects` 테이블에 RLS 정책을 추가하여 `profiles.tier`가 'pro'인 사용자만 `SELECT` 가능하도록 제한.
 - [ ] **Audio Volume Control**: '원어민 대화' 재생 시 프론트엔드 코드에서 볼륨 크기 제어 로직 구현.

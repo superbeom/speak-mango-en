@@ -8,11 +8,17 @@ import { cn } from "@/lib/utils";
 interface DialogueAudioButtonProps {
   audioUrl?: string;
   className?: string;
+  /**
+   * Callback triggered when a user attempts to play audio.
+   * Return true to allow playback, false to prevent it (e.g., for tier checks).
+   */
+  onPlayAttempt?: () => boolean | Promise<boolean>;
 }
 
 export default function DialogueAudioButton({
   audioUrl,
   className,
+  onPlayAttempt,
 }: DialogueAudioButtonProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,13 +67,19 @@ export default function DialogueAudioButton({
     };
   }, [audioUrl]);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      // Feature Gating: Check permissions if callback provided
+      if (onPlayAttempt) {
+        const canPlay = await onPlayAttempt();
+        if (!canPlay) return;
+      }
+
       // Dispatch custom event BEFORE playing to stop others first
       window.dispatchEvent(
         new CustomEvent(AUDIO_PLAYBACK_START, {
