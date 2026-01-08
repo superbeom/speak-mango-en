@@ -25,6 +25,8 @@ export const en = {
     missionTitle: "🔥 Today's Mission!",
     checkAnswer: "Check Answer",
     relatedTitle: "📚 How about these expressions?",
+    playAll: "Play All",
+    stop: "Stop",
   },
   card: {
     label: "Today's Expression",

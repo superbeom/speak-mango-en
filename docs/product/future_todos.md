@@ -18,7 +18,7 @@
   - [ ] **UI Logic**: 무료 사용자가 '원어민 대화 듣기' 버튼 클릭 시 유료 기능 안내 모달(Payment Prompt) 팝업 및 결제 페이지 유도.
   - [ ] **Security (RLS)**: Supabase Storage 정책을 강화하여 유료 사용자만 오디오 파일 다운로드/접근이 가능하도록 보안 고도화.
     - **실행 지침**: 버킷 권한을 `Public`에서 **`Private`**으로 전환하고, `storage.objects` 테이블에 RLS 정책을 추가하여 `profiles.tier`가 'pro'인 사용자만 `SELECT` 가능하도록 제한.
-- [ ] **Audio Volume Control**: '원어민 대화' 재생 시 프론트엔드 코드에서 볼륨 크기 제어 로직 구현.
+- [ ] **Auto Scroll (Dialogue)**: '전체 듣기' 재생 시 현재 대화 버블로 자동 스크롤 이동 기능 구현.
 
 ## Technical Debt
 

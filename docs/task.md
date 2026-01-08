@@ -39,6 +39,7 @@
 - [x] **UI/UX**: 퀴즈 개행 문자(`\n`) 지원 및 가독성 개선
 - [x] **Automation**: TTS 파이프라인 구축 (Groq API + Supabase Storage 연동)
 - [x] **UI/UX**: 원어민 대화 듣기(Audio Playback) 기능 구현 및 동기화 로직 적용
+- [x] **UI/UX**: 대화 전체 듣기(Sequential Playback) 및 하이라이트 기능 구현
 - [x] **Automation**: n8n 코드 및 프롬프트 모듈화 (개별 파일 분리 및 구조 최적화)
 - [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 최적화
 - [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n/expressions/user_guide.md`) 작성
@@ -48,6 +49,7 @@
 - [x] **UI/UX**: 필터별 독립 캐싱 및 정밀 스크롤 복원 구현
 - [x] **UI/UX**: 카테고리 필터 토글 및 중복 클릭 방지 최적화
 - [x] **UI/UX**: 라우트 중앙 관리 및 필터 누적 시스템(Additive Filtering) 구현
+- [x] **UI/UX**: 대화 섹션 UI 스타일링 수정 (모바일 호버 제거, 버튼 일관성, 다크모드 텍스트)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

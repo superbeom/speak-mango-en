@@ -98,6 +98,14 @@ body {
   @apply opacity-0 pointer-events-none;
 }
 
+@utility dialogue-bubble {
+  @apply max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3 transition-colors duration-300;
+}
+
+@utility dialogue-audio-btn {
+  @apply p-2 rounded-full transition-all focus:outline-none cursor-pointer;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .group:hover .safe-hover-rotate-12 {
     transform: rotate(12deg);
