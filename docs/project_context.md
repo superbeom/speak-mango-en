@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-07
+**최종 수정일**: 2026-01-08
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -51,6 +51,9 @@ speak-mango-en/
 │   └── globals.css      # 전역 스타일
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
+├── constants/           # 전역 상수 관리
+│   ├── index.ts         # 일반 상수 (서비스명, DB 스키마 등)
+│   └── events.ts        # 이벤트 상수 (오디오 재생 등)
 ├── context/             # 전역 상태 관리 (Context API)
 ├── database/            # 데이터베이스 마이그레이션 스크립트 (SQL)
 ├── hooks/               # 커스텀 React 훅
@@ -111,6 +114,9 @@ speak-mango-en/
 - **Export Style**:
   - **Components**: `export default function ComponentName` (Default Export)
   - **Utilities**: `export const functionName` (Named Export)
+- **Variables & Constants**:
+  - **Constants**: `UPPER_SNAKE_CASE` 사용 (예: `DATABASE_SCHEMA`).
+  - **Event Names (Constants)**: 변수명은 `UPPER_SNAKE_CASE`로 작성하되, 실제 값(Value)은 `snake_case` 소문자를 사용합니다 (예: `AUDIO_PLAYBACK_START = "audio_playback_start"`). 이는 `click`, `play` 등 브라우저 표준 DOM 이벤트 네이밍 관례와의 일관성을 유지하기 위함입니다.
 
 ### Routing
 

@@ -8,6 +8,7 @@ import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
 import RelatedExpressions from "@/components/RelatedExpressions";
 import BackButton from "@/components/BackButton";
+import DialogueAudioButton from "@/components/DialogueAudioButton";
 
 interface PageProps {
   params: Promise<{
@@ -117,9 +118,19 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                               : "bg-blue-600 text-white rounded-tr-none"
                           }`}
                         >
-                          <p className="text-base sm:text-lg font-semibold">
-                            {chat.en}
-                          </p>
+                          <div className="flex items-start gap-3">
+                            <p className="text-base sm:text-lg font-semibold flex-1">
+                              {chat.en}
+                            </p>
+                            <DialogueAudioButton
+                              audioUrl={chat.audio_url}
+                              className={
+                                idx % 2 === 0
+                                  ? "-mr-1 mt-0.5 shrink-0" // User A (Gray bubble): Default styles are fine, just positioning
+                                  : "text-blue-200 hover:text-white hover:bg-blue-500 -mr-1 mt-0.5 shrink-0" // User B (Blue bubble): Light text
+                              }
+                            />
+                          </div>
                           <p
                             className={`mt-1 text-xs sm:text-sm ${
                               idx % 2 === 0 ? "text-zinc-500" : "text-blue-100"

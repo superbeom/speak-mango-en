@@ -10,7 +10,7 @@ try {
   return {
     json: JSON.parse(cleanJson),
   };
-} catch (error) {
+} catch {
   // 파싱 실패 시 에러 로그 반환 (디버깅용)
   return {
     json: {

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { getI18n } from "@/i18n/server";
 import { getExpressions } from "@/lib/expressions";
-import { SERVICE_NAME } from "@/lib/constants";
+import { SERVICE_NAME } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";

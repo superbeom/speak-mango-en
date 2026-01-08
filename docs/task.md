@@ -38,6 +38,7 @@
 - [x] **UI/UX**: UI 스타일 중앙 관리 및 모바일 최적화 (유틸리티 클래스 & useIsMobile)
 - [x] **UI/UX**: 퀴즈 개행 문자(`\n`) 지원 및 가독성 개선
 - [x] **Automation**: TTS 파이프라인 구축 (Groq API + Supabase Storage 연동)
+- [x] **UI/UX**: 원어민 대화 듣기(Audio Playback) 기능 구현 및 동기화 로직 적용
 - [x] **Automation**: n8n 코드 및 프롬프트 모듈화 (개별 파일 분리 및 구조 최적화)
 - [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 최적화
 - [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n/expressions/user_guide.md`) 작성
