@@ -6,7 +6,7 @@ import { Filter } from "lucide-react";
 import { getDictionary } from "@/i18n";
 import { useScroll } from "@/hooks/useScroll";
 import { getCategoryConfig } from "@/lib/ui-config";
-import { CATEGORIES } from "@/lib/constants";
+import { CATEGORIES } from "@/constants";
 import { cn, formatMessage } from "@/lib/utils";
 import { getHomeWithFilters } from "@/lib/routes";
 import SearchBar from "@/components/SearchBar";
@@ -149,7 +149,7 @@ export default function FilterBar({ locale }: FilterBarProps) {
             className="flex items-center gap-3 overflow-x-auto scrollbar-hide py-1 px-1"
           >
             <div className="flex gap-2 pr-2">
-              {CATEGORIES.map((cat) => {
+              {CATEGORIES.map((cat: string) => {
                 const config =
                   cat === "all"
                     ? {

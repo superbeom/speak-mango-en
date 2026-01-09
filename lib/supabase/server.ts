@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { DATABASE_SCHEMA } from "@/lib/constants";
+import { DATABASE_SCHEMA } from "@/constants";
 
 export async function createServerSupabase() {
   const cookieStore = await cookies();

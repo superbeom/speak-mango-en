@@ -2,6 +2,205 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-09: 학습 모드 상호작용 고도화 (Learning Mode Interaction Refinement)
+
+### ✅ 진행 사항
+
+- **Smart Toggle Interaction**: 'Blind Listening' 모드와 'Translation Blur' 모드 간의 상호작용 개선.
+  - 기존: 'Blind Listening' 모드 중에는 'Translation Blur' 버튼 비활성화.
+  - 개선: 'Translation Blur' 버튼 클릭 시 'Blind Listening' 모드가 자동으로 꺼지며 해석이 노출됨.
+  - **Individual English Reveal (Partial Blind)**: 리스닝 모드에서 문장별 확인 기능 추가.
+  - 리스닝 모드가 켜져 있어도, 사용자 클릭 시 해당 영어 문장만 블러가 해제됨.
+  - **Auto-Exposed**: 모든 영어 문장을 하나씩 열어보다가 전체가 다 열리면, 자동으로 'Blind Mode'가 해제되고 'Exposed Mode'로 전환됨. 동시에 'Translation Blur' 버튼도 원래의 활성화 상태(눈 뜬 아이콘)로 자동 복귀.
+  - **State Preservation**: 블라인드 모드 진입 전의 '해석 보기' 상태를 기억했다가, 모드 해제 시 그대로 복원하여 학습 흐름 유지.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 리스닝 모드에서 개별 문장 확인 기능을 넣었나?**
+
+- **A.** 기존에는 문장이 안 들릴 때 무조건 전체 리스닝 모드를 꺼야 했음. 학습자가 "이 문장만 확인하고 싶다"는 니즈를 충족시키고, 학습의 흐름이 끊기지 않도록 하기 위해 개별 문장 클릭 기능을 추가함.
+
+**Q. 개별 문장 클릭 시 영어만 보여주고 해석은 여전히 가리는 이유는?**
+
+- **A.** 'Partial Blind'의 목적은 "안 들리는 단어/문장 확인"에 있음. 해석까지 바로 보여주면 학습자가 소리가 아닌 의미에 의존하게 되어 리스닝 훈련 효과가 감소함. 따라서 영어 텍스트만 먼저 확인하고, 해석은 필요시 별도로 확인하거나 모드를 해제해서 보도록 단계적으로 설계함.
+
+**Q. 개별 문장 확인 대신 모드 해제로 변경한 이유는?**
+
+- **A.** 초기 기획에서는 개별 확인 기능을 넣지 않으려 했으나, 사용자가 "잠깐 확인하고 싶은데 모드를 껐다 켜기 귀찮다"는 피드백을 수용함. 단, "문장을 클릭한다"는 행위가 누적되어 전체를 다 보게 되면 사실상 모드를 끈 것과 다름없으므로, 이때는 자동으로 모드를 해제(Auto-Exposed)하여 사용자 의도에 맞게 상태를 동기화함.
+
+**Q. 호버 효과를 뺀 이유는?**
+
+- **A.** 블라인드 모드는 텍스트를 가리는 것이 목적임. 마우스를 올릴 때마다 배경이 변하는 등의 효과는 시각적 노이즈가 될 수 있어, '클릭 가능함'을 알리는 커서 변경(`cursor-pointer`)만 남기고 나머지는 제거함.
+
+**Q. 'Partial Blind' 상태(아이콘은 꺼졌지만 일부만 보임)를 둔 이유는?**
+
+- **A.** "문장 클릭 -> 전체 해제"는 너무 급격한 변화임. 사용자가 클릭한 문장만 확인하고 싶을 때, 모드 아이콘이 꺼지는 시각적 피드백은 주되, 다른 문장은 계속 가려두어 학습 흐름을 유지함.
+
+**Q. '눈 아이콘'이 떠 있는데 왜 비활성화 색상인가?**
+
+- **A.** 사용자의 "해석 보기 설정"은 켜져 있지만, "Blind Mode"가 이를 덮어쓰고(Override) 있음을 나타냄. Blind Mode가 꺼지면 즉시 원래 설정(해석 보임)으로 복귀함을 암시하는 UI 패턴임.
+
+**Q. 왜 모든 영어 문장이 열리면 자동으로 모드를 끄나?**
+
+- **A.** 사용자가 모든 문장을 클릭해서 열었다는 건 더 이상 "Blind Listening" 상태가 아님을 의미함. 사용자가 굳이 아이콘을 눌러 모드를 끌 필요 없이, 자연스럽게 다음 단계(해석 확인 등)로 넘어갈 수 있도록 자동화함.
+
+## 2026-01-08: 학습 모드 (Learning Mode) 기초 구현 및 오디오 안정성 강화
+
+### ✅ 진행 사항
+
+- **학습 모드 기반 구축**:
+  - **Blind Listening Mode**: 대화문의 영어 텍스트를 숨기고(Blur) 소리에 집중하는 모드 구현. (Default: ON)
+  - **Translation Blur**: 기본적으로 해석을 숨기고, 사용자가 클릭할 때만 해당 문장의 해석을 보여주는 기능 구현. (Default: Blur)
+- **LearningToggle 컴포넌트**: '리스닝 모드'와 '해석 블러'를 제어하는 공통 버튼 컴포넌트를 추출하여 UI 일관성 확보.
+- **상호작용 최적화**: 'Blind Listening' 모드 활성화 시 'Translation Blur' 버튼을 비활성화하여 논리적 충돌 방지.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 리스닝 모드에서 해석 블러 버튼을 비활성화했나?**
+
+- **A.** 리스닝 모드는 소리에만 집중하는 단계이므로, 해석을 하나씩 열어보는 인터랙션까지 허용하면 학습 단계의 구분이 모호해짐. 우선은 영어 텍스트를 먼저 익히고, 나중에 리스닝 모드를 끄고 해석을 확인하는 흐름을 권장하기 위함임 (추후 피드백에 따라 상호작용 고도화 예정).
+
+
+## 2026-01-08: 대화 전체 듣기(Play All) 로딩 동기화 및 안정화
+    
+### ✅ 진행 사항
+
+- **로딩 동기화(Loading Sync)**: '전체 듣기' 버튼이 모든 개별 오디오 파일이 준비(`onReady`)될 때까지 로딩 상태를 유지하도록 개선하여, 재생 도중 끊기는 현상 방지.
+- **깜빡임(Flickering) 해결**: `DialogueAudioButton`에서 `onReady` 콜백이 변경될 때마다 오디오가 재로딩되는 문제를 `useRef`로 의존성을 제거하여 해결.
+- **i18n 적용**: 'Loading...' 텍스트를 `dict.common.loading`으로 교체하여 다국어 지원.
+- **UI 폴리싱**: 로딩 중 커서 스타일(`not-allowed`)을 통일하여 사용자 경험 일관성 확보.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `useEffect` 의존성에서 `onReady`를 뺐나?**
+
+- **A.** `useEffect`에 `onReady`가 포함되어 있으면, 부모가 리렌더링되어 새로운 `onReady` 함수를 내려줄 때마다 자식의 오디오 로딩 로직이 다시 실행되는 무한 루프 또는 깜빡임이 발생함. `useRef`를 사용하여 최신 함수를 참조하되, 이펙트의 트리거가 되지 않도록 함.
+
+## 2026-01-08: 대화 전체 듣기(Play All) 기능 구현
+
+### ✅ 진행 사항
+
+- **순차 재생 시스템**: `DialogueSection` 컴포넌트를 통해 대화문을 처음부터 끝까지 자동으로 이어서 들려주는 '전체 듣기' 기능 도입.
+- **스마트 인터럽트**: 자동 재생 중 개별 재생 시도 시 자동 모드를 해제하여 사용자 경험 충돌 방지.
+- **시각적 동기화**: 현재 재생 중인 대화 버블에 하이라이트(`ring`) 처리를 하여 청각과 시각 정보를 일치시킴.
+- **다국어 처리**: 재생/정지 버튼 텍스트를 i18n 딕셔너리로 처리.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `DialogueSection`을 별도로 만들었나?**
+
+- **A.** 기존에는 `page.tsx`에서 대화 리스트를 맵핑했지만, '전체 듣기'와 같은 상태(`isAutoPlaying`, `playingIndex`)를 관리하려면 클라이언트 컴포넌트로 분리하는 것이 필수적이었음. 또한 코드 가독성과 재사용성을 높이기 위함.
+
+## 2026-01-08: 오디오 재생 권한 제어 기반 마련 (Audio Feature Gating Infrastructure)
+
+### ✅ 진행 사항
+
+- **Feature Gating 기반 구현**: `DialogueAudioButton` 컴포넌트에 `onPlayAttempt` 콜백 프로퍼티 추가. 이를 통해 재생 전 사용자 티어(Free/Pro)나 권한을 체크할 수 있는 확장 가능한 구조 확보.
+- **기술 부채 해결**: `future_todos.md`에 기록되었던 'Scalable Architecture' 항목을 구현하여 향후 수익화 모델(Freemium) 도입을 위한 기술적 준비 완료.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `DialogueAudioButton` 내부에 직접 권한 체크 로직을 넣지 않았나?**
+
+- **A.** 컴포넌트는 UI와 재생 로직에만 집중하고, 권한 체크 로직은 외부(Container 또는 Context)에서 주입받도록 함으로써 컴포넌트의 재사용성을 높이고 비즈니스 로직과의 결합도를 낮추기 위함임.
+
+## 2026-01-08: 원어민 대화 듣기 기능 구현 및 구조 개선 (Native Audio Playback & Structural Refactoring)
+
+### ✅ 진행 사항
+
+- **오디오 재생 기능 구현**: `DialogueAudioButton` 컴포넌트를 신설하여 대화 버블 내에서 원어민 음성을 즉시 재생할 수 있는 기능 추가.
+- **오디오 동기화 로직 적용**: 한 번에 하나의 음성만 재생되도록 커스텀 이벤트를 활용한 전역 중지 메커니즘 구현.
+- **상수 관리 구조 개편**: `lib/constants` 폴더를 루트의 `constants/`로 이동하여 접근성 및 명확성 향상.
+- **이벤트 네이밍 표준화**: 브라우저 표준 관례를 따라 이벤트 값은 소문자 `snake_case`로, 변수명은 대문자 `UPPER_SNAKE_CASE`로 관리하도록 규칙 정립 및 `docs/project_context.md` 반영.
+- **Lint 경고 해결**: n8n JavaScript 코드 내 사용하지 않는 변수 정리 등 전반적인 코드 품질 개선.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 오디오 재생 동기화는 어떻게 구현했나?**
+
+- **A.** 각 오디오 버튼이 재생을 시작할 때 `AUDIO_PLAYBACK_START` 이벤트를 발생시키고, 다른 버튼들은 이 이벤트를 감지하여 자신의 재생을 중지하도록 설계함. 이를 통해 여러 음성이 겹쳐 들리는 현상을 방지함.
+
+**Q. 왜 상수(Constants) 폴더를 루트 레벨로 이동했나?**
+
+- **A.** 프로젝트 전반에서 참조되는 설정값들이 `lib` 하위에 숨겨져 있는 것보다 최상위에서 명시적으로 관리되는 것이 유지보수와 협업 측면에서 더 유리하다고 판단함.
+
+**Q. 이벤트 값에 소문자를 사용하는 이유는?**
+
+- **A.** `click`, `play` 등 브라우저의 기본 DOM 이벤트 네이밍 관례와 일관성을 유지하여 개발자 경험(DX)을 높이기 위함임.
+
+## 2026-01-08: n8n 워크플로우 최적화 및 콘텐츠 품질 고도화 (n8n Workflow Optimization & Quality Improvements)
+
+### ✅ 진행 사항
+
+- **중복 체크 로직 최적화**: `Check Duplicate` 노드에 `Limit: 1` 및 `Always Output Data: On` 설정을 적용하여 성능을 높이고 데이터 부재 시에도 워크플로우가 중단되지 않도록 개선.
+- **콘텐츠 생성 규칙 강화**:
+  - **대화문 구조 표준화**: 모든 대화문이 2~3턴(A-B 또는 A-B-A)의 간결하고 자연스러운 구성을 갖추도록 프롬프트 수정.
+  - **수치 및 통화 표기 통일**: 통화 기호는 항상 `$`(USD)를 사용하고, 1,000 이상의 숫자에는 쉼표(,)를 사용하도록 강제하여 데이터 일관성 확보.
+- **운영 안정성 확보**: `Groq Orpheus TTS` 모델 사용 전 약관 동의(Terms of Use)가 필요함을 문서화하고, 미동의 시 발생하는 400 에러 해결 가이드 추가.
+- **추후 과제 발굴**: '원어민 대화' 재생 시 볼륨 크기 제어 로직 구현을 `future_todos.md`에 추가.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `Always Output Data` 옵션을 켰나?**
+
+- **A.** Supabase 노드에서 필터링 결과가 없을 경우 기본적으로 에러를 내거나 출력을 하지 않아 다음 노드(`If New`)가 실행되지 않는 문제가 있음. 이 옵션을 켜면 데이터가 없더라도 빈 객체를 반환하므로 워크플로우의 흐름을 안정적으로 제어할 수 있음.
+
+**Q. 대화 턴수를 2~3턴으로 제한한 이유는?**
+
+- **A.** 학습용 콘텐츠로서 너무 긴 대화는 사용자 집중도를 떨어뜨릴 수 있고, TTS 생성 비용 및 시간도 증가함. 핵심 표현을 명확한 맥락에서 보여주기에 가장 효율적인 2~3턴으로 표준화함.
+
+**Q. 왜 달러($) 기호를 강제하나?**
+
+- **A.** 글로벌 영어 학습 서비스로서 통화 단위가 섞여 있으면(원, 엔, 달러 등) 데이터의 통일성이 떨어짐. 가장 보편적인 달러를 기본으로 사용하되, 특정 국가의 문화를 다루는 예외적인 경우에만 다른 통화를 허용함.
+
+## 2026-01-07: n8n 워크플로우 모듈화 및 확장성 강화 (n8n Workflow Modularization & Scalability)
+
+### ✅ 진행 사항
+
+- **문서 구조 재편 (Documentation Reorganization)**:
+  - `docs/` 폴더 내의 문서들을 주제별 하위 폴더(`n8n/`, `monetization/`, `git/`, `database/`, `product/`)로 분류하여 관리 효율성 증대.
+  - `docs/n8n/` 하위에 `expressions/` 폴더를 신설하여 워크플로우별 문서 격리 및 확장성 확보.
+- **코드 노드 개별 파일화**: n8n 워크플로우 내의 복잡한 JavaScript 로직과 AI 프롬프트를 `n8n/expressions/code/` 폴더 내의 개별 파일(`*.js`, `*.txt`)로 분리하여 관리 효율성 증대.
+- **워크플로우 구조 정교화**: 템플릿 파일명을 `expressions_workflow_template.json`으로 변경하고 전용 폴더로 이동하여 향후 `vocas` 등 다른 도메인 확장을 위한 구조적 기반 마련.
+- **보안성 향상**: 워크플로우 템플릿 내의 특정 Credential ID를 플레이스홀더로 교체하여 공유 및 커밋 시 보안 위험 제거.
+- **백업 체계 개선**: 로컬 백업 파일명을 `speak_mango_n8n_expressions_workflow.json`으로 변경하여 명확성 확보.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 문서 폴더 구조를 재편했나?**
+
+- **A.** 프로젝트 문서가 많아짐에 따라 `docs/` 루트에 모든 파일이 나열되어 있어 가독성이 떨어짐. `n8n`, `database`, `product` 등 주제별로 폴더를 나누고, 특히 `n8n`은 워크플로우 종류(`expressions`, `vocas` 등)에 따라 하위 폴더를 두어 확장성을 고려함.
+
+**Q. 왜 코드 노드를 별도 파일로 분리했나?**
+
+- **A.** n8n GUI 내에서 직접 코드를 수정하는 것은 버전 관리와 가독성 측면에서 한계가 있음. 로컬 파일로 분리함으로써 에디터의 기능을 활용하고, 문서와 실제 구현 코드 간의 정합성을 더 쉽게 유지하기 위함임.
+
+**Q. 폴더 구조를 `n8n/expressions/`로 세분화한 이유는?**
+
+- **A.** 현재는 '표현(Expressions)' 생성 워크플로우만 존재하지만, 향후 '단어장(Vocas)', '이미지 생성' 등 성격이 다른 자동화 로직이 추가될 때 서로 섞이지 않고 독립적으로 관리하기 위함임.
+
+## 2026-01-07: TTS 파이프라인 통합 및 문서화 (TTS Integration & Documentation)
+
+### ✅ 진행 사항
+
+- **TTS 파이프라인 구축**: n8n 워크플로우에 `Groq Orpheus TTS`를 연동하여 영어 대화문 생성 시 원어민 음성(WAV)을 자동 합성하고 Supabase Storage에 저장하는 로직 구현.
+- **Storage 구조 최적화**:
+  - 버킷명을 `speak-mango-en`으로 설정하여 프로젝트 단위 통합 저장소로 격상.
+  - 하위 폴더 구조를 `expressions/{id}/{index}.wav`로 정규화하여 확장성 확보.
+- **문서 현행화**:
+  - `docs/n8n/expressions/optimization_steps.md`, `docs/n8n/expressions/user_guide.md`, `docs/n8n/expressions/workflow_guide.md`에 TTS 관련 상세 설정 및 트러블슈팅 가이드 추가.
+  - `docs/database/supabase_strategy.md`에 Storage 폴더 격리 전략 및 향후 유료화(Feature Gating) 시 보안 전환 가이드 수립.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Storage 버킷 이름을 `speak-mango-en`으로 설정했나?**
+
+- **A.** `expression-audio`는 오디오 전용이라는 느낌이 강했음. 향후 이미지(`images/`), 사용자 프로필(`users/`) 등 다양한 자산을 하나의 버킷에서 효율적으로 관리하기 위해 프로젝트명과 동일한 버킷을 생성하고 하위 폴더로 격리하는 전략(`Folder-based Isolation`)을 채택함.
+
+**Q. TTS 음성 파일은 왜 Public 버킷에 저장하나?**
+
+- **A.** 초기 개발 단계에서의 접근 편의성과 CDN 캐싱 효율을 위해 Public으로 설정함. 단, `docs/product/future_todos.md`에 기록한 대로 추후 유료 사용자 전용 기능(Feature Gating) 도입 시 Private 전환 및 RLS 설정을 적용할 예정임.
+
 ## 2026-01-06: 라우트 중앙 관리 및 필터 누적 시스템 (Centralized Routing & Additive Filtering)
 
 ### ✅ 진행 사항
@@ -168,7 +367,7 @@
 
 ### ✅ 진행 사항
 
-- **태그 생성 규칙 명문화**: `docs/n8n_optimization_steps.md` 및 `n8n/n8n_workflow_template.json`에 태그 생성 필수 요건(Requirement 11)을 추가. AI가 3~5개의 소문자 키워드를 포함하도록 명시하여 데이터 품질 및 필터링 효율성을 높임.
+- **태그 생성 규칙 명문화**: `docs/n8n/expressions/optimization_steps.md` 및 `n8n/n8n_workflow_template.json`에 태그 생성 필수 요건(Requirement 11)을 추가. AI가 3~5개의 소문자 키워드를 포함하도록 명시하여 데이터 품질 및 필터링 효율성을 높임.
 - **모바일 호버 이슈 해결**: 모바일에서 스크롤 시 카드의 호버 효과(크기 변경, 테두리 색상)가 유지되거나 깜빡이는 문제를 해결하기 위해 `useIsMobile` 훅을 활용.
 - **조건부 렌더링**: 모바일 환경(`isMobile === true`)에서는 `whileHover`, `whileTap` 애니메이션과 CSS `hover:` 클래스가 적용되지 않도록 `ExpressionCard` 컴포넌트 로직 수정.
 - **안정성 확보**: 초기 렌더링 시(`undefined`) 데스크탑을 기본값으로 간주하여 하이드레이션 불일치 방지 및 점진적 적용.
@@ -206,7 +405,7 @@
 
 ### ✅ 진행 사항
 
-- **사용자 가이드 작성**: 서비스 개요부터 n8n 워크플로우 설정 방법까지 상세히 안내하는 `docs/n8n_user_guide.md` 생성. 운영자가 워크플로우를 직접 설정하고 운영하는 데 필요한 모든 단계(Credentials, Node Logic, Troubleshooting)를 문서화함.
+- **사용자 가이드 작성**: 서비스 개요부터 n8n 워크플로우 설정 방법까지 상세히 안내하는 `docs/n8n/expressions/user_guide.md` 생성. 운영자가 워크플로우를 직접 설정하고 운영하는 데 필요한 모든 단계(Credentials, Node Logic, Troubleshooting)를 문서화함.
 - **퀴즈 UI 가독성 개선**: 상세 페이지의 퀴즈 질문(`question`) 영역에 `whitespace-pre-wrap` 속성을 추가하여, n8n에서 생성된 줄바꿈(`\n`)이 UI에 그대로 반영되도록 수정. 이를 통해 질문과 선택지가 섞여 보이던 문제를 해결함.
 
 ### 💬 주요 Q&A 및 의사결정
@@ -219,7 +418,7 @@
 
 ### ✅ 진행 사항
 
-- **Quiz Logic 재정립**: `docs/n8n_optimization_steps.md`의 Gemini 프롬프트를 전면 개편.
+- **Quiz Logic 재정립**: `docs/n8n/expressions/optimization_steps.md`의 Gemini 프롬프트를 전면 개편.
   - 기존의 모호하거나 잘못된 패턴(Target Language -> Target Language)을 제거하고, 3가지 명확한 패턴(Situation->EN, Expression->Situation, Negative Logic)으로 정립.
   - 모든 언어(KO, JA, ES)에 대해 3지 선다(A/B/C)와 정답 포맷(단일 알파벳)을 강제하는 **Strict Formatting Rules** 추가.
 - **데이터 보정**: 기존 DB에 쌓인 잘못된 형식의 퀴즈 데이터(`How's it going?`, `down in the dumps` 등)와 논리적으로 부적절한 데이터(`Is there a fitting room?` 등)를 올바른 패턴으로 수정하는 SQL 스크립트 작성 (`database/009_fix_invalid_quizzes.sql`).
@@ -239,7 +438,7 @@
 ### ✅ 진행 사항
 
 - **Gemini 프롬프트 고도화**: `Gemini Content Generator` 프롬프트를 수정하여 영어 표현의 대소문자(문장 vs 구절), 의미의 톤(반말 vs 존댓말), 문장 부호(물음표 등) 규칙을 명확히 정의함.
-- **컨텍스트 복원 강화**: `.agent/workflows/restore_context.md`가 로드하는 파일 목록에 `features_list.md`, `database_schema.md`를 추가하여 에이전트의 이해도 향상.
+- **컨텍스트 복원 강화**: `.agent/workflows/restore_context.md`가 로드하는 파일 목록에 `features_list.md`, `database/schema.md`를 추가하여 에이전트의 이해도 향상.
 - **문서 동기화**: `n8n_optimization_steps.md`와 `n8n/n8n_workflow_template.json`을 최신 프롬프트 변경 사항에 맞춰 업데이트.
 
 ### 💬 주요 Q&A 및 의사결정
@@ -296,7 +495,7 @@
 
 ### ✅ 진행 사항
 
-- **문서화**: 프로젝트의 현재 구현된 기능들을 일목요연하게 정리한 `docs/features_list.md` 생성.
+- **문서화**: 프로젝트의 현재 구현된 기능들을 일목요연하게 정리한 `docs/product/features_list.md` 생성.
 - **범위**: 사용자 인터페이스(메인, 상세)부터 백엔드 인프라(Supabase, n8n)까지 전체 시스템 기능 명세 포함.
 
 ### 💬 주요 Q&A 및 의사결정
@@ -324,7 +523,7 @@
 ### ✅ 진행 사항
 
 - **로직 개선**: 기존의 사후 중복 체크(Check Duplicate) 방식이 Gemini의 반복 생성을 막지 못하는 문제를 해결하기 위해, 생성 전 기존 데이터를 조회하여 제외 목록으로 전달하는 **사전 예방(Pre-fetch)** 단계를 추가함.
-- **문서 업데이트**: `docs/n8n_optimization_steps.md` 및 `docs/n8n_workflow_guide.md`에 'Get Existing Expressions' 단계 추가.
+- **문서 업데이트**: `docs/n8n/expressions/optimization_steps.md` 및 `docs/n8n/expressions/workflow_guide.md`에 'Get Existing Expressions' 단계 추가.
 
 ### 💬 주요 Q&A 및 의사결정
 
@@ -413,7 +612,7 @@
 
 **Q. 왜 의미(Meaning) 필드에서 마침표를 제거하고 반말로 통일했나?**
 
-- **A.** `docs/n8n_optimization_steps.md`에서 정의한 '간결한 뜻풀이'와 '캐주얼한 톤' 원칙을 지키기 위함임. 특히 모바일 카드 UI에서는 텍스트의 간결함이 가독성에 큰 영향을 미치므로 마침표 같은 불필요한 문장 부호를 최소화함.
+- **A.** `docs/n8n/expressions/optimization_steps.md`에서 정의한 '간결한 뜻풀이'와 '캐주얼한 톤' 원칙을 지키기 위함임. 특히 모바일 카드 UI에서는 텍스트의 간결함이 가독성에 큰 영향을 미치므로 마침표 같은 불필요한 문장 부호를 최소화함.
 
 ## 2026-01-01: CategoryLabel 호버 애니메이션 고도화
 
@@ -605,8 +804,8 @@
 - **n8n 데이터 지속성 확보**: `docker-compose.yml` 수정 (Bind Mount 적용) 및 `.gitignore` 설정 추가 (`n8n_data/`).
 - **자동화 전략 대전환**: 기존 외부 블로그 스크래핑 방식에서 **AI 기반 자체 생성 방식**으로 변경.
 - **문서 업데이트**:
-  - `docs/n8n_optimization_steps.md`: AI 기반 생성 및 중복 방지 가이드로 전면 수정.
-  - `docs/n8n_workflow_guide.md`: 변경된 아키텍처(Category Selection -> Generator) 반영.
+  - `docs/n8n/expressions/optimization_steps.md`: AI 기반 생성 및 중복 방지 가이드로 전면 수정.
+  - `docs/n8n/expressions/workflow_guide.md`: 변경된 아키텍처(Category Selection -> Generator) 반영.
   - `docs/project_context.md`: 시스템 아키텍처 다이어그램 업데이트.
 
 ### 💬 주요 Q&A 및 의사결정

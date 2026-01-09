@@ -8,6 +8,7 @@ import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
 import RelatedExpressions from "@/components/RelatedExpressions";
 import BackButton from "@/components/BackButton";
+import DialogueSection from "@/components/DialogueSection";
 
 interface PageProps {
   params: Promise<{
@@ -98,40 +99,13 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Dialogue */}
-                <div>
-                  <h2 className="mb-4 flex items-center gap-2 text-[11px] sm:text-sm font-bold uppercase tracking-wide text-zinc-400">
-                    {dict.detail.dialogueTitle}
-                  </h2>
-                  <div className="space-y-4">
-                    {content?.dialogue.map((chat, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex flex-col ${
-                          idx % 2 === 0 ? "items-start" : "items-end"
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3 ${
-                            idx % 2 === 0
-                              ? "bg-muted text-zinc-900 dark:text-zinc-100 rounded-tl-none"
-                              : "bg-blue-600 text-white rounded-tr-none"
-                          }`}
-                        >
-                          <p className="text-base sm:text-lg font-semibold">
-                            {chat.en}
-                          </p>
-                          <p
-                            className={`mt-1 text-xs sm:text-sm ${
-                              idx % 2 === 0 ? "text-zinc-500" : "text-blue-100"
-                            }`}
-                          >
-                            {chat.translation}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <DialogueSection
+                  title={dict.detail.dialogueTitle}
+                  dialogue={content?.dialogue || []}
+                  playAllLabel={dict.detail.playAll}
+                  stopLabel={dict.detail.stop}
+                  loadingLabel={dict.common.loading}
+                />
 
                 {/* Tip */}
                 <div className="rounded-2xl border-2 border-dashed border-blue-100 bg-blue-50/30 p-5 sm:p-6 dark:border-blue-900/30 dark:bg-blue-900/10">

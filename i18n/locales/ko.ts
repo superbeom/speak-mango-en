@@ -25,6 +25,8 @@ export const ko = {
     missionTitle: "🔥 오늘의 미션!",
     checkAnswer: "정답 확인하기",
     relatedTitle: "📚 이런 표현은 어때요?",
+    playAll: "전체 듣기",
+    stop: "멈춤",
   },
   card: {
     label: "오늘의 표현",

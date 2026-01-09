@@ -1,0 +1,514 @@
+{
+  "name": "Speak Mango",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "60422a79-6610-41d5-95f5-5b6e1543592c",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [-320, -320]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [192, -144],
+      "id": "fb5f59aa-5aec-4b58-8642-eaf81503ca3d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "your-gemini-api-id",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [880, 112],
+      "id": "8751cdbc-34aa-4684-a9d7-13ff6dfaf626",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "your-gemini-api-id",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 주제 목록 정의 (대분류/소분류 체계 적용)\n    const topics = [\n      {\n        domain: \"conversation\",\n        category: \"daily\",\n        topic: \"미국 원어민이 매일 쓰는 생활 영어 표현\",\n      },\n      {\n        domain: \"conversation\",\n        category: \"business\",\n        topic: \"비즈니스 미팅이나 이메일에서 꼭 필요한 정중한 영어 표현\",\n      },\n      {\n        domain: \"conversation\",\n        category: \"travel\",\n        topic: \"해외 여행할 때 유용한 필수 영어 표현\",\n      },\n      {\n        domain: \"conversation\",\n        category: \"shopping\",\n        topic: \"해외 직구 쇼핑이나 매장에서 사용하는 쇼핑 관련 영어 표현\",\n      },\n      {\n        domain: \"conversation\",\n        category: \"emotion\",\n        topic: \"기쁨, 슬픔, 화남 등 감정을 섬세하게 표현하는 영어 단어\",\n      },\n      {\n        domain: \"conversation\",\n        category: \"slang\",\n        topic: \"미드나 영화에 자주 나오는 최신 트렌디한 슬랭\",\n      },\n    ];\n\n    // 랜덤 선택\n    const selected = topics[Math.floor(Math.random() * topics.length)];\n\n    return {\n      json: {\n        domain: selected.domain,\n        category: selected.category,\n        topic: selected.topic, // AI 프롬프트용\n      },\n    };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, -320],
+      "id": "6eae6007-a015-40f5-a817-e38ef8534850",
+      "name": "Pick Category"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Role: Professional English Teacher\n  Task: Suggest ONE useful English expression related to the category below.\n\n  Domain: {{ $('Pick Category').first().json.domain }}\n  Category: {{ $('Pick Category').first().json.category }}\n\n# EXCLUDED EXPRESSIONS (Do NOT generate these):\n  {{ $items(\"Get Existing Expressions\").map(item => item.json.expression).join(\", \") }}\n\n  Requirements:\n  1. The expression must be practical and widely used.\n  2. **Do NOT use any expression listed in the 'EXCLUDED EXPRESSIONS' list.**\n  3. Capitalization for 'expression':\n     - Start with an UPPERCASE letter for standalone sentences (e.g., \"Don't take it personally\", \"No cap\").\n     - Start with a lowercase letter for general phrases or idioms (e.g., \"spill the tea\", \"hit the road\").\n  4. Punctuation for 'expression': Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.\n  5. For the 'meaning' field:\n     - Provide a concise definition in a casual tone (반말).\n     - If there are multiple meanings, separate them with ' · ' (middle dot).\n     - Do NOT end with a period (.).\n  6. Output MUST be a clean JSON object.\n\n  Output Format (JSON):\n  {\n    \"expression\": \"Hold your horses\",\n    \"meaning\": \"잠깐 기다려 · 진정해\"\n  }",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [192, -320],
+      "id": "08ab4ee3-f631-413e-a2a5-cc95b15f2faa",
+      "name": "Gemini Expression Generator",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Role: Professional English Content Creator & Polyglot Teacher.\nTask: Create a detailed study card for the following English expression in three languages: Korean (ko), Japanese (ja), and Spanish (es).\n\nExpression: {{ $('Parse Expression JSON').item.json.expression }}\nDomain: {{ $('Pick Category').first().json.domain }}\nCategory: {{ $('Pick Category').first().json.category }}\n\nRequirements:\n1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language (존댓말/Desu-Masu form) consistently** for explanations.\n2. For the 'meaning' field in ALL languages:\n   - **Tone**: Use a casual tone (e.g., Korean: 반말) by default. **HOWEVER, if the English expression is formal or typically used in a polite situation (e.g., \"Could I...\", \"May I...\"), use a polite tone (존댓말/Desu-Masu).**\n   - **Punctuation**: If the English expression is a question (?), the meaning MUST also end with a question mark (?) or be phrased as a question. Do NOT use trailing periods (.) for statements.\n   - If there are multiple meanings, separate them with ' · ' (middle dot).\n3. Formatting for 'expression':\n   - **Capitalization**: **Start with an UPPERCASE letter** if the expression is a standalone sentence or interjection (e.g., \"No worries\", \"Never mind\", \"Don't take it personally\"). **Start with a lowercase letter** ONLY if it is a phrase or idiom used within a sentence (e.g., \"spill the tea\", \"hit the road\").\n   - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.\n4. Constraint for content:\n   - **NEVER use casual speech (반말)** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).\n   - Do NOT mix polite and casual styles. Keep the tone consistent throughout.\n   - Do NOT address the reader as specific groups like \"Kids\" or \"Students\". Use a general, relatable tone suitable for young adults.\n5. Output MUST be a valid JSON object matching the schema below.\n6. 'meaning' and 'content' fields must contain keys for 'ko', 'ja', 'es'.\n7. **Dialogue & Roles (CRITICAL)**:\n     - Create a **coherent, natural conversation** between two people (A and B).\n     - **The dialogue MUST consist of 2 or 3 turns (A -> B or A -> B -> A).**\n     - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).\n     - Each entry in the `dialogue` array MUST include:\n       - `\"role\"`: Value \"A\" or \"B\" to distinguish speakers.\n       - `\"en\"`: The English sentence.\n       - `\"translation\"`: The translated sentence in the target language.\n8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to Japanese and Spanish.\n9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.\n10. **Quiz Logic (CRITICAL)**:\n    - The quiz must test the understanding of the English expression.\n    - **Randomly select one of the following patterns**:\n      - **Pattern 1 (Situation -> English)**: Describe a situation in [Target Language] and ask \"Which English expression fits this situation?\". -> The options (A, B, C) MUST be **English expressions**.\n        *   *Example (Target Language: ko)*: Q: \"친구가 \\\"이번 주말에 영화 볼까요?\\\"라고 제안했을 때, 긍정적으로 동의하는 가장 자연스러운 영어 표현은?\\n\\nA. Sounds bad\\nB. Sounds good\\nC. Sounds angry\"\n      - **Pattern 2 (Expression -> Situation)**: Show the expression and ask \"When would you use this?\" in [Target Language]. -> The options (A, B, C) MUST be **situations described in [Target Language]**.\n        *   *Example (Target Language: ko)*: Q: \"다음 중 'What's up?'을 가장 자연스럽게 사용할 수 있는 상황은?\\n\\nA. 💰 은행에서 대출 상담을 받고 있다.\\nB. 🚀 회사 중역 회의에서 발표를 시작한다.\\nC. 🚶‍♀️ 길을 걷다가 친구와 눈이 마주쳤다.\"\n      - **Pattern 3 (Negative Logic)**: Ask \"Which situation is **NOT** appropriate for this expression?\" in [Target Language]. -> The options (A, B, C) MUST be **situations described in [Target Language]**.\n        *   *Example (Target Language: ko)*: Q: \"다음 중 'Let's touch base.'의 사용이 적절하지 않은 상황은?\\n\\nA. 🙋‍♀️ 팀원과 주간 보고서에 대해 짧게 이야기할 때.\\nB. 🥳 친구들과 주말에 놀러 갈 계획을 세울 때.\\nC. 🧑‍💻 고객과 다음 단계 논의를 위해 연락할 때.\"\n    - **Strict Formatting & Validation Rules**:\n      1. **These rules apply to ALL languages (ko, ja, es).**\n      2. You **MUST** provide 3 distinct options labeled A, B, and C.\n      3. You **MUST** use `\\n` (newline) to separate the question and each option.\n      4. The 'answer' field MUST be **only the uppercase letter** (e.g., \"A\", \"B\", \"C\"). **NEVER** include the full text of the answer.\n11. **Tags (MANDATORY)**: Include a `\"tags\"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., \"idiom\", \"office\", \"slang\", \"travel\"). Do NOT include the '#' symbol.\n12. **Currency & Numbers**:\n    - Always use **`$` (USD)** for currency to maintain consistency (e.g., \"$10\", \"$50.50\"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.\n    - Use commas for numbers larger than 1,000 (e.g., \"1,000\", \"10,000\").\n\nExample Output (Reference this style for ALL languages):\n{\n  \"expression\": \"under the weather\",\n  \"domain\": \"conversation\",\n  \"category\": \"daily\",\n  \"meaning\": {\n    \"ko\": \"몸이 좀 안 좋아 · 컨디션이 별로야\",\n    \"ja\": \"体調が少し悪い · 気分がすぐれない\",\n    \"es\": \"sentirse un poco mal · no estar al cien\"\n  },\n  \"content\": {\n    \"ko\": {\n      \"situation\": \"🌟 아침에 일어났는데 왠지 모르게 몸이 축 처지고, 컨디션이 별로일 때! 😱 '아, 나 오늘 뭔가 좀 별론데... 병든 병아리 같아...' 할 때 쓰는 핵인싸 표현이에요! 진짜 아픈 건 아닌데 그렇다고 완전 쌩쌩하지도 않을 때, 가볍게 내 상태를 말하고 싶을 때 찰떡같이 쓸 수 있답니다! 🤒✨\",\n      \"dialogue\": [\n        { \"en\": \"Hey, you look a bit down. Are you okay?\", \"translation\": \"저기, 좀 기분이 안 좋아 보이는데. 괜찮아요?\", \"role\": \"A\" },\n        { \"en\": \"I'm feeling a bit under the weather today, so I think I'll just head home early.\", \"translation\": \"오늘 몸이 좀 안 좋아서, 일찍 집에 가려고요.\", \"role\": \"B\" }\n      ],\n      \"tip\": \"🚨 **꿀팁 방출!** 'under the weather'는 진짜 심각하게 아플 때보다는 가볍게 '컨디션이 안 좋다', '감기 기운이 있다' 정도의 느낌이에요. 😷 만약 진짜 심하게 아프다면 'I'm sick' 또는 'I have a fever'처럼 구체적으로 말하는 게 좋아요. 😉 그리고 이 표현은 뱃사람들이 배에서 날씨가 안 좋을 때 아픈 사람을 갑판 아래로 보내 '날씨 아래'에 있게 했다는 유래가 있대요! 완전 신기하죠? ⚓️🌊\",\n      \"quiz\": {\n        \"question\": \"다음 중 'under the weather'를 사용하기 가장 적절한 상황은?\\n\\nA. 🥳 파티에서 신나게 춤추고 있다.\\nB. 😴 침대에서 밍기적거리며 몸이 좀 으슬으슬하다.\\nC. 🏋️‍♀️ 헬스장에서 역기를 들고 운동하고 있다.\",\n        \"answer\": \"B\"\n      }\n    },\n    \"ja\": {\n      \"situation\": \"朝起きた時に、なんとなく体がだるくて「今日はなんだか調子が悪いな…」と感じる時にぴったりの表現です！😷 本当にひどい病気ではないけれど、100%元気でもない時に、自分の状態をカジュアルに伝えることができます。✨\",\n      \"dialogue\": [\n        { \"en\": \"Hey, you look a bit down. Are you okay?\", \"translation\": \"ねえ、なんだか元気がないみたいだけど大丈夫？\", \"role\": \"A\" },\n        { \"en\": \"I'm feeling a bit under the weather today.\", \"translation\": \"今日はちょっと体調が悪くて。\", \"role\": \"B\" }\n      ],\n      \"tip\": \"💡 **豆知識!** この表現は、昔の船乗りが天候が悪くて体調を崩した時に、甲板の下（Under the deck）に避難したことから「Under the weather」になったという説があります。⚓️ 本当に体調が悪い時は「I'm sick」を使いましょう！\",\n      \"quiz\": {\n        \"question\": \"「under the weather」を使うのに最も適した状況は？\\n\\nA. 🥳 パーティーで楽しく踊っている。\\nB. 😴 風邪気味で、ベッドで休んでいる。\\nC. 🏋️‍♀️ ジムで元気にトレーニングしている。\",\n        \"answer\": \"B\"\n      }\n    },\n    \"es\": {\n      \"situation\": \"¡Cuando te despiertas y te sientes un poco cansado o sin energía! 😱 Es una expresión muy común para decir que no te sientes al 100%, pero tampoco estás gravemente enfermo. 🤒✨\",\n      \"dialogue\": [\n        { \"en\": \"Hey, you look a bit down. Are you okay?\", \"translation\": \"Oye, te ves un poco desanimado. ¿Estás bien?\", \"role\": \"A\" },\n        { \"en\": \"I'm feeling a bit under the weather today.\", \"translation\": \"Hoy me siento un poco mal.\", \"role\": \"B\" }\n      ],\n      \"tip\": \"🚨 **¡Dato curioso!** El origen viene de los marineros. Cuando el clima era malo y se sentían mal, bajaban debajo de la cubierta para estar 'bajo el clima'. 🌊⚓️ Si estás realmente enfermo, es mejor usar 'I'm sick'.\",\n      \"quiz\": {\n        \"question\": \"¿En qué situación usarías \\\"under the weather\\\"?\\n\\nA. 🥳 En una fiesta bailando alegremente.\\nB. 😴 Descansando en la cama porque te sientes un poco mal.\\nC. 🏋️‍♀️ Entrenando con mucha energía en el gimnasio.\",\n        \"answer\": \"B\"\n      }\n    }\n  },\n  \"tags\": [\"daily\", \"health\", \"lifestyle\"]\n}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [880, -80],
+      "id": "cae8a80a-ddfa-4f03-932d-e2f22f442fe4",
+      "name": "Gemini Content Generator"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "schema": "speak_mango_en",
+        "operation": "getAll",
+        "tableId": "expressions",
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "expression",
+              "condition": "ilike",
+              "keyValue": "=*{{ $('Parse Expression JSON').item.json.expression }}*"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [496, -64],
+      "id": "9217fca3-7a94-4077-96c0-26d37e4a6a54",
+      "name": "Check Duplicate",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "your-supabase-api-id",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7588390d-2c9b-4409-9df3-6e365605d4a6",
+              "leftValue": "={{ $('Check Duplicate').first().json.expression }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [656, -64],
+      "id": "b2e22d2a-abc8-41a5-ba15-18b92004e7d3",
+      "name": "If New"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "schema": "speak_mango_en",
+        "tableId": "expressions",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "49569b5d-6f3c-4b58-941a-1154a827cfea",
+      "name": "Supabase Insert",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2128, -80],
+      "credentials": {
+        "supabaseApi": {
+          "id": "your-supabase-api-id",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "  // Gemini의 응답에서 JSON 문자열 부분만 추출하여 파싱합니다.\n  const rawText = $input.first().json.text;\n  // 마크다운 코드 블록(```json ... ```) 제거\n  const cleanJson = rawText.replace(/```json/g, \"\").replace(/`/g, \"\").trim();\n\n  try {\n    return {\n      json: JSON.parse(cleanJson)\n    };\n  } catch (error) {\n    // 파싱 실패 시 에러 로그 반환 (디버깅용)\n    return {\n      json: {\n        error: \"JSON Parsing Failed\",\n        raw: rawText\n      }\n    };\n  }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, -320],
+      "id": "4b391b28-8566-4560-b1df-1fbd42b680ae",
+      "name": "Parse Expression JSON"
+    },
+    {
+      "parameters": {
+        "jsCode": "  // Gemini의 응답에서 JSON 문자열 부분만 추출하여 파싱합니다.\n  const rawText = $input.first().json.text;\n  // 마크다운 코드 블록(```json ... ```) 제거\n  const cleanJson = rawText.replace(/```json/g, \"\").replace(/`/g, \"\").trim();\n\n  try {\n    return {\n      json: JSON.parse(cleanJson)\n    };\n  } catch (error) {\n    // 파싱 실패 시 에러 로그 반환 (디버깅용)\n    return {\n      json: {\n        error: \"JSON Parsing Failed\",\n        raw: rawText\n      }\n    };\n  }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1168, -80],
+      "id": "6dae234a-7f34-4704-bb66-359150049071",
+      "name": "Parse Content JSON"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "schema": "speak_mango_en",
+        "operation": "getAll",
+        "tableId": "expressions",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "category",
+              "condition": "eq",
+              "keyValue": "={{ $('Pick Category').item.json.category }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [16, -320],
+      "id": "6d363283-08a9-4204-bc03-9589e89a7549",
+      "name": "Get Existing Expressions",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "your-supabase-api-id",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node: Generate UUID\n// 중복이 아님이 확인된 후, 저장 경로 및 DB ID로 사용할 UUID를 생성합니다.\n\n// crypto 모듈이 글로벌에 없을 경우를 대비해 직접 UUID v4 생성 로직 사용\nconst uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n  const r = Math.random() * 16 | 0;\n  const v = c === 'x' ? r : (r & 0x3 | 0x8);\n  return v.toString(16);\n});\n\nreturn {\n  json: {\n    ...$input.first().json,\n    id: uuid\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1328, -80],
+      "id": "5b829c88-78aa-48c5-8da8-5b259f51df6a",
+      "name": "Generate ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node: Prepare TTS Requests (Groq Orpheus V1)\n// 대화문의 역할(A, B)에 따라 아이템을 분리하고 각각 목소리를 할당합니다.\n\nconst items = $input.all();\nlet results = [];\n\nitems.forEach((item, itemIndex) => {\n    const data = item.json;\n    \n    // ko 기반으로 대화문 추출 (모든 언어가 동일한 en 대화문을 공유하므로)\n    const dialogueEntries = data.content?.ko?.dialogue || [];\n    const expressionId = data.id;\n\n    dialogueEntries.forEach((entry, lineIndex) => {\n        const rawText = entry.en || \"\";\n        const role = (entry.role || \"A\").toUpperCase();\n\n        // 텍스트 정제\n        const cleanedText = rawText.replace(/\\n/g, \" \").replace(/\\s+/g, \" \").trim();\n        \n        // 역할별 목소리 할당\n        const voice = (role === 'B') ? 'troy' : 'hannah';\n\n        results.push({\n            json: {\n                ...data, // 원본 데이터 유지\n                tts_input: cleanedText.substring(0, 200),\n                tts_voice: voice,\n                tts_line_index: lineIndex,\n                tts_model: \"canopylabs/orpheus-v1-english\",\n                tts_format: \"wav\",\n                tts_endpoint: \"https://api.groq.com/openai/v1/audio/speech\",\n                // Storage 저장을 위한 경로 확정\n                storage_path: `expressions/${expressionId}/${lineIndex}.wav`\n            },\n            pairedItem: { item: itemIndex }\n        });\n    });\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1488, -80],
+      "id": "ede3e623-0102-4818-b6f5-4c12a32f99ca",
+      "name": "Prepare TTS Requests"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/speech",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "canopylabs/orpheus-v1-english"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.tts_input }}"
+            },
+            {
+              "name": "voice",
+              "value": "={{ $json.tts_voice }}"
+            },
+            {
+              "name": "response_format",
+              "value": "wav"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1648, -80],
+      "id": "bd116d19-f0b5-4f81-8bd5-4fde96fe1838",
+      "name": "Groq Orpheus TTS",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "your-http-header-auth-id",
+          "name": "Groq Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://<YOUR_PROJECT_REF>.supabase.co/storage/v1/object/speak-mango-en/{{ $json.storage_path }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1808, -80],
+      "id": "4ede8024-8434-41e8-9cd3-4a800e3a9705",
+      "name": "Upload to Storage",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "your-http-header-auth-id",
+          "name": "Supabase Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node: Aggregate TTS Results\n// 분리되었던 대화문 라인들을 다시 하나로 합치고 audio_url을 주입합니다.\n\nconst items = $input.all();\nif (items.length === 0) return [];\n\n// 1. 원본 데이터 복원 (Prepare TTS Requests 노드의 결과 참조)\nconst firstItem = items[0];\nconst parentItemIndex = firstItem.pairedItem.item;\nconst parentData = $items(\"Prepare TTS Requests\")[parentItemIndex].json;\n\n// 원본 데이터 복제 (deep copy)\nlet finalData = JSON.parse(JSON.stringify(parentData));\n\n// 2. 불필요한 임시 필드 일괄 제거 (tts_ 로 시작하는 모든 필드)\nObject.keys(finalData).forEach((key) => {\n  if (key.startsWith(\"tts_\") || key === \"storage_path\") {\n    delete finalData[key];\n  }\n});\n\n// 3. 오디오 URL 주입\nitems.forEach((item) => {\n  const pIdx = item.pairedItem.item;\n  const originalReq = $items(\"Prepare TTS Requests\")[pIdx].json;\n\n  const idx = originalReq.tts_line_index;\n  // Upload to Storage 결과(Key)에서 경로 추출\n  let path = item.json.Key || originalReq.storage_path;\n\n  // 버킷 명칭(speak-mango-en/)이 포함되어 있다면 제거하여 경로 정규화\n  if (path.startsWith(\"speak-mango-en/\")) {\n    path = path.replace(\"speak-mango-en/\", \"\");\n  }\n\n  // 모든 언어의 대화문에 동일한 audio_url 주입\n  [\"ko\", \"ja\", \"es\"].forEach((lang) => {\n    if (\n      finalData.content &&\n      finalData.content[lang] &&\n      finalData.content[lang].dialogue &&\n      finalData.content[lang].dialogue[idx]\n    ) {\n      finalData.content[lang].dialogue[idx].audio_url = path;\n    }\n  });\n});\n\nreturn [{ json: finalData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1968, -80],
+      "id": "8aca45c9-383b-4fbd-8adb-033e9aaa5f54",
+      "name": "Aggregate TTS Results"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Pick Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gemini Expression Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gemini Content Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Category": {
+      "main": [
+        [
+          {
+            "node": "Get Existing Expressions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Expression Generator": {
+      "main": [
+        [
+          {
+            "node": "Parse Expression JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Content Generator": {
+      "main": [
+        [
+          {
+            "node": "Parse Content JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "If New",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If New": {
+      "main": [
+        [
+          {
+            "node": "Gemini Content Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Expression JSON": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Content JSON": {
+      "main": [
+        [
+          {
+            "node": "Generate ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Expressions": {
+      "main": [
+        [
+          {
+            "node": "Gemini Expression Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate ID": {
+      "main": [
+        [
+          {
+            "node": "Prepare TTS Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare TTS Requests": {
+      "main": [
+        [
+          {
+            "node": "Groq Orpheus TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Orpheus TTS": {
+      "main": [
+        [
+          {
+            "node": "Upload to Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Storage": {
+      "main": [
+        [
+          {
+            "node": "Aggregate TTS Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate TTS Results": {
+      "main": [
+        [
+          {
+            "node": "Supabase Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "your-version-id",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "your-instance-id"
+  },
+  "id": "your-workflow-id",
+  "tags": []
+}

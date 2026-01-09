@@ -1,5 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { DATABASE_SCHEMA } from "@/lib/constants";
+import { DATABASE_SCHEMA } from "@/constants";
 
 export function createBrowserSupabase() {
   return createBrowserClient(

@@ -1,6 +1,6 @@
 # Monetization & Growth Strategy: "From Blog to SaaS"
 
-> 이 문서는 `@monetization_brainstorming.md`에서 논의된 수익화 아이디어를 구체적인 **기술적 구현 로드맵(Technical Roadmap)**으로 변환한 결과물입니다.
+> 이 문서는 `@brainstorming.md`에서 논의된 수익화 아이디어를 구체적인 **기술적 구현 로드맵(Technical Roadmap)**으로 변환한 결과물입니다.
 > 핵심 전략은 **"Hybrid Data Storage" (Free=Local / Paid=Cloud)**를 통한 자연스러운 유료 전환 유도입니다.
 
 ## 1. Core Philosophy

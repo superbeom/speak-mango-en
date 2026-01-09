@@ -43,25 +43,26 @@
 ### Content JSONB Structure (i18n)
 
 `content` 컬럼은 언어 코드를 최상위 키로 갖는 구조입니다.
-내부 `dialogue` 배열에서는 `translation`이라는 통일된 키를 사용하여 다국어 확장을 용이하게 합니다.
+내부 `dialogue` 배열에서는 `translation`이라는 통일된 키를 사용하여 다국어 확장을 용이하게 합니다. 또한 음성 지원을 위해 `audio_url` 필드를 포함할 수 있습니다.
 
 ```json
 {
   "ko": {
     "situation": "이 표현이 쓰이는 구체적인 상황이나 감정을 아주 친근하고 재미있게 묘사해주세요",
-  "dialogue": [
-    { "en": "영어 대화문 A", "translation": "한국어 A 해석" },
-    { "en": "영어 대화문 B", "translation": "한국어 B 해석" },
-  ],
-  "tip": "뉘앙스 차이, 주의할 점, 또는 유사 표현을 꿀팁처럼 알려주세요",
-  "quiz": { "question": "간단하고 재미있는 퀴즈 문제", "answer": "정답" }
-  },
-  "ja": {
-    "situation": "일본어 상황 설명...",
     "dialogue": [
-      { "en": "영어 대화문", "translation": "일본어 해석" }
+      { 
+        "en": "영어 대화문 A", 
+        "translation": "한국어 A 해석",
+        "audio_url": "expressions/{uuid}/0.wav"
+      },
+      { 
+        "en": "영어 대화문 B", 
+        "translation": "한국어 B 해석",
+        "audio_url": "expressions/{uuid}/1.wav"
+      }
     ],
-    ...
+    "tip": "뉘앙스 차이, 주의할 점, 또는 유사 표현을 꿀팁처럼 알려주세요",
+    "quiz": { "question": "간단하고 재미있는 퀴즈 문제", "answer": "정답" }
   }
 }
 ```

@@ -69,6 +69,15 @@ const itemVariants = {
 }
 ```
 
+### 1.3 Scroll To Top Interaction (상단 이동 시스템)
+
+- **Hook**: `hooks/useScroll.ts`
+- **Visibility**: 스크롤 깊이가 `300px`을 초과할 때만 버튼을 노출합니다.
+- **Interaction**:
+  - `framer-motion`의 `AnimatePresence`를 사용하여 부드러운 Scale & Fade 애니메이션으로 등장/퇴장합니다.
+  - 클릭 시 `window.scrollTo({ top: 0, behavior: 'smooth' })`를 호출하여 최상단으로 이동합니다.
+- **Mobile optimization**: 모바일에서는 손가락 터치 시 불필요한 호버 효과가 남지 않도록 제어합니다.
+
 ## 2. UI Automation Logic (UI 자동화)
 
 ### 2.1 Auto-Scroll to Active Filter (필터 자동 스크롤)
@@ -99,6 +108,7 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - 스크롤이 컨텐츠 전체 길이의 절반(원본 데이터 길이)에 도달하면 `scrollLeft`를 0으로 초기화하여 처음으로 되돌립니다. (오른쪽 이동 시)
   - 스크롤이 0보다 작아지면 절반 지점으로 이동시킵니다. (왼쪽 이동 시)
   - 이 과정이 순식간에 일어나 사용자에게는 무한히 이어지는 것처럼 보입니다.
+- **Mobile Fallback**: 모바일 환경에서는 성능과 배터리 소모를 고려하여 Marquee 애니메이션을 비활성화하고, 세로 리스트로 자동 전환합니다.
 
 ### 3.2 Drag Acceleration (드래그 가속)
 
@@ -144,52 +154,184 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Principle**: 모든 필터 및 검색 상태(Category, Tag, Search Term)는 URL Query Parameter(`?category=...&tag=...`)를 Single Source of Truth로 사용합니다.
 - **Benefit**: 사용자가 현재 보고 있는 필터 상태를 URL 복사만으로 공유할 수 있습니다.
 
-### 6.2 Smart Tag Detection
+### 6.2 Centralized Routing System (라우트 중앙 관리)
+
+- **File**: `lib/routes.ts`
+- **Implementation**:
+  - 앱 내의 모든 URL 경로를 `ROUTES` 상수로 관리합니다.
+  - 필터 조합(Category, Tag, Search)을 기반으로 적절한 홈 경로를 생성하는 `getHomeWithFilters()` 헬퍼 함수를 포함합니다.
+- **Benefit**: 하드코딩된 경로 문자열을 제거하여 링크 구조 변경 시 한 곳에서만 수정하면 되므로 유지보수성과 타입 안정성이 크게 향상됩니다.
+
+### 6.3 Smart Tag Detection (스마트 태그 감지)
 
 - **Logic**: 사용자가 검색창에 `#`으로 시작하는 단어를 입력하면(`SearchBar.tsx`), 이를 일반 검색어가 아닌 '태그 필터'로 인식하여 URL을 `?tag=...`로 변환합니다.
 
-### 6.3 Sticky UI Interaction
+### 6.4 Sticky UI Interaction (스티키 UI 상호작용)
 
 - **Hook**: `hooks/useScroll.ts`
 - **Logic**: 윈도우 스크롤 이벤트를 감지하여 특정 임계값(예: 80px)을 넘으면 `isStuck` 상태를 반환합니다.
 - **Visual**: `FilterBar`는 이 상태에 따라 테두리(`border-b`)를 표시하거나 배경 투명도를 조절하여, 헤더와 자연스럽게 연결되는 시각적 효과를 줍니다.
 
-## 7. Automation Pipeline (n8n & AI)
+## 7. Audio Playback System (오디오 재생 시스템)
 
-### 7.1 Pre-fetch Duplicate Check
+### 7.1 Web Audio API & Volume Amplification (볼륨 증폭)
 
-- **Problem**: AI가 이미 존재하는 표현을 중복 생성하는 비효율성 발생.
-- **Solution**: 생성 단계(Generate) 이전에 Supabase에서 기존 표현 리스트를 조회(Pre-fetch)하여 프롬프트의 '제외 목록'으로 전달함으로써 중복을 원천 차단합니다.
+- **Problem**: 일부 TTS 생성 음성이 모바일 기기에서 작게 들리는 문제.
+- **Solution**: 표준 `HTMLAudioElement` 대신 `Web Audio API`의 `GainNode`를 사용하여 볼륨을 2배(`2.0`)로 증폭하여 출력합니다.
+- **Implementation**:
+  - `AudioContext`를 생성하고 `createMediaElementSource`로 오디오를 연결합니다.
+  - `GainNode`를 삽입하여 `gain.value = 2.0`을 적용한 뒤 `destination`으로 출력합니다.
+  - Web Audio API 미지원 환경을 위한 Fallback 로직이 내장되어 있습니다.
 
-### 7.2 Strict JSON Parsing
+### 7.2 Global Audio Synchronization (전역 동기화)
 
-- **Problem**: LLM이 JSON 응답에 마크다운 코드 블록(``json ... `)을 포함하여 파싱 에러 발생.
-- **Solution**: n8n 워크플로우 내에서 정규식(` replace(/```json|```/g, '') `)을 사용하여 순수 JSON 문자열만 추출한 뒤 파싱하는 로직을 추가했습니다.
+- **Mechanism**: 여러 개의 오디오 버튼이 동시에 재생되어 소리가 겹치는 것을 방지합니다.
+- **logic**:
+  - 각 버튼은 재생 시작 시 `AUDIO_PLAYBACK_START` 커스텀 이벤트를 `window`에 디스패치합니다.
+  - 모든 `DialogueAudioButton` 인스턴스는 이 이벤트를 구독하고 있으며, 이벤트의 페이로드로 전달된 `audio` 객체가 자신의 것이 아닐 경우 재생을 즉시 정지(`pause`)합니다.
 
-### 7.3 Structured Prompt Engineering
+### 7.3 Feature Gating Infrastructure (권한 제어)
 
-- **File**: `docs/n8n_optimization_steps.md`
-- **Context**: 3단계(상황->표현, 표현->상황, 부정 로직)의 퀴즈 패턴을 정의하고, 문장 부호 및 대소문자 규칙(문장은 대문자, 구절은 소문자 시작)을 명시하여 데이터의 일관성을 확보했습니다.
+- **Implementation**: `DialogueAudioButton`에 `onPlayAttempt` 비동기 콜백을 주입할 수 있는 구조를 갖추고 있습니다.
+- **Usage**: 실제 재생 로직이 수행되기 전에 이 콜백을 실행하여 사용자의 구독 티어(Free/Pro), 포인트 보유량, 또는 광고 시청 여부를 체크할 수 있습니다. `false`가 반환되면 재생이 차단됩니다.
 
-## 8. Navigation State Persistence (네비게이션 상태 보존)
+### 7.4 Context-Aware Icon Logic (상태별 아이콘 로직)
+
+- **Stop Behavior**: `stopBehavior` prop (`reset` | `pause`)에 따라 아이콘과 동작이 동적으로 변합니다.
+  - **Manual Play (`reset`)**: 재생 중 클릭 시 초기화(`currentTime = 0`)되며, 정지 아이콘(`Square`)을 표시합니다.
+  - **Auto Play (`pause`)**: 연속 재생 중에는 일시정지(`pause`) 동작을 수행하며, 일시정지 아이콘(`Pause`)을 표시합니다.
+- **Visual States**: `isLoading`, `isPlaying`, `isPaused` 상태를 조합하여 로딩 스피너, 재생, 정지, 일시정지 아이콘을 명확하게 구분하여 렌더링합니다.
+
+### 7.5 Sequential Playback ("Play All" 멀티 재생)
+
+- **File**: `components/DialogueSection.tsx`
+- **Mechanism**: 대화 목록 전체를 순차적으로 자동 재생합니다.
+- **Implementation**:
+  - `audioRefs`: 각 `DialogueAudioButton`의 명령형 ID/메서드에 접근하기 위해 `useRef` 배열을 관리합니다.
+  - `handlePlayAll`: 현재 인덱스를 0으로 설정하고 첫 번째 오디오를 재생합니다.
+  - `onAudioEnded`: 현재 오디오 재생이 끝나면 인덱스를 증가시키고, 다음 버튼의 `play()` 메서드를 호출합니다.
+  - **State Sync**: 자동 재생 중 사용자가 특정 오디오를 수동으로 멈추거나 재생하면, `isAutoPlaying` 상태를 즉시 해제하여 충돌을 방지합니다.
+
+### 7.6 Audio Loading Stabilization (로딩 안정화)
+
+- **Problem**: 부모 컴포넌트(`DialogueSection`)가 리렌더링될 때마다 자식(`DialogueAudioButton`)으로 전달되는 `onReady` 콜백이 변경되어, 오디오 초기화(`useEffect`)가 반복 실행되는 '깜빡임(Flicker)' 현상 발생.
+- **Solution**:
+  - `useRef`를 사용하여 `onReady` 콜백을 저장하고, `useEffect` 의존성 배열에서 `onReady`를 제거합니다.
+  - 이를 통해 부모의 상태 변화(예: 다른 오디오가 준비됨)가 자식의 오디오 재로딩을 유발하지 않도록 격리(Isolation)합니다.
+- **Loading Sync**: 모든 오디오 인스턴스가 `onReady` 신호를 보낼 때까지 'Play All' 버튼을 비활성화하여, 끊김 없는 연속 재생을 보장합니다.
+
+## 8. Skeleton Loading Implementation (스켈레톤 구현 상세)
+
+- **Strategy**: `docs/project_context.md`의 규칙에 따라 데이터 의존성이 있는 컴포넌트와 한 쌍으로 구현됩니다.
+- **Shared Components**: `components/ui/Skeletons.tsx`에서 중앙 관리합니다.
+  - **`SkeletonCard`**: `ExpressionCard`의 높이와 내부 레이아웃(배경색, 뱃지 위치 등)을 픽셀 단위로 모사하여 로딩 전후 CLS 0을 유지합니다.
+  - **`SkeletonDetail`**: 상세 페이지의 복잡한 그리드와 대화 블록 구조를 그대로 재현합니다.
+- **Integration**: `app/loading.tsx`를 통해 Next.js App Router의 스트리밍 기능을 활용하며, 첫 번째 바이트(TTFB)가 도달하자마자 레이아웃 윤곽을 표시합니다.
+
+## 9. Navigation State Persistence (네비게이션 상태 보존)
 
 '더 보기(Load More)'로 로드된 리스트와 스크롤 위치를 페이지 이동 간에도 유지하기 위한 복합 전략입니다.
 
-### 8.1 Multi-Cache Architecture
+### 9.1 Multi-Cache Architecture
 
 - **Context**: `context/ExpressionContext.tsx`
 - **Structure**: 단일 상태가 아닌, 필터 조합(URL)을 키로 사용하는 맵 구조(`Record<string, ExpressionState>`)를 사용하여 각 화면의 상태를 독립적으로 저장합니다.
 - **Key Generation**: `serializeFilters` 유틸리티를 통해 `category=business&search=hello`와 같은 고유 키를 생성합니다. 이때 빈 문자열 필터는 제외하여 서버/클라이언트 간 키 일관성을 유지합니다.
 
-### 8.2 Real-time Scroll Tracking
+### 9.2 Real-time Scroll Tracking
 
 - **Mechanism**: 상세 페이지 이동 시점뿐만 아니라, 사용자가 리스트를 스크롤할 때마다 실시간으로 위치를 캐시에 저장합니다.
 - **Optimization**: 브라우저 부하를 줄이기 위해 200ms 디바운스(Debounce)를 적용하여 업데이트 빈도를 조절합니다.
 - **Safety**: 스크롤 복원이 진행 중일 때는 저장 로직을 일시 차단하여, 복원 도중 0(상단) 위치가 캐시에 덮어씌워지는 문제를 방지합니다.
 
-### 8.3 Robust Scroll Restoration (Recursive RAF)
+### 9.3 Robust Scroll Restoration (Recursive RAF)
 
 - **Manual Control**: 브라우저의 기본 스크롤 복원 동작(`history.scrollRestoration = 'manual'`)을 차단하여 React의 렌더링 사이클과 충돌하는 것을 방지합니다.
 - **Recursive requestAnimationFrame**: 리스트의 데이터가 실제로 화면에 그려져서 높이가 확보될 때까지 브라우저의 페인팅 주기에 맞춰 여러 프레임에 걸쳐 반복적으로 스크롤 이동을 시도합니다.
 - **Termination Condition**: 목표 위치에 도달하거나, 약 1초(60프레임) 이상의 시도가 실패할 경우 자동으로 종료하여 성능을 보존합니다.
 - **Separation of Concerns**: 데이터 업데이트(`updateCacheData`)와 스크롤 저장(`updateScrollPosition`) 메서드를 분리하여, 데이터 추가 로드 시 스크롤 위치가 초기화되지 않도록 보호합니다.
+
+## 10. Automation Pipeline (n8n & AI)
+
+### 10.1 Pre-fetch Duplicate Check
+
+- **Problem**: AI가 이미 존재하는 표현을 중복 생성하는 비효율성 발생.
+- **Solution**: 생성 단계(Generate) 이전에 Supabase에서 기존 표현 리스트를 조회(Pre-fetch)하여 프롬프트의 '제외 목록'으로 전달함으로써 중복을 원천 차단합니다.
+
+### 10.2 Strict JSON Parsing
+
+- **Problem**: LLM이 JSON 응답에 마크다운 코드 블록(``json ... `)을 포함하여 파싱 에러 발생.
+- **Solution**: n8n 워크플로우 내에서 정규식(` replace(/```json|```/g, '') `)을 사용하여 순수 JSON 문자열만 추출한 뒤 파싱하는 로직을 추가했습니다.
+
+### 10.3 Structured Prompt Engineering
+
+- **File**: `docs/n8n/expressions/optimization_steps.md`
+- **Context**: 3단계(상황->표현, 표현->상황, 부정 로직)의 퀴즈 패턴을 정의하고, 문장 부호 및 대소문자 규칙(문장은 대문자, 구절은 소문자 시작)을 명시하여 데이터의 일관성을 확보했습니다.
+
+### 10.4 Modular Workflow Management (워크플로우 모듈화)
+
+- **Strategy**: n8n GUI 내부에 직접 작성하던 JavaScript 코드와 AI 프롬프트를 로컬 파일(`n8n/expressions/code/*.js`, `*.txt`)로 분리하여 관리합니다.
+- **Benefits**:
+  - 에디터(VS Code)의 자동 완성 및 린트 기능을 활용할 수 있습니다.
+  - 워크플로우 로직에 대한 버전 관리가 용이해집니다.
+  - 프롬프트 변경 이력을 추적하기 쉬워지며, 여러 워크플로우에서 동일한 코드를 재사용할 수 있는 기반이 됩니다.
+
+## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
+
+Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수성이 높은 디자인 시스템을 구축했습니다.
+
+### 11.1 Semantic Theme Variables (시맨틱 테마 변수)
+
+- **Definition**: `app/globals.css`의 `@theme` 블록 내에 색상, 간격, 높이 등을 프로젝트 전용 변수로 정의합니다.
+- **Usage**:
+  - `--header-height`: 헤더의 물리적 높이를 상수로 관리하여 레이아웃 계산에 활용합니다.
+  - `--color-text-main`: 다크 모드와 라이트 모드에서 각각 최적화된 메인 텍스트 색상을 추상화합니다.
+- **Benefit**: 특정 색상이나 수치를 변경해야 할 때 전역 변수 하나만 수정하면 전체 UI에 일괄 반영됩니다.
+
+### 11.2 Reusable Utility Classes (공통 유틸리티)
+
+- **Definition**: 반복되는 스타일 조합을 `@utility` 클래스로 정의하여 가독성과 생산성을 높입니다.
+- **Implementation**:
+  - `.dialogue-bubble`: 대화 버블의 공통 스타일(패딩, 테두리 반경, 트랜지션)을 캡슐화합니다.
+  - `.dialogue-audio-btn`: 오디오 버튼의 기본 크기, 간격, 둥글기 스타일을 통일합니다.
+- **Benefit**: 컴포넌트 내부에 긴 Tailwind 클래스 나열을 줄이고, 디자인 일관성을 강제로 유지할 수 있습니다.
+
+### 11.3 Conditional Styling with `cn()` (조건부 스타일링 유틸리티)
+
+- **Utility**: `lib/utils.ts`의 `cn` (`clsx` + `tailwind-merge`) 함수를 사용하여 클래스를 결합합니다.
+- **Logic**: 중복되거나 충돌하는 Tailwind 클래스를 지능적으로 병합하고, 조건에 따른 스타일 적용(`cn('base', condition && 'extra')`)을 명확하게 처리합니다.
+
+## 12. Learning Mode System (학습 모드 시스템)
+
+리스닝 집중도를 높이기 위해 텍스트 정보를 단계적으로 노출하는 시스템입니다.
+
+### 12.1 View Mode State Machine (뷰 모드 상태 머신)
+
+### 12.1 View Mode State Machine (뷰 모드 상태 머신)
+
+학습 모드의 복잡한 상호작용을 체계적으로 관리하기 위해 3가지 상태를 가진 State Machine을 도입했습니다.
+
+- **State Definition**:
+  - **`blind` (Default)**: 리스닝 집중 모드. 모든 영어/해석 텍스트가 블러 처리됨. '해석 전체 보기' 버튼은 Soft Disabled 상태가 됨.
+  - **`partial`**: 부분 확인 모드. 사용자가 안 들리는 특정 영어 문장만 클릭하여 일부만 드러낸 상태. **이 상태에서는 해석을 클릭하여 개별적으로 확인하는 것도 허용됩니다.**
+  - **`exposed`**: 학습 모드 해제 상태. 모든 텍스트가 제약 없이 사용자 설정(해석 숨김 여부 등)에 따라 표시됨.
+
+- **Transition Flow**:
+  1.  **`blind` → `partial`**: 사용자가 블러 처리된 영어 문장 중 하나를 클릭할 때 전환됩니다.
+  2.  **`partial` → `exposed`**:
+      - **Auto-Exposed**: 문장을 하나씩 열다가 **모든 문장이 공개(`revealedEnglishIndices.size === dialogue.length`)**되는 순간 자동 전환됩니다.
+      - **Manual Toggle**: 사용자가 'Headphones' 또는 'Translation Blur' 버튼을 눌러 직접 모드를 해제할 때도 전환됩니다.
+  3.  **`exposed` → `blind`**: 사용자가 'Headphones' 아이콘을 클릭하여 리스닝 모드를 켤 때 전환됩니다. 이때 현재의 해석 노출 상태가 백업(State Preservation)됩니다.
+
+### 12.2 State Preservation Logic (상태 보존 로직)
+
+- **Mechanism**:
+  - `exposed` 모드에서 사용자가 설정한 '해석 보기' 상태(`revealedIndices`)를 `savedRevealedIndices`에 백업하고 `blind` 모드로 진입합니다.
+  - `blind` 모드를 끄거나 `auto-exposed` 되면 백업된 상태를 복원하여, 사용자의 원래 의도(해석 다 보기 등)를 유지합니다.
+- **Soft Disabled UI**:
+  - `bling` 모드 중에는 '해석 전체 보기(Eye Icon)' 버튼이 '켜져 있지만 흐릿한(Soft Disabled)' 색상으로 표시되어, 모드가 Override 중임을 암시합니다.
+
+### 12.3 English & Translation Interaction
+
+- **Partial Reveal**: 영어 문장 클릭 시 `revealedEnglishIndices`에 추가하고 즉시 노출합니다.
+- **Auto Sync**: `revealedEnglishIndices`의 크기가 전체 대화 길이와 같아지면 즉시 `viewMode`를 `exposed`로 전환하고, `savedRevealedIndices`를 파기(Discard)하여 현재 상태를 새로운 Context로 확정합니다.

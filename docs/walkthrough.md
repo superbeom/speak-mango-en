@@ -2,6 +2,150 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.14: 학습 모드 상호작용 고도화 (2026-01-09)
+
+### 1. Smart Toggle Interaction
+
+- **`components/DialogueSection.tsx`**:
+  - **Auto-Disable Logic**: 'Blind Listening' 모드가 켜진 상태에서 'Translation Blur'(눈 아이콘) 클릭 시, 자동으로 리스닝 모드를 끄고 해석을 보여주도록 개선.
+  - **State Preservation**: `savedRevealedIndices` 상태를 도입하여, Blind Mode 진입 시 이전의 해석 노출 상태를 백업하고 해제 시 복원.
+  - **Constraint Removal**: 기존의 `isDisabled` 제약을 제거하여 사용자 주도적인 모드 전환 지원.
+
+### 2. Individual English Reveal
+
+- **`components/DialogueSection.tsx` & `DialogueItem.tsx`**:
+  - **Selective Reveal**: 'Blind Listening' 모드 활성화 시, 전체를 다 끄지 않고도 궁금한 영어 문장만 클릭하여 일시적으로 확인할 수 있는 기능 추가.
+  - **Auto-Exposed Logic**: 사용자가 수동으로 모든 영어 문장을 드러내면(`revealedEnglishIndices.size === dialogue.length`), 자동으로 `viewMode`를 `exposed`로 전환하여 'Blind Mode'를 해제하고 UI를 동기화.
+  - **State Management**: `viewMode`(`'blind' | 'partial' | 'exposed'`) 상태 머신을 도입하여 복잡한 투명도/블러 로직을 체계적으로 관리.
+  - **UX Detail**: 블러 처리된 텍스트에 `cursor-pointer`와 `hover` 효과를 주어 클릭 가능함을 암시하고, 해석은 여전히 가려진 상태를 유지하여 학습 효과 지속.
+
+## v0.8.12: 학습 모드 (Learning Mode) 및 오디오 안정화 (2026-01-08)
+
+### 1. Learning Mode Foundation
+
+- **`components/DialogueSection.tsx`**:
+  - `isBlindMode` (영어 블러) 및 `revealedIndices` (해석 블러) 상태 관리 로직 추가.
+  - **LearningToggle**: 공통 토글 버튼 컴포넌트를 사용하여 리스닝 모드와 해석 블러 제어 UI 구현.
+  - **Interaction Policy**: 리스닝 모드 활성 시 해석 블러 버튼을 비활성화(`isDisabled`)하여 학습 집중도 향상.
+
+### 2. Individual Line Translation Reveal
+
+- **`components/DialogueItem.tsx`**:
+  - 해석 영역 클릭 시 해당 문장의 블러만 해제되는 토글 기능 구현.
+  - 리스닝 모드일 경우 해석 영역과 영어 문장 모두 블러 처리 및 클릭 방지.
+
+## v0.8.11: 대화 전체 듣기(Sequential Playback) 기능 구현 (2026-01-08)
+
+### 1. Sequential Playback Logic
+
+- **`components/DialogueSection.tsx`**:
+  - `DialogueSection` 컴포넌트를 신설하여 대화 리스트와 오디오 재생 로직을 캡슐화.
+  - **Auto Play**: '전체 듣기(Play All)' 버튼 클릭 시 A와 B의 대화를 순차적으로 재생하는 로직 구현.
+  - **Smart Interruption**: 자동 재생 중 사용자가 특정 줄을 수동으로 재생하거나 멈추면, 자동 재생 모드가 즉시 해제되어 사용자 의도를 존중.
+  - **Loading Synchronization**: '전체 듣기' 버튼은 포함된 모든 오디오 파일(`readyIndices`)이 로딩될 때까지 비활성화되며, 'Loading...' 상태를 표시하여 안정적인 연속 재생을 보장.
+
+### 2. Audio Stability & Optimization
+
+- **`components/DialogueAudioButton.tsx`**:
+  - **Flicker Fix**: `onReady` 콜백이 변경될 때마다 오디오가 불필요하게 재로딩되는 문제를 `useRef`를 사용하여 해결, 로딩 상태 깜빡임 제거.
+  - **Ready State**: 오디오 로딩이 완료(`canplaythrough`)되거나 에러가 발생했을 때 부모에게 준비 완료 신호를 보내는 `onReady` prop 구현.
+  - **Visual Feedback**: 개별 재생 버튼 로딩 시에도 커서를 `not-allowed`로 변경하여 사용자에게 명확한 피드백 제공.
+
+### 3. UI/UX
+
+- **Play All Button**: 대화 섹션 타이틀 옆에 직관적인 재생/정지 버튼 배치.
+- **Active State**: 현재 자동 재생 중인 대화 버블에 `ring` 효과를 주어 시각적 포커스 제공.
+
+### 4. Internationalization
+
+- **Keys**: `playAll`, `stop` 키를 `en.ts`, `ko.ts`에 추가하여 다국어 지원.
+- **Loading Label**: 'Loading...' 텍스트를 `common.loading` 키로 중앙 관리하여 언어팩에서 제어하도록 개선.
+
+## v0.8.10: 대화 섹션 스타일링 개선 및 모바일 최적화 (2026-01-08)
+
+### 1. Mobile Optimization (Hover Removal)
+
+- **`useIsMobile` Hook**: `DialogueSection` 및 `DialogueAudioButton`에 훅을 적용하여 모바일 환경 감지.
+- **Conditional Styling**: `hover:` 클래스들을 `!isMobile` 조건부로 래핑하여, 터치 디바이스에서 불필요한 호버 효과(색상 변경 등)가 발생하는 것을 방지.
+
+### 2. UI Consistency & Visibility
+
+- **Button Styling**: 
+  - `DialogueAudioButton`: `variant` prop(`default` | `blue`) 도입. 
+    - **Default (User A)**: Dark mode hover 개선(`dark:hover:bg-zinc-700`)하여 배경과 구분되도록 수정.
+    - **Blue (User B)**: Dark mode에서도 Light mode와 동일한 파란색 테마 유지. 재생 중(Playing) 상태일 때 호버 배경색(`bg-blue-500`)을 그대로 사용하여 시각적 안정감 확보.
+  - **Dark Mode**: '전체 듣기' 버튼의 호버 시 텍스트 색상을 `dark:hover:text-zinc-200`으로 명시하여, 어두운 배경(`bg-zinc-700`) 위에서도 가독성 확보.
+- **Code Refactoring**: `cn` 유틸리티를 활용하여 조건부 클래스 결합 로직을 깔끔하게 정리.
+
+## v0.8.9: 오디오 재생 권한 제어 기반 구현 (2026-01-08)
+
+### 1. Feature Gating Infrastructure
+
+- **`components/DialogueAudioButton.tsx`**: `onPlayAttempt` 콜백 함수를 Props로 추가.
+- **Asynchronous Permission Check**: 재생 버튼 클릭 시 `onPlayAttempt`가 존재하면 이를 실행하고, 결과(`boolean`)에 따라 재생 여부를 결정하도록 로직 고도화.
+- **Future-Proof Design**: 이 구조를 통해 상세 페이지나 리스트 어디에서든 사용자 티어 체크, 포인트 차감, 또는 광고 시청 유도 로직을 유연하게 주입할 수 있게 됨.
+
+## v0.8.8: 원어민 대화 듣기 기능 구현 (2026-01-08)
+
+### 1. Audio Playback Component
+
+- **`components/DialogueAudioButton.tsx`**: Lucide 아이콘(`Volume2`, `Pause`, `Loader2`)을 활용한 전용 오디오 재생 버튼 컴포넌트 구현.
+- **Audio Synchronization**: 한 번에 하나의 오디오만 재생되도록 커스텀 이벤트(`AUDIO_PLAYBACK_START`) 기반의 전역 중지 로직 적용.
+- **Visual Feedback**: 재생 중(`Pause` 아이콘), 로딩 중(`Spinner`), 정지 중(`Volume` 아이콘) 상태를 명확히 구분하여 제공.
+
+### 2. Detailed Page Integration
+
+- **`app/expressions/[id]/page.tsx`**: A/B 대화 버블 내부에 오디오 버튼을 통합.
+- **Thematic Styling**: 화자별 배경색(회색/파란색)에 최적화된 아이콘 색상 및 호버 효과 적용 (`text-blue-200` 등).
+
+### 3. Structural Improvements (Constants & Naming)
+
+- **Constants Centralization**: 루트 레벨의 `constants/` 폴더를 신설하여 일반 상수(`index.ts`)와 이벤트 상수(`events.ts`)를 분리 관리.
+- **Standardized Naming**: 브라우저 DOM 관례에 맞춰 이벤트 값은 소문자 `snake_case`로, 변수명은 `UPPER_SNAKE_CASE`로 정의하여 프로젝트 일관성 확보.
+
+## v0.8.7: n8n 워크플로우 최적화 및 콘텐츠 품질 고도화 (2026-01-08)
+
+### 1. Check Duplicate Node Optimization
+
+- **Performance**: `Check Duplicate` 노드에 `Limit: 1` 설정을 추가하여 중복 여부 확인 시 첫 번째 매칭 결과만 반환하도록 최적화.
+- **Stability**: `Always Output Data: On` 옵션을 활성화하여 데이터가 없는 경우에도 빈 객체를 출력하게 함으로써, 워크플로우가 예외 없이 정상적으로 흐르도록 개선.
+- **Logic Sync**: `If New` 노드의 조건문을 데이터 존재 여부(`Check Duplicate`의 출력 데이터가 비어있는지)를 기준으로 판단하도록 동기화.
+
+### 2. High-Quality Content Generation Standards
+
+- **Dialogue Structure**: 대화문을 2~3턴(A-B 또는 A-B-A)으로 표준화. 학습자가 상황을 빠르게 이해할 수 있는 최적의 길이를 유지하고 TTS 생성 효율성 확보.
+- **Currency & Numeric Formatting**: 
+  - 통화 표기를 USD(`$`)로 통일하여 데이터 일관성 부여.
+  - 1,000 이상의 숫자에 쉼표(`,`)를 강제하여 가독성 상향 평준화.
+- **Requirement Updates**: 위 규칙들을 `n8n/expressions/code/08_gemini_content_generator_prompt.txt` 및 워크플로우 템플릿에 명시적으로 반영.
+
+### 3. Operator Safety & Troubleshooting
+
+- **Groq Terms Notice**: `orpheus-v1-english` 모델 사용 시 Groq Console에서 약관 동의가 필수임을 문서(`optimization_steps.md`, `user_guide.md`)에 명시.
+- **Error Handling Guide**: `model_terms_required`로 인한 400 에러 발생 시의 해결 방법을 트러블슈팅 섹션에 추가하여 운영 안정성 강화.
+
+## v0.8.6: n8n 워크플로우 모듈화 및 확장성 강화 (2026-01-07)
+
+### 1. Modular Code & Prompt Management
+
+- **Structure**: n8n 워크플로우의 각 노드에 분산되어 있던 JavaScript 코드와 Gemini 프롬프트를 로컬 파일로 분리하여 `n8n/expressions/code/` 폴더에 저장.
+- **File Naming**: 실행 순서에 따라 번호 접두사를 부여하여 가독성 확보 (예: `02_pick_category.js`, `04_gemini_expression_generator_prompt.txt`).
+- **Benefits**: 외부 에디터 사용 가능, 버전 관리 용이성, 코드 재사용성 향상.
+
+### 2. Documentation Reorganization
+
+- **Categorization**: `docs/` 내의 평면적인 파일 구조를 `n8n/`, `monetization/`, `git/`, `database/`, `product/` 등 주제별 하위 폴더로 재편.
+- **Scalability**: `docs/n8n/expressions/`와 같이 워크플로우별 전용 문서 폴더를 생성하여, 향후 `vocas` 등 새로운 기능 추가 시 문서 혼재를 방지.
+
+### 3. Scalable Workflow Organization
+
+- **Directory Relocation**: 기존 루트의 n8n 관련 파일들을 `n8n/expressions/` 하위로 이동.
+- **Template Renaming**: `n8n_workflow_template.json`을 `expressions_workflow_template.json`으로 변경하여 향후 `vocas`, `images` 등 다른 도메인의 워크플로우가 추가될 때 충돌 없이 확장 가능한 구조 마련.
+
+### 4. Template Sanitization & Security
+
+- **Credential Cleanup**: 워크플로우 템플릿 내에 포함된 특정 Credential ID들을 `your-http-header-auth-id` 등과 같은 플레이스홀더로 교체하여 공용 저장소 커밋 시 보안 위험 원천 차단.
+
 ## v0.8.5: 라우트 중앙 관리 및 필터 누적 시스템 (2026-01-06)
 
 ### 1. Centralized Route Management
@@ -119,7 +263,7 @@
 
 ### 1. n8n Prompt Optimization (Tags)
 
-- **Mandatory Tags**: `docs/n8n_optimization_steps.md` 및 `n8n/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
+- **Mandatory Tags**: `docs/n8n/expressions/optimization_steps.md` 및 `n8n/n8n_workflow_template.json`의 Gemini 프롬프트에 `tags` 필드를 필수(MANDATORY)로 지정.
 - **Strict Formatting**: 3~5개의 소문자 문자열 배열 형식을 강제하고, '#' 기호 사용을 금지하여 DB 저장 및 필터링 시의 데이터 정합성을 확보함.
 
 ## v0.7.7: 모바일 호버 효과 제거 및 관련 표현 추천 개선 (2026-01-05)
@@ -157,7 +301,7 @@
 
 ### 1. New Documentation: User Guide
 
-- **`docs/n8n_user_guide.md`**: 서비스의 핵심 기능 소개부터 n8n 워크플로우 운영 가이드까지 포함한 종합 사용자 가이드 작성.
+- **`docs/n8n/expressions/user_guide.md`**: 서비스의 핵심 기능 소개부터 n8n 워크플로우 운영 가이드까지 포함한 종합 사용자 가이드 작성.
 - **Operator focus**: n8n을 통한 자동화 프로세스(프롬프트 설정, Credentials 연결, 트러블슈팅)를 상세히 설명하여 운영 효율성 제고.
 
 ### 2. UI Polish (Quiz)
@@ -189,7 +333,7 @@
 
 ### 2. Agent Workflow Enhancement
 
-- **Context Restoration**: `.agent/workflows/restore_context.md`를 업데이트하여 `features_list.md`, `database_schema.md` 등 핵심 문서를 추가 로드하도록 개선. 이를 통해 에이전트가 프로젝트의 기능과 데이터 구조를 더 정확히 이해하게 됨.
+- **Context Restoration**: `.agent/workflows/restore_context.md`를 업데이트하여 `features_list.md`, `database/schema.md` 등 핵심 문서를 추가 로드하도록 개선. 이를 통해 에이전트가 프로젝트의 기능과 데이터 구조를 더 정확히 이해하게 됨.
 
 ## v0.7.2: UI 스타일 중앙 관리 및 모바일 최적화 (2026-01-03)
 
@@ -264,7 +408,7 @@
   - `auth.users`를 공유하되 스키마별 `profiles` 테이블(외래키 참조)을 통해 서비스 가입자를 구분하는 보안 전략 수립.
 - **클라이언트 고도화**:
   - `createBrowserSupabase` 및 `createServerSupabase` 함수가 스키마 이름을 인자로 받아 동적으로 전환할 수 있도록 리팩토링.
-  - 단일 스키마(Scenario A)와 다중 스키마(Scenario B) 사용 예시를 문서화(`docs/supabase_strategy.md`).
+  - 단일 스키마(Scenario A)와 다중 스키마(Scenario B) 사용 예시를 문서화(`docs/database/supabase_strategy.md`).
 
 ### 3. 데이터베이스 마이그레이션
 
@@ -403,7 +547,7 @@
 
 ### 3. n8n 백업 체계 수립
 
-- **`docs/n8n_workflow_guide.md`**: 워크플로우 Export/Import 가이드 추가.
+- **`docs/n8n/expressions/workflow_guide.md`**: 워크플로우 Export/Import 가이드 추가.
 
 ## v0.4.1: n8n 데이터 지속성 설정 개선 (2025-12-31)
 
@@ -479,8 +623,8 @@
 
 ### 2. 문서화 (Documentation)
 
-- **`docs/database_schema.md`**: Supabase `expressions` 테이블 스키마 정의 (UUID, 영어 표현, 뜻, 예문 등).
-- **`docs/n8n_workflow_guide.md`**: n8n 자동화 로직 설계 (HTTP Request -> Gemini AI -> Supabase).
+- **`docs/database/schema.md`**: Supabase `expressions` 테이블 스키마 정의 (UUID, 영어 표현, 뜻, 예문 등).
+- **`docs/n8n/expressions/workflow_guide.md`**: n8n 자동화 로직 설계 (HTTP Request -> Gemini AI -> Supabase).
 - **`docs/project_context.md`**: 프로젝트 규칙 및 아키텍처 정의.
 
 ### 3. 향후 계획 (Next Steps)

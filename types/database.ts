@@ -1,6 +1,13 @@
+export interface DialogueItem {
+  role: string;
+  en: string;
+  translation: string;
+  audio_url?: string;
+}
+
 export interface ExpressionContent {
   situation: string;
-  dialogue: { en: string; translation: string }[];
+  dialogue: DialogueItem[];
   tip: string;
   quiz: { question: string; answer: string };
 }

@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-06
+**최종 수정일**: 2026-01-08
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -51,6 +51,9 @@ speak-mango-en/
 │   └── globals.css      # 전역 스타일
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
+├── constants/           # 전역 상수 관리
+│   ├── index.ts         # 일반 상수 (서비스명, DB 스키마 등)
+│   └── events.ts        # 이벤트 상수 (오디오 재생 등)
 ├── context/             # 전역 상태 관리 (Context API)
 ├── database/            # 데이터베이스 마이그레이션 스크립트 (SQL)
 ├── hooks/               # 커스텀 React 훅
@@ -60,29 +63,38 @@ speak-mango-en/
 │   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수
 ├── n8n/                 # n8n 자동화 관련 설정 및 템플릿
-│   └── n8n_workflow_template.json # 워크플로우 가져오기용 템플릿
+│   └── expressions/     # 영어 표현(Expressions) 생성 워크플로우
+│       ├── code/        # 각 노드의 JavaScript 코드 파일 (단계별 분리)
+│       └── expressions_workflow_template.json # 워크플로우 템플릿
 ├── types/               # TypeScript 타입 정의
 │   └── database.ts      # Supabase Generated Types
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
+│   ├── n8n/                 # n8n 자동화 관련 가이드
+│   │   └── expressions/     # 영어 표현 워크플로우 문서
+│   │       ├── optimization_steps.md # AI 기반 생성 가이드
+│   │       ├── workflow_guide.md     # n8n 자동화 설정 가이드
+│   │       └── user_guide.md         # 서비스 및 n8n 워크플로우 운영자 가이드
+│   ├── monetization/        # 수익화 전략 문서
+│   │   ├── brainstorming.md      # 수익화 브레인스토밍 및 Q&A (원본)
+│   │   ├── ideas.md              # 수익화 및 성장 전략 아이디어 요약
+│   │   └── strategy.md           # 수익화 및 성장 전략 구현 로드맵
+│   ├── database/            # 데이터베이스 관련 문서
+│   │   ├── schema.md             # DB 스키마 정의
+│   │   └── supabase_strategy.md  # Supabase 다중 프로젝트 관리 전략
+│   ├── git/                 # Git 관련 규칙
+│   │   ├── convention.md         # 커밋 메시지 작성 규칙
+│   │   └── branch_strategy.md    # 브랜치 생성 및 관리 전략
+│   ├── product/             # 제품 기획 및 관리 문서
+│   │   ├── content_strategy.md   # 콘텐츠 전략
+│   │   ├── feature_ideas.md      # 추가 기능 아이디어 및 브레인스토밍
+│   │   ├── features_list.md      # 구현 완료된 기능 목록 정리
+│   │   └── future_todos.md       # 기술 부채, 아이디어, 개선 사항 백로그
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
 │   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
-│   ├── future_todos.md      # 기술 부채, 아이디어, 개선 사항 백로그
-│   ├── feature_ideas.md     # 추가 기능 아이디어 및 브레인스토밍
-│   ├── features_list.md     # 구현 완료된 기능 목록 정리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
-│   ├── database_schema.md   # DB 스키마 정의
-│   ├── monetization_brainstorming.md # 수익화 브레인스토밍 및 Q&A (원본)
-│   ├── monetization_ideas.md # 수익화 및 성장 전략 아이디어 요약
-│   ├── monetization_strategy.md # 수익화 및 성장 전략 구현 로드맵
-│   ├── n8n_optimization_steps.md # AI 기반 생성 가이드
-│   ├── n8n_workflow_guide.md # n8n 자동화 설정 가이드
-│   ├── n8n_user_guide.md    # 서비스 및 n8n 워크플로우 운영자 가이드
-│   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
-│   ├── supabase_strategy.md # Supabase 다중 프로젝트 관리 전략
-│   ├── git_convention.md    # 커밋 메시지 작성 규칙
-│   └── git_branch_strategy.md # 브랜치 생성 및 관리 전략
+│   └── agent_workflows.md   # AI 에이전트 워크플로우 가이드
 └── ...설정 파일들
 ```
 
@@ -102,6 +114,9 @@ speak-mango-en/
 - **Export Style**:
   - **Components**: `export default function ComponentName` (Default Export)
   - **Utilities**: `export const functionName` (Named Export)
+- **Variables & Constants**:
+  - **Constants**: `UPPER_SNAKE_CASE` 사용 (예: `DATABASE_SCHEMA`).
+  - **Event Names (Constants)**: 변수명은 `UPPER_SNAKE_CASE`로 작성하되, 실제 값(Value)은 `snake_case` 소문자를 사용합니다 (예: `AUDIO_PLAYBACK_START = "audio_playback_start"`). 이는 `click`, `play` 등 브라우저 표준 DOM 이벤트 네이밍 관례와의 일관성을 유지하기 위함입니다.
 
 ### Routing
 
@@ -109,6 +124,14 @@ speak-mango-en/
 - **하드코딩 금지**: 컴포넌트나 함수 내부에서 경로 문자열(예: `"/expressions/..."`)을 직접 작성하는 것을 엄격히 금지합니다.
 - **동적 경로**: 상세 페이지 등 매개변수가 필요한 경로는 `ROUTES.EXPRESSION_DETAIL(id)`와 같은 생성 함수를 사용합니다.
 - **필터 조합**: 검색어, 카테고리 등 쿼리 파라미터가 포함된 홈 경로는 `getHomeWithFilters()` 헬퍼 함수를 사용하여 생성합니다.
+
+### Audio Asset Management
+
+- **저장소**: 모든 원어민 대화 음성 파일(TTS)은 Supabase Storage의 `speak-mango-en` 버킷에 저장합니다.
+- **경로 규칙**: `expressions/{expression_id}/{line_index}.wav` 형식을 엄수합니다.
+- **데이터 바인딩**: DB의 `content` JSONB 데이터 내 `audio_url` 필드에 해당 경로 또는 Public URL을 저장합니다.
+- **확장성 가이드**: 버킷명을 특정 용도(예: `audio`)가 아닌 프로젝트명(`speak-mango-en`)으로 설정함으로써, 향후 `users/`, `images/`, `vocabulary/` 등 다른 종류의 파일들도 동일한 버킷 하위 폴더로 격리하여 관리할 수 있습니다. 이는 루트 경로의 혼잡을 방지하고 관리 효율성을 높입니다.
+- **보안 전환 주의**: 현재는 **Public** 버킷을 사용 중이나, 향후 유료 기능(Feature Gating) 도입 시 버킷을 **Private**으로 전환하고 **RLS(Storage Policies)** 설정을 통해 접근 권한을 제어해야 합니다 (`docs/database/supabase_strategy.md` 참조).
 
 ### Component Architecture
 
@@ -139,7 +162,7 @@ speak-mango-en/
 
 ### Database
 
-- **운영 전략**: `docs/supabase_strategy.md`에 따라 단일 Pro 프로젝트 내 **스키마 분리** 전략을 사용합니다.
+- **운영 전략**: `docs/database/supabase_strategy.md`에 따라 단일 Pro 프로젝트 내 **스키마 분리** 전략을 사용합니다.
 - **스키마 명**: `speak_mango_en` (기본 public 스키마 사용 지양).
 
 ### Automation (n8n)
@@ -152,16 +175,16 @@ speak-mango-en/
 1.  **세션 시작 (Initialization)**:
     - 작업 전 `docs/project_history.md`와 `docs/task.md`를 확인하여 이전 작업 내용 및 우선순위를 파악합니다.
 2.  **Git 전략**:
-    - `docs/git_branch_strategy.md`에 따라 기능별 브랜치(`feat/...`)를 생성하여 작업합니다.
-    - `docs/git_convention.md`에 맞춰 커밋 메시지를 작성합니다 ("Why" 중심).
+    - `docs/git/branch_strategy.md`에 따라 기능별 브랜치(`feat/...`)를 생성하여 작업합니다.
+    - `docs/git/convention.md`에 맞춰 커밋 메시지를 작성합니다 ("Why" 중심).
 3.  **이력 기록 및 작업 관리**:
     - 주요 변경 사항은 `project_history.md`에, 구현 상세는 `walkthrough.md`에 기록합니다.
     - 진행 중인 작업은 `task.md`에서 실시간으로 업데이트합니다.
 4.  **기술 부채 관리**:
-    - 코드 개선이 필요하거나 추후 작업이 필요한 항목은 `future_todos.md`에 기록합니다.
+    - 코드 개선이 필요하거나 추후 작업이 필요한 항목은 `docs/product/future_todos.md`에 기록합니다.
 5.  **문서화**:
-    - DB 스키마 변경 시 `docs/database_schema.md`를 반드시 최신화합니다.
-    - Supabase 운영 방식은 `docs/supabase_strategy.md`를 따릅니다.
+    - DB 스키마 변경 시 `docs/database/schema.md`를 반드시 최신화합니다.
+    - Supabase 운영 방식은 `docs/database/supabase_strategy.md`를 따릅니다.
 6.  **에이전트 활용**:
     - `.agent/workflows/` 내의 워크플로우(`@restore_context`, `@generate_commit`, `@update_docs`)를 적극 활용하여 작업 효율성을 높입니다 (`docs/agent_workflows.md` 참조).
 
@@ -176,6 +199,6 @@ speak-mango-en/
 - **데이터 전략**: Hybrid Storage (Free: LocalStorage / Pro: Supabase DB).
 - **전환 트리거**: 데이터의 영구 보존 및 멀티 디바이스 연동 욕구 자극.
 - **참고 문서**:
-  - `docs/monetization_brainstorming.md` (수익화 Q&A 원본)
-  - `docs/monetization_ideas.md` (전략 및 아이디어 요약)
-  - `docs/monetization_strategy.md` (구현 로드맵)
+  - `docs/monetization/brainstorming.md` (수익화 Q&A 원본)
+  - `docs/monetization/ideas.md` (전략 및 아이디어 요약)
+  - `docs/monetization/strategy.md` (구현 로드맵)
