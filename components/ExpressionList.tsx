@@ -48,14 +48,18 @@ export default function ExpressionList({
   // 복원 도중에 현재 위치(보통 0)를 캐시에 저장하여 이전 위치를 날려버리는 것을 방지합니다.
   const isRestored = useRef(false);
 
+  // 컴포넌트가 언마운트되는 중인지 추적하여, 언마운트 시 발생할 수 있는 
+  // 불필요한 스크롤 이벤트나 캐시 업데이트를 방지합니다.
+  const isUnmounting = useRef(false);
+
   // 3. 실시간 스크롤 위치 저장 (Throttled)
   // 상세 페이지 이동뿐만 아니라 브라우저 뒤로가기 등 모든 상황에 대응하기 위해 실시간으로 추적합니다.
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
 
     const handleScroll = () => {
-      // 스크롤 복원이 완료된 후에만 현재 위치를 캐시에 기록합니다.
-      if (!isRestored.current) return;
+      // 스크롤 복원이 완료된 후, 그리고 언마운트 중이 아닐 때만 현재 위치를 캐시에 기록합니다.
+      if (!isRestored.current || isUnmounting.current) return;
 
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -129,6 +133,11 @@ export default function ExpressionList({
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+
+      // 컴포넌트 언마운트 시(다른 페이지 이동 등) 브라우저의 기본 스크롤 동작을 'auto'로 복구합니다.
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "auto";
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey]);

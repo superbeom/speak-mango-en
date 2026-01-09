@@ -13,3 +13,5 @@ export const CATEGORIES = [
   "emotion",
   "slang",
 ];
+
+export const SCROLL_RESET_KEY = "SCROLL_RESET";

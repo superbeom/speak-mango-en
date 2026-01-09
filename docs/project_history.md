@@ -7,6 +7,9 @@
 ### ✅ 진행 사항
 
 - **스크롤 초기화 로직 추가**: `ExpressionList` 컴포넌트에서 새로운 필터(태그, 검색어 등)로 진입하여 저장된 스크롤 위치가 없을 경우(`targetPosition <= 0`), 명시적으로 `window.scrollTo(0, 0)`을 실행하도록 수정.
+- **상세 페이지 스크롤 리셋 전략 (Session Storage)**: 상세 페이지(`[id]`) 진입 시, 새로운 페이지 이동(Push)과 뒤로가기(Back)를 구분하기 위해 `sessionStorage` 플래그(`SCROLL_RESET_KEY`)를 도입.
+  - `ExpressionCard` 클릭 시 플래그를 심고, `template.tsx`에서 이를 확인하여 스켈레톤 로딩 전 최상단 스크롤을 보장함.
+  - 뒤로가기 시에는 플래그가 없으므로 브라우저의 전역 `history.scrollRestoration = "auto"` 설정을 통해 자연스러운 위치 복원을 지원함.
 - **원인 및 해결**: 브라우저의 자동 스크롤 복원(`scrollRestoration`)을 수동(`manual`)으로 설정해 두었기 때문에, 새로운 페이지 진입 시 스크롤이 자동으로 위로 가지 않는 현상을 해결함.
 
 ## 2026-01-09: 버그 수정 (Bug Fixes)

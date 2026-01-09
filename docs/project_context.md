@@ -124,6 +124,18 @@ speak-mango-en/
 - **하드코딩 금지**: 컴포넌트나 함수 내부에서 경로 문자열(예: `"/expressions/..."`)을 직접 작성하는 것을 엄격히 금지합니다.
 - **동적 경로**: 상세 페이지 등 매개변수가 필요한 경로는 `ROUTES.EXPRESSION_DETAIL(id)`와 같은 생성 함수를 사용합니다.
 - **필터 조합**: 검색어, 카테고리 등 쿼리 파라미터가 포함된 홈 경로는 `getHomeWithFilters()` 헬퍼 함수를 사용하여 생성합니다.
+- **레이아웃 초기화**: 상세 페이지(`/expressions/[id]`)와 같이 페이지 진입 시마다 일관된 초기 상태(스크롤 리셋 등)가 필요한 경우, `page.tsx` 대신 `template.tsx`를 활용하여 프레임워크 수준에서의 초기화를 강제합니다.
+
+### Scroll Management (스크롤 관리 전략)
+
+메인 페이지의 커스텀 캐싱 복원과 상세 페이지의 브라우저 기본 복원 간의 조화를 위한 규칙입니다.
+
+- **메인 페이지 (Home)**: `manual` 모드를 사용하며, `ExpressionContext`의 캐시를 통해 필터별로 데이터와 스크롤 위치를 독립적으로 관리합니다.
+- **상세 페이지 (Detail)**: `auto` 모드를 우선하며, 브라우저의 기본 기능을 활용합니다.
+- **스크롤 리셋 (Scroll Reset)**: 
+  - 새로운 상세 페이지 진입 시(`push`)에는 `sessionStorage`에 `SCROLL_RESET_KEY`를 설정하여 `template.tsx`에서 감지하고 `window.scrollTo(0, 0)`을 실행합니다.
+  - 뒤로가기(`back`) 시에는 플래그가 없으므로 브라우저가 위치를 자동 복원하도록 설계합니다.
+  - 리스트 컴포넌트(`ExpressionList`) 언마운트 시에는 항상 설정을 `auto`로 복구하여 부작용을 방지합니다.
 
 ### Audio Asset Management
 

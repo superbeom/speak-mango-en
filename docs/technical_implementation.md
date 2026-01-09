@@ -258,6 +258,17 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Recursive requestAnimationFrame**: 리스트의 데이터가 실제로 화면에 그려져서 높이가 확보될 때까지 브라우저의 페인팅 주기에 맞춰 여러 프레임에 걸쳐 반복적으로 스크롤 이동을 시도합니다.
 - **Termination Condition**: 목표 위치에 도달하거나, 약 1초(60프레임) 이상의 시도가 실패할 경우 자동으로 종료하여 성능을 보존합니다.
 - **Separation of Concerns**: 데이터 업데이트(`updateCacheData`)와 스크롤 저장(`updateScrollPosition`) 메서드를 분리하여, 데이터 추가 로드 시 스크롤 위치가 초기화되지 않도록 보호합니다.
+- **Unmount Cleanup**: `ExpressionList` 언마운트 시 `history.scrollRestoration = 'auto'`로 복구하여, 리스트가 없는 다른 페이지(예: 로고 클릭으로 이동 등)에서의 예기치 않은 스크롤 동작을 방지합니다.
+
+### 9.4 Detail Page Scroll Reset (상세 페이지 스크롤 리셋 전략)
+
+메인 리스트의 `manual` 복원 모드와 상세 페이지의 `auto` 복원 모드 간의 충돌을 해결하기 위한 전략입니다.
+
+- **Problem**: 상세 페이지 진입 시 브라우저가 이전 스크롤 위치를 기억하고 있어, 새로운 네비게이션임에도 불구하고 로딩 스켈레톤이나 본문이 페이지 중간부터 보이는 현상 발생.
+- **Solution (Flag Strategy)**: `sessionStorage`와 Next.js `template.tsx`를 결합하여 구현.
+  1. **Flag Setting**: `ExpressionCard`의 `Link` 클릭 시 `sessionStorage`에 리셋 플래그(`SCROLL_RESET_KEY`)를 저장하고 `history.scrollRestoration = 'auto'`를 선제적으로 적용합니다.
+  2. **Template-level Reset**: 상세 페이지의 `template.tsx`(`app/expressions/[id]/template.tsx`)에서 플래그를 확인합니다. 템플릿은 페이지 로딩 스켈레톤보다 상위 계층이므로, 화면이 그려지기 직전에 `window.scrollTo(0, 0)`을 실행하여 시각적 결함을 원천 차단합니다.
+  3. **Flag Cleanup**: 스크롤 리셋 직후 플래그를 제거하여, 이후의 '뒤로가기' 네비게이션(플래그 없음) 시에는 브라우저의 기본 스크롤 복원 메커니즘이 정상적으로 작동하도록 보장합니다.
 
 ## 10. Automation Pipeline (n8n & AI)
 
