@@ -2,6 +2,13 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.17: 스크롤 네비게이션 동작 수정 (2026-01-09)
+
+### 1. Explicit Scroll Reset
+
+- **Problem**: `ExpressionList`가 스크롤 복원을 위해 `history.scrollRestoration`을 `manual`로 설정하고 있어, 상세 페이지에서 태그를 클릭해 메인으로 돌아올 때(새로운 네비게이션) 스크롤이 자동으로 초기화되지 않고 유지되는 문제 발생.
+- **Solution**: 캐시된 스크롤 위치가 없는 경우(`targetPosition <= 0`)에는 명시적으로 `window.scrollTo(0, 0)`을 호출하여 강제로 최상단으로 이동하도록 로직 추가.
+
 ## v0.8.16: Audio URL 정규화 및 아키텍처 리팩토링 (2026-01-09)
 
 ### 1. Audio URL Normalization (DB 정규화)

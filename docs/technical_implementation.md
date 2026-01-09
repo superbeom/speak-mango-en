@@ -254,6 +254,7 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 ### 9.3 Robust Scroll Restoration (Recursive RAF)
 
 - **Manual Control**: 브라우저의 기본 스크롤 복원 동작(`history.scrollRestoration = 'manual'`)을 차단하여 React의 렌더링 사이클과 충돌하는 것을 방지합니다.
+- **Explicit Reset**: 새로운 필터나 검색어로 진입하여 저장된 위치가 없는 경우(`targetPosition <= 0`), 명시적으로 `window.scrollTo(0, 0)`을 호출하여 스크롤이 중간에 멈춰있는 현상을 방지합니다.
 - **Recursive requestAnimationFrame**: 리스트의 데이터가 실제로 화면에 그려져서 높이가 확보될 때까지 브라우저의 페인팅 주기에 맞춰 여러 프레임에 걸쳐 반복적으로 스크롤 이동을 시도합니다.
 - **Termination Condition**: 목표 위치에 도달하거나, 약 1초(60프레임) 이상의 시도가 실패할 경우 자동으로 종료하여 성능을 보존합니다.
 - **Separation of Concerns**: 데이터 업데이트(`updateCacheData`)와 스크롤 저장(`updateScrollPosition`) 메서드를 분리하여, 데이터 추가 로드 시 스크롤 위치가 초기화되지 않도록 보호합니다.

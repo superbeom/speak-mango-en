@@ -97,6 +97,7 @@ export default function ExpressionList({
     }
 
     if (targetPosition <= 0) {
+      window.scrollTo(0, 0);
       isRestored.current = true;
       return;
     }
