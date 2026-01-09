@@ -2,6 +2,21 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.12: 학습 모드 (Learning Mode) 및 오디오 안정화 (2026-01-08)
+
+### 1. Learning Mode Foundation
+
+- **`components/DialogueSection.tsx`**:
+  - `isBlindMode` (영어 블러) 및 `revealedIndices` (해석 블러) 상태 관리 로직 추가.
+  - **LearningToggle**: 공통 토글 버튼 컴포넌트를 사용하여 리스닝 모드와 해석 블러 제어 UI 구현.
+  - **Interaction Policy**: 리스닝 모드 활성 시 해석 블러 버튼을 비활성화(`isDisabled`)하여 학습 집중도 향상.
+
+### 2. Individual Line Translation Reveal
+
+- **`components/DialogueItem.tsx`**:
+  - 해석 영역 클릭 시 해당 문장의 블러만 해제되는 토글 기능 구현.
+  - 리스닝 모드일 경우 해석 영역과 영어 문장 모두 블러 처리 및 클릭 방지.
+
 ## v0.8.11: 대화 전체 듣기(Sequential Playback) 기능 구현 (2026-01-08)
 
 ### 1. Sequential Playback Logic

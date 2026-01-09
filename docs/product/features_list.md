@@ -59,6 +59,10 @@
   - **Adaptive Layout**: 모바일에서는 세로 리스트, 데스크탑에서는 Marquee 스크롤로 자동 전환 (마우스를 올리지 않아도 천천히 흐르는 무한 루프 애니메이션).
   - **Pause on Hover**: 마우스를 올리면 스크롤이 멈춰 내용을 자세히 볼 수 있음.
   - **Accelerated Drag**: 데스크탑에서 좌우 페이드(Fade) 영역에 마우스를 올리면 해당 방향으로 스크롤이 빠르게 가속되는 스마트 드래그 기능 제공.
+- **학습 모드 (Learning Mode)**:
+  - **Blind Listening Mode**: 대화문의 영어 텍스트를 숨기고(Blur) 소리에 집중하는 모드. (Default: ON)
+  - **Translation Blur**: 대화문의 해석을 기본적으로 숨기고, 클릭 시에만 해당 문장의 해석을 노출. (Default: Blur)
+  - **LearningToggle 유틸리티**: 학습 모드를 직관적으로 제어할 수 있는 공통 토글 UI 제공.
 
 ## 2. 시스템 & 인프라 (System & Infra)
 

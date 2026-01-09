@@ -211,8 +211,9 @@ const DialogueAudioButton = forwardRef<
       const customEvent = e as CustomEvent<{ audio: HTMLAudioElement }>;
       if (customEvent.detail.audio !== audio) {
         audio.pause();
-        audio.currentTime = 0; // Optional: Reset to start
+        audio.currentTime = 0; // Reset to start
         setIsPlaying(false);
+        setIsPaused(false);
       }
     };
 

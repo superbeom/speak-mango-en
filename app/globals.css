@@ -29,6 +29,7 @@ body {
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -110,4 +111,24 @@ body {
   .group:hover .safe-hover-rotate-12 {
     transform: rotate(12deg);
   }
+}
+
+@utility bg-highlight {
+  @apply bg-blue-50 dark:bg-blue-900/20;
+}
+
+@utility border-highlight {
+  @apply border-blue-200 dark:border-blue-800;
+}
+
+@utility text-highlight {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+@utility hover-bg-highlight {
+  @apply hover:bg-blue-100 dark:hover:bg-blue-900/40;
+}
+
+@utility hover-text-highlight {
+  @apply hover:text-blue-700 dark:hover:text-blue-300;
 }

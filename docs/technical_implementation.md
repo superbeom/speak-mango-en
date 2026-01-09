@@ -300,3 +300,19 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 - **Utility**: `lib/utils.ts`의 `cn` (`clsx` + `tailwind-merge`) 함수를 사용하여 클래스를 결합합니다.
 - **Logic**: 중복되거나 충돌하는 Tailwind 클래스를 지능적으로 병합하고, 조건에 따른 스타일 적용(`cn('base', condition && 'extra')`)을 명확하게 처리합니다.
+
+## 12. Learning Mode System (학습 모드 시스템)
+
+리스닝 집중도를 높이기 위해 텍스트 정보를 단계적으로 노출하는 시스템입니다.
+
+### 12.1 Blind Listening Mode (영어 블러)
+
+- **Implementation**: `isBlindMode` 상태가 `true`일 때, 영어 텍스트 영역에 `blur-xs` 및 `select-none` 클래스를 적용합니다.
+- **Policy**: 영어 텍스트가 가려진 상태에서는 해석을 하나씩 열어보는 인터랙션이 의미가 적으므로, 'Translation Blur' 버튼을 비활성화하여 학습 단계를 유도합니다.
+
+### 12.2 Translation Blur (해석 블러)
+
+- **Implementation**: 
+  - `revealedIndices`를 `Set<number>`로 관리하여 개별 문장의 노출 여부를 추적합니다.
+  - 해석 영역 클릭 시 해당 인덱스를 Set에 추가/삭제하여 블러(`blur-[3px]`)를 토글합니다.
+- **Constraint**: `isBlindMode`가 활성화된 상태에서는 해석 영역 전체에 `blur-md`와 `opacity-60`을 적용하여 텍스트 유추를 차단합니다.

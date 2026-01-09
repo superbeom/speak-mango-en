@@ -1,14 +1,54 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Play, Square, Loader2 } from "lucide-react";
+import { Play, Square, Loader2, Headphones, Eye, EyeOff } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
-import DialogueAudioButton, {
-  DialogueAudioButtonHandle,
-} from "./DialogueAudioButton";
+import { DialogueAudioButtonHandle } from "./DialogueAudioButton";
+import DialogueItem from "./DialogueItem";
 
-interface DialogueItem {
+interface LearningToggleProps {
+  isActive: boolean;
+  isDisabled?: boolean;
+  onClick: () => void;
+  title: string;
+  icon: React.ReactNode;
+  isMobile: boolean;
+  activeColor?: string; // Optional if we want different active colors in future
+}
+
+function LearningToggle({
+  isActive,
+  isDisabled,
+  onClick,
+  title,
+  icon,
+  isMobile,
+}: LearningToggleProps) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={isDisabled}
+      className={cn(
+        "p-1.5 rounded-full transition-all border cursor-pointer",
+        isDisabled
+          ? "opacity-50 cursor-not-allowed bg-zinc-50 border-zinc-100 text-zinc-300 dark:bg-zinc-800/50 dark:border-zinc-800 dark:text-zinc-600"
+          : isActive
+            ? "bg-highlight border-highlight text-highlight"
+            : cn(
+              "bg-white border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500",
+              !isMobile && "hover:text-zinc-600 dark:hover:text-zinc-300"
+            )
+      )}
+      title={title}
+    >
+      {icon}
+    </button>
+  );
+}
+
+
+interface DialogueItemData {
   en: string;
   translation: string;
   audio_url?: string;
@@ -16,7 +56,7 @@ interface DialogueItem {
 
 interface DialogueSectionProps {
   title: string;
-  dialogue: DialogueItem[];
+  dialogue: DialogueItemData[];
   playAllLabel?: string;
   stopLabel?: string;
   loadingLabel?: string;
@@ -33,6 +73,33 @@ export default function DialogueSection({
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const buttonRefs = useRef<(DialogueAudioButtonHandle | null)[]>([]);
+
+  // Learning Mode States
+  const [isBlindMode, setIsBlindMode] = useState(true);
+  const [revealedIndices, setRevealedIndices] = useState<Set<number>>(new Set());
+
+  const isAllRevealed = dialogue.length > 0 && revealedIndices.size === dialogue.length;
+
+  const handleToggleShowAll = () => {
+    if (isAllRevealed) {
+      setRevealedIndices(new Set());
+    } else {
+      setRevealedIndices(new Set(dialogue.map((_, i) => i)));
+    }
+  };
+
+  const handleManualToggle = (index: number) => {
+    if (isBlindMode) return;
+    setRevealedIndices((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
 
   // State to track ready status of each audio
   const [readyIndices, setReadyIndices] = useState<Set<number>>(new Set());
@@ -92,12 +159,12 @@ export default function DialogueSection({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
         <div className="flex items-center gap-3">
           <h2 className="flex items-center gap-2 text-[11px] sm:text-sm font-bold uppercase tracking-wide text-zinc-400">
             {title}
           </h2>
-          {/* Play All Button - Moved next to title */}
+          {/* Play All Button */}
           <button
             onClick={handlePlayAll}
             disabled={!isAllReady}
@@ -107,9 +174,9 @@ export default function DialogueSection({
                 ? "bg-zinc-100 border-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500"
                 : isAutoPlaying
                   ? cn(
-                    "bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400",
+                    "bg-highlight border-highlight text-highlight",
                     !isMobile &&
-                    "hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
+                    "hover-bg-highlight hover-text-highlight"
                   )
                   : cn(
                     "bg-white border-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400",
@@ -136,58 +203,49 @@ export default function DialogueSection({
             )}
           </button>
         </div>
+
+        {/* Learning Mode Controls */}
+        <div className="flex items-center gap-2">
+          <LearningToggle
+            isActive={isBlindMode}
+            onClick={() => setIsBlindMode((prev) => !prev)}
+            title="Blind Listening Mode (Hide Text)"
+            icon={<Headphones className="w-3.5 h-3.5" />}
+            isMobile={!!isMobile}
+          />
+
+          <LearningToggle
+            isActive={isAllRevealed}
+            isDisabled={isBlindMode}
+            onClick={handleToggleShowAll}
+            title={isAllRevealed ? "Hide Translations" : "Show Translations"}
+            icon={isAllRevealed ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            isMobile={!!isMobile}
+          />
+        </div>
       </div>
 
       <div className="space-y-4">
         {dialogue.map((chat, idx) => (
           <div
             key={idx}
-            className={`flex flex-col ${idx % 2 === 0 ? "items-start" : "items-end"
-              }`}
+            className={`flex flex-col ${idx % 2 === 0 ? "items-start" : "items-end"}`}
           >
-            <div
-              className={cn(
-                "dialogue-bubble",
-                idx % 2 === 0
-                  ? "bg-muted text-main rounded-tl-none"
-                  : "bg-blue-600 text-white rounded-tr-none",
-                // Highlight active line during auto-play
-                isAutoPlaying && playingIndex === idx
-                  ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-black"
-                  : ""
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <p className="text-base sm:text-lg font-semibold flex-1">
-                  {chat.en}
-                </p>
-                <DialogueAudioButton
-                  ref={(el) => {
-                    buttonRefs.current[idx] = el;
-                  }}
-                  audioUrl={chat.audio_url}
-                  onEnded={() => handleLineEnded(idx)}
-                  onPlay={() => handleManualPlay(idx)}
-                  stopBehavior={isAutoPlaying ? "pause" : "reset"}
-                  className={
-                    idx % 2 === 0
-                      ? "-mr-1 mt-0.5 shrink-0" // User A
-                      : cn(
-                        "text-blue-200 -mr-1 mt-0.5 shrink-0", // User B
-                        !isMobile && "hover:text-white hover:bg-blue-500"
-                      )
-                  }
-                  variant={idx % 2 === 0 ? "default" : "blue"}
-                  onReady={() => handleAudioReady(idx)}
-                />
-              </div>
-              <p
-                className={`mt-1 text-xs sm:text-sm ${idx % 2 === 0 ? "text-zinc-500" : "text-blue-100"
-                  }`}
-              >
-                {chat.translation}
-              </p>
-            </div>
+            <DialogueItem
+              ref={(el) => {
+                buttonRefs.current[idx] = el;
+              }}
+              item={chat}
+              isBlindMode={isBlindMode}
+              isTranslationRevealed={revealedIndices.has(idx)}
+              onToggleReveal={() => handleManualToggle(idx)}
+              variant={idx % 2 === 0 ? "default" : "blue"}
+              onPlay={() => handleManualPlay(idx)}
+              onEnded={() => handleLineEnded(idx)}
+              onReady={() => handleAudioReady(idx)}
+              isActive={isAutoPlaying && playingIndex === idx}
+              isMobile={!!isMobile}
+            />
           </div>
         ))}
       </div>

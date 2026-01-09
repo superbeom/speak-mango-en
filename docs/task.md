@@ -50,6 +50,7 @@
 - [x] **UI/UX**: 카테고리 필터 토글 및 중복 클릭 방지 최적화
 - [x] **UI/UX**: 라우트 중앙 관리 및 필터 누적 시스템(Additive Filtering) 구현
 - [x] **UI/UX**: 대화 섹션 UI 스타일링 수정 (모바일 호버 제거, 버튼 일관성, 다크모드 텍스트)
+- [x] **UI/UX**: 학습 모드(Learning Mode) 기초 구현 (Blind Listening, Translation Blur)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 
