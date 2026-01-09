@@ -52,6 +52,8 @@
 - [x] **UI/UX**: 대화 섹션 UI 스타일링 수정 (모바일 호버 제거, 버튼 일관성, 다크모드 텍스트)
 - [x] **UI/UX**: 학습 모드(Learning Mode) 기초 구현 (Blind Listening, Translation Blur)
 - [x] **UI/UX**: 학습 모드 상호작용 고도화 (Partial Reveal, Auto-Exposed, State Preservation)
+- [x] **Architecture**: Audio URL 정규화(Relative Path) 및 클라이언트 중심 해제 로직 리팩토링
+- [x] **UI/UX**: 상세 페이지 스크롤 리셋 전략 (Session Storage & Template) 구현
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

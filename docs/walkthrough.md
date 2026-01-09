@@ -2,6 +2,55 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.18: 프로젝트 고도화 및 품질 개선 (2026-01-09)
+
+### 1. 코드 리팩토링 및 훅 분리 (Hooks Extraction)
+
+- **Problem**: `ExpressionList.tsx`의 비대해진 로직으로 인해 유지보수가 어렵고 버그 발생 가능성이 높음.
+- **Solution**: 로직을 목적에 따라 두 개의 커스텀 훅으로 분리함.
+  - **`usePaginatedList`**: 페이지네이션 상태 및 캐시 동기화에 집중하도록 개선.
+  - **`useScrollRestoration`**: 정밀한 스크롤 위치 추적(200ms 디바운스) 및 재귀적 RAF 기반의 복원 로직 담당.
+- **Result**: UI 레이아웃과 데이터 렌더링에만 집중하는 간결하고 예측 가능한 컴포넌트 구조 확보.
+
+## v0.8.17: 스크롤 네비게이션 동작 수정 (2026-01-09)
+
+### 1. Explicit Scroll Reset
+
+- **Problem**: `ExpressionList`가 스크롤 복원을 위해 `history.scrollRestoration`을 `manual`로 설정하고 있어, 상세 페이지에서 태그를 클릭해 메인으로 돌아올 때(새로운 네비게이션) 스크롤이 자동으로 초기화되지 않고 유지되는 문제 발생.
+- **Solution**: 캐시된 스크롤 위치가 없는 경우(`targetPosition <= 0`)에는 명시적으로 `window.scrollTo(0, 0)`을 호출하여 강제로 최상단으로 이동하도록 로직 추가.
+
+### 2. Detail Page Scroll Reset (Session Storage)
+
+- **Problem**: 상세 페이지 진입 시 브라우저의 이전 스크롤 기억으로 인해 화면 중간부터 렌더링이 시작되는 현상.
+- **Solution**: `sessionStorage` 플래그와 `template.tsx`를 결합하여 새로운 진입 시에만 화면 노출 전 스크롤을 리셋하는 시스템 구축.
+
+## v0.8.16: Audio URL 정규화 및 아키텍처 리팩토링 (2026-01-09)
+
+### 1. Audio URL Normalization (DB 정규화)
+
+- **Relative Paths**: Supabase DB의 `audio_url`을 절대 경로에서 스토리지 내부 상대 경로(`expressions/...`)로 일괄 전환.
+- **Portability**: 도메인 변경이나 프로젝트 이전에 유연하게 대응할 수 있는 데이터 구조 확보.
+
+### 2. Architectural Refactoring (캡슐화 및 최적화)
+
+- **Centralized Resolution**: URL 완성 로직을 Server Component에서 Client Component(`DialogueAudioButton`) 내부로 이동.
+- **Payload Optimization**: 서버에서 클라이언트로 전달되는 JSON 데이터를 가볍게 유지하고, 필요한 시점에만 Full URL 생성.
+- **DX (Developer Experience)**: `constants/index.ts`에 `STORAGE_BUCKET` 상수를 도입하여 설정을 중앙화하고, `lib/utils`의 `getStorageUrl` 유틸리티를 고도화.
+
+### 3. Error Handling Polish
+
+- **Detailed Logging**: 오디오 재생 실패 시 단순 에러 객체 대신 `error.code`, `error.message`, `src`를 포함한 상세 정보를 콘솔에 출력하도록 개선.
+
+## v0.8.15: UI 비주얼 보정 (2026-01-09)
+
+### 1. Visual Polish
+
+- **Dark Mode Visibility**: `DialogueItem`의 Blue Variant가 블러 상태일 때 올바른 색상(`text-blue-200/70`)을 유지하도록 수정하여 시인성 확보.
+
+### 2. Utility Refactoring
+
+- **`text-disabled`**: `app/globals.css`에 유틸리티 클래스를 추가하고 이를 컴포넌트에 적용하여 스타일 코드 중복 제거.
+
 ## v0.8.14: 학습 모드 상호작용 고도화 (2026-01-09)
 
 ### 1. Smart Toggle Interaction

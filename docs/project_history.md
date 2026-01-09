@@ -2,6 +2,52 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-09: 프로젝트 고도화 및 품질 개선 (Code Refactoring & Optimization)
+
+### ✅ 진행 사항
+
+- **커스텀 훅 추출 및 리팩토링**: `ExpressionList.tsx`의 비대한 로직을 기능별로 분리하여 코드 가독성과 유지보수성을 극대화함.
+  - **`usePaginatedList`**: 페이지네이션 상태 관리, 더 보기 페칭 및 캐시 동기화 로직 담당.
+  - **`useScrollRestoration`**: 정밀한 스크롤 위치 추적(200ms 디바운스) 및 재귀적 RAF 기반의 복원 로직 담당.
+- **성능 최적화**: 브라우저 렌더링 프레임에 최적화된 스크롤 복원 시스템 구축 및 자원 효율 극대화.
+
+## 2026-01-09: 스크롤 복원 동작 수정 (Scroll Restoration Fix)
+
+### ✅ 진행 사항
+
+- **스크롤 초기화 로직 추가**: `ExpressionList` 컴포넌트에서 새로운 필터(태그, 검색어 등)로 진입하여 저장된 스크롤 위치가 없을 경우(`targetPosition <= 0`), 명시적으로 `window.scrollTo(0, 0)`을 실행하도록 수정.
+- **상세 페이지 스크롤 리셋 전략 (Session Storage)**: 상세 페이지(`[id]`) 진입 시, 새로운 페이지 이동(Push)과 뒤로가기(Back)를 구분하기 위해 `sessionStorage` 플래그(`SCROLL_RESET_KEY`)를 도입.
+  - `ExpressionCard` 클릭 시 플래그를 심고, `template.tsx`에서 이를 확인하여 스켈레톤 로딩 전 최상단 스크롤을 보장함.
+  - 뒤로가기 시에는 플래그가 없으므로 브라우저의 전역 `history.scrollRestoration = "auto"` 설정을 통해 자연스러운 위치 복원을 지원함.
+- **원인 및 해결**: 브라우저의 자동 스크롤 복원(`scrollRestoration`)을 수동(`manual`)으로 설정해 두었기 때문에, 새로운 페이지 진입 시 스크롤이 자동으로 위로 가지 않는 현상을 해결함.
+
+## 2026-01-09: 버그 수정 (Bug Fixes)
+
+### ✅ 진행 사항
+
+- **Audio URL Handling & DB Normalization**:
+  - **DB Normalization**: Supabase DB의 `audio_url`을 기존 절대 경로(`https://...`)에서 스토리지 내부 상대 경로(`expressions/...`)로 일괄 정규화(SQL 사용). 이를 통해 도메인 변경이나 프로젝트 이전에 유연하게 대응 가능하도록 구조 개선.
+  - **아키텍처 최적화**: URL 완성 로직을 Server Component(`page.tsx`)가 아닌 Client Component(`DialogueAudioButton.tsx`) 내부로 이동(Encapsulation). 서버는 가공되지 않은 원시 데이터를 전달하고, 클라이언트는 재생 직전에만 전체 URL로 변환하여 페이로드 크기 최적화 및 유지보수성 향상.
+  - **에러 핸들링 강화**: `DialogueAudioButton`의 오디오 재생 에러 로그를 상세화하여 `error.code`, `error.message`, `src` 정보를 포함하도록 개선. 브라우저의 불투명한 미디어 에러 디버깅을 용이하게 함.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 DB에 상대 경로로 저장하고 클라이언트에서 변환하나?**
+- **A.** 
+  1. **유지보수**: Supabase 프로젝트 ID나 도메인이 바뀌어도 환경 변수 하나만 수정하면 되기 때문. 
+  2. **캡슐화**: "오디오 주소를 어떻게 구성하는가"에 대한 지식을 재생 컴포넌트 내부에 숨겨, 데이터 소유자(서버)는 인프라 정보에 신경 쓰지 않아도 됨.
+  3. **최적화**: 서버에서 클라이언트로 넘어가는 JSON 데이터의 크기를 줄일 수 있음.
+
+**Q. 상세한 에러 로그를 남겨두는 이유는?**
+- **A.** 오디오 재생 에러는 네트워크, 코덱, 브라우저 정책 등 원인이 다양함. 단순 로그만으로는 원인 파악이 어렵기 때문에 구체적인 `MediaError` 코드를 남기는 것이 장기적인 유지보수에 훨씬 유리함.
+
+## 2026-01-09: UI 비주얼 보정 및 리팩토링 (UI Visual Polish & Refactoring)
+
+### ✅ 진행 사항
+
+- **Dark Mode Visibility**: `DialogueItem`에서 Blue 테마(`variant="blue"`)가 블러 처리될 때, 텍스트가 회색(`text-disabled`)으로 변하여 어색한 문제 해결. `text-blue-200/70`을 적용하여 파란 배경 위에서도 자연스럽게 블러되도록 개선.
+- **Code Refactoring**: 반복되는 비활성화 텍스트 스타일(`text-zinc-300 dark:text-zinc-600`)을 `@utility text-disabled`로 추상화하고 `DialogueSection` 및 `DialogueItem`에 적용.
+
 ## 2026-01-09: 학습 모드 상호작용 고도화 (Learning Mode Interaction Refinement)
 
 ### ✅ 진행 사항

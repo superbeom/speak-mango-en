@@ -43,7 +43,7 @@
 ### Content JSONB Structure (i18n)
 
 `content` 컬럼은 언어 코드를 최상위 키로 갖는 구조입니다.
-내부 `dialogue` 배열에서는 `translation`이라는 통일된 키를 사용하여 다국어 확장을 용이하게 합니다. 또한 음성 지원을 위해 `audio_url` 필드를 포함할 수 있습니다.
+내부 `dialogue` 배열에서는 `translation`이라는 통일된 키를 사용하여 다국어 확장을 용이하게 합니다. 또한 음성 지원을 위해 `audio_url` 필드를 포함하며, 여기에는 **스토리지 내부 상대 경로**를 저장합니다.
 
 ```json
 {

@@ -70,7 +70,12 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
                         className={cn(
                             "text-base sm:text-lg font-semibold flex-1 transition-all duration-300",
                             isEnglishBlurred
-                                ? "blur-xs select-none text-zinc-300 dark:text-zinc-600 cursor-pointer"
+                                ? cn(
+                                    "blur-xs select-none cursor-pointer",
+                                    variant === "default"
+                                        ? "text-disabled"
+                                        : "text-blue-200/70"
+                                )
                                 : "blur-0"
                         )}
                         onClick={handleEnglishClick}

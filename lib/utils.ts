@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { STORAGE_BUCKET } from "@/constants";
 
 /**
  * Tailwind CSS 클래스를 병합하고 충돌을 해결하는 유틸리티입니다.
@@ -39,4 +40,21 @@ export function serializeFilters<T extends object>(filters: T): string {
   if (parts.length === 0) return "all"; // 기본값 (전체보기)
 
   return parts.join("&");
+}
+
+/**
+ * Supabase Storage의 Public URL을 생성합니다.
+ * @param path - 스토리지 내 상대 경로 (예: "expressions/UUID/1.wav")
+ */
+export function getStorageUrl(path?: string) {
+  if (!path) return undefined;
+  if (path.startsWith("http")) return path;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl) return path;
+
+  // clean path (remove leading slash)
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
+  return `${supabaseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${cleanPath}`;
 }
