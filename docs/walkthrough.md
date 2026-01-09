@@ -2,6 +2,23 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.14: 학습 모드 상호작용 고도화 (2026-01-09)
+
+### 1. Smart Toggle Interaction
+
+- **`components/DialogueSection.tsx`**:
+  - **Auto-Disable Logic**: 'Blind Listening' 모드가 켜진 상태에서 'Translation Blur'(눈 아이콘) 클릭 시, 자동으로 리스닝 모드를 끄고 해석을 보여주도록 개선.
+  - **State Preservation**: `savedRevealedIndices` 상태를 도입하여, Blind Mode 진입 시 이전의 해석 노출 상태를 백업하고 해제 시 복원.
+  - **Constraint Removal**: 기존의 `isDisabled` 제약을 제거하여 사용자 주도적인 모드 전환 지원.
+
+### 2. Individual English Reveal
+
+- **`components/DialogueSection.tsx` & `DialogueItem.tsx`**:
+  - **Selective Reveal**: 'Blind Listening' 모드 활성화 시, 전체를 다 끄지 않고도 궁금한 영어 문장만 클릭하여 일시적으로 확인할 수 있는 기능 추가.
+  - **Auto-Exposed Logic**: 사용자가 수동으로 모든 영어 문장을 드러내면(`revealedEnglishIndices.size === dialogue.length`), 자동으로 `viewMode`를 `exposed`로 전환하여 'Blind Mode'를 해제하고 UI를 동기화.
+  - **State Management**: `viewMode`(`'blind' | 'partial' | 'exposed'`) 상태 머신을 도입하여 복잡한 투명도/블러 로직을 체계적으로 관리.
+  - **UX Detail**: 블러 처리된 텍스트에 `cursor-pointer`와 `hover` 효과를 주어 클릭 가능함을 암시하고, 해석은 여전히 가려진 상태를 유지하여 학습 효과 지속.
+
 ## v0.8.12: 학습 모드 (Learning Mode) 및 오디오 안정화 (2026-01-08)
 
 ### 1. Learning Mode Foundation

@@ -61,7 +61,10 @@
   - **Accelerated Drag**: 데스크탑에서 좌우 페이드(Fade) 영역에 마우스를 올리면 해당 방향으로 스크롤이 빠르게 가속되는 스마트 드래그 기능 제공.
 - **학습 모드 (Learning Mode)**:
   - **Blind Listening Mode**: 대화문의 영어 텍스트를 숨기고(Blur) 소리에 집중하는 모드. (Default: ON)
+    - **Partial Reveal**: 블라인드 모드 중에도 궁금한 영어 문장을 클릭하면 해당 문장만 블러가 해제되며, 나머지 문장은 여전히 가려진 상태를 유지.
+    - **Auto-Exposed**: 모든 영어 문장을 확인하면 자동으로 블라인드 모드가 해제되고 'Exposed Mode'로 전환.
   - **Translation Blur**: 대화문의 해석을 기본적으로 숨기고, 클릭 시에만 해당 문장의 해석을 노출. (Default: Blur)
+  - **State Preservation**: 블라인드 모드 진입/해제 시 이전의 해석 노출 상태(전체 보기 등)를 기억하고 복원.
   - **LearningToggle 유틸리티**: 학습 모드를 직관적으로 제어할 수 있는 공통 토글 UI 제공.
 
 ## 2. 시스템 & 인프라 (System & Infra)

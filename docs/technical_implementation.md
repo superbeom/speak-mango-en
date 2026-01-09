@@ -305,14 +305,33 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 리스닝 집중도를 높이기 위해 텍스트 정보를 단계적으로 노출하는 시스템입니다.
 
-### 12.1 Blind Listening Mode (영어 블러)
+### 12.1 View Mode State Machine (뷰 모드 상태 머신)
 
-- **Implementation**: `isBlindMode` 상태가 `true`일 때, 영어 텍스트 영역에 `blur-xs` 및 `select-none` 클래스를 적용합니다.
-- **Policy**: 영어 텍스트가 가려진 상태에서는 해석을 하나씩 열어보는 인터랙션이 의미가 적으므로, 'Translation Blur' 버튼을 비활성화하여 학습 단계를 유도합니다.
+### 12.1 View Mode State Machine (뷰 모드 상태 머신)
 
-### 12.2 Translation Blur (해석 블러)
+학습 모드의 복잡한 상호작용을 체계적으로 관리하기 위해 3가지 상태를 가진 State Machine을 도입했습니다.
 
-- **Implementation**: 
-  - `revealedIndices`를 `Set<number>`로 관리하여 개별 문장의 노출 여부를 추적합니다.
-  - 해석 영역 클릭 시 해당 인덱스를 Set에 추가/삭제하여 블러(`blur-[3px]`)를 토글합니다.
-- **Constraint**: `isBlindMode`가 활성화된 상태에서는 해석 영역 전체에 `blur-md`와 `opacity-60`을 적용하여 텍스트 유추를 차단합니다.
+- **State Definition**:
+  - **`blind` (Default)**: 리스닝 집중 모드. 모든 영어/해석 텍스트가 블러 처리됨. '해석 전체 보기' 버튼은 Soft Disabled 상태가 됨.
+  - **`partial`**: 부분 확인 모드. 사용자가 안 들리는 특정 영어 문장만 클릭하여 일부만 드러낸 상태. **이 상태에서는 해석을 클릭하여 개별적으로 확인하는 것도 허용됩니다.**
+  - **`exposed`**: 학습 모드 해제 상태. 모든 텍스트가 제약 없이 사용자 설정(해석 숨김 여부 등)에 따라 표시됨.
+
+- **Transition Flow**:
+  1.  **`blind` → `partial`**: 사용자가 블러 처리된 영어 문장 중 하나를 클릭할 때 전환됩니다.
+  2.  **`partial` → `exposed`**:
+      - **Auto-Exposed**: 문장을 하나씩 열다가 **모든 문장이 공개(`revealedEnglishIndices.size === dialogue.length`)**되는 순간 자동 전환됩니다.
+      - **Manual Toggle**: 사용자가 'Headphones' 또는 'Translation Blur' 버튼을 눌러 직접 모드를 해제할 때도 전환됩니다.
+  3.  **`exposed` → `blind`**: 사용자가 'Headphones' 아이콘을 클릭하여 리스닝 모드를 켤 때 전환됩니다. 이때 현재의 해석 노출 상태가 백업(State Preservation)됩니다.
+
+### 12.2 State Preservation Logic (상태 보존 로직)
+
+- **Mechanism**:
+  - `exposed` 모드에서 사용자가 설정한 '해석 보기' 상태(`revealedIndices`)를 `savedRevealedIndices`에 백업하고 `blind` 모드로 진입합니다.
+  - `blind` 모드를 끄거나 `auto-exposed` 되면 백업된 상태를 복원하여, 사용자의 원래 의도(해석 다 보기 등)를 유지합니다.
+- **Soft Disabled UI**:
+  - `bling` 모드 중에는 '해석 전체 보기(Eye Icon)' 버튼이 '켜져 있지만 흐릿한(Soft Disabled)' 색상으로 표시되어, 모드가 Override 중임을 암시합니다.
+
+### 12.3 English & Translation Interaction
+
+- **Partial Reveal**: 영어 문장 클릭 시 `revealedEnglishIndices`에 추가하고 즉시 노출합니다.
+- **Auto Sync**: `revealedEnglishIndices`의 크기가 전체 대화 길이와 같아지면 즉시 `viewMode`를 `exposed`로 전환하고, `savedRevealedIndices`를 파기(Discard)하여 현재 상태를 새로운 Context로 확정합니다.

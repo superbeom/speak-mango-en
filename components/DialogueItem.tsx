@@ -10,9 +10,11 @@ interface DialogueItemProps {
         translation: string;
         audio_url?: string;
     };
-    isBlindMode: boolean;
-    isTranslationRevealed: boolean;
+    isEnglishBlurred: boolean;
+    isTranslationBlurred: boolean;
+    canClickTranslation: boolean;
     onToggleReveal: () => void;
+    onEnglishClick: () => void;
     variant: "default" | "blue";
     onPlay: () => void;
     onEnded: () => void;
@@ -25,9 +27,11 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
     (
         {
             item,
-            isBlindMode,
-            isTranslationRevealed,
+            isEnglishBlurred,
+            isTranslationBlurred,
+            canClickTranslation,
             onToggleReveal,
+            onEnglishClick,
             variant,
             onPlay,
             onEnded,
@@ -38,8 +42,15 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
         ref
     ) => {
         const handleTranslationClick = () => {
-            if (isBlindMode) return; // Do nothing in blind mode
+            if (!canClickTranslation) return; // Only block if strictly forbidden (strict blind mode)
             onToggleReveal();
+        };
+
+        const handleEnglishClick = () => {
+            // Only allow click if it is currently blurred (Blind/Partial mode)
+            if (isEnglishBlurred) {
+                onEnglishClick();
+            }
         };
 
         return (
@@ -58,9 +69,13 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
                     <p
                         className={cn(
                             "text-base sm:text-lg font-semibold flex-1 transition-all duration-300",
-                            isBlindMode ? "blur-xs select-none text-zinc-300 dark:text-zinc-600 cursor-default" : "blur-0"
+                            isEnglishBlurred
+                                ? "blur-xs select-none text-zinc-300 dark:text-zinc-600 cursor-pointer"
+                                : "blur-0"
                         )}
-                        aria-hidden={isBlindMode}
+                        onClick={handleEnglishClick}
+                        title={isEnglishBlurred ? "Click to reveal" : ""}
+                        aria-hidden={isEnglishBlurred}
                     >
                         {item.en}
                     </p>
@@ -87,24 +102,29 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
                 <div
                     className={cn(
                         "mt-1 transition-all duration-300",
-                        isBlindMode ? "blur-md select-none opacity-60 cursor-default" : "blur-0"
+                        isTranslationBlurred ? "blur-[3px] select-none" : "blur-0",
+                        // Request 2: If blurred (and likely in blind mode), show as disabled pointer or default?
+                        // If it's pure blind mode, we blocked click above.
+                        isTranslationBlurred && isEnglishBlurred && "opacity-60 cursor-default"
                     )}
-                    aria-hidden={isBlindMode}
+                    aria-hidden={isTranslationBlurred}
                 >
                     <p
                         onClick={handleTranslationClick}
                         className={cn(
                             "text-xs sm:text-sm transition-all duration-300 select-none",
-                            !isBlindMode ? "cursor-pointer" : "cursor-default",
+                            // Use canClickTranslation to determine cursor.
+                            // If exposed (!blurred), it's pointer.
+                            // If blurred, check canClickTranslation: if true (Partial), pointer. If false (Strict), default.
+                            (!isTranslationBlurred || canClickTranslation) ? "cursor-pointer" : "cursor-default",
                             variant === "default" ? "text-zinc-500" : "text-blue-100",
-                            !isBlindMode && !isTranslationRevealed && "blur-[3px]"
                         )}
-                        title={isTranslationRevealed ? "Click to blur" : "Click to reveal"}
+                        title={isTranslationBlurred ? "Hidden" : "Click to blur"}
                     >
                         {item.translation}
                     </p>
                 </div>
-            </div>
+            </div >
         );
     }
 );

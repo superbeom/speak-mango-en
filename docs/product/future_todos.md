@@ -20,11 +20,7 @@
   - [ ] **Security (RLS)**: Supabase Storage 정책을 강화하여 유료 사용자만 오디오 파일 다운로드/접근이 가능하도록 보안 고도화.
     - **실행 지침**: 버킷 권한을 `Public`에서 **`Private`**으로 전환하고, `storage.objects` 테이블에 RLS 정책을 추가하여 `profiles.tier`가 'pro'인 사용자만 `SELECT` 가능하도록 제한.
 
-## Planned Improvements (Soon)
 
-- [ ] **Learning Mode Interaction Refinement**:
-  - [ ] **Toggle Interactions**: 'Blind Listening' 모드가 켜진 상태에서 'Translation Blur'(눈 아이콘)을 클릭하면 자동으로 'Blind Listening' 모드가 해제되도록 개선.
-  - [ ] **Individual English Reveal**: 'Blind Listening' 모드 활성화 시, 특정 영어 문장을 클릭하면 해당 문장만 블러를 해제하여 확인할 수 있는 기능 추가. (이때 해석 블러는 유지)
 
 ## Technical Debt
 
