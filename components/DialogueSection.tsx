@@ -33,9 +33,9 @@ function LearningToggle({
       className={cn(
         "p-1.5 rounded-full transition-all border cursor-pointer",
         isDisabled
-          ? "opacity-50 cursor-not-allowed bg-zinc-50 border-zinc-100 text-zinc-300 dark:bg-zinc-800/50 dark:border-zinc-800 dark:text-zinc-600"
+          ? "opacity-50 cursor-not-allowed bg-zinc-50 border-zinc-100 text-disabled dark:bg-zinc-800/50 dark:border-zinc-800"
           : isSoftDisabled
-            ? "bg-zinc-50 border-zinc-200 text-zinc-300 dark:bg-zinc-800/50 dark:border-zinc-700 dark:text-zinc-600"
+            ? "bg-zinc-50 border-zinc-200 text-disabled dark:bg-zinc-800/50 dark:border-zinc-700"
             : isActive
               ? "bg-highlight border-highlight text-highlight"
               : cn(

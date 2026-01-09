@@ -2,6 +2,16 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.8.15: UI 비주얼 보정 (2026-01-09)
+
+### 1. Visual Polish
+
+- **Dark Mode Visibility**: `DialogueItem`의 Blue Variant가 블러 상태일 때 올바른 색상(`text-blue-200/70`)을 유지하도록 수정하여 시인성 확보.
+
+### 2. Utility Refactoring
+
+- **`text-disabled`**: `app/globals.css`에 유틸리티 클래스를 추가하고 이를 컴포넌트에 적용하여 스타일 코드 중복 제거.
+
 ## v0.8.14: 학습 모드 상호작용 고도화 (2026-01-09)
 
 ### 1. Smart Toggle Interaction

@@ -87,6 +87,10 @@ body {
   @apply text-zinc-600 dark:text-zinc-400;
 }
 
+@utility text-disabled {
+  @apply text-zinc-300 dark:text-zinc-600;
+}
+
 @utility fade-mask-base {
   @apply from-zinc-50 to-transparent dark:from-black z-10 pointer-events-none transition-opacity duration-300;
 }

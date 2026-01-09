@@ -2,6 +2,13 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-09: UI 비주얼 보정 및 리팩토링 (UI Visual Polish & Refactoring)
+
+### ✅ 진행 사항
+
+- **Dark Mode Visibility**: `DialogueItem`에서 Blue 테마(`variant="blue"`)가 블러 처리될 때, 텍스트가 회색(`text-disabled`)으로 변하여 어색한 문제 해결. `text-blue-200/70`을 적용하여 파란 배경 위에서도 자연스럽게 블러되도록 개선.
+- **Code Refactoring**: 반복되는 비활성화 텍스트 스타일(`text-zinc-300 dark:text-zinc-600`)을 `@utility text-disabled`로 추상화하고 `DialogueSection` 및 `DialogueItem`에 적용.
+
 ## 2026-01-09: 학습 모드 상호작용 고도화 (Learning Mode Interaction Refinement)
 
 ### ✅ 진행 사항
