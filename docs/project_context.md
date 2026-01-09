@@ -129,7 +129,7 @@ speak-mango-en/
 
 - **저장소**: 모든 원어민 대화 음성 파일(TTS)은 Supabase Storage의 `speak-mango-en` 버킷에 저장합니다.
 - **경로 규칙**: `expressions/{expression_id}/{line_index}.wav` 형식을 엄수합니다.
-- **데이터 바인딩**: DB의 `content` JSONB 데이터 내 `audio_url` 필드에 해당 경로 또는 Public URL을 저장합니다.
+- **데이터 바인딩**: DB의 `content` JSONB 데이터 내 `audio_url` 필드에는 **스토리지 내부 상대 경로**를 저장합니다. 실제 재생을 위한 절대 URL 변환은 클라이언트 컴포넌트(`DialogueAudioButton`)에서 재생 시점에 수행됩니다.
 - **확장성 가이드**: 버킷명을 특정 용도(예: `audio`)가 아닌 프로젝트명(`speak-mango-en`)으로 설정함으로써, 향후 `users/`, `images/`, `vocabulary/` 등 다른 종류의 파일들도 동일한 버킷 하위 폴더로 격리하여 관리할 수 있습니다. 이는 루트 경로의 혼잡을 방지하고 관리 효율성을 높입니다.
 - **보안 전환 주의**: 현재는 **Public** 버킷을 사용 중이나, 향후 유료 기능(Feature Gating) 도입 시 버킷을 **Private**으로 전환하고 **RLS(Storage Policies)** 설정을 통해 접근 권한을 제어해야 합니다 (`docs/database/supabase_strategy.md` 참조).
 

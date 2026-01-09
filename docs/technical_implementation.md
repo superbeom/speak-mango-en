@@ -183,7 +183,14 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - `GainNode`를 삽입하여 `gain.value = 2.0`을 적용한 뒤 `destination`으로 출력합니다.
   - Web Audio API 미지원 환경을 위한 Fallback 로직이 내장되어 있습니다.
 
-### 7.2 Global Audio Synchronization (전역 동기화)
+### 7.2 Path Resolution & Storage Strategy (경로 해석 및 저장 전략)
+
+- **Storage Format**: Supabase DB (`expressions` 테이블)의 `audio_url` 필드에는 스토리지 내부의 **상대 경로**(`expressions/{id}/{index}.wav`)를 저장합니다. 절대 경로 대신 상대 경로를 사용함으로써 도메인 변경이나 프로젝트 이관 시 유연성을 확보합니다.
+- **Client-Side Resolution**: URL 완성 로직은 서버가 아닌 `DialogueAudioButton.tsx` 컴포넌트 내부에서 수행됩니다.
+  - **Payload Optimization**: 서버에서 클라이언트로 전달되는 JSON 데이터의 용량을 줄입니다.
+  - **Encapsulation**: 컴포넌트가 재생에 필요한 실제 주소(`getStorageUrl`)를 스스로 계산하므로 서버 컴포넌트(`page.tsx`)의 로직이 단순해집니다.
+
+### 7.3 Global Audio Synchronization (전역 동기화)
 
 - **Mechanism**: 여러 개의 오디오 버튼이 동시에 재생되어 소리가 겹치는 것을 방지합니다.
 - **logic**:

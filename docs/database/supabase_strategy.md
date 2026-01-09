@@ -316,7 +316,7 @@ export async function createServerSupabase(schema: string = DATABASE_SCHEMA) {
 
 버킷 루트에 파일을 직접 저장하지 않고, 데이터의 성격에 따라 하위 폴더를 생성하여 관리합니다. 특히 하나의 리소스(예: 단어장 아이템)가 여러 종류의 자산(음성, 이미지 등)을 가질 경우, 아래와 같이 자산 타입별로 하위 폴더를 나누어 관리하는 것이 확장성에 매우 유리합니다.
 
-- **Expressions (Audio)**: `expressions/{expression_id}/{line_index}.wav`
+- **Expressions (Audio)**: `expressions/{expression_id}/{line_index}.wav` (DB에는 이 상대 경로를 저장하고 클라이언트에서 URL 완성)
 - **Vocas (Audio)**: `vocas/audios/{voca_id}/{word}.wav`
 - **Vocas (Image)**: `vocas/images/{voca_id}/{word}.png`
 - **Users**: `users/{user_id}/avatar.png`

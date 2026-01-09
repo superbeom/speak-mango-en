@@ -50,7 +50,7 @@
   - **Tags**: 관련 태그 목록 (클릭 시 메인 검색으로 이동).
   - **Situation**: 해당 표현이 쓰이는 구체적인 상황 설명 (Emoji 활용).
   - **Dialogue**: 실전 회화 예문 (A/B 대화).
-    - **Audio Playback**: 원어민 발음으로 생성된 대화 오디오 재생 기능 제공.
+    - **Audio Playback**: 원어민 발음으로 생성된 대화 오디오 재생 기능 제공. DB의 상대 경로를 클라이언트에서 실시간으로 해석(Resolution)하여 재생하는 효율적인 아키텍처 적용.
     - **Sequential Playback (Play All)**: '전체 듣기' 버튼을 통해 A/B 대화를 끊김 없이 이어서 듣는 기능. 재생 중인 버블 하이라이트 지원.
     - **Feature Gating Infrastructure**: 재생 전 권한 체크를 위한 `onPlayAttempt` 콜백 시스템 도입. 향후 유료 티어(Pro) 전용 기능으로 전환할 수 있는 확장 가능한 구조 확보.
   - **Quiz**: 간단한 퀴즈로 학습 내용 확인.

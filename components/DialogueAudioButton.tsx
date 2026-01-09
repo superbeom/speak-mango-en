@@ -10,7 +10,7 @@ import {
 import { Volume2, Loader2, Square, Pause, Play } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { AUDIO_PLAYBACK_START } from "@/constants/events";
-import { cn } from "@/lib/utils";
+import { cn, getStorageUrl } from "@/lib/utils";
 
 // Extend Window interface for Webkit compatibility
 declare global {
@@ -158,7 +158,7 @@ const DialogueAudioButton = forwardRef<
     // Initialize Audio Element
     const audio = new Audio();
     audio.crossOrigin = "anonymous"; // Essential for Web Audio API with external sources
-    audio.src = audioUrl;
+    audio.src = getStorageUrl(audioUrl) || "";
     audioRef.current = audio;
 
     // Initialize Web Audio API
@@ -202,7 +202,17 @@ const DialogueAudioButton = forwardRef<
     const handleError = (e: Event) => {
       setIsLoading(false);
       setIsPlaying(false);
-      console.error("Audio playback error", e);
+
+      const audioEl = e.target as HTMLAudioElement;
+      const error = audioEl.error;
+
+      console.error("Audio playback error:", {
+        code: error?.code,
+        message: error?.message,
+        src: audioEl.src,
+        event: e
+      });
+
       onReadyRef.current?.();
     };
 
