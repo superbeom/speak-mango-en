@@ -5,7 +5,7 @@ import {
   isSupportedLocale,
 } from "@/i18n";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // 1. 쿼리 파라미터에서 언어 확인 (SEO/공유 링크용)
   const queryLang = request.nextUrl.searchParams.get("lang");
   let detectedLocale = DEFAULT_LOCALE;
@@ -40,7 +40,7 @@ export function middleware(request: NextRequest) {
   });
 }
 
-// 미들웨어가 적용될 경로 설정
+// 프록시(미들웨어)가 적용될 경로 설정
 export const config = {
   matcher: [
     /*
