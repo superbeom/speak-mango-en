@@ -2,6 +2,26 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.0: 서비스 필수 요소 완성 (Service Essentials: PWA, SEO, i18n) (2026-01-10)
+
+### 1. PWA Implementation (iOS Completeness)
+
+- **`manifest.ts`**: 안드로이드 및 데스크탑을 위한 표준 매니페스트 설정 (아이콘, 테마 컬러, Standalone 모드).
+- **iOS Assets Generator**: `pwa-asset-generator`를 활용하여 iOS 기기별 스플래시 스크린(Startup Image) 30여 장 생성 및 `layout.tsx` 연결.
+  - **Logic**: 세로 30%, 가로 20%의 여백(Padding)을 차등 적용하여 모든 화면 회전 상태에서 로고 시인성 확보.
+- **Build Config**: `next-pwa`와 Turbopack의 충돌을 방지하기 위해 `next dev --webpack` 설정 강제.
+
+### 2. SEO & Metadata Strategy
+
+- **Dynamic Metadata**: `generateMetadata`를 통해 페이지별 콘텐츠에 최적화된 메타 태그(Title, Desc, Keywords) 동적 생성.
+- **Open Graph Image**: `opengraph-image.tsx`를 구현하여 상세 페이지 공유 시 해당 표현 텍스트가 렌더링된 썸네일 카드 자동 생성.
+- **Structured Data (JSON-LD)**: 학습 자료(LearningResource) 스키마를 적용하여 구글 검색 리치 스니펫 대응.
+
+### 3. I18n Infrastructure Refactoring
+
+- **Single Source of Truth**: `i18n/index.ts`에 `SupportedLanguage` 상수를 도입하여 흩어져 있던 언어 코드 정의를 중앙화.
+- **Refactoring**: `middleware.ts`, `server.ts`, `format.ts` 등 전반적인 i18n 로직이 문자열 대신 상수를 참조하도록 수정하여 타입 안정성(Type Safety) 강화.
+
 ## v0.8.18: 프로젝트 고도화 및 품질 개선 (2026-01-09)
 
 ### 1. 코드 리팩토링 및 훅 분리 (Hooks Extraction)

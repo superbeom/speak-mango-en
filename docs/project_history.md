@@ -2,6 +2,35 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-10: 서비스 필수 요소 완성 (Service Essentials: PWA, SEO, i18n)
+
+### ✅ 진행 사항
+
+- **PWA (Progressive Web App) 완성**:
+  - **Manifest & Icons**: `manifest.ts`를 통해 안드로이드/데스크탑용 아이콘과 테마 색상을 설정함.
+  - **iOS 스플래시 스크린**: `pwa-asset-generator`를 사용하여 iOS 기기 해상도별 스플래시 이미지 30여 장을 생성(`public/assets/splash`)하고 `layout.tsx`에 `startupImage` 및 `appleWebApp` 메타데이터를 연결함.
+    - **디자인 최적화**: 세로 모드(Portrait)는 30% 여백, 가로 모드(Landscape)는 20% 여백을 적용하여 로고 시인성을 확보함.
+  - **개발 환경 최적화**: `next-pwa` 플러그인의 Webpack 의존성 호환을 위해 `next dev --webpack` 및 `next build --webpack`으로 스크립트 강제 설정.
+- **SEO (Search Engine Optimization) 고도화**:
+  - **동적 메타데이터**: `generateMetadata` 함수를 통해 각 페이지별 타이틀, 설명, 키워드를 i18n 딕셔너리에 맞춰 동적으로 생성.
+  - **Open Graph**: `opengraph-image.tsx`를 구현하여 상세 페이지의 표현(Expression) 텍스트가 포함된 동적 썸네일을 생성 및 제공.
+  - **JSON-LD**: 구글 리치 스니펫(Rich Snippet)을 위한 구조화된 데이터(LearningResource, Organization) 추가.
+  - **Sitemap & Robots**: `sitemap.ts`와 `robots.ts`를 구현하여 검색 엔진 크롤링 경로 최적화.
+- **Internationalization (i18n) 리팩토링**:
+  - **상수화**: `SupportedLanguage` 상수를 도입하여 언어 코드(`en`, `ko`, `ja`, `es`) 및 포맷(`locale`, `lang`, `og_locale`)을 중앙에서 일관되게 관리.
+  - **Type Safety**: 미들웨어 및 서버 로직에서 문자열 하드코딩을 제거하고 상수 기반으로 리팩토링하여 안정성 확보.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Turbopack 대신 Webpack을 강제했나?**
+- **A.** `next-pwa` 플러그인이 아직 Webpack 플러그인 시스템에 의존하고 있어 Turbopack 환경에서는 서비스 워커 생성이 불가능함. 기능 안정성을 위해 개발 및 빌드 환경 모두 Webpack으로 통일함. (프로덕션 성능에는 영향 없음)
+
+**Q. iOS 스플래시 스크린을 왜 이미지로 각각 생성했나?**
+- **A.** 안드로이드는 아이콘 하나로 OS가 자동 생성해주지만, iOS(Web Web App) 스펙상 아직 자동 생성을 지원하지 않음. 사용자가 앱을 켤 때 흰 화면(White screen)을 보지 않게 하려면 각 기기 해상도에 딱 맞는 이미지를 `link rel="apple-touch-startup-image"`로 일일이 지정해줘야 함.
+
+**Q. 가로 모드에서 스플래시 여백을 줄인 이유는?**
+- **A.** 가로 모드는 세로 높이가 낮아, 30% 여백 적용 시 로고가 너무 작아지거나 잘려 보일 수 있음. 가로 모드만 20%로 여백을 줄여 시각적 균형을 맞춤.
+
 ## 2026-01-09: 프로젝트 고도화 및 품질 개선 (Code Refactoring & Optimization)
 
 ### ✅ 진행 사항

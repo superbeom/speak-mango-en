@@ -1,8 +1,12 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SUPPORTED_LANGUAGES, getContentLocale } from "@/i18n";
+import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { getI18n } from "@/i18n/server";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
+import { formatMessage } from "@/lib/utils";
 import Header from "@/components/Header";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
@@ -18,6 +22,47 @@ interface PageProps {
 
 export const revalidate = 3600;
 
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const expression = await getExpressionById(id);
+
+  if (!expression) {
+    return {
+      title: "Expression Not Found",
+    };
+  }
+
+  const { locale, fullLocale, dict } = await getI18n();
+  const contentLocale = getContentLocale(expression.meaning, locale);
+  const primaryMeaning = expression.meaning[contentLocale] || "";
+
+  const title = formatMessage(dict.meta.expressionTitle, {
+    expression: expression.expression,
+    serviceName: SERVICE_NAME,
+  });
+
+  const description = formatMessage(dict.meta.expressionDesc, {
+    expression: expression.expression,
+    meaning: primaryMeaning,
+    serviceName: SERVICE_NAME,
+  });
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/expressions/${id}`,
+      locale: fullLocale,
+      type: "article",
+    },
+    alternates: {
+      canonical: `${BASE_URL}/expressions/${id}`,
+    },
+  };
+}
+
 export default async function ExpressionDetailPage({ params }: PageProps) {
   const { id } = await params;
   const expression = await getExpressionById(id);
@@ -28,9 +73,9 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
   const { locale, dict } = await getI18n();
 
-  // 감지된 언어의 데이터가 있는지 확인, 없으면 한국어(ko)를 기본값으로 사용
-  const content = expression.content[locale] || expression.content["ko"];
-  const meaning = expression.meaning[locale] || expression.meaning["ko"];
+  // 감지된 언어의 데이터가 있는지 확인, 없으면 영어(en)를 기본값으로 사용
+  const content = expression.content[getContentLocale(expression.content, locale)] || expression.content["en"];
+  const meaning = expression.meaning[getContentLocale(expression.meaning, locale)] || expression.meaning["en"];
 
   if (!content || !meaning) {
     notFound();
@@ -59,6 +104,34 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
       <main className="mx-auto max-w-layout px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
         <article className="mx-auto max-w-3xl space-y-6">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "LearningResource",
+                name: expression.expression,
+                description: formatMessage(dict.meta.expressionDesc, {
+                  expression: expression.expression,
+                  meaning: meaning,
+                  serviceName: SERVICE_NAME,
+                }),
+                learningResourceType: "Expression",
+                inLanguage: locale,
+                author: {
+                  "@type": "Organization",
+                  name: SERVICE_NAME,
+                },
+                url: `${BASE_URL}/expressions/${id}`,
+                image: `${BASE_URL}/expressions/${id}/opengraph-image`,
+                workTranslation: SUPPORTED_LANGUAGES.map((lang) => ({
+                  "@type": "LearningResource",
+                  inLanguage: lang,
+                  url: `${BASE_URL}/expressions/${id}?lang=${lang}`,
+                })),
+              }),
+            }}
+          />
           {/* Main Content Card */}
           <section className="overflow-hidden rounded-3xl border border-main bg-surface shadow-sm">
             <div className="p-6 sm:p-10">

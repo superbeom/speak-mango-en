@@ -368,3 +368,34 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 - **Partial Reveal**: 영어 문장 클릭 시 `revealedEnglishIndices`에 추가하고 즉시 노출합니다.
 - **Auto Sync**: `revealedEnglishIndices`의 크기가 전체 대화 길이와 같아지면 즉시 `viewMode`를 `exposed`로 전환하고, `savedRevealedIndices`를 파기(Discard)하여 현재 상태를 새로운 Context로 확정합니다.
+
+## 13. Service Essentials Implementation (시스템 필수 요소 구현)
+
+서비스 품질을 결정짓는 3대 요소(PWA, SEO, i18n)에 대한 기술적 구현 상세입니다.
+
+### 13.1 PWA & Splash Screen Strategy (스플래시 스크린 전략)
+
+- **Library**: `next-pwa` (플러그인) + `pwa-asset-generator` (에셋 생성)
+- **Challenge**: iOS는 안드로이드와 달리 매니페스트 파일만으로 스플래시 스크린을 자동 생성해주지 않으며, 기기 해상도별로 정확한 사이즈의 이미지를 `<link rel="apple-touch-startup-image">`로 제공해야 합니다.
+- **Solution (Adaptive Padding)**:
+  - `pwa-asset-generator`를 사용하여 30여 종의 해상도별 이미지를 생성했습니다.
+  - **Padding Logic**: 로고가 화면에 꽉 차지 않고 여백을 갖도록, HTML 기반 렌더링 시 **Portrait(세로) 30%**, **Landscape(가로) 20%**의 패딩을 주어 생성했습니다. 이를 통해 아이패드 등 태블릿 가로 모드에서도 로고가 잘리지 않고 안정적으로 표시됩니다.
+- **Build Config**: `next-pwa`가 Webpack에 의존하므로, 개발 및 빌드 환경 구성을 Webpack 생태계에 맞췄습니다. (Next.js 기본값 활용)
+
+### 13.2 Dynamic SEO & Open Graph (동적 SEO)
+
+- **Metadata API**: Next.js 14+의 `generateMetadata` 함수를 활용하여 페이지별로 동적인 `title`과 `description`을 주입합니다.
+- **Structured Data (JSON-LD)**: 단순 메타 태그를 넘어, 구글 검색 엔진이 포맷을 이해할 수 있도록 `script` 태그에 `LearningResource` 스키마를 JSON-LD 포맷으로 삽입했습니다.
+- **Edge-generated OG Image**:
+  - `app/expressions/[id]/opengraph-image.tsx`를 구현했습니다.
+  - ImageResponse API를 사용하여, 공유되는 표현(Expression) 텍스트가 박힌 세련된 이미지를 **Request Time에 동적으로 생성**합니다.
+  - 이를 통해 수천 개의 표현에 대해 정적 이미지를 미리 만들어둘 필요 없이, 강력한 소셜 미디어 미리보기(썸네일)를 제공합니다.
+
+### 13.3 Type-Safe i18n Architecture (타입 안전 i18n)
+
+- **Refactoring**: 기존 문자열('ko', 'en') 기반 로직을 `SupportedLanguage` 상수 기반으로 전면 리팩토링했습니다.
+- **Structure**:
+  - `SupportedLanguage`: 언어 코드의 Single Source of Truth.
+  - `LOCALE_DETAILS`: 각 언어별 메타 정보(라벨, 태그, OG Locale)를 매핑한 객체.
+  - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
+- **Benefit**: 새로운 언어(예: 스페인어) 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 확장성과 안정성이 획기적으로 향상되었습니다.

@@ -10,6 +10,21 @@ export interface ExpressionFilters {
   limit?: number;
 }
 
+/**
+ * 제공된 필터(도메인, 카테고리 등)를 기반으로 표현 목록을 가져옵니다.
+ *
+ * Supabase의 'expressions' 테이블을 조회하며, 도메인, 카테고리, 검색어, 태그 등의
+ * 필터를 적용합니다. 페이지네이션 기능도 포함되어 있습니다.
+ *
+ * @param filters - 필터링 기준을 담은 선택적 객체:
+ *   - domain: 도메인별 필터 (예: 'conversation', 'business'). 'all'은 무시됩니다.
+ *   - category: 카테고리별 필터 (예: 'daily', 'travel'). 'all'은 무시됩니다.
+ *   - search: 해당 문자열을 포함하는 표현을 검색합니다 (대소문자 구분 없음).
+ *   - tag: 특정 태그를 가진 표현을 필터링합니다.
+ *   - page: 페이지네이션을 위한 페이지 번호 (기본값: 1).
+ *   - limit: 페이지당 항목 수 (기본값: 12).
+ * @returns Expression 객체 배열을 담은 Promise를 반환합니다. 에러 발생 시 빈 배열을 반환합니다.
+ */
 export async function getExpressions(
   filters?: ExpressionFilters
 ): Promise<Expression[]> {
@@ -54,6 +69,12 @@ export async function getExpressions(
   }
 }
 
+/**
+ * ID를 사용하여 단일 표현을 가져옵니다.
+ *
+ * @param id - 가져올 표현의 고유 ID입니다.
+ * @returns 해당 ID를 가진 Expression 객체 또는 찾을 수 없거나 에러 발생 시 null을 반환합니다.
+ */
 export async function getExpressionById(
   id: string
 ): Promise<Expression | null> {
@@ -77,6 +98,17 @@ export async function getExpressionById(
   }
 }
 
+/**
+ * 동일한 카테고리 내의 관련 표현들을 가져옵니다.
+ *
+ * 상세 페이지 하단의 "관련 표현"이나 "추천" 등을 표시할 때 사용됩니다.
+ * 결과에서 현재 보고 있는 표현은 제외됩니다.
+ *
+ * @param currentId - 결과에서 제외할 현재 표현의 ID입니다.
+ * @param category - 관련 표현을 찾을 카테고리입니다.
+ * @param limit - 반환할 최대 관련 표현 수 (기본값: 4).
+ * @returns 관련 Expression 객체 배열을 반환합니다.
+ */
 export async function getRelatedExpressions(
   currentId: string,
   category: string,
@@ -103,6 +135,33 @@ export async function getRelatedExpressions(
     return (data as Expression[]) || [];
   } catch (error) {
     console.warn("Failed to fetch related expressions:", error);
+    return [];
+  }
+}
+
+/**
+ * 모든 표현의 ID를 최신순으로 가져옵니다.
+ *
+ * 주로 동적 사이트맵(SEO) 생성이나 정적 경로(Static Paths) 생성을 위해 사용됩니다.
+ *
+ * @returns 표현 ID 문자열 배열을 반환합니다.
+ */
+export async function getAllExpressionIds(): Promise<string[]> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase
+      .from("expressions")
+      .select("id")
+      .order("published_at", { ascending: false });
+
+    if (error) {
+      console.warn("Failed to fetch all IDs for sitemap:", error.message);
+      return [];
+    }
+
+    return (data || []).map((item) => item.id);
+  } catch (error) {
+    console.warn("Failed to fetch all IDs for sitemap:", error);
     return [];
   }
 }

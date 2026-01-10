@@ -177,6 +177,15 @@ speak-mango-en/
 - **운영 전략**: `docs/database/supabase_strategy.md`에 따라 단일 Pro 프로젝트 내 **스키마 분리** 전략을 사용합니다.
 - **스키마 명**: `speak_mango_en` (기본 public 스키마 사용 지양).
 
+### Internationalization (i18n)
+- **중앙 관리**: 모든 다국어 설정은 `i18n/index.ts`에서 관리합니다. 언어별 코드, 표시명, OG용 로케일 등은 `LOCALE_DETAILS` 상수에 정의되어 있습니다.
+- **새로운 언어 추가 시 절차**:
+  1. `i18n/locales/{lang}.ts` 딕셔너리 파일 생성.
+  2. `i18n/index.ts`의 `SupportedLanguage` 상수에 새 언어 코드 추가.
+  3. `i18n/index.ts`의 `dictionaries` 객체에 import 및 매핑 추가.
+  4. `i18n/index.ts`의 `LOCALE_DETAILS` 객체에 해당 언어의 상세 정보(label, tag, ogLocale) 추가.
+  5. `SUPPORTED_LANGUAGES`는 `Object.values(SupportedLanguage)`를 사용하므로 자동 반영됩니다.
+
 ### Automation (n8n)
 
 - **에러 처리**: 스크래핑 실패나 AI 응답 오류 시에도 워크플로우가 중단되지 않도록 Error Trigger 또는 대체 로직 구성.

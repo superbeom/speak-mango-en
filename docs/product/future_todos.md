@@ -20,8 +20,9 @@
   - [ ] **Security (RLS)**: Supabase Storage 정책을 강화하여 유료 사용자만 오디오 파일 다운로드/접근이 가능하도록 보안 고도화.
     - **실행 지침**: 버킷 권한을 `Public`에서 **`Private`**으로 전환하고, `storage.objects` 테이블에 RLS 정책을 추가하여 `profiles.tier`가 'pro'인 사용자만 `SELECT` 가능하도록 제한.
 
-
-
+- [ ] **Admin Page Implementation**: 현재는 없지만 추후 콘텐츠 관리 및 n8n 워크플로우 제어를 위한 관리자 페이지(`admin`) 구축 필요.
+  - 관련 경로: `/admin`, `/n8n` (필요 시)
+  - **Robots.txt**: 구현 시 `app/robots.ts`의 `disallow` 목록에 해당 경로들을 반드시 추가할 것.
 ## Technical Debt
 
 - [ ] **Type Safety**: Supabase Generated Types 자동 업데이트 스크립트 추가.

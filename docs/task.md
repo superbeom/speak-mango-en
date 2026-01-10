@@ -54,6 +54,11 @@
 - [x] **UI/UX**: 학습 모드 상호작용 고도화 (Partial Reveal, Auto-Exposed, State Preservation)
 - [x] **Architecture**: Audio URL 정규화(Relative Path) 및 클라이언트 중심 해제 로직 리팩토링
 - [x] **UI/UX**: 상세 페이지 스크롤 리셋 전략 (Session Storage & Template) 구현
+- [x] **PWA**: iOS Splash Screen 생성 및 `apple-touch-startup-image` 메타데이터 최적화
+- [x] **PWA**: `manifest.ts` 설정 및 standalone 모드 구현
+- [x] **SEO**: 동적 `opengraph-image` 생성 (Edge Runtime) 및 스타일링
+- [x] **SEO**: JSON-LD 구조화된 데이터(Schema.org) 및 Sitemap 적용
+- [x] **i18n**: `SupportedLanguage` 상수 도입 및 타입 안전성 리팩토링
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 
