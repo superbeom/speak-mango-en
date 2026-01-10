@@ -1,25 +1,41 @@
 Role: Professional English Content Creator & Polyglot Teacher.
-Task: Create a detailed study card for the following English expression in three languages: Korean (ko), Japanese (ja), and Spanish (es).
+Task: Create a detailed study card for the following English expression in four languages: English (en), Korean (ko), Japanese (ja), and Spanish (es).
 
 Expression: {{ $('Parse Expression JSON').item.json.expression }}
 Domain: {{ $('Pick Category').first().json.domain }}
 Category: {{ $('Pick Category').first().json.category }}
 
 Requirements:
-1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language (존댓말/Desu-Masu form) consistently** for explanations.
+1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language consistently** for explanations.
+    - **English**: Use **Standard English** (Friendly, conversational, yet educational).
+    - **Korean**: Use **존댓말 (Jondaetmal)**.
+    - **Japanese**: Use **Desu-Masu Form (丁寧語)**.
+    - **Spanish**: Use **'Tú' form** but keep it respectful and professional (avoid slang in explanations unless teaching it).
 2. For the 'meaning' field in ALL languages:
-   - **Tone**: Use a casual tone (e.g., Korean: 반말) by default. **HOWEVER, if the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a polite tone (존댓말/Desu-Masu).**
+   - **Tone**: Use a **casual tone** by default.
+     - **Korean**: Use **반말 (Banmal)**.
+     - **Japanese**: Use **Plain Form (Tameguchi/タメ口)**.
+     - **Spanish**: Use **Informal 'Tú' form**.
+   - **EXCEPTION**: If the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a **polite tone**.
+     - **Korean**: 존댓말 (Jondaetmal).
+     - **Japanese**: Desu-Masu Form (丁寧語).
+     - **Spanish**: Formal 'Usted' form.
+   - For English (en) meaning: Provide a simple, clear definition or synonym in English.
    - **Punctuation**: If the English expression is a question (?), the meaning MUST also end with a question mark (?) or be phrased as a question. Do NOT use trailing periods (.) for statements.
    - If there are multiple meanings, separate them with ' · ' (middle dot).
 3. Formatting for 'expression':
    - **Capitalization**: **Start with an UPPERCASE letter** if the expression is a standalone sentence or interjection (e.g., "No worries", "Never mind", "Don't take it personally"). **Start with a lowercase letter** ONLY if it is a phrase or idiom used within a sentence (e.g., "spill the tea", "hit the road").
    - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
 4. Constraint for content:
-   - **NEVER use casual speech (반말)** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
+   - **NEVER use casual speech** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
+     - **English**: Avoid text-speak (e.g., "u", "r") or excessive slang in explanations; keep it clear and accessible.
+     - **Korean**: No 반말 (Banmal).
+     - **Japanese**: No Plain Form (Tameguchi).
+     - **Spanish**: Maintain a helpful, teacher-like tone (avoid overly colloquial slang in the explanation text itself).
    - Do NOT mix polite and casual styles. Keep the tone consistent throughout.
    - Do NOT address the reader as specific groups like "Kids" or "Students". Use a general, relatable tone suitable for young adults.
 5. Output MUST be a valid JSON object matching the schema below.
-6. 'meaning' and 'content' fields must contain keys for 'ko', 'ja', 'es'.
+6. 'meaning' and 'content' fields must contain keys for 'en', 'ko', 'ja', 'es'.
 7. **Dialogue & Roles (CRITICAL)**:
    - Create a **coherent, natural conversation** between two people (A and B).
    - **The dialogue MUST consist of 2 or 3 turns (A -> B or A -> B -> A).**
@@ -27,8 +43,8 @@ Requirements:
    - Each entry in the `dialogue` array MUST include:
      - `"role"`: Value "A" or "B" to distinguish speakers.
      - `"en"`: The English sentence.
-     - `"translation"`: The translated sentence in the target language.
-8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to Japanese and Spanish.
+     - `"translation"`: The translated sentence in the target language. for 'en' key, this should be the same as the English sentence.
+8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to English, Japanese, and Spanish.
 9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
 10. **Quiz Logic (CRITICAL)**:
     - The quiz must test the understanding of the English expression.
@@ -40,10 +56,11 @@ Requirements:
       - **Pattern 3 (Negative Logic)**: Ask "Which situation is **NOT** appropriate for this expression?" in [Target Language]. -> The options (A, B, C) MUST be **situations described in [Target Language]**.
         *   *Example (Target Language: ko)*: Q: "다음 중 'Let's touch base.'의 사용이 적절하지 않은 상황은?\n\nA. 🙋‍♀️ 팀원과 주간 보고서에 대해 짧게 이야기할 때.\nB. 🥳 친구들과 주말에 놀러 갈 계획을 세울 때.\nC. 🧑‍💻 고객과 다음 단계 논의를 위해 연락할 때."
     - **Strict Formatting & Validation Rules**:
-      1. **These rules apply to ALL languages (ko, ja, es).**
+      1. **These rules apply to ALL languages (en, ko, ja, es).**
       2. You **MUST** provide 3 distinct options labeled A, B, and C.
       3. You **MUST** use `\n` (newline) to separate the question and each option.
       4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
+      5. **Randomize the correct answer position**: The correct answer MUST be randomly assigned to A, B, or C. Do NOT default to 'B'. ensure equal distribution of A, B, and C across different generations.
 11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
 12. **Currency & Numbers**:
     - Always use **`$` (USD)** for currency to maintain consistency (e.g., "$10", "$50.50"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.
@@ -55,11 +72,24 @@ Example Output (Reference this style for ALL languages):
   "domain": "conversation",
   "category": "daily",
   "meaning": {
+    "en": "not feeling well · feeling sick",
     "ko": "몸이 좀 안 좋아 · 컨디션이 별로야",
     "ja": "体調が少し悪い · 気分がすぐれない",
     "es": "sentirse un poco mal · no estar al cien"
   },
   "content": {
+    "en": {
+      "situation": "This is perfect for those days when you wake up feeling a bit sluggish or off. 😱 It's a great expression to say you're not 100%, but not seriously ill either! 🤒✨",
+      "dialogue": [
+        { "en": "Hey, you look a bit down. Are you okay?", "translation": "Hey, you look a bit down. Are you okay?", "role": "A" },
+        { "en": "I'm feeling a bit under the weather today.", "translation": "I'm feeling a bit under the weather today.", "role": "B" }
+      ],
+      "tip": "💡 **Fun Fact!** This idiom is said to come from sailors who would go below deck (under the weather rail) when they felt seasick during bad weather! ⚓️🌊 Remember, if you are genuinely sick, it's better to say 'I'm sick' or 'I have a fever'.",
+      "quiz": {
+        "question": "When is the most appropriate time to use 'under the weather'?\n\nA. 🥳 When you are dancing happily at a party.\nB. 😴 When you are lying in bed feeling a bit chilly and off.\nC. 🏋️‍♀️ When you are lifting weights energetically at the gym.",
+        "answer": "B"
+      }
+    },
     "ko": {
       "situation": "🌟 아침에 일어났는데 왠지 모르게 몸이 축 처지고, 컨디션이 별로일 때! 😱 '아, 나 오늘 뭔가 좀 별론데... 병든 병아리 같아...' 할 때 쓰는 핵인싸 표현이에요! 진짜 아픈 건 아닌데 그렇다고 완전 쌩쌩하지도 않을 때, 가볍게 내 상태를 말하고 싶을 때 찰떡같이 쓸 수 있답니다! 🤒✨",
       "dialogue": [

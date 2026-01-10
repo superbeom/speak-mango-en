@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-10: n8n 콘텐츠 품질 고도화 (Content Quality Refinement)
+
+### ✅ 진행 사항
+
+- **Gemini 프롬프트 개선**:
+  - **영어(en) 지원 추가**: JSON 스키마 및 예시에 영어 필드를 추가하여 4개 국어(EN, KO, JA, ES) 지원 완성.
+  - **톤 매너 정교화**:
+    - 영어 설명 톤을 "Standard English (Friendly, conversational, yet educational)"로 정의.
+    - 문자 메시지체(Text-speak)나 과도한 슬랭 사용을 금지하여 교육 콘텐츠로서의 품질 확보.
+  - **퀴즈 편향 해결**: 정답이 특정 번호(B)로 쏠리는 현상을 방지하기 위해 "정답 위치 랜덤화(Randomize answer position)" 규칙을 명시적으로 추가.
+- **문서 동기화**: `n8n/expressions/expressions_workflow_template.json`, `docs/n8n/expressions/optimization_steps.md` 및 `n8n/expressions/code/08_gemini_content_generator_prompt.txt`에 변경된 프롬프트 내용을 동기화하여 코드-문서-템플릿 간의 정합성 유지.
+
 ## 2026-01-10: 서비스 필수 요소 완성 (Service Essentials: PWA, SEO, i18n)
 
 ### ✅ 진행 사항

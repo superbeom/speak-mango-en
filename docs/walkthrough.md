@@ -2,6 +2,15 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.1: n8n 콘텐츠 품질 고도화 (Content Quality Refinement) (2026-01-10)
+
+### 1. Gemini Prompt Logic Improvement
+
+- **n8n/expressions/code/08_gemini_content_generator_prompt.txt**:
+  - **4-Language Support**: JSON 스키마에 영어(en) 필드를 추가하여, 다국어 콘텐츠 생성 파이프라인(EN/KO/JA/ES)을 완성.
+  - **Tone & Manner**: 영어 설명에 대해 "Standard English (Friendly yet educational)" 톤을 정의하고, 교육적 목적에 맞지 않는 Text-speak(문자체) 사용을 금지.
+  - **Quiz Randomization**: 퀴즈 정답이 'B'로 쏠리는 편향을 막기 위해, 정답 위치(Option A/B/C)를 무작위로 배정하라는 명시적 규칙 추가.
+
 ## v0.9.0: 서비스 필수 요소 완성 (Service Essentials: PWA, SEO, i18n) (2026-01-10)
 
 ### 1. PWA Implementation (iOS Completeness)
