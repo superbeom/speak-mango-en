@@ -122,10 +122,11 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 
 외부 라이브러리(`next-intl` 등) 없이 Next.js Middleware와 Server Components만으로 구현한 경량화된 다국어 시스템입니다.
 
-### 4.1 Middleware Locale Detection
+### 4.1 Proxy Locale Detection (formerly Middleware)
 
-- **File**: `middleware.ts`
+- **File**: `proxy.ts` (Next.js 16+ Standard)
 - **Logic**: 브라우저의 `Accept-Language` 헤더를 파싱하여 `ko`, `en`, `ja`, `es` 중 가장 적합한 언어를 선택하고, 요청 헤더에 `x-locale`을 추가하여 서버로 전달합니다.
+- **Note**: Next.js 16의 보안 권고 사항(`CVE-2025-29927`) 및 아키텍처 변경에 따라 기존 `middleware.ts`를 `proxy.ts`로 전환했습니다. 이는 단순 네트워크 바운더리 역할임을 명확히 합니다.
 
 ### 4.2 Server-Side Dictionary Loading
 
@@ -380,7 +381,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 - **Solution (Adaptive Padding)**:
   - `pwa-asset-generator`를 사용하여 30여 종의 해상도별 이미지를 생성했습니다.
   - **Padding Logic**: 로고가 화면에 꽉 차지 않고 여백을 갖도록, HTML 기반 렌더링 시 **Portrait(세로) 30%**, **Landscape(가로) 20%**의 패딩을 주어 생성했습니다. 이를 통해 아이패드 등 태블릿 가로 모드에서도 로고가 잘리지 않고 안정적으로 표시됩니다.
-- **Build Config**: `next-pwa`가 Webpack에 의존하므로, 개발 및 빌드 환경 구성을 Webpack 생태계에 맞췄습니다. (Next.js 기본값 활용)
+- **Build Config**: `next-pwa`와 Turbopack의 호환성 문제 및 Vercel 배포 안정성을 위해, Dev/Build 스크립트에 `--webpack` 플래그를 명시적으로 적용했습니다.
 
 ### 13.2 Dynamic SEO & Open Graph (동적 SEO)
 
