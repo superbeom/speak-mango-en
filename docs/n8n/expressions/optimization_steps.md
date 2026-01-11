@@ -274,7 +274,10 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
      - Each entry in the `dialogue` array MUST include:
        - `"role"`: Value "A" or "B" to distinguish speakers.
        - `"en"`: The English sentence.
-       - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`. **Do NOT omit this object or any languages.**
+       - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
+       *   **Do NOT omit this object or any languages.**
+       *   **Target Language ONLY**: The value MUST contain ONLY the translated text in the target language.
+       *   **No Mixed Language (CRITICAL)**: **NEVER** include the original English text or the English expression in the translation. (e.g., **Bad**: "안녕하세요. Hello.", **Good**: "안녕하세요")
   8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to English, Japanese, Spanish, French, German, Russian, Chinese, and Arabic.
   9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
   10. **Quiz Logic (CRITICAL)**:

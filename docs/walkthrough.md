@@ -2,6 +2,11 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.8: 프롬프트 정교화 - 혼합 언어 방지 (2026-01-11)
+- **이슈**: 타겟 언어 번역에 영어 원문이 섞여 들어가는 현상 발견 (예: "Korean Text. English Text").
+- **해결**: `gemini_content_generator_prompt.txt` 및 `batch_dialogue_translation_prompt.txt`에 **"Target Language ONLY"** 및 **"No Mixed Language (CRITICAL)"** 제약 조건 추가.
+- **검증**: `docs/n8n/expressions/optimization_steps.md` 문서와 코드가 일치하는지 확인 및 검증 완료.
+
 ## v0.9.7: n8n Batch Backfill Optimization & Prompt Strengthening (2026-01-11)
 
 ### 1. Batch Processing for Backfill

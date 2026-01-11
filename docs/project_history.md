@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-11: Prompt Refinement (No Mixed Language)
+
+### ✅ 진행 사항
+
+- **프롬프트 강화 (혼합 언어 방지)**:
+  - 대화 번역 프롬프트에 "Target Language ONLY" 및 "No Mixed Language" 제약 조건을 엄격하게 적용하여, 번역 결과에 영어(English)가 유출되는 현상을 방지함.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 혼합 언어 방지 프롬프트를 추가했나?**
+- **A.** LLM이 간헐적으로 번역 결과에 원문(영어)을 포함하거나, 타겟 언어 외의 다른 언어를 섞어 출력하는 경우가 발생함. 이는 번역 품질을 저해하고 후처리 과정을 복잡하게 만들 수 있어, 프롬프트 레벨에서 명확한 제약을 두어 모델의 일관된 출력을 유도함.
+
 ## 2026-01-11: n8n Batch Backfill & Prompt Optimization (Dialogue Translations)
 
 ### ✅ 진행 사항

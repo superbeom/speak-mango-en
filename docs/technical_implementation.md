@@ -331,6 +331,13 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - **Parsing**: `batch_dialogue_translation_parse_code.js`에서 각 항목의 ID 매칭을 통해 대량의 응답을 정확한 원본 데이터에 병합.
   - **Result**: 처리 속도 95% 단축 및 토큰 효율성 증대.
 
+### 10.7 Strict Prompt Engineering (No Mixed Language)
+
+LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Leakage)" 현상(예: "안녕하세요. Hello.")을 방지하기 위해 모든 프롬프트 템플릿에 강력한 제약 헤더를 추가했습니다.
+- **No Mixed Language (CRITICAL)**: 타겟 값에 영어 텍스트를 포함하는 것을 명시적으로 금지합니다.
+- **Target Language ONLY**: 오직 번역된 결과물만 허용됨을 강조합니다.
+이러한 제약 조건은 메인 콘텐츠 생성기와 배치 번역 프롬프트 모두에 적용됩니다.
+
 ## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
 
 Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수성이 높은 디자인 시스템을 구축했습니다.

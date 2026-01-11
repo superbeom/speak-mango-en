@@ -22,6 +22,11 @@ Task: Translate the dialogue for the following list of English expressions into 
    - **Russian**: Friendly/Polite.
    - **Chinese**: Natural spoken.
    - **Arabic**: MSA (friendly).
+3. **Target Language ONLY & No Mixed Language (CRITICAL)**:
+   - The value for each language key MUST contain **ONLY the translated text**.
+   - **NEVER** include the original English text or the English expression in the translation value.
+   - **Bad**: "Bonjour. Hello."
+   - **Good**: "Bonjour"
 
 **Example Output Structure**:
 [
