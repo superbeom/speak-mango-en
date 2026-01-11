@@ -2,6 +2,14 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.2: 데이터베이스 스키마 리팩토링 (Database Schema Refactoring) (2026-01-11)
+
+### 1. Dialogue Data Normalization
+
+- **Structure Change**: 기존 `content` JSON 내부에 중첩되어 있던 대화문 데이터를 최상위 `dialogue` JSONB 컬럼으로 이동.
+- **Deduplication**: 영어 원문(`en`)과 오디오 경로(`audio_url`)가 각 언어별(`ko`, `ja` 등) 객체마다 반복 저장되던 비효율을 개선하여, 최상위 레벨에서 한 번만 저장하고 각 언어는 번역본(`translations`)만 관리하도록 구조 변경.
+- **Indexing**: 대화 내용 검색 성능 향상을 위해 `dialogue` 컬럼에 GIN 인덱스 추가.
+
 ## v0.9.1: n8n 콘텐츠 품질 고도화 (Content Quality Refinement) (2026-01-10)
 
 ### 1. Gemini Prompt Logic Improvement
