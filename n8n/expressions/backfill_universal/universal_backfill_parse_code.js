@@ -71,6 +71,9 @@ try {
                             turn.translations[lang] = newTurn.translations[lang];
                         }
                     });
+                } else {
+                    if (!mergedData._warnings) mergedData._warnings = [];
+                    mergedData._warnings.push(`Missing translations in dialogue turn ${index}`);
                 }
             }
         });

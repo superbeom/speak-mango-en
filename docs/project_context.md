@@ -213,7 +213,9 @@ speak-mango-en/
 
 ## 7. 주요 제약 사항 & 이슈
 
-- **Gemini Free Tier**: 분당 15회 요청 제한이 있으므로, n8n 루프 실행 시 `Wait` 노드를 통해 속도를 조절해야 함.
+- **Gemini Free Tier**: 분당 5회 요청 제한 대응.
+  - **Single Item**: `Wait` 노드를 통해 속도 조절.
+  - **Batching**: 20개씩 묶음 처리하여 API 호출 횟수를 최소화(1/20)하고 안정성 확보.
 - **Supabase Free Tier**: 데이터베이스 용량(500MB)을 고려하여 불필요한 로그 데이터는 주기적으로 정리 필요.
 
 ## 8. 수익화 전략 (Monetization Strategy)

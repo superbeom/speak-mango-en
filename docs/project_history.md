@@ -2,6 +2,26 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-11: n8n Batch Backfill & Prompt Optimization (Dialogue Translations)
+
+### ✅ 진행 사항
+
+- **Backfill Workflow 최적화 (Batch Processing)**:
+  - 기존의 단건 처리 방식에서 벗어나, `Batch Size: 20`으로 묶어 처리하는 `batch_dialogue_translation_prompt.txt` 및 파싱 로직(`batch_dialogue_translation_parse_code.js`) 구현.
+  - 이를 통해 대량의 데이터를 효율적으로 처리하고 API 호출 횟수를 획기적으로 절감함.
+- **Prompt Strengthening (Critical Logic)**:
+  - `08_gemini_content_generator_prompt.txt` 및 `optimization_steps.md`에 `**CRITICAL**` 경고 문구를 추가하여, 8개 언어(`ko, ja, es, fr, de, ru, zh, ar`) 번역이 절대 누락되지 않도록 제약 강화.
+- **Legacy Code Removal**:
+  - `optimization_steps.md`, `prepare_tts_requests.js`, `aggregate_tts_results.js`에서 구버전 데이터 경로(`data.content.ko.dialogue`)를 참조하던 레거시 코드를 최신 스키마(`data.dialogue`)로 일괄 업데이트.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Batch Processing을 도입했나?**
+- **A.** 112개의 기존 데이터를 하나씩 처리하면 112번의 LLM 호출과 오버헤드가 발생함. 20개씩 묶어서 처리함으로써 호출 횟수를 약 1/20로 줄이고 처리 속도를 대폭 향상시킴.
+
+**Q. 프롬프트에 `CRITICAL`을 추가한 이유는?**
+- **A.** LLM이 간헐적으로 일부 언어(특히 아랍어 등)를 누락하는 현상이 발견됨. 이를 "절대 생략 불가" 영역으로 명시하여 모델이 모든 언어를 강제로 출력하도록 유도함.
+
 ## 2026-01-11: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
 
 ### ✅ 진행 사항

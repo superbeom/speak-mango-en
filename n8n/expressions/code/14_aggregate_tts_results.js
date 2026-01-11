@@ -33,17 +33,10 @@ items.forEach((item) => {
     path = path.replace("speak-mango-en/", "");
   }
 
-  // 모든 언어의 대화문에 동일한 audio_url 주입
-  ["ko", "ja", "es"].forEach((lang) => {
-    if (
-      finalData.content &&
-      finalData.content[lang] &&
-      finalData.content[lang].dialogue &&
-      finalData.content[lang].dialogue[idx]
-    ) {
-      finalData.content[lang].dialogue[idx].audio_url = path;
-    }
-  });
+  // top-level dialogue에 audio_url 주입
+  if (finalData.dialogue && finalData.dialogue[idx]) {
+    finalData.dialogue[idx].audio_url = path;
+  }
 });
 
 return [{ json: finalData }];

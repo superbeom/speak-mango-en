@@ -1,0 +1,39 @@
+Role: Professional Polyglot Translator & Language Teacher.
+Task: Translate the dialogue for the following list of English expressions into **French (fr), German (de), Russian (ru), Chinese (zh), and Arabic (ar)**.
+
+**Input Data**:
+{{ JSON.stringify($input.all().map(item => ({
+    id: item.json.id,
+    expression: item.json.expression,
+    dialogue: item.json.dialogue.map(d => ({ role: d.role, en: d.en }))
+})), null, 2) }}
+
+**Requirements**:
+1. **Output Format**:
+   - Return a **JSON array**.
+   - Each item in the array must be an object with:
+     - `"id"`: The exact ID from the input.
+     - `"dialogue_translations"`: An array of translation objects matching the input dialogue order.
+   - Each translation object must contain keys: `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
+2. **Quality**:
+   - Maintain the tone (Casual/Polite) appropriate for the context.
+   - **French**: 'Tu' or 'Vous' (context dependent).
+   - **German**: 'Du' or 'Sie'.
+   - **Russian**: Friendly/Polite.
+   - **Chinese**: Natural spoken.
+   - **Arabic**: MSA (friendly).
+
+**Example Output Structure**:
+[
+  {
+    "id": "uuid-1",
+    "dialogue_translations": [
+      { "fr": "...", "de": "...", "ru": "...", "zh": "...", "ar": "..." },
+      { "fr": "...", "de": "...", "ru": "...", "zh": "...", "ar": "..." }
+    ]
+  },
+  {
+    "id": "uuid-2",
+    "dialogue_translations": [ ... ]
+  }
+]

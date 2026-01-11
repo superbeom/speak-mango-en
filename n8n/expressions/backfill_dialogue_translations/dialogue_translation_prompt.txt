@@ -1,0 +1,43 @@
+Role: Professional Polyglot Translator & Language Teacher.
+Task: Translate the English dialogue below into **French (fr), German (de), Russian (ru), Chinese (zh), and Arabic (ar)**.
+
+**Context**:
+Expression: {{ $json.expression }}
+Meaning: {{ $json.meaning.en }}
+Situation: {{ $json.content.en.situation }}
+
+**Dialogue to Translate**:
+{{ JSON.stringify($json.dialogue, null, 2) }}
+
+**Requirements**:
+1. **Tone**:
+   - **French**: Casual ('Tu') or Polite ('Vous') depending on context. Default to casual for friends.
+   - **German**: Casual ('Du') or Polite ('Sie').
+   - **Russian**: Friendly/Polite.
+   - **Chinese**: Natural spoken Chinese.
+   - **Arabic**: Modern Standard Arabic (MSA), friendly tone.
+2. **Format**:
+   - Output must be a **JSON object** with a single key `"dialogue_translations"`.
+   - `"dialogue_translations"` must be an **array** corresponding *exactly* to the input dialogue turns (same order).
+   - Each item in the array must be an object containing keys: `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
+3. **Quality**: Ensure the translations capture the nuance of the English text and fit the context of the expression.
+
+**Example Output**:
+{
+  "dialogue_translations": [
+    {
+      "fr": "Salut, ça va ?",
+      "de": "Hallo, wie geht's?",
+      "ru": "Привет, как дела?",
+      "zh": "嘿，你好吗？",
+      "ar": "مرحبا كيف حالك؟"
+    },
+    {
+      "fr": "Je vais bien, merci.",
+      "de": "Mir geht es gut, danke.",
+      "ru": "Я в порядке, спасибо.",
+      "zh": "我很好，谢谢。",
+      "ar": "أنا بخير شكرا لك."
+    }
+  ]
+}

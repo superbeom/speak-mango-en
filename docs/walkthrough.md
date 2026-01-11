@@ -2,6 +2,18 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.7: n8n Batch Backfill Optimization & Prompt Strengthening (2026-01-11)
+
+### 1. Batch Processing for Backfill
+- **Efficiency**: 대량의 Dialogue 번역 누락 건을 처리하기 위해 Batch Size 20 기반의 처리 로직 도입.
+- **Workflow**: `batch_dialogue_translation_prompt.txt` 및 `batch_dialogue_translation_parse_code.js` 구현.
+
+### 2. Prompt Strictness
+- **Critical Warning**: `08_gemini_content_generator_prompt.txt`에 8개 언어(`ko, ja, es, fr, de, ru, zh, ar`) 필수 포함 규칙을 `**CRITICAL**` 키워드로 강조하여 누락 방지.
+
+### 3. Legacy Code Cleanup
+- **Schema Sync**: TTS 관련 코드(`prepare_tts_requests.js`, `aggregate_tts_results.js`)에서 구버전 `content.ko.dialogue` 경로를 제거하고 `data.dialogue`로 표준화.
+
 ## v0.9.6: 하드코딩된 언어 문자열 제거 및 상수화 (2026-01-11)
 
 ### 1. Hardcoded String Refactoring

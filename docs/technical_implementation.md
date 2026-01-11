@@ -319,7 +319,17 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
       - 동작: `meaning`, `content`는 타겟 언어(6개국) 전체 덮어쓰기. `dialogue`는 영문 텍스트 갱신 + 신규 번역 병합.
   2.  **Supplementary Strategy (`supplementary_backfill_parse_code.js`)**:
       - 목적: 검증된 영문 데이터 보존 + 신규 언어 확장.
-      - 동작: `en` 필드 업데이트를 원천 차단. 생성된 결과(`dialogue_translations`)에서 신규 언어 키만 추출하여 기존 객체에 병합(`Object.assign` 개념).
+      - 동작: `en` 필드 업데이트를 차단하고 신규 언어만 주입하는 로직.
+      - **주의**: 기존 영어 데이터가 보존됩니다.
+
+### 10.6 Batch Processing Optimization (Backfill Efficiency)
+
+- **Context**: 100개 이상의 데이터를 백필할 때 단건 처리(1-by-1)는 시간과 API 호출 비용 측면에서 비효율적임.
+- **Solution**:
+  - **Batching**: n8n Loop 노드의 Batch Size를 20으로 설정하여 데이터를 묶음 처리.
+  - **Prompting**: `batch_dialogue_translation_prompt.txt`를 통해 한 번의 요청으로 20개의 아이템에 대한 번역 결과를 JSON Array로 반환받음.
+  - **Parsing**: `batch_dialogue_translation_parse_code.js`에서 각 항목의 ID 매칭을 통해 대량의 응답을 정확한 원본 데이터에 병합.
+  - **Result**: 처리 속도 95% 단축 및 토큰 효율성 증대.
 
 ## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
 

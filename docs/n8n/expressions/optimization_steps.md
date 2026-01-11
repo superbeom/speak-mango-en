@@ -274,7 +274,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
      - Each entry in the `dialogue` array MUST include:
        - `"role"`: Value "A" or "B" to distinguish speakers.
        - `"en"`: The English sentence.
-       - `"translations"`: An object containing `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"` translations of the English sentence.
+       - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`. **Do NOT omit this object or any languages.**
   8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to English, Japanese, Spanish, French, German, Russian, Chinese, and Arabic.
   9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
   10. **Quiz Logic (CRITICAL)**:
@@ -479,25 +479,41 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
 ```javascript
 const items = $input.all();
 let results = [];
+
 items.forEach((item, itemIndex) => {
   const data = item.json;
-  const dialogueEntries = data.content?.ko?.dialogue || [];
+
+  // top-level dialogue 추출
+  const dialogueEntries = data.dialogue || [];
   const expressionId = data.id;
+
   dialogueEntries.forEach((entry, lineIndex) => {
     const rawText = entry.en || "";
     const role = (entry.role || "A").toUpperCase();
+
+    // 텍스트 정제
+    const cleanedText = rawText.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+
+    // 역할별 목소리 할당
     const voice = role === "B" ? "troy" : "hannah";
+
     results.push({
       json: {
-        ...data,
-        tts_input: rawText.replace(/\n/g, " ").trim(),
+        ...data, // 원본 데이터 유지
+        tts_input: cleanedText.substring(0, 200),
         tts_voice: voice,
         tts_line_index: lineIndex,
+        tts_model: "canopylabs/orpheus-v1-english",
+        tts_format: "wav",
+        tts_endpoint: "https://api.groq.com/openai/v1/audio/speech",
+        // Storage 저장을 위한 경로 확정
         storage_path: `expressions/${expressionId}/${lineIndex}.wav`,
       },
+      pairedItem: { item: itemIndex },
     });
   });
 });
+
 return results;
 ```
 
@@ -546,7 +562,52 @@ return results;
 업로드된 오디오 파일들의 경로(`storage_path`)를 원본 데이터 구조의 각 대화문(`dialogue`) 항목에 다시 주입하고, 하나로 합칩니다.
 
 - **Name**: `Aggregate TTS Results`
-- **Code**: `n8n/aggregate_tts_results.js` 파일의 코드 입력
+- **Code**:
+
+  ```javascript
+  // n8n Code Node: Aggregate TTS Results
+  // 분리되었던 대화문 라인들을 다시 하나로 합치고 audio_url을 주입합니다.
+
+  const items = $input.all();
+  if (items.length === 0) return [];
+
+  // 1. 원본 데이터 복원 (Prepare TTS Requests 노드의 결과 참조)
+  const firstItem = items[0];
+  const parentItemIndex = firstItem.pairedItem.item;
+  const parentData = $items("Prepare TTS Requests")[parentItemIndex].json;
+
+  // 원본 데이터 복제 (deep copy)
+  let finalData = JSON.parse(JSON.stringify(parentData));
+
+  // 2. 불필요한 임시 필드 일괄 제거 (tts_ 로 시작하는 모든 필드)
+  Object.keys(finalData).forEach((key) => {
+    if (key.startsWith("tts_") || key === "storage_path") {
+      delete finalData[key];
+    }
+  });
+
+  // 3. 오디오 URL 주입
+  items.forEach((item) => {
+    const pIdx = item.pairedItem.item;
+    const originalReq = $items("Prepare TTS Requests")[pIdx].json;
+
+    const idx = originalReq.tts_line_index;
+    // Upload to Storage 결과(Key)에서 경로 추출
+    let path = item.json.Key || originalReq.storage_path;
+
+    // 버킷 명칭(speak-mango-en/)이 포함되어 있다면 제거하여 경로 정규화
+    if (path.startsWith("speak-mango-en/")) {
+      path = path.replace("speak-mango-en/", "");
+    }
+
+    // top-level dialogue에 audio_url 주입
+    if (finalData.dialogue && finalData.dialogue[idx]) {
+      finalData.dialogue[idx].audio_url = path;
+    }
+  });
+
+  return [{ json: finalData }];
+  ```
 - **역할**: 분산된 여러 아이템을 다시 1개의 아이템으로 병합하여 최종 저장을 준비합니다.
 
 ### 15단계: Supabase Insert 설정
