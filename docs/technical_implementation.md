@@ -310,6 +310,17 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - 워크플로우 로직에 대한 버전 관리가 용이해집니다.
   - 프롬프트 변경 이력을 추적하기 쉬워지며, 여러 워크플로우에서 동일한 코드를 재사용할 수 있는 기반이 됩니다.
 
+### 10.5 Backfill & Multi-Language Merge Strategy (백필 병합 전략)
+
+- **Challenge**: 이미 데이터가 존재하는 상태에서 새로운 언어(독/프/러/중/아)를 추가할 때, 기존 데이터(KO, JA, ES) 및 검증된 영문(EN) 데이터를 어떻게 처리할 것인가?
+- **Solution (Dual Strategy)**:
+  1.  **Universal Strategy (`universal_backfill_parse_code.js`)**:
+      - 목적: 영문 콘텐츠 리뉴얼 또는 초기 데이터 생성.
+      - 동작: `meaning`, `content`는 타겟 언어(6개국) 전체 덮어쓰기. `dialogue`는 영문 텍스트 갱신 + 신규 번역 병합.
+  2.  **Supplementary Strategy (`supplementary_backfill_parse_code.js`)**:
+      - 목적: 검증된 영문 데이터 보존 + 신규 언어 확장.
+      - 동작: `en` 필드 업데이트를 원천 차단. 생성된 결과(`dialogue_translations`)에서 신규 언어 키만 추출하여 기존 객체에 병합(`Object.assign` 개념).
+
 ## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
 
 Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수성이 높은 디자인 시스템을 구축했습니다.

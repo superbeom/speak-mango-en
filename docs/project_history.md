@@ -2,6 +2,27 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-11: Universal Backfill System 구축 (Multi-Language Expansion)
+
+### ✅ 진행 사항
+
+- **Dual Backfill Strategy (이원화 전략) 구현**:
+  - `universal_backfill_workflow.json`에 두 가지 병합 전략을 적용할 수 있도록 로직 분리.
+  - **Universal Mode**: 영문(`en`)을 포함한 6개 국어(`fr`, `de`, `ru`, `zh`, `ar`) 동시 생성 및 덮어쓰기.
+  - **Supplementary Mode**: 기존 영문 데이터는 유지하고 신규 5개 국어만 안전하게 병합.
+- **코드 모듈화**: 병합 로직을 `universal_backfill_parse_code.js`와 `supplementary_backfill_parse_code.js`로 분리하여 유지보수성 향상.
+- **프롬프트 표준화**: 모든 프롬프트의 언어 지원 범위를 9개 국어(EN, KO, JA, ES, FR, DE, RU, ZH, AR)로 통일하고 검증 규칙 강화.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Universal과 Supplementary 전략을 나눴나?**
+- **A.** 데이터의 상태에 따라 필요한 작업이 다르기 때문임.
+  1. **Universal**: 영문 콘텐츠 자체도 리뉴얼이 필요하거나, 초기 데이터가 부실할 때 전체를 새로 덮어써야 함.
+  2. **Supplementary**: 이미 검증된 영문 콘텐츠가 있고, 단지 새로운 언어만 "끼워 넣고" 싶을 때 기존 데이터를 보호해야 함.
+
+**Q. 병합 로직을 별도 JS 파일로 분리한 이유는?**
+- **A.** n8n 노드 내에서 코드를 수정하는 실수를 방지하고, 운영자가 상황에 맞게 파일 내용을 복사-붙여넣기 하는 것만으로 전략을 전환할 수 있도록 하여 운영 안정성을 높임.
+
 ## 2026-01-11: 데이터베이스 스키마 리팩토링 (Database Schema Refactoring)
 
 ### ✅ 진행 사항

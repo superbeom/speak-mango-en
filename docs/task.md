@@ -61,6 +61,7 @@
 - [x] **i18n**: `SupportedLanguage` 상수 도입 및 타입 안전성 리팩토링
 - [x] **Automation**: n8n 프롬프트 고도화 (영어 톤 매너 정의 및 퀴즈 정답 랜덤화)
 - [x] **Architecture**: Dialogue 데이터 정규화(Top-level Column) 및 GIN 인덱스 적용
+- [x] **Automation**: Universal Backfill System 구축 (Dual Strategy: Universal & Supplementary)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

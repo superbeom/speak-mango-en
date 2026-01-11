@@ -28,8 +28,8 @@ export interface I18nContent {
 export interface DialogueItem {
   role: string;
   en: string;
+  audio_url: string;
   translations: I18nTranslation;
-  audio_url?: string;
 }
 
 export interface Expression {

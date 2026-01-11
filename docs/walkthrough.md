@@ -2,6 +2,22 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.3: Universal Backfill System 구축 (Multi-Language Expansion) (2026-01-11)
+
+### 1. Dual Backfill Strategy (이원화 전략)
+
+- **Problem**: 기존 데이터에 새로운 언어(FR, DE, RU, ZH, AR)를 추가할 때, 이미 검증된 영어 콘텐츠(`en`)까지 덮어쓰여지는 위험과, 반대로 영어 콘텐츠 리뉴얼이 필요한 상황이 혼재.
+- **Solution**: 상황에 따라 선택 가능한 두 가지 전략으로 분리.
+  - **Universal Mode**: 영문(`en`)을 포함한 6개 국어를 동시 생성 및 갱신. (기존 `ko`, `ja`, `es`는 보존)
+  - **Supplementary Mode**: 기존 영문 데이터는 철저히 보존하고, 신규 5개 국어만 생성하여 안전하게 병합.
+
+### 2. Logic Separation (코드 분리)
+
+- **Files**:
+  - `universal_backfill_parse_code.js`: `en` 필드 업데이트를 허용하는 병합 로직.
+  - `supplementary_backfill_parse_code.js`: `en` 필드 업데이트를 차단하고 신규 언어만 주입하는 로직.
+- **Workflow**: `Parse Content JSON` 노드의 자바스크립트 코드를 별도 파일로 관리하여, 운영자가 전략에 맞춰 코드를 손쉽게 교체할 수 있도록 개선.
+
 ## v0.9.2: 데이터베이스 스키마 리팩토링 (Database Schema Refactoring) (2026-01-11)
 
 ### 1. Dialogue Data Normalization
