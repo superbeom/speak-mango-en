@@ -104,31 +104,33 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
                 </div>
 
                 {/* Translation Area */}
-                <div
-                    className={cn(
-                        "mt-1 transition-all duration-300",
-                        isTranslationBlurred ? "blur-[3px] select-none" : "blur-0",
-                        // Request 2: If blurred (and likely in blind mode), show as disabled pointer or default?
-                        // If it's pure blind mode, we blocked click above.
-                        isTranslationBlurred && isEnglishBlurred && "opacity-60 cursor-default"
-                    )}
-                    aria-hidden={isTranslationBlurred}
-                >
-                    <p
-                        onClick={handleTranslationClick}
+                {item.translation && (
+                    <div
                         className={cn(
-                            "text-xs sm:text-sm transition-all duration-300 select-none",
-                            // Use canClickTranslation to determine cursor.
-                            // If exposed (!blurred), it's pointer.
-                            // If blurred, check canClickTranslation: if true (Partial), pointer. If false (Strict), default.
-                            (!isTranslationBlurred || canClickTranslation) ? "cursor-pointer" : "cursor-default",
-                            variant === "default" ? "text-zinc-500" : "text-blue-100",
+                            "mt-1 transition-all duration-300",
+                            isTranslationBlurred ? "blur-[3px] select-none" : "blur-0",
+                            // Request 2: If blurred (and likely in blind mode), show as disabled pointer or default?
+                            // If it's pure blind mode, we blocked click above.
+                            isTranslationBlurred && isEnglishBlurred && "opacity-60 cursor-default"
                         )}
-                        title={isTranslationBlurred ? "Hidden" : "Click to blur"}
+                        aria-hidden={isTranslationBlurred}
                     >
-                        {item.translation}
-                    </p>
-                </div>
+                        <p
+                            onClick={handleTranslationClick}
+                            className={cn(
+                                "text-xs sm:text-sm transition-all duration-300 select-none",
+                                // Use canClickTranslation to determine cursor.
+                                // If exposed (!blurred), it's pointer.
+                                // If blurred, check canClickTranslation: if true (Partial), pointer. If false (Strict), default.
+                                (!isTranslationBlurred || canClickTranslation) ? "cursor-pointer" : "cursor-default",
+                                variant === "default" ? "text-zinc-500" : "text-blue-100",
+                            )}
+                            title={isTranslationBlurred ? "Hidden" : "Click to blur"}
+                        >
+                            {item.translation}
+                        </p>
+                    </div>
+                )}
             </div >
         );
     }

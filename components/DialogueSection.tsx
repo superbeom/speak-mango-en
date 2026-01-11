@@ -2,7 +2,9 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Play, Square, Loader2, Headphones, Eye, EyeOff } from "lucide-react";
+import { DialogueItem as DialogueItemType } from "@/types/database";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { SupportedLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { DialogueAudioButtonHandle } from "./DialogueAudioButton";
 import DialogueItem from "./DialogueItem";
@@ -15,6 +17,15 @@ interface LearningToggleProps {
   icon: React.ReactNode;
   isMobile: boolean;
   activeColor?: string; // Optional if we want different active colors in future
+}
+
+interface DialogueSectionProps {
+  title: string;
+  dialogue: DialogueItemType[];
+  locale: string;
+  playAllLabel?: string;
+  stopLabel?: string;
+  loadingLabel?: string;
 }
 
 function LearningToggle({
@@ -50,24 +61,10 @@ function LearningToggle({
   );
 }
 
-
-interface DialogueItemData {
-  en: string;
-  translation: string;
-  audio_url?: string;
-}
-
-interface DialogueSectionProps {
-  title: string;
-  dialogue: DialogueItemData[];
-  playAllLabel?: string;
-  stopLabel?: string;
-  loadingLabel?: string;
-}
-
 export default function DialogueSection({
   title,
   dialogue,
+  locale,
   playAllLabel = "Play All",
   stopLabel = "Stop",
   loadingLabel = "Loading...",
@@ -274,43 +271,53 @@ export default function DialogueSection({
             isMobile={!!isMobile}
           />
 
-          <LearningToggle
-            isActive={isAllRevealed}
-            // Request 2: "Soft Disabled" look if in Blind/Partial mode
-            isSoftDisabled={viewMode !== 'exposed'}
-            onClick={handleToggleShowAll}
-            title={isAllRevealed ? "Hide Translations" : "Show Translations"}
-            icon={isAllRevealed ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            isMobile={!!isMobile}
-          />
+          {locale !== SupportedLanguage.EN && (
+            <LearningToggle
+              isActive={isAllRevealed}
+              // Request 2: "Soft Disabled" look if in Blind/Partial mode
+              isSoftDisabled={viewMode !== 'exposed'}
+              onClick={handleToggleShowAll}
+              title={isAllRevealed ? "Hide Translations" : "Show Translations"}
+              icon={isAllRevealed ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              isMobile={!!isMobile}
+            />
+          )}
         </div>
       </div>
 
       <div className="space-y-4">
-        {dialogue.map((chat, idx) => (
-          <div
-            key={idx}
-            className={`flex flex-col ${idx % 2 === 0 ? "items-start" : "items-end"}`}
-          >
-            <DialogueItem
-              ref={(el) => {
-                buttonRefs.current[idx] = el;
-              }}
-              item={chat}
-              isEnglishBlurred={viewMode === 'blind' || (viewMode === 'partial' && !revealedEnglishIndices.has(idx))}
-              isTranslationBlurred={viewMode === 'blind' || !revealedIndices.has(idx)}
-              canClickTranslation={viewMode !== 'blind'}
-              onToggleReveal={() => handleManualToggle(idx)}
-              onEnglishClick={() => handleEnglishClick(idx)}
-              variant={idx % 2 === 0 ? "default" : "blue"}
-              onPlay={() => handleManualPlay(idx)}
-              onEnded={() => handleLineEnded(idx)}
-              onReady={() => handleAudioReady(idx)}
-              isActive={isAutoPlaying && playingIndex === idx}
-              isMobile={!!isMobile}
-            />
-          </div>
-        ))}
+        {dialogue.map((chat, idx) => {
+          const resolvedItem = {
+            en: chat.en,
+            translation: chat.translations[locale] || "",
+            audio_url: chat.audio_url,
+          };
+
+          return (
+            <div
+              key={idx}
+              className={`flex flex-col ${idx % 2 === 0 ? "items-start" : "items-end"}`}
+            >
+              <DialogueItem
+                ref={(el) => {
+                  buttonRefs.current[idx] = el;
+                }}
+                item={resolvedItem}
+                isEnglishBlurred={viewMode === 'blind' || (viewMode === 'partial' && !revealedEnglishIndices.has(idx))}
+                isTranslationBlurred={viewMode === 'blind' || !revealedIndices.has(idx)}
+                canClickTranslation={viewMode !== 'blind'}
+                onToggleReveal={() => handleManualToggle(idx)}
+                onEnglishClick={() => handleEnglishClick(idx)}
+                variant={idx % 2 === 0 ? "default" : "blue"}
+                onPlay={() => handleManualPlay(idx)}
+                onEnded={() => handleLineEnded(idx)}
+                onReady={() => handleAudioReady(idx)}
+                isActive={isAutoPlaying && playingIndex === idx}
+                isMobile={!!isMobile}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   );

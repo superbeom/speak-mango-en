@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Expression } from "@/types/database";
 import { useEnableHover } from "@/hooks/useIsMobile";
-import { getDictionary } from "@/i18n";
+import { getDictionary, SupportedLanguage } from "@/i18n";
 import { SCROLL_RESET_KEY } from "@/constants";
 import { cn } from "@/lib/utils";
 import { ROUTES, getHomeWithFilters } from "@/lib/routes";
@@ -36,8 +36,8 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
   const enableHover = useEnableHover();
   const dict = getDictionary(locale);
 
-  const content = item.content[locale] || item.content["ko"];
-  const meaning = item.meaning[locale] || item.meaning["ko"];
+  const content = item.content[locale] || item.content[SupportedLanguage.EN];
+  const meaning = item.meaning[locale] || item.meaning[SupportedLanguage.EN];
 
   // UI Config 통합 가져오기
   const { domain, category } = getExpressionUIConfig(

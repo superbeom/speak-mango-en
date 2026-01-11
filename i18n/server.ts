@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { getDictionary, LOCALE_DETAILS, type Locale } from "./index";
+import { getDictionary, LOCALE_DETAILS, SupportedLanguage, type Locale } from "./index";
 
 /**
  * 서버 컴포넌트에서 현재 요청의 언어를 감지합니다.
@@ -8,7 +8,7 @@ import { getDictionary, LOCALE_DETAILS, type Locale } from "./index";
 export async function getLocale(): Promise<Locale> {
   const headerList = await headers();
   const locale = headerList.get("x-locale") as Locale;
-  return locale || "en";
+  return locale || SupportedLanguage.EN;
 }
 
 /**
@@ -17,7 +17,7 @@ export async function getLocale(): Promise<Locale> {
  */
 export async function getI18n() {
   const locale = await getLocale();
-  const fullLocale = LOCALE_DETAILS[locale]?.ogLocale || LOCALE_DETAILS["en"].ogLocale;
+  const fullLocale = LOCALE_DETAILS[locale]?.ogLocale || LOCALE_DETAILS[SupportedLanguage.EN].ogLocale;
   const dict = getDictionary(locale);
   return { locale, fullLocale, dict };
 }

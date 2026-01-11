@@ -1,4 +1,4 @@
-import { LOCALE_DETAILS, type Locale } from "./index";
+import { LOCALE_DETAILS, SupportedLanguage, type Locale } from "./index";
 
 /**
  * 날짜를 로케일에 맞는 문자열로 포맷팅합니다.
@@ -10,12 +10,12 @@ import { LOCALE_DETAILS, type Locale } from "./index";
  */
 export function formatDate(
   date: string | Date,
-  locale: Locale | string = "en",
+  locale: Locale | string = SupportedLanguage.EN,
   options?: Intl.DateTimeFormatOptions
 ) {
   const d = typeof date === "string" ? new Date(date) : date;
   // LOCALE_DETAILS에서 해당 로케일의 태그를 찾고, 없으면 기본값 사용
-  const targetLocale = (locale as Locale) in LOCALE_DETAILS ? (locale as Locale) : "en";
+  const targetLocale = (locale as Locale) in LOCALE_DETAILS ? (locale as Locale) : SupportedLanguage.EN;
   const langTag = LOCALE_DETAILS[targetLocale].tag;
 
   // 기본 옵션 설정 (상세 페이지용 스타일)

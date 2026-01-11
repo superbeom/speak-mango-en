@@ -89,7 +89,7 @@ export function isSupportedLocale(lang: string | null | undefined): lang is Loca
 export function getContentLocale(
   data: Record<string, unknown> | undefined | null,
   locale: string,
-  fallback = "en"
+  fallback = SupportedLanguage.EN
 ): string {
   if (!data) return fallback;
   if (locale === fallback) return fallback;
@@ -108,5 +108,5 @@ export const getDictionary = (locale: string) => {
     return dictionaries[locale as Locale];
   }
   // 기본 Fallback은 영어로 설정 (글로벌 대응)
-  return dictionaries["en"];
+  return dictionaries[SupportedLanguage.EN];
 };

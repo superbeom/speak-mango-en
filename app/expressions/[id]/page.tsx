@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SUPPORTED_LANGUAGES, getContentLocale } from "@/i18n";
+import { SUPPORTED_LANGUAGES, getContentLocale, SupportedLanguage } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { getI18n } from "@/i18n/server";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
@@ -74,8 +74,8 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
   const { locale, dict } = await getI18n();
 
   // 감지된 언어의 데이터가 있는지 확인, 없으면 영어(en)를 기본값으로 사용
-  const content = expression.content[getContentLocale(expression.content, locale)] || expression.content["en"];
-  const meaning = expression.meaning[getContentLocale(expression.meaning, locale)] || expression.meaning["en"];
+  const content = expression.content[getContentLocale(expression.content, locale)] || expression.content[SupportedLanguage.EN];
+  const meaning = expression.meaning[getContentLocale(expression.meaning, locale)] || expression.meaning[SupportedLanguage.EN];
 
   if (!content || !meaning) {
     notFound();
@@ -174,7 +174,8 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 {/* Dialogue */}
                 <DialogueSection
                   title={dict.detail.dialogueTitle}
-                  dialogue={content?.dialogue || []}
+                  dialogue={expression.dialogue || []}
+                  locale={locale}
                   playAllLabel={dict.detail.playAll}
                   stopLabel={dict.detail.stop}
                   loadingLabel={dict.common.loading}

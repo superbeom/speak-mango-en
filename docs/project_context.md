@@ -179,6 +179,8 @@ speak-mango-en/
 
 ### Internationalization (i18n)
 - **중앙 관리**: 모든 다국어 설정은 `i18n/index.ts`에서 관리합니다. 언어별 코드, 표시명, OG용 로케일 등은 `LOCALE_DETAILS` 상수에 정의되어 있습니다.
+- **지원 언어 (9개 국어)**: EN, KO, JA, ES, FR, DE, RU, ZH, AR.
+- **Type Safety**: `Dictionary` 타입을 `en.ts` 기준으로 추론하여 모든 언어 파일의 키 일관성을 강제합니다. 코드 내에서 'en', 'ko' 등 하드코딩된 문자열 대신 `SupportedLanguage` 상수를 사용해야 합니다.
 - **새로운 언어 추가 시 절차**:
   1. `i18n/locales/{lang}.ts` 딕셔너리 파일 생성.
   2. `i18n/index.ts`의 `SupportedLanguage` 상수에 새 언어 코드 추가.

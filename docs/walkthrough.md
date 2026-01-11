@@ -2,6 +2,15 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.6: 하드코딩된 언어 문자열 제거 및 상수화 (2026-01-11)
+
+### 1. Hardcoded String Refactoring
+
+- **Removal of Hardcoded Strings**:
+  - codebase 전반(components, i18n utilities, pages)에 걸쳐 `'en'`, `'ko'` 등으로 산재해 있던 하드코딩된 언어 문자열을 `SupportedLanguage` 상수로 대체.
+  - `i18n/format.ts`, `i18n/server.ts`, `app/expressions/[id]/page.tsx`, `components/ExpressionCard.tsx` 등 프로젝트 전반의 로케일 로직을 정교화.
+- **Logic Standardization**: 특정 언어에 의존적이던 로직을 제거하고 `SupportedLanguage.EN`을 명시적 Fallback으로 사용하도록 통일하여 오타 방지 및 중앙 집중식 관리 실현.
+
 ## v0.9.5: 5개국어 추가 및 i18n 타입 안정성 강화 (2026-01-11)
 
 ### 1. Language Expansion (9 Languages Supported)

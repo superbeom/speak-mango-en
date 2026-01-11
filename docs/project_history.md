@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-11: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
+
+### ✅ 진행 사항
+
+- **하드코딩 제거 (Removal of Hardcoded Strings)**:
+  - codebase 전반(components, i18n utilities, pages)에 걸쳐 `'en'`, `'ko'` 등으로 산재해 있던 하드코딩된 언어 문자열을 `SupportedLanguage` 상수로 대체.
+  - 이를 통해 로케일 코드 변경 시 중앙(`i18n/index.ts`)에서 일괄 제어가 가능하도록 구조 개선.
+- **컴포넌트 로직 정교화**:
+  - `ExpressionCard`, `DialogueSection` 등에서 특정 언어에 의존적이던 로직을 제거하고 `SupportedLanguage.EN`을 명시적 Fallback으로 사용하도록 통일.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 하드코딩된 문자열을 상수로 바꿨나?**
+- **A.** 9개 국어로 확장됨에 따라 `'en'`, `'ko'` 같은 문자열이 오타로 인해 버그를 유발할 가능성이 높아짐. `SupportedLanguage` enum/object를 사용하면 IDE의 자동 완성을 지원받을 수 있고, 휴먼 에러를 원천 차단할 수 있음.
+
 ## 2026-01-11: 5개국어 추가 및 i18n 타입 안정성 강화 (v0.9.5)
 
 ### ✅ 진행 사항

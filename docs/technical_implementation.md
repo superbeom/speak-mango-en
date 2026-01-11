@@ -122,11 +122,11 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 
 외부 라이브러리(`next-intl` 등) 없이 Next.js Middleware와 Server Components만으로 구현한 경량화된 다국어 시스템입니다.
 
-### 4.1 Proxy Locale Detection (formerly Middleware)
+### 4.1 Multi-Language Expansion (Proxy & Detection)
 
 - **File**: `proxy.ts` (Next.js 16+ Standard)
-- **Logic**: 브라우저의 `Accept-Language` 헤더를 파싱하여 `ko`, `en`, `ja`, `es` 중 가장 적합한 언어를 선택하고, 요청 헤더에 `x-locale`을 추가하여 서버로 전달합니다.
-- **Note**: Next.js 16의 보안 권고 사항(`CVE-2025-29927`) 및 아키텍처 변경에 따라 기존 `middleware.ts`를 `proxy.ts`로 전환했습니다. 이는 단순 네트워크 바운더리 역할임을 명확히 합니다.
+- **Logic**: 브라우저의 `Accept-Language` 헤더를 파싱하여 **지원되는 9개 국어(EN, KO, JA, ES, FR, DE, RU, ZH, AR)** 중 가장 적합한 언어를 선택하고, 요청 헤더에 `x-locale`을 추가하여 서버로 전달합니다.
+- **Note**: Next.js 16의 보안 권고 사항(`CVE-2025-29927`) 및 아키텍처 변경에 따라 기존 `middleware.ts`를 `proxy.ts`로 전환했습니다.
 
 ### 4.2 Server-Side Dictionary Loading
 
@@ -406,9 +406,12 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 ### 13.3 Type-Safe i18n Architecture (타입 안전 i18n)
 
 - **Total 9 Languages**: EN, KO, JA, ES, FR, DE, RU, ZH, AR 지원.
-- **Strict Dictionary Inference**:
+- **Inference & Maintenance**:
   - `export type Dictionary = typeof en;`을 통해 영어 원문(`en.ts`)의 키 구조를 타입으로 추론합니다.
   - `dictionaries` 객체에 `Record<SupportedLanguage, Dictionary>` 타입을 강제하여, 다른 언어 파일에서 키가 하나라도 누락되면 빌드 에러를 발생시킵니다.
+- **Hardcoded String Removal (상수 기반 관리)**:
+  - 기존 코드 전반에 산재해 있던 `'en'`, `'ko'` 등 리터럴 문자열을 `SupportedLanguage.EN`, `SupportedLanguage.KO` 등 상수로 대체했습니다.
+  - 이를 통해 로케일 로직의 오타를 원천 차단하고 중앙 집중식 관리를 실현합니다.
 - **Structure**:
   - `SupportedLanguage`: 언어 코드의 Single Source of Truth.
   - `LOCALE_DETAILS`: 각 언어별 메타 정보(라벨, 태그, OG Locale)를 매핑한 객체.
