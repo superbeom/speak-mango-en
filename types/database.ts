@@ -9,6 +9,11 @@ export interface I18nTranslation {
   ko: string;
   ja: string;
   es: string;
+  fr: string;
+  de: string;
+  ru: string;
+  zh: string;
+  ar: string;
   [key: string]: string | undefined;
 }
 
@@ -22,6 +27,11 @@ export interface I18nContent {
   ko: ExpressionContent;
   ja: ExpressionContent;
   es: ExpressionContent;
+  fr: ExpressionContent;
+  de: ExpressionContent;
+  ru: ExpressionContent;
+  zh: ExpressionContent;
+  ar: ExpressionContent;
   [key: string]: ExpressionContent | undefined;
 }
 

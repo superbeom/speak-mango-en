@@ -405,9 +405,12 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 ### 13.3 Type-Safe i18n Architecture (타입 안전 i18n)
 
-- **Refactoring**: 기존 문자열('ko', 'en') 기반 로직을 `SupportedLanguage` 상수 기반으로 전면 리팩토링했습니다.
+- **Total 9 Languages**: EN, KO, JA, ES, FR, DE, RU, ZH, AR 지원.
+- **Strict Dictionary Inference**:
+  - `export type Dictionary = typeof en;`을 통해 영어 원문(`en.ts`)의 키 구조를 타입으로 추론합니다.
+  - `dictionaries` 객체에 `Record<SupportedLanguage, Dictionary>` 타입을 강제하여, 다른 언어 파일에서 키가 하나라도 누락되면 빌드 에러를 발생시킵니다.
 - **Structure**:
   - `SupportedLanguage`: 언어 코드의 Single Source of Truth.
   - `LOCALE_DETAILS`: 각 언어별 메타 정보(라벨, 태그, OG Locale)를 매핑한 객체.
   - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
-- **Benefit**: 새로운 언어(예: 스페인어) 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 확장성과 안정성이 획기적으로 향상되었습니다.
+- **Benefit**: 새로운 언어 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 안정적인 확장이 가능합니다.

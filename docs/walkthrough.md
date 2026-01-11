@@ -2,6 +2,18 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.5: 5개국어 추가 및 i18n 타입 안정성 강화 (2026-01-11)
+
+### 1. Language Expansion (9 Languages Supported)
+
+- **New Locales**: FR (French), DE (German), RU (Russian), ZH (Chinese), AR (Arabic) 추가.
+- **Implementation**: `i18n/locales/`에 각 언어별 번역 파일 생성 및 `LOCALE_DETAILS` 메타데이터 업데이트.
+
+### 2. Strict Type Safety
+
+- **Dictionary Logic**: `en.ts`를 기준(Source of Truth)으로 삼아 `Dictionary` 타입을 정의.
+- **Enforcement**: `i18n/index.ts`에서 모든 언어 팩이 `Dictionary` 인터페이스를 완벽히 준수하도록 강제하여, 키 누락 시 컴파일 에러 발생.
+
 ## v0.9.3: Universal Backfill System 구축 (Multi-Language Expansion) (2026-01-11)
 
 ### 1. Dual Backfill Strategy (이원화 전략)

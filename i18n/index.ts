@@ -2,6 +2,11 @@ import { en } from "./locales/en";
 import { ko } from "./locales/ko";
 import { ja } from "./locales/ja";
 import { es } from "./locales/es";
+import { fr } from "./locales/fr";
+import { de } from "./locales/de";
+import { ru } from "./locales/ru";
+import { zh } from "./locales/zh";
+import { ar } from "./locales/ar";
 
 // 딕셔너리 객체
 // 언어 상수 정의 (Single Source of Truth)
@@ -10,16 +15,30 @@ export const SupportedLanguage = {
   KO: "ko",
   JA: "ja",
   ES: "es",
+  FR: "fr",
+  DE: "de",
+  RU: "ru",
+  ZH: "zh",
+  AR: "ar",
 } as const;
 
 export type SupportedLanguage = (typeof SupportedLanguage)[keyof typeof SupportedLanguage];
 
 // 딕셔너리 객체
-const dictionaries = {
+// 기준(Source of Truth)이 되는 'en' 딕셔너리의 타입을 추론하여 모든 언어에 강제합니다.
+// 이를 통해 다른 언어 파일에서 키가 누락되면 TS 에러가 발생하여 빌드 타임 안전성을 보장합니다.
+export type Dictionary = typeof en;
+
+const dictionaries: Record<SupportedLanguage, Dictionary> = {
   [SupportedLanguage.EN]: en,
   [SupportedLanguage.KO]: ko,
   [SupportedLanguage.JA]: ja,
   [SupportedLanguage.ES]: es,
+  [SupportedLanguage.FR]: fr,
+  [SupportedLanguage.DE]: de,
+  [SupportedLanguage.RU]: ru,
+  [SupportedLanguage.ZH]: zh,
+  [SupportedLanguage.AR]: ar,
 };
 
 // 지원하는 언어 타입
@@ -40,6 +59,11 @@ export const LOCALE_DETAILS: Record<
   [SupportedLanguage.KO]: { label: "한국어", tag: "ko-KR", ogLocale: "ko_KR" },
   [SupportedLanguage.JA]: { label: "日本語", tag: "ja-JP", ogLocale: "ja_JP" },
   [SupportedLanguage.ES]: { label: "Español", tag: "es-ES", ogLocale: "es_ES" },
+  [SupportedLanguage.FR]: { label: "Français", tag: "fr-FR", ogLocale: "fr_FR" },
+  [SupportedLanguage.DE]: { label: "Deutsch", tag: "de-DE", ogLocale: "de_DE" },
+  [SupportedLanguage.RU]: { label: "Русский", tag: "ru-RU", ogLocale: "ru_RU" },
+  [SupportedLanguage.ZH]: { label: "中文", tag: "zh-CN", ogLocale: "zh_CN" },
+  [SupportedLanguage.AR]: { label: "العربية", tag: "ar-SA", ogLocale: "ar_SA" },
 };
 
 /**

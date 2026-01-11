@@ -85,7 +85,12 @@
     "audio_url": "expressions/{uuid}/0.wav",
     "translations": {
       "ko": "잘 지내?",
-      "ja": "元気？"
+      "ja": "元気？",
+      "fr": "Comment allez-vous ?",
+      "de": "Wie geht es Ihnen?",
+      "ru": "Как дела?",
+      "zh": "你好吗？",
+      "ar": "كيف حالك؟"
     }
   },
   {
@@ -94,7 +99,12 @@
     "audio_url": "expressions/{uuid}/1.wav",
     "translations": {
       "ko": "잘 지내고 있어.",
-      "ja": "元気だよ。"
+      "ja": "元気だよ。",
+      "fr": "Je vais bien, merci.",
+      "de": "Mir geht es gut, danke.",
+      "ru": "Я в порядке, спасибо.",
+      "zh": "我很好，谢谢。",
+      "ar": "أنا بخير شكرا لك."
     }
   },
   { ... }
