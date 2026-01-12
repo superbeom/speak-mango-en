@@ -2,6 +2,29 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.10.0: V2 워크플로우 아키텍처 (개발 중) (2026-01-12)
+
+> **⚠️ 상태: 개발 중 (In Development)**
+> 이 V2 워크플로우는 현재 개발 중이며 아직 프로덕션 준비가 되지 않았습니다. 특히 `15_groq_tts_v2.js` 노드에 대한 검증이 필요합니다.
+
+### 1. Fan-out 아키텍처 구현
+
+- **병렬 처리 (Parallel Processing)**: `01_pick_category_v2.js`가 이제 여러 카테고리 아이템을 반환하여, 다양한 주제에 대한 콘텐츠 생성을 동시에 수행(Fan-out)할 수 있도록 개선됨.
+- **컨텍스트 보존 (Context Preservation)**: `04_prepare_prompt_data_v2.js` 및 다운스트림 노드들이 다중 실행 브랜치를 올바르게 처리하고 병합할 수 있도록 업데이트됨.
+
+### 2. 코드베이스 구조 재편 (V2)
+
+- **전용 디렉토리 (Dedicated Directory)**: 모든 V2 전용 로직과 프롬프트를 `n8n/expressions/v2/`로 이동하여 안정적인 V1 워크플로우와 완전히 격리함.
+- **파일 표준화**:
+  - `01_pick_category_v2.js`
+  - `12_validate_content_v2.js`: "Non-strict" 검증 구현 (실패 대신 필터링).
+  - `15_groq_tts_v2.js`: **[검증 필요]** Groq API 제한 준수를 위한 배치 처리(10개 항목) 및 속도 제한(65초 대기) 구현.
+
+### 3. 검증 로직 이원화 (Validation Logic Divergence)
+
+- **V1 (Strict)**: 유효하지 않은 데이터 발생 시 워크플로우를 중단함 (프로덕션용).
+- **V2 (Relaxed)**: 유효한 아이템만 통과시키고 유효하지 않은 것은 로그를 남겨, 엄격한 차단보다는 워크플로우의 지속적인 실행을 우선시함.
+
 ## v0.9.9: 데이터 검증 로직 고도화 (Strict Validation) (2026-01-12)
 
 ### 1. Verification Logic Refinement
