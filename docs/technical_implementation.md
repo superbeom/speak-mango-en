@@ -338,6 +338,18 @@ LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Le
 - **Target Language ONLY**: 오직 번역된 결과물만 허용됨을 강조합니다.
 이러한 제약 조건은 메인 콘텐츠 생성기와 배치 번역 프롬프트 모두에 적용됩니다.
 
+
+### 10.8 Content Verification Logic (Strict Validation)
+
+- **Context**: LLM 생성 데이터의 품질을 보장하기 위해 n8n 워크플로우 중간에 엄격한 검증 로직을 배치했습니다 (`10_validate_content.js`).
+- **Rules**:
+  1. **Structure Check**: 필수 필드(`expression`, `meaning`, `content`, `tags`, `dialogue`) 존재 여부 확인.
+  2. **Tag Rules**: 소문자 영어만 허용, `#` 금지, 타겟 언어 문자 포함 금지.
+  3. **No Mixed Language**: 번역 필드(`meaning`, `dialogue.translations`)에 영어 알파벳 소문자가 포함되어 있는지 검사하여 "언어 누출"을 방지.
+     - **Exception**: 고유명사(대문자로 시작)나 허용 목록(`allowedlist`: iPhone, eBay 등)에 있는 단어는 통과.
+  4. **Markdown Prevention**: 대화 번역문에 마크다운 문법(`**bold**`)이 포함되지 않도록 강제.
+- **Local Verification**: 동일한 로직을 로컬에서 수행할 수 있는 `verification/verify_db_data.js`를 제공하여, `temp.json` 데이터를 워크플로우 실행 없이 빠르게 검증할 수 있습니다.
+
 ## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
 
 Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수성이 높은 디자인 시스템을 구축했습니다.

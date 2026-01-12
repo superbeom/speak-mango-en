@@ -13,12 +13,13 @@
 7.  **If New** (중복 여부 판단)
 8.  **Gemini Content Generator** (상세 콘텐츠 생성 - Role A/B 포함)
 9.  **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
-10. **Generate ID (Code)** (저장 경로용 UUID 미리 생성)
-11. **Prepare TTS Requests (Code)** (대화문 분리 및 목소리 할당)
-12. **Groq Orpheus TTS (HTTP)** (음성 합성 호출)
-13. **Upload to Storage (Supabase)** (오디오 파일 업로드)
-14. **Aggregate TTS Results (Code)** (오디오 경로를 데이터에 병합)
-15. **Supabase Insert** (데이터 저장)
+10. **Validate Content (Code)** (Gemini 응답 데이터 무결성 검증)
+11. **Generate ID (Code)** (저장 경로용 UUID 미리 생성)
+12. **Prepare TTS Requests (Code)** (대화문 분리 및 목소리 할당)
+13. **Groq Orpheus TTS (HTTP)** (음성 합성 호출)
+14. **Upload to Storage (Supabase)** (오디오 파일 업로드)
+15. **Aggregate TTS Results (Code)** (오디오 경로를 데이터에 병합)
+16. **Supabase Insert** (데이터 저장)
 
 ---
 
@@ -241,6 +242,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
        - **Russian**: Use **Informal 'ты' form**.
        - **Chinese**: Use **Casual speech**.
        - **Arabic**: Use **MSA** (simplified).
+     - **Target Language ONLY**: Definitions must be in the specified Target Language. Do NOT mix with other languages (except for 'en', which uses English).
      - **EXCEPTION**: If the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a **polite tone** in all languages.
        - **Korean**: 존댓말 (Jondaetmal).
        - **Japanese**: Desu-Masu Form (丁寧語).
@@ -257,6 +259,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
      - **Capitalization**: **Start with an UPPERCASE letter** if the expression is a standalone sentence or interjection (e.g., "No worries", "Never mind", "Don't take it personally"). **Start with a lowercase letter** ONLY if it is a phrase or idiom used within a sentence (e.g., "spill the tea", "hit the road").
      - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
   4. Constraint for content:
+     - **Language Usage**: Use the specific **Target Language** for all explanations (this applies to situation, tips, AND quiz questions/options).
+       *   **English Inclusion Allowed**: You MAY include the English expression or specific English keywords naturally for educational purposes.
+       *   **No Mixed Target Language Scripts**: Do NOT mix in other target languages (e.g., no Japanese characters in Korean content, no Hangul in Spanish).
      - **NEVER use casual speech** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
        - **English**: Avoid text-speak (e.g., "u", "r") or excessive slang in explanations; keep it clear and accessible.
        - **Korean**: No 반말 (Banmal).
@@ -273,10 +278,11 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
      - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
      - Each entry in the `dialogue` array MUST include:
        - `"role"`: Value "A" or "B" to distinguish speakers.
-       - `"en"`: The English sentence.
+       - `"en"`: The English sentence (**English ONLY**).
        - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
        *   **Do NOT omit this object or any languages.**
        *   **Target Language ONLY**: The value MUST contain ONLY the translated text in the target language.
+       *   **Pure Text Only**: Do NOT use markdown formatting (e.g., **bold**, *italic*). **Natural punctuation** (e.g., . , ? ! ') IS allowed and expected to reflect the spoken tone.
        *   **No Mixed Language (CRITICAL)**: **NEVER** include the original English text or the English expression in the translation. (e.g., **Bad**: "안녕하세요. Hello.", **Good**: "안녕하세요")
   8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to English, Japanese, Spanish, French, German, Russian, Chinese, and Arabic.
   9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
@@ -295,7 +301,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
         3. You **MUST** use `\n` (newline) to separate the question and each option.
         4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
         5. **Randomize the correct answer position**: The correct answer MUST be randomly assigned to A, B, or C. Do NOT default to 'B'. ensure equal distribution of A, B, and C across different generations.
-  11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
+  11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase **English** strings (**English ONLY**). These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
   12. **Currency & Numbers**:
       - Always use **`$` (USD)** for currency to maintain consistency (e.g., "$10", "$50.50"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.
       - Use commas for numbers larger than 1,000 (e.g., "1,000", "10,000").
@@ -455,7 +461,245 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
   }
   ````
 
-### 10단계: Generate ID (Code)
+### 10단계: Validate Content (Code)
+
+Gemini가 생성한 콘텐츠가 모든 엄격한 규칙(언어 혼용 금지, 태그 규칙, 퀴즈 포맷 등)을 준수하는지 검증하는 마지막 관문입니다. 위반 사항 발생 시 워크플로우를 즉시 중단합니다.
+
+- **Name**: `Validate Content`
+- **Code**:
+
+  ```javascript
+  /**
+   * Gemini 출력에 대한 엄격한 검증 로직 (n8n 버전)
+   * 08_gemini_content_generator_prompt.txt의 규칙과 일치합니다.
+   * 
+   * 사용법:
+   * 1. 아래의 모든 코드를 n8n Code 노드에 복사하세요.
+   * 2. 'Parse Content JSON' 노드 뒤에 연결하세요.
+   * 3. 각 항목을 검증하며 위반 사항이 발견되면 워크플로우를 중단합니다.
+   */
+
+  // ==========================================================================
+  //  헬퍼 함수 및 상수
+  // ==========================================================================
+
+  const REGEX = {
+      // 한글 (한국어): 음절, 자모, 호환 자모
+      hangul: /[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uD7B0-\uD7FF]/,
+      // 가나 (일본어): 히라가나, 가타카나
+      kana: /[\u3040-\u309F\u30A0-\u30FF]/,
+      // 한자 (중국어/일본어): 통합 한자
+      han: /[\u4E00-\u9FCC\u3400-\u4DB5]/,
+      // 키릴 문자 (러시아어)
+      cyrillic: /[\u0400-\u04FF]/,
+      // 아랍어
+      arabic: /[\u0600-\u06FF\u0750-\u077F]/,
+      // 영어/라틴 문자 (누출 여부 엄격 검사)
+      english_letters: /[a-zA-Z]/,
+      // 마크다운 검사 (굵게/이탤릭 마커: **, *) - 쌍으로 사용되거나 시작/끝 확인
+      markdown_emphasis: /(\*\*|__|\*|_)/
+  };
+
+  const TARGET_LANGS = ['ko', 'ja', 'es', 'fr', 'de', 'ru', 'zh', 'ar'];
+
+  // 휴리스틱: 소문자로 시작하는 고유명사나 예외적인 케이스 명시적 허용
+  const ALLOWED_ENGLISH_TERMS = ['iPhone', 'eBay', 'iMac', 'iPad', 'iOS', 'macOS'];
+
+  function validateItem(item) {
+      let errors = [];
+      const id = item.id || 'unknown_id';
+
+      // 1. 구조 검사
+      if (!item.expression) errors.push("Missing 'expression' field.");
+      if (!item.meaning) errors.push("Missing 'meaning' field.");
+      if (!item.content) errors.push("Missing 'content' field.");
+      if (!item.tags) errors.push("Missing 'tags' field.");
+      if (!item.dialogue || !Array.isArray(item.dialogue)) errors.push("Missing 'dialogue' top-level array.");
+
+      // 2. 태그: 소문자 영어만 허용, '#' 금지
+      if (item.tags && Array.isArray(item.tags)) {
+          item.tags.forEach(tag => {
+              if (tag.includes('#')) errors.push(`Tag '${tag}' contains '#'.`);
+              if (tag !== tag.toLowerCase()) errors.push(`Tag '${tag}' must be lowercase.`);
+              if (!REGEX.english_letters.test(tag)) errors.push(`Tag '${tag}' must contain English letters.`);
+              if (REGEX.hangul.test(tag) || REGEX.kana.test(tag) || REGEX.cyrillic.test(tag) || REGEX.arabic.test(tag)) {
+                  errors.push(`Tag '${tag}' must be English ONLY.`);
+              }
+          });
+      }
+
+      // 3. 의미: 대상 언어만 허용 (영어 제외)
+      if (item.meaning) {
+          TARGET_LANGS.forEach(lang => {
+              const text = item.meaning[lang];
+              if (!text) return;
+              
+              // 규칙: 대상 언어 혼용 금지
+              if (lang === 'ko' && (REGEX.kana.test(text) || REGEX.han.test(text))) errors.push(`Meaning (${lang}) contains Mixed Foreign Script.`);
+              if (lang === 'ja' && REGEX.hangul.test(text)) errors.push(`Meaning (${lang}) contains Mixed Foreign Script (Hangul).`);
+               
+              // 규칙: 언어 혼용 금지 (영어 누출 검사)
+              if (['ko', 'ja', 'zh', 'ru', 'ar'].includes(lang)) {
+                  checkEnglishInclusion(text, `Meaning (${lang})`, errors);
+              }
+          });
+      }
+
+      // 4. 콘텐츠: 대상 언어 + 영어(설명용) 허용
+      if (item.content) {
+          TARGET_LANGS.forEach(lang => {
+              const contentObj = item.content[lang];
+              if (!contentObj) return;
+
+              const fieldsToCheck = [
+                  contentObj.situation, 
+                  contentObj.tip, 
+                  contentObj.quiz?.question,
+                  contentObj.quiz?.A,
+                  contentObj.quiz?.B,
+                  contentObj.quiz?.C
+              ].filter(Boolean);
+
+              fieldsToCheck.forEach(text => {
+                  if (lang === 'ko' && REGEX.kana.test(text)) errors.push(`Content (${lang}) contains Kana.`);
+                  else if (lang === 'ja' && REGEX.hangul.test(text)) errors.push(`Content (${lang}) contains Hangul.`);
+                  else if (['es', 'fr', 'de'].includes(lang)) {
+                      if (REGEX.hangul.test(text) || REGEX.kana.test(text) || REGEX.cyrillic.test(text) || REGEX.arabic.test(text)) {
+                           errors.push(`Content (${lang}) contains Mixed Foreign Script.`);
+                      }
+                  }
+              });
+              
+              if (contentObj.quiz && contentObj.quiz.answer) {
+                  if (!['A', 'B', 'C'].includes(contentObj.quiz.answer)) {
+                      errors.push(`Quiz Answer (${lang}) must be 'A', 'B', or 'C'. Found: ${contentObj.quiz.answer}`);
+                  }
+              }
+          });
+      }
+
+      // 5. 대화: 최상위 레벨 배열
+      if (item.dialogue && Array.isArray(item.dialogue)) {
+          item.dialogue.forEach((dItem, idx) => {
+              if (dItem.en) {
+                  if (REGEX.hangul.test(dItem.en) || REGEX.kana.test(dItem.en)) {
+                      errors.push(`Dialogue[${idx}].en contains non-English characters.`);
+                  }
+              }
+
+              if (dItem.translations) {
+                  TARGET_LANGS.forEach(lang => {
+                      const text = dItem.translations[lang];
+                      if (!text) return; 
+
+                      // 규칙: 순수 텍스트만 허용 (마크다운 금지)
+                      if (text.includes('**') || text.includes('__')) {
+                           errors.push(`Dialogue[${idx}].translations.${lang} contains Markdown Bold (**): "${text}"`);
+                      }
+                      
+                      // 규칙: 언어 혼용 금지 (영어 누출 검사)
+                      if (['ko', 'ja', 'zh', 'ru', 'ar'].includes(lang)) {
+                          checkEnglishInclusion(text, `Dialogue[${idx}].translations.${lang}`, errors);
+                      } else {
+                          // 라틴 계열 (es, fr, de): 전체 표현이 누출되었는지 확인
+                          if (item.expression && text.toLowerCase().includes(item.expression.toLowerCase())) {
+                              // 거짓 양성 필터링 (예: "Pizza" -> "Pizza")
+                              // 휴리스틱: 표현이 4글자보다 긴 경우에만 플래그 처리. 짧은 단어는 우연일 수 있음.
+                              if (item.expression.length > 4) {
+                                  errors.push(`Dialogue[${idx}].translations.${lang} contains English expression leakage: "${item.expression}"`);
+                              }
+                          }
+                      }
+                      
+                      // 규칙: 대상 언어 혼용 금지
+                     if (lang === 'ko' && (REGEX.kana.test(text) || REGEX.han.test(text))) errors.push(`Dialogue[${idx}].translations.${lang} contains foreign script.`);
+                     if (lang === 'ja' && REGEX.hangul.test(text)) errors.push(`Dialogue[${idx}].translations.${lang} contains Hangul.`);
+                  });
+              }
+          });
+      }
+
+      return {
+          valid: errors.length === 0,
+          errors: errors
+      };
+  }
+
+  /**
+   * 스마트 영어 포함 검사
+   * 허용:
+   * 1. 허용 목록의 용어 (iPhone, eBay...)
+   * 2. 고유명사 (대문자로 시작: Instagram, TikTok)
+   * 3. 약어 (모두 대문자: ROI, CEO)
+   * 차단:
+   * - 소문자 영어 단어 (누출 가능성 높음)
+   */
+  function checkEnglishInclusion(text, context, errors) {
+      const englishMatches = text.match(/[a-zA-Z]{2,}/g) || [];
+      
+      const invalidWords = englishMatches.filter(word => {
+          // 1. 허용 목록에 있으면 통과 (대소문자 무시)
+          if (ALLOWED_ENGLISH_TERMS.some(term => term.toLowerCase() === word.toLowerCase())) return false;
+
+          // 2. 대문자로 시작하면 통과 (고유명사 / 약어)
+          // 예: Instagram, TikTok, ROI, CEO, TV
+          if (/^[A-Z]/.test(word)) return false;
+
+          // 3. 그 외 (소문자)는 차단!
+          // 예: "reach", "out", "hello", "meaning"
+          return true; 
+      });
+
+      if (invalidWords.length > 0) {
+          errors.push(`${context} contains English leakage: ${invalidWords.join(", ")}`);
+      }
+  }
+
+
+  // ==========================================================================
+  //  N8N 실행 블록
+  // ==========================================================================
+
+  const allViolations = [];
+
+  // 모든 입력 항목 반복
+  for (const item of $input.all()) {
+      // 파싱된 JSON이 item.json에 있다고 가정
+      // n8n 출력 구조가 평탄화된 경우 'dataToCheck'를 그에게 맞게 조정하세요.
+      const dataToCheck = item.json; 
+      
+      // 검증 실행
+      const result = validateItem(dataToCheck); // dataToCheck는 expression, meaning 등을 포함하는 객체여야 함
+
+      if (!result.valid) {
+          allViolations.push({
+              expression: dataToCheck.expression,
+              errors: result.errors
+          });
+          
+          // 항목을 유효하지 않음으로 표시 (선택 사항, throw하지 않을 경우 다운스트림 디버깅용)
+          item.json._validation = { status: 'error', errors: result.errors };
+      } else {
+          item.json._validation = { status: 'success' };
+      }
+  }
+
+  // 위반 사항 발견 시 워크플로우 중단
+  if (allViolations.length > 0) {
+      // 에러 메시지 포맷팅
+      const errorMsg = allViolations.map(v => 
+          `[${v.expression}] Errors: ${v.errors.join('; ')}`
+      ).join('\n');
+      
+      // 에러를 발생시켜 워크플로우 중단 및 위반 사항 표시
+      throw new Error(`❌ Strict Validation Failed for ${allViolations.length} items:\n${errorMsg}`);
+  }
+
+  // 모두 통과 시 항목 반환
+  return $input.all();
+  ```
+
+### 11단계: Generate ID (Code)
 
 저장 경로 및 DB ID로 사용할 UUID를 여기서 생성해야 데이터가 덮어씌워지지 않습니다.
 
@@ -475,7 +719,7 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
   return { json: { ...$input.first().json, id: uuid } };
   ```
 
-### 11단계: Prepare TTS Requests
+### 12단계: Prepare TTS Requests
 
 대화문을 개별 오디오 요청으로 분리합니다.
 
@@ -520,7 +764,7 @@ items.forEach((item, itemIndex) => {
 return results;
 ```
 
-### 12단계: Groq Orpheus TTS (HTTP Request)
+### 13단계: Groq Orpheus TTS (HTTP Request)
 
 11단계에서 분리된 각 대화 문장을 실제 오디오 파일(WAV)로 변환하는 단계입니다.
 
@@ -540,7 +784,7 @@ return results;
 
 > **⚠️ 중요 (400 Bad Request 에러 발생 시)**: `canopylabs/orpheus-v1-english` 모델을 처음 사용하는 경우, 반드시 **[Groq Console](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english)**에 접속하여 해당 모델의 이용 약관(Terms)을 **승인(Accept)**해야 합니다. 승인하지 않으면 API 호출 시 에러가 발생합니다.
 
-### 13단계: Upload to Storage (Supabase REST API)
+### 14단계: Upload to Storage (Supabase REST API)
 
 공식 Supabase 노드는 파일 업로드를 지원하지 않으므로, **HTTP Request** 노드를 사용하여 직접 업로드합니다.
 
@@ -560,7 +804,7 @@ return results;
 - **Options**: `Response`
   - **Response Format**: `JSON`
 
-### 14단계: Aggregate TTS Results (Code)
+### 15단계: Aggregate TTS Results (Code)
 
 업로드된 오디오 파일들의 경로(`storage_path`)를 원본 데이터 구조의 각 대화문(`dialogue`) 항목에 다시 주입하고, 하나로 합칩니다.
 
@@ -584,7 +828,7 @@ return results;
 
   // 2. 불필요한 임시 필드 일괄 제거 (tts_ 로 시작하는 모든 필드)
   Object.keys(finalData).forEach((key) => {
-    if (key.startsWith("tts_") || key === "storage_path") {
+    if (key.startsWith("tts_") || key === "storage_path" || key === "_validation") {
       delete finalData[key];
     }
   });
@@ -613,7 +857,7 @@ return results;
   ```
 - **역할**: 분산된 여러 아이템을 다시 1개의 아이템으로 병합하여 최종 저장을 준비합니다.
 
-### 15단계: Supabase Insert 설정
+### 16단계: Supabase Insert 설정
 
 `Parse JSON` 노드 뒤에 **Supabase** 노드를 연결하여 최종 데이터를 저장합니다.
 

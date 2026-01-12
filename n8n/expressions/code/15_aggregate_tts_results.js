@@ -14,7 +14,7 @@ let finalData = JSON.parse(JSON.stringify(parentData));
 
 // 2. 불필요한 임시 필드 일괄 제거 (tts_ 로 시작하는 모든 필드)
 Object.keys(finalData).forEach((key) => {
-  if (key.startsWith("tts_") || key === "storage_path") {
+  if (key.startsWith("tts_") || key === "storage_path" || key === "_validation") {
     delete finalData[key];
   }
 });

@@ -2,6 +2,14 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.9.9: 데이터 검증 로직 고도화 (Strict Validation) (2026-01-12)
+
+### 1. Verification Logic Refinement
+
+- **Strict Data Verification**: `10_validate_content.js`에 엄격한 규칙(Structure Check, Tag Rules, No Mixed Language) 도입.
+- **Local Script**: `verification/verify_db_data.js`를 신설하여 n8n 워크플로우 없이 로컬에서 `temp.json` 데이터를 검증할 수 있는 환경 구축.
+- **Bug Fix**: `15_aggregate_tts_results.js`에서 Supabase Insert 에러 `PGRST204`를 해결하기 위해 `_validation` 필드 삭제 로직 추가.
+
 ## v0.9.8: 프롬프트 정교화 - 혼합 언어 방지 (2026-01-11)
 - **이슈**: 타겟 언어 번역에 영어 원문이 섞여 들어가는 현상 발견 (예: "Korean Text. English Text").
 - **해결**: `gemini_content_generator_prompt.txt` 및 `batch_dialogue_translation_prompt.txt`에 **"Target Language ONLY"** 및 **"No Mixed Language (CRITICAL)"** 제약 조건 추가.

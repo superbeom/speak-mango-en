@@ -2,6 +2,24 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-12: Verification Logic Refinement & Local Script Setup
+
+### ✅ 진행 사항
+
+- **엄격한 데이터 검증 로직 도입 (Strict Data Verification)**:
+  - 기존의 `verify_gemini_response.js` 로직을 n8n Code Node용 `10_validate_content.js`로 이식 및 최적화.
+  - **English Inclusion Rule**: 번역된 텍스트에 영어가 섞여 있는지 확인하는 로직을 강화(소문자 단어 검출, 고유명사 허용 등).
+  - **Local Verification Script**: 로컬 환경에서도 `temp.json`을 검증할 수 있도록 `verification/verify_db_data.js` 스크립트 구축.
+- **Bug Fix (Supabase Insert Error)**:
+  - `_validation` 필드가 Supabase 테이블 스키마에 존재하지 않아 발생하던 `PGRST204` 에러 해결.
+  - `15_aggregate_tts_results.js`에서 DB 저장 직전 `_validation` 필드를 명시적으로 삭제하도록 로직 수정.
+- **문서 현행화**: `docs/n8n/expressions/optimization_steps.md`에 변경된 검증 및 정리 로직 반영.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 로컬 검증 스크립트(`verification/verify_db_data.js`)를 만들었나?**
+- **A.** n8n 워크플로우를 매번 실행하지 않고도, 로컬에 저장된 데이터(`temp.json`)를 대상으로 검증 로직을 빠르게 테스트하고 수정하기 위함임. n8n의 코드와 로직을 100% 동일하게 유지하여 신뢰성을 확보함.
+
 ## 2026-01-11: Prompt Refinement (No Mixed Language)
 
 ### ✅ 진행 사항

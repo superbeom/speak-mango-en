@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-08
+**최종 수정일**: 2026-01-12
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -68,6 +68,8 @@ speak-mango-en/
 │       └── expressions_workflow_template.json # 워크플로우 템플릿
 ├── types/               # TypeScript 타입 정의
 │   └── database.ts      # Supabase Generated Types
+├── verification/        # 데이터 검증 스크립트
+│   └── verify_db_data.js # 로컬 데이터 검증 (Strict Validation)
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
 │   ├── n8n/                 # n8n 자동화 관련 가이드
 │   │   └── expressions/     # 영어 표현 워크플로우 문서

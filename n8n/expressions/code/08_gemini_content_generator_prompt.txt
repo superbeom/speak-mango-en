@@ -27,6 +27,7 @@ Requirements:
      - **Russian**: Use **Informal 'ты' form**.
      - **Chinese**: Use **Casual speech**.
      - **Arabic**: Use **MSA** (simplified).
+   - **Target Language ONLY**: Definitions must be in the specified Target Language. Do NOT mix with other languages (except for 'en', which uses English).
    - **EXCEPTION**: If the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a **polite tone** in all languages.
      - **Korean**: 존댓말 (Jondaetmal).
      - **Japanese**: Desu-Masu Form (丁寧語).
@@ -43,6 +44,9 @@ Requirements:
    - **Capitalization**: **Start with an UPPERCASE letter** if the expression is a standalone sentence or interjection (e.g., "No worries", "Never mind", "Don't take it personally"). **Start with a lowercase letter** ONLY if it is a phrase or idiom used within a sentence (e.g., "spill the tea", "hit the road").
    - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
 4. Constraint for content:
+   - **Language Usage**: Use the specific **Target Language** for all explanations (this applies to situation, tips, AND quiz questions/options).
+     *   **English Inclusion Allowed**: You MAY include the English expression or specific English keywords naturally for educational purposes.
+     *   **No Mixed Target Language Scripts**: Do NOT mix in other target languages (e.g., no Japanese characters in Korean content, no Hangul in Spanish).
    - **NEVER use casual speech** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
      - **English**: Avoid text-speak (e.g., "u", "r") or excessive slang in explanations; keep it clear and accessible.
      - **Korean**: No 반말 (Banmal).
@@ -59,10 +63,11 @@ Requirements:
    - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
    - Each entry in the `dialogue` array MUST include:
      - `"role"`: Value "A" or "B" to distinguish speakers.
-     - `"en"`: The English sentence.
+     - `"en"`: The English sentence (**English ONLY**).
      - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
        *   **Do NOT omit this object or any languages.**
        *   **Target Language ONLY**: The value MUST contain ONLY the translated text in the target language.
+       *   **Pure Text Only**: Do NOT use markdown formatting (e.g., **bold**, *italic*). **Natural punctuation** (e.g., . , ? ! ') IS allowed and expected to reflect the spoken tone.
        *   **No Mixed Language (CRITICAL)**: **NEVER** include the original English text or the English expression in the translation. (e.g., **Bad**: "안녕하세요. Hello.", **Good**: "안녕하세요")
 8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to English, Japanese, Spanish, French, German, Russian, Chinese, and Arabic.
 9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
@@ -81,7 +86,7 @@ Requirements:
       3. You **MUST** use `\n` (newline) to separate the question and each option.
       4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
       5. **Randomize the correct answer position**: The correct answer MUST be randomly assigned to A, B, or C. Do NOT default to 'B'. ensure equal distribution of A, B, and C across different generations.
-11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
+11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase **English** strings (**English ONLY**). These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
 12. **Currency & Numbers**:
     - Always use **`$` (USD)** for currency to maintain consistency (e.g., "$10", "$50.50"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.
     - Use commas for numbers larger than 1,000 (e.g., "1,000", "10,000").
