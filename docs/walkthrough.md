@@ -2,6 +2,13 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.10.1: 대화 턴수 검증 규칙 도입 (Dialogue Turn Length Validation) (2026-01-12)
+
+### 1. Dialogue Length Validation
+
+- **엄격한 턴수 제한**: n8n Code Node인 `10_validate_content.js`에 대화 턴수가 2~4턴 사이인지 검증하는 로직을 도입함.
+- **문서 동기화**: `docs/n8n/expressions/optimization_steps.md`에 해당 검증 규칙을 명시하여 데이터 품질 기준을 현행화함.
+
 ## v0.10.0: V2 워크플로우 아키텍처 (개발 중) (2026-01-12)
 
 > **⚠️ 상태: 개발 중 (In Development)**

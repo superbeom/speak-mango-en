@@ -65,6 +65,7 @@
 - [x] **Automation**: Dialogue Translation Batch Backfill 및 Prompt Strictness 강화
 - [x] **Automation**: Prompt Refinement (Forbid Mixed English in Dialogue Translations)
 - [x] **i18n**: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
+- [x] **Automation**: 대화 턴수 검증(2~4 turns) 규칙 도입 및 `10_validate_content.js` 반영
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

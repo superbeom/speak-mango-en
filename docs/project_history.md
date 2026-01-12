@@ -2,6 +2,19 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-12: Dialogue Turn Length Validation & Logic Refinement
+
+### ✅ 진행 사항
+
+- **대화 턴수 검증 로치 강화 (Dialogue Length Validation)**:
+  - n8n Code Node 전용 `10_validate_content.js`에 대화 턴수 검증 규칙(2~4턴)을 추가하여 데이터 품질 균일화.
+  - 관련 내용을 `docs/n8n/expressions/optimization_steps.md`에 반영하여 문서 현행화.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 대화 턴수를 2~4턴으로 제한했나?**
+- **A.** Gemini 프롬프트에서는 2~3턴을 권장하고 있으나, 상황에 따라 A-B-A-B 구조가 자연스러울 때가 있음. 너무 짧으면 맥락 파악이 어렵고, 너무 길면 학습 피로도가 높으므로 2~4턴을 표준 범위로 설정함.
+
 ## 2026-01-12: V2 워크플로우 아키텍처 (개발 중)
 
 ### ✅ 진행 사항

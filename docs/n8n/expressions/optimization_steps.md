@@ -580,6 +580,11 @@ Gemini가 생성한 콘텐츠가 모든 엄격한 규칙(언어 혼용 금지, �
 
       // 5. 대화: 최상위 레벨 배열
       if (item.dialogue && Array.isArray(item.dialogue)) {
+          // 규칙: 대화는 2~4턴 사이여야 함 (프롬프트는 2~3턴 권장하나, 4턴도 허용)
+          if (item.dialogue.length < 2 || item.dialogue.length > 4) {
+              errors.push(`Dialogue length must be between 2 and 4. Found: ${item.dialogue.length}`);
+          }
+        
           item.dialogue.forEach((dItem, idx) => {
               if (dItem.en) {
                   if (REGEX.hangul.test(dItem.en) || REGEX.kana.test(dItem.en)) {
