@@ -233,7 +233,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
       - **Chinese**: Use **Polite yet friendly (你 + 敬语/Polite particles)**.
       - **Arabic**: Use **Modern Standard Arabic (MSA)** but with a friendly, accessible tone (avoid overly archaic vocabulary).
   2. For the 'meaning' field in ALL languages:
-     - **Tone**: Use a **casual tone** by default.
+     - **Target Language ONLY**: Meanings must be in the specified Target Language. Do NOT mix with other languages (except for 'en', which uses English).
+     - **Core Objective**: Provide **natural synonyms or equivalent phrases** that accurately convey the core meaning in a concise way. Avoid long, robotic dictionary-style definitions.
+     - **Tone**: Use a **casual, spoken tone** by default.
        - **Korean**: Use **반말 (Banmal)**.
        - **Japanese**: Use **Plain Form (Tameguchi/タメ口)**.
        - **Spanish**: Use **Informal 'Tú' form**.
@@ -242,8 +244,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
        - **Russian**: Use **Informal 'ты' form**.
        - **Chinese**: Use **Casual speech**.
        - **Arabic**: Use **MSA** (simplified).
-     - **Target Language ONLY**: Definitions must be in the specified Target Language. Do NOT mix with other languages (except for 'en', which uses English).
-     - **EXCEPTION**: If the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a **polite tone** in all languages.
+     - **Tone Exception**: If the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a **polite tone** in all languages.
        - **Korean**: 존댓말 (Jondaetmal).
        - **Japanese**: Desu-Masu Form (丁寧語).
        - **Spanish**: Formal 'Usted' form.
