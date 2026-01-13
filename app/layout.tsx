@@ -48,11 +48,6 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: SERVICE_NAME }],
     creator: SERVICE_NAME,
     publisher: SERVICE_NAME,
-    appleWebApp: {
-      capable: true,
-      statusBarStyle: "default",
-      title: SERVICE_NAME,
-    },
     formatDetection: {
       email: false,
       address: false,
@@ -108,6 +103,11 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <head>
+        {/* PWA Essentials for iOS */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content={SERVICE_NAME} />
+
         {/* iPhone Splash Screens */}
         <link
           rel="apple-touch-startup-image"
