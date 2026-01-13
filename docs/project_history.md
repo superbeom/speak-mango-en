@@ -2,6 +2,20 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-13: Service Essentials Update (PWA Splash & Theme Color)
+
+### ✅ 진행 사항
+
+- **Dynamic Theme Color**: `viewport` 설정에서 `themeColor`를 배열로 확장하여, 시스템 테마(Light/Dark)에 따라 브라우저 상단 바 색상이 `#ffffff` 또는 `#0a0a0a`로 자동 전환되도록 개선.
+- **Splash Screen Data Injection**: `pwa-asset-generator`로 생성된 모든 iOS 기기별 스플래시 스크린(30여 종)의 메타 태그 정보를 `layout.tsx`에 완전하게 주입하여, 모든 기기 대응력을 100%로 끌어올림.
+- **Manifest Connection**: `layout.tsx` 메타데이터에 `manifest: "/manifest.ts"`를 명시적으로 연결.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Theme Color를 왜 동적으로 바꿨나?**
+
+- **A.** 단일 색상(`#ffffff`)으로 고정할 경우, 다크 모드 사용자에게 눈부심을 유발하고 앱의 통합성을 해침. 미디어 쿼리(`prefers-color-scheme`)를 지원하는 Next.js `viewport` 설정을 통해 사용자 시스템 설정에 맞는 UI 경험을 제공함.
+
 ## 2026-01-13: Dynamic OG Image Design & Metadata Polish
 
 ### ✅ 진행 사항

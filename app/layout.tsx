@@ -18,7 +18,10 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -170,6 +173,46 @@ export async function generateMetadata(): Promise<Metadata> {
           url: "/assets/splash/apple-splash-1136-640.png",
           media: "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)",
         },
+        {
+          url: "/assets/splash/apple-splash-1320-2868.png",
+          media: "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
+        },
+        {
+          url: "/assets/splash/apple-splash-2868-1320.png",
+          media: "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)",
+        },
+        {
+          url: "/assets/splash/apple-splash-1206-2622.png",
+          media: "(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
+        },
+        {
+          url: "/assets/splash/apple-splash-2622-1206.png",
+          media: "(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)",
+        },
+        {
+          url: "/assets/splash/apple-splash-1640-2360.png",
+          media: "(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)",
+        },
+        {
+          url: "/assets/splash/apple-splash-2360-1640.png",
+          media: "(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)",
+        },
+        {
+          url: "/assets/splash/apple-splash-1488-2266.png",
+          media: "(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)",
+        },
+        {
+          url: "/assets/splash/apple-splash-2266-1488.png",
+          media: "(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)",
+        },
+        {
+          url: "/assets/splash/apple-splash-1260-2736.png",
+          media: "(device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
+        },
+        {
+          url: "/assets/splash/apple-splash-2736-1260.png",
+          media: "(device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)",
+        },
       ],
     },
     formatDetection: {
@@ -202,6 +245,7 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-snippet": -1,
       },
     },
+    manifest: "/manifest.ts",
     icons: {
       icon: [
         { url: "/assets/favicon-32x32.png", sizes: "32x32", type: "image/png" },

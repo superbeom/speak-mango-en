@@ -2,6 +2,18 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.11.4: Service Essentials Update (PWA Splash & Theme Color) (2026-01-13)
+
+### 1. Dynamic Theme Color
+
+- **Viewport Config**: Next.js의 `viewport` 설정을 통해 시스템 테마(Light/Dark)에 따라 브라우저 상단 바 색상을 동적으로 전환(`#ffffff` <-> `#0a0a0a`).
+- **UX Improvement**: 다크 모드 사용자에게 눈부심 없는 일관된 시각적 경험 제공.
+
+### 2. Complete PWA Asset Injection
+
+- **Splash Screens**: `pwa-asset-generator`로 생성된 iOS 기기별 스플래시 스크린(Startup Image) 메타 태그 30여 개를 `layout.tsx`에 모두 주입.
+- **Manifest**: `manifest` 파일 연결을 명시하여 PWA 설치 가능성 및 웹 앱 표준 준수 강화.
+
 ## v0.11.3: Dynamic OG Image Design & Metadata Polish (2026-01-13)
 
 ### 1. Dynamic OG Image Redesign (Expression Detail)
