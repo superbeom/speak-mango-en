@@ -5,7 +5,7 @@ import { SERVICE_NAME } from "@/constants";
 import { getExpressionById } from "@/lib/expressions";
 
 // Route segment config
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 // Image metadata
 export const alt = "Expression Preview";
@@ -14,6 +14,14 @@ export const size = {
     height: 630,
 };
 export const contentType = "image/png";
+
+// Font loading
+async function loadGoogleFont(weight: number) {
+    const res = await fetch(
+        `https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-${weight}-normal.ttf`
+    );
+    return res.arrayBuffer();
+}
 
 // Image generation
 export default async function Image({
@@ -24,6 +32,23 @@ export default async function Image({
     const { id } = await params;
     const locale = await getLocale();
     const expression = await getExpressionById(id);
+
+    // Node.js runtime imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("fs");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require("path");
+
+    const logoPath = path.join(process.cwd(), "public/assets/logo.png");
+    const logoBuffer = fs.readFileSync(logoPath);
+    const logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+
+    // Load fonts
+    const [inter500, inter700, inter900] = await Promise.all([
+        loadGoogleFont(500), // Medium
+        loadGoogleFont(700), // Bold
+        loadGoogleFont(900), // Black
+    ]);
 
     if (!expression) {
         return new ImageResponse(
@@ -54,32 +79,16 @@ export default async function Image({
         (
             <div
                 style={{
-                    background: "linear-gradient(to bottom right, #ffffff, #f8f9fa)",
+                    background: "white",
                     width: "100%",
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: "sans-serif",
-                    position: "relative",
+                    fontFamily: '"Inter", sans-serif',
                 }}
             >
-                {/* Background Pattern */}
-                <div
-                    style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundImage:
-                            "radial-gradient(circle at 25px 25px, #e5e7eb 2%, transparent 0%), radial-gradient(circle at 75px 75px, #e5e7eb 2%, transparent 0%)",
-                        backgroundSize: "100px 100px",
-                        opacity: 0.5,
-                    }}
-                />
-
                 <div
                     style={{
                         display: "flex",
@@ -88,34 +97,51 @@ export default async function Image({
                         justifyContent: "center",
                         padding: "40px",
                         textAlign: "center",
-                        zIndex: 10,
+                        gap: "50px"
                     }}
                 >
-                    {/* Service Name Badge */}
+                    {/* Header: Logo + Service Name */}
                     <div
                         style={{
-                            fontSize: 24,
-                            fontWeight: 600,
-                            color: "#3b82f6", // Blue-500
-                            marginBottom: 40,
-                            textTransform: "uppercase",
-                            letterSpacing: "2px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "10px",
                         }}
                     >
-                        {SERVICE_NAME}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={logoBase64}
+                            alt={SERVICE_NAME}
+                            width="80"
+                            height="80"
+                        />
+                        <div
+                            style={{
+                                fontSize: 50,
+                                fontWeight: 700,
+                                fontFamily: '"Inter", sans-serif',
+                                background: "linear-gradient(135deg, #fceca4 0%, #f97316 50%, #15803d 100%)",
+                                backgroundClip: "text",
+                                color: "transparent",
+                                display: "flex",
+                                alignItems: "center",
+                                paddingBottom: "10px",
+                            }}
+                        >
+                            {SERVICE_NAME}
+                        </div>
                     </div>
 
                     {/* Main Expression */}
                     <div
                         style={{
-                            fontSize: 80,
+                            fontSize: 90,
                             fontWeight: 900,
-                            color: "#111827", // Gray-900
-                            marginBottom: 30,
+                            color: "#000000",
                             lineHeight: 1.1,
                             wordBreak: "break-word",
                             maxWidth: "1000px",
-                            textShadow: "0 4px 6px rgba(0,0,0,0.1)",
                         }}
                     >
                         {expression.expression}
@@ -124,7 +150,7 @@ export default async function Image({
                     {/* Meaning */}
                     <div
                         style={{
-                            fontSize: 40,
+                            fontSize: 30,
                             fontWeight: 500,
                             color: "#4b5563", // Gray-600
                             maxWidth: "900px",
@@ -137,6 +163,26 @@ export default async function Image({
         ),
         {
             ...size,
+            fonts: [
+                {
+                    name: 'Inter',
+                    data: inter500,
+                    style: 'normal',
+                    weight: 500,
+                },
+                {
+                    name: 'Inter',
+                    data: inter700,
+                    style: 'normal',
+                    weight: 700,
+                },
+                {
+                    name: 'Inter',
+                    data: inter900,
+                    style: 'normal',
+                    weight: 900,
+                },
+            ],
         }
     );
 }

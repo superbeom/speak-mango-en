@@ -3,7 +3,7 @@ import { SERVICE_NAME } from "@/constants";
 export const fr = {
     meta: {
         expressionTitle: "{expression} | {serviceName}",
-        expressionDesc: "Signification de {expression} : {meaning}. Apprenez avec une prononciation native sur {serviceName}.",
+        expressionDesc: "{meaning} | Apprenez avec une prononciation native sur {serviceName}.",
         mainTitle: "{serviceName} - Conversation Anglaise Quotidienne",
         mainDescription: `Des expressions anglaises fraîches sélectionnées à la main par ${SERVICE_NAME} tous les jours. Améliorez vos compétences en conversation professionnelle, de voyage et quotidienne avec une phrase par jour. Inclut la prononciation native et l'explication des nuances.`,
         keywords: `Conversation anglaise, Anglais des affaires, Anglais quotidien, Une phrase par jour, Expression anglaise, ${SERVICE_NAME}, Étude de l'anglais`,

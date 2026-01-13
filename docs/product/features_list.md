@@ -113,7 +113,7 @@
 ### SEO (검색 엔진 최적화)
 
 - **동적 메타데이터**: 페이지별 콘텐츠에 맞는 Title, Description, Keyword 자동 생성.
-- **Open Graph (OG)**: SNS 공유 시 표현(Expression) 텍스트와 의미가 포함된 고품질 미리보기 카드 제공.
+- **Node.js-generated OG Image (OG)**: SNS 공유 시 표현(Expression) 텍스트와 의미가 포함된 고품질 미리보기 카드 제공. (Node.js Runtime)
 - **JSON-LD**: 구글 검색 결과에 학습 자료(LearningResource) 및 조직(Organization) 정보를 리치 스니펫으로 노출.
 - **검색 최적화**: `sitemap.xml` 및 `robots.txt`를 통한 검색 엔진 크롤링 경로 가이드.
 

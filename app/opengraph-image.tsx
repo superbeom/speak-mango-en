@@ -12,6 +12,14 @@ export const size = {
 };
 export const contentType = "image/png";
 
+// Font loading
+async function loadGoogleFont() {
+    const res = await fetch(
+        `https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-900-normal.ttf`
+    );
+    return res.arrayBuffer();
+}
+
 // Image generation
 export default async function Image() {
     // 로고 이미지를 가져오기 위해 절대 경로 사용 (빌드 타임/런타임 고려)
@@ -21,9 +29,12 @@ export default async function Image() {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require("path");
 
-    const logoPath = path.join(process.cwd(), "public/assets/logo.png");
+    const logoPath = path.join(process.cwd(), "public/assets/og-logo.png");
     const logoBuffer = fs.readFileSync(logoPath);
     const logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+
+    // Load font
+    const interBlack = await loadGoogleFont();
 
     return new ImageResponse(
         (
@@ -43,7 +54,7 @@ export default async function Image() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        gap: "40px",
+                        gap: "5px",
                     }}
                 >
                     {/* Logo */}
@@ -58,13 +69,14 @@ export default async function Image() {
                     {/* Text */}
                     <div
                         style={{
-                            fontSize: 100,
-                            fontWeight: 800,
-                            color: "white",
-                            fontFamily: "sans-serif",
+                            fontSize: 115,
+                            fontWeight: 900,
+                            fontFamily: '"Inter", sans-serif',
                             textShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                            color: "white",
                             display: "flex",
                             alignItems: "center",
+                            paddingBottom: "20px", // 텍스트 잘림 방지
                         }}
                     >
                         {SERVICE_NAME}
@@ -74,6 +86,14 @@ export default async function Image() {
         ),
         {
             ...size,
+            fonts: [
+                {
+                    name: 'Inter',
+                    data: interBlack,
+                    style: 'normal',
+                    weight: 900,
+                },
+            ],
         }
     );
 }

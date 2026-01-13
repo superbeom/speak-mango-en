@@ -2,6 +2,22 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.11.3: Dynamic OG Image Design & Metadata Polish (2026-01-13)
+
+### 1. Dynamic OG Image Redesign (Expression Detail)
+
+- **Visual Upgrade**: 메인 OG 이미지의 디자인 언어(White BG, Gradient Text, Logo Header)를 상세 페이지인 `app/expressions/[id]/opengraph-image.tsx`에도 적용하여 브랜드 일관성 확보.
+- **Runtime Switch (Edge -> Node.js)**: 로컬 파일 시스템(`fs`)을 통해 고화질 로고(`logo.png`)와 폰트 파일(`inter-*.ttf`)을 직접 로드하기 위해 런타임 환경을 변경함.
+- **Typography Hierarchy**:
+  - **Service Name**: Inter Bold (700) + Gradient
+  - **Expression**: Inter Black (900)
+  - **Meaning**: Inter Medium (500)
+  - 각 요소의 중요도에 따라 폰트 두께를 차등 적용하여 가독성 최적화.
+
+### 2. i18n Metadata Optimization
+
+- **Expression Description**: 9개 국어 로케일 파일에서 `expressionDesc` 템플릿 수정. 중복되는 `expression` 변수를 제거하고 `meaning`을 전면에 배치하여 검색 결과 및 소셜 공유 시 정보 전달력 강화.
+
 ## v0.11.2: 대화 생성 규칙 정교화 및 검증 로직 완화 (2026-01-13)
 
 ### 1. Dialogue Generation Rules (Gender & Names)

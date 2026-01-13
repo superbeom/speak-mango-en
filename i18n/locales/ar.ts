@@ -3,7 +3,7 @@ import { SERVICE_NAME } from "@/constants";
 export const ar = {
     meta: {
         expressionTitle: "{expression} | {serviceName}",
-        expressionDesc: "معنى {expression}: {meaning}. تعلم مع نطق أصلي على {serviceName}.",
+        expressionDesc: "{meaning} | تعلم مع نطق أصلي على {serviceName}.",
         mainTitle: "{serviceName} - محادثة إنجليزية يومية",
         mainDescription: `تعبيرات إنجليزية جديدة مختارة بعناية من قبل ${SERVICE_NAME} كل يوم. حسن مهاراتك في المحادثة التجارية والسفر واليومية بجملة واحدة في اليوم. يتضمن نطقاً أصلياً وشرحاً للفروق الدقيقة.`,
         keywords: `محادثة إنجليزية, إنجليزية تجارية, إنجليزية يومية, جملة واحدة في اليوم, تعبير إنجليزي, ${SERVICE_NAME}, دراسة الإنجليزية`,

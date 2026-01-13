@@ -2,6 +2,25 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-13: Dynamic OG Image Design & Metadata Polish
+
+### ✅ 진행 사항
+
+- **Dynamic OG Image Redesign (Expression Detail)**:
+  - **Visual Upgrade**: 메인 OG 이미지의 디자인 언어(White BG, Gradient Text, Logo Header)를 상세 페이지(`app/expressions/[id]/opengraph-image.tsx`)에도 적용.
+  - **Runtime Switch**: 고화질 로고(`logo.png`) 및 폰트 파일(`inter-*.ttf`) 직접 로딩을 위해 `edge`에서 `nodejs` 런타임으로 변경.
+  - **Typography**: `Inter` 폰트(Bold 700, Black 900, Medium 500)를 사용하여 가독성 및 브랜드 일관성 강화.
+
+- **i18n Metadata Optimization**:
+  - **Expression Description Refinement**: 9개 국어 로케일 파일에서 `meaning`을 `expression`보다 먼저 노출하도록 포맷 수정.
+  - **Reason**: 검색 결과 및 소셜 공유 시 핵심 정보인 '뜻'을 강조하여 클릭률(CTR) 유도.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Edge Runtime을 포기하고 Node.js로 전환했나?**
+
+- **A.** `edge` 런타임은 파일 시스템(`fs`) 접근이 제한적이라 로컬에 저장된 고화질 로고와 폰트 파일을 효율적으로 읽어올 수 없었음. 디자인 완성도를 높이기 위해 Node.js 환경의 파일 시스템 API를 활용하기로 결정함.
+
 ## 2026-01-13: Dialogue Generation Rules Refinement (Gender & Names)
 
 ### ✅ 진행 사항

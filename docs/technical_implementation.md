@@ -438,10 +438,12 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 - **Metadata API**: Next.js 14+의 `generateMetadata` 함수를 활용하여 페이지별로 동적인 `title`과 `description`을 주입합니다.
 - **Structured Data (JSON-LD)**: 단순 메타 태그를 넘어, 구글 검색 엔진이 포맷을 이해할 수 있도록 `script` 태그에 `LearningResource` 스키마를 JSON-LD 포맷으로 삽입했습니다.
-- **Edge-generated OG Image**:
+- **Node.js-generated OG Image**:
   - `app/expressions/[id]/opengraph-image.tsx`를 구현했습니다.
+  - **Runtime Strategy**: 고화질 로고 이미지(`fs.readFileSync`)와 커스텀 폰트 파일 로딩을 위해 기본 `edge` 런타임 대신 **`nodejs` 런타임**을 채택했습니다.
   - ImageResponse API를 사용하여, 공유되는 표현(Expression) 텍스트가 박힌 세련된 이미지를 **Request Time에 동적으로 생성**합니다.
   - 이를 통해 수천 개의 표현에 대해 정적 이미지를 미리 만들어둘 필요 없이, 강력한 소셜 미디어 미리보기(썸네일)를 제공합니다.
+  - 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 제공합니다.
 
 ### 13.3 Type-Safe i18n Architecture (타입 안전 i18n)
 
