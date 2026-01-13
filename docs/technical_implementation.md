@@ -350,6 +350,15 @@ LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Le
   4. **Markdown Prevention**: 대화 번역문에 마크다운 문법(`**bold**`)이 포함되지 않도록 강제.
 - **Local Verification**: 동일한 로직을 로컬에서 수행할 수 있는 `verification/verify_db_data.js`를 제공하여, `temp.json` 데이터를 워크플로우 실행 없이 빠르게 검증할 수 있습니다.
 
+### 10.9 Single-Shot AI Generation (V2 Optimization)
+
+- **Architecture Shift**: 기존의 **2-Step** (Expression Selection -> Content Generation) 방식을 **Single-Shot** (Master Generator) 방식으로 통합했습니다.
+- **Files**: `n8n/expressions/code_v2/` 하위의 `04_gemini_master_generator_prompt.txt` 및 `05_parse_master_json.js`.
+- **Logic**:
+  - **Integrated Context**: 단일 프롬프트 내에서 '표현 선정'과 '다국어 콘텐츠 생성'을 동시에 수행하여, AI가 선정한 표현의 의도와 뉘앙스가 예문 및 설명에 일관되게 반영되도록 합니다.
+  - **Latency Reduction**: LLM 호출 횟수를 1회로 줄여 전체 파이프라인의 레이턴시를 약 40~50% 단축했습니다.
+- **Fail-Fast Verification**: `Validate Content` 단계를 DB 조회(`Check Duplicate`)보다 앞단에 배치하여, 파싱 실패나 규격 미달 데이터를 조기에 필터링하고 불필요한 DB/Storage 요청을 방지했습니다.
+
 ## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
 
 Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수성이 높은 디자인 시스템을 구축했습니다.

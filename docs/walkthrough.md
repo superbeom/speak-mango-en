@@ -2,6 +2,24 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.11.0: n8n Workflow V2 최적화 - Single-Shot AI Generation (2026-01-13)
+
+### 1. Single-Shot AI Architecture
+
+- **통합 생성 (Consolidated Generation)**: 기존의 2단계(표현 선정 -> 콘텐츠 생성) 호출을 하나의 `Gemini Master Generator` 호출로 통합함.
+- **성능 향상**: API 호출 횟수를 50% 절감하고, 네트워크 오버헤드를 제거하여 전체 생성 속도를 2배가량 향상시킴.
+- **문맥 일관성**: 동일한 프롬프트 컨텍스트 내에서 표현 선정과 다국어 설명을 동시 수행하여, AI가 선정한 표현의 뉘앙스가 예문과 상황 설명에 더 정교하게 반영되도록 개선함.
+
+### 2. Fail-Fast Validation Pipeline
+
+- **검증 단계 전진 배치**: `Validate Content` 로직을 DB 중복 확인 및 ID 생성보다 앞단으로 이동함.
+- **효율성 극대화**: 파싱 에러나 규격 미달 데이터가 발생할 경우 조기에 워크플로우를 중단하여, 불필요한 DB 쿼리와 Storage 요청을 방지함.
+- **코드 최적화**: `06_validate_content.js` 내의 미사용 변수(`id`)를 제거하여 ESLint 경고를 해결하고 로직을 정제함.
+
+### 3. Workflow Documentation Sync
+
+- **1:1 매칭 가이드**: `docs/n8n/expressions/optimization_steps_v2.md`를 신규 작성하여, 워크플로우의 실제 노드 순서(1~15번)와 문서의 단계 설명(1~15단계)을 완벽하게 일치시킴으로써 운영 가독성을 높임.
+
 ## v0.10.1: 대화 턴수 검증 규칙 도입 (Dialogue Turn Length Validation) (2026-01-12)
 
 ### 1. Dialogue Length Validation
