@@ -80,6 +80,9 @@ Requirements for Study Card Content:
    - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
    - Each entry in the `dialogue` array MUST include:
      - `"role"`: Value "A" or "B" to distinguish speakers.
+       *   **Role A**: Female (Default name: Sarah/Emily).
+       *   **Role B**: Male (Default name: Mike/David).
+       *   **Name Rule**: **If using names**, use **typical American names** by default (e.g., Sarah, Mike). **DO NOT use Korean names** (e.g., Sujin, Minji) or other target language names unless specifically required by the context.
      - `"en"`: The English sentence (**English ONLY**).
      - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
        *   **Do NOT omit this object or any languages.**

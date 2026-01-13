@@ -194,7 +194,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   - **Must Match**: `Any Filter`
   - **Field Name or ID**: `expression - (string)`
   - **Condition**: `ILIKE operator`
-  - **Field Value**: `*{{ $('Parse Expression JSON').item.json.expression }}*`
+  - **Field Value**: `"*{{ $('Parse Expression JSON').item.json.expression }}*"`
   - _(참고: 'Equal' 대신 'Like'를 사용하여 "touch base"가 생성될 때 기존의 "Let's touch base"도 중복으로 감지하도록 함)_
 
 ### 7단계: If 노드 추가 (조건 분기)
@@ -278,6 +278,9 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
      - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
      - Each entry in the `dialogue` array MUST include:
        - `"role"`: Value "A" or "B" to distinguish speakers.
+         *   **Role A**: Female (Default name: Sarah/Emily).
+         *   **Role B**: Male (Default name: Mike/David).
+         *   **Name Rule**: **If using names**, use **typical American names** by default (e.g., Sarah, Mike). **DO NOT use Korean names** (e.g., Sujin, Minji) or other target language names unless specifically required by the context.
        - `"en"`: The English sentence (**English ONLY**).
        - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
        *   **Do NOT omit this object or any languages.**

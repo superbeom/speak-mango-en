@@ -2,6 +2,17 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.11.2: 대화 생성 규칙 정교화 및 검증 로직 완화 (2026-01-13)
+
+### 1. Dialogue Generation Rules (Gender & Names)
+
+- **Gender Standardization**:
+  - **Role A**: 여성 (Female) - Default: Sarah/Emily
+  - **Role B**: 남성 (Male) - Default: Mike/David
+- **Name Usage Strategy**:
+  - **Flexible Rule**: "If using names"라는 조건을 추가하여, 대화의 자연스러운 흐름을 위해 필요한 경우에만 이름을 사용하도록 유도.
+  - **American Preferred**: 이름을 사용할 때는 전형적인 미국식 이름을 사용하며, 한국식 이름 사용은 지양.
+
 ## v0.11.1: 검증 로직 완전 동기화 (Validation Parity) (2026-01-13)
 
 ### 1. Verification Script Sync

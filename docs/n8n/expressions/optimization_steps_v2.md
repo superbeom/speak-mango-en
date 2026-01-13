@@ -119,7 +119,7 @@ Gemini의 응답(Markdown 포함)을 순수 JSON 객체로 변환하는 **Code**
 
 **Supabase** 노드로 DB에 동일한 표현이 있는지 최종 확인합니다.
 
-- **Filters**: `expression` ILIKE `{{ $json.expression }}`
+- **Filters**: `expression` ILIKE `"*{{ $json.expression }}*"`
 
 ### 9단계: If New
 

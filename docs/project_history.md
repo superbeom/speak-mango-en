@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-13: Dialogue Generation Rules Refinement (Gender & Names)
+
+### ✅ 진행 사항
+
+- **Dialogue Role & Name Standardization**:
+  - **Gender Roles**: Role A(여성), Role B(남성)으로 성별을 고정하여 대화의 일관성 확보.
+  - **Name Convention**: 미국식 이름(Sarah, Mike 등) 사용을 기본 원칙으로 하되, "이름을 사용할 경우(If using names)"에만 적용되도록 유연화.
+  - **Anti-Pattern Prevention**: 한국어 이름(민지, 철수 등) 사용을 명시적으로 금지하여 영어 학습 콘텐츠로서의 몰입도 저해 방지.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 이름을 강제하지 않고 "사용할 경우"로 바꿨나?**
+
+- **A.** 모든 대화에 이름을 부르는 것은 부자연스러울 수 있음. "Hey, Mike" 처럼 자연스러운 문맥에서만 이름을 사용하도록 하여 대화의 자연스러움을 높임.
+
 ## 2026-01-13: Validation Logic Synchronization & Data Fix (Strict Parity)
 
 ### ✅ 진행 사항
