@@ -2,6 +2,16 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.11.1: 검증 로직 완전 동기화 (Validation Parity) (2026-01-13)
+
+### 1. Verification Script Sync
+
+- **Strict Parity**: 로컬 검증 스크립트(`verification/verify_db_data.js`)를 n8n의 최신 검증 로직(`10_validate_content.js`)과 100% 일치시킴.
+- **Rules Applied**:
+  - **Dialogue Length**: 대화 턴수 2~4턴 강제.
+  - **Quiz Consistency**: 퀴즈 선택지의 언어 혼용(영어+타겟어) 금지.
+  - **Punctuation & Syntax**: 엄격한 문장 부호 및 태그 형식 검사.
+
 ## v0.11.0: n8n Workflow V2 최적화 - Single-Shot AI Generation (2026-01-13)
 
 ### 1. Single-Shot AI Architecture

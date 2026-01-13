@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-13: Validation Logic Synchronization & Data Fix (Strict Parity)
+
+### ✅ 진행 사항
+
+- **검증 로직 완전 동기화 (Strict Parity)**:
+  - `verification/verify_db_data.js`를 최신 n8n 로직(`10_validate_content.js`)과 100% 동일하게 업데이트.
+  - 대화 턴수(2~4), 퀴즈 선택지 언어 일관성, 문장 부호 검사 등의 엄격한 규칙이 로컬 스크립트에도 적용됨.
+
 ## 2026-01-13: n8n Workflow V2 Optimization (Single-Shot Generation)
 
 ### ✅ 진행 사항

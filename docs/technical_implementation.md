@@ -348,6 +348,8 @@ LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Le
   3. **No Mixed Language**: 번역 필드(`meaning`, `dialogue.translations`)에 영어 알파벳 소문자가 포함되어 있는지 검사하여 "언어 누출"을 방지.
      - **Exception**: 고유명사(대문자로 시작)나 허용 목록(`allowedlist`: iPhone, eBay 등)에 있는 단어는 통과.
   4. **Markdown Prevention**: 대화 번역문에 마크다운 문법(`**bold**`)이 포함되지 않도록 강제.
+  5. **Dialogue Length**: 대화가 너무 짧거나 길어지지 않도록 **2~4턴**의 길이를 강제.
+  6. **Quiz Consistency**: 퀴즈 선택지(Option A, B, C)의 언어가 모두 영어이거나 모두 타겟 언어여야 함(혼용 금지).
 - **Local Verification**: 동일한 로직을 로컬에서 수행할 수 있는 `verification/verify_db_data.js`를 제공하여, `temp.json` 데이터를 워크플로우 실행 없이 빠르게 검증할 수 있습니다.
 
 ### 10.9 Single-Shot AI Generation (V2 Optimization)

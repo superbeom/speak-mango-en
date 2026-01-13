@@ -40,12 +40,21 @@ function validateItem(item) {
     let errors = [];
     const id = item.id || 'unknown_id';
 
-    // 1. 구조 검사
+    // 1. 구조 검사 (Top-level)
     if (!item.expression) errors.push("Missing 'expression' field.");
     if (!item.meaning) errors.push("Missing 'meaning' field.");
     if (!item.content) errors.push("Missing 'content' field.");
     if (!item.tags) errors.push("Missing 'tags' field.");
-    if (!item.dialogue || !Array.isArray(item.dialogue)) errors.push("Missing 'dialogue' top-level array.");
+    if (!item.dialogue || !Array.isArray(item.dialogue)) {
+        errors.push("Missing 'dialogue' top-level array.");
+    } else if (item.dialogue.length === 0) {
+        errors.push("'dialogue' array is empty.");
+    }
+
+    // 규칙: Expression 문장 부호
+    if (item.expression && /[.,]$/.test(item.expression.trim())) {
+        errors.push("Expression must not end with a period (.) or comma (,).");
+    }
 
     // 2. 태그: 소문자 영어만 허용, '#' 금지
     if (item.tags && Array.isArray(item.tags)) {
@@ -63,7 +72,10 @@ function validateItem(item) {
     if (item.meaning) {
         TARGET_LANGS.forEach(lang => {
             const text = item.meaning[lang];
-            if (!text) return;
+            if (!text) {
+                errors.push(`Missing meaning for language: ${lang}`);
+                return;
+            }
 
             // 규칙: 대상 언어 혼용 금지
             if (lang === 'ko' && (REGEX.kana.test(text) || REGEX.han.test(text))) errors.push(`Meaning (${lang}) contains Mixed Foreign Script.`);
@@ -73,6 +85,11 @@ function validateItem(item) {
             if (['ko', 'ja', 'zh', 'ru', 'ar'].includes(lang)) {
                 checkEnglishInclusion(text, `Meaning (${lang})`, errors);
             }
+
+            // 규칙: 문장 부호 (물음표 검증은 제외 > 언어별 물음표가 다름, 마침표 금지만 검증)
+            if (text.trim().endsWith(".") && !text.trim().endsWith("...")) {
+                errors.push(`Meaning (${lang}) must not end with a period (.).`);
+            }
         });
     }
 
@@ -80,15 +97,25 @@ function validateItem(item) {
     if (item.content) {
         TARGET_LANGS.forEach(lang => {
             const contentObj = item.content[lang];
-            if (!contentObj) return;
+            if (!contentObj) {
+                errors.push(`Missing content object for language: ${lang}`);
+                return;
+            }
+
+            // 구조 검사 (언어별 상세 필드)
+            if (!contentObj.situation) errors.push(`Content (${lang}) is missing 'situation'.`);
+            if (!contentObj.tip) errors.push(`Content (${lang}) is missing 'tip'.`);
+            if (!contentObj.quiz) {
+                errors.push(`Content (${lang}) is missing 'quiz'.`);
+            } else {
+                if (!contentObj.quiz.question) errors.push(`Content (${lang}).quiz is missing 'question'.`);
+                if (!contentObj.quiz.answer) errors.push(`Content (${lang}).quiz is missing 'answer'.`);
+            }
 
             const fieldsToCheck = [
                 contentObj.situation,
                 contentObj.tip,
-                contentObj.quiz?.question,
-                contentObj.quiz?.A,
-                contentObj.quiz?.B,
-                contentObj.quiz?.C
+                contentObj.quiz?.question
             ].filter(Boolean);
 
             fieldsToCheck.forEach(text => {
@@ -106,11 +133,48 @@ function validateItem(item) {
                     errors.push(`Quiz Answer (${lang}) must be 'A', 'B', or 'C'. Found: ${contentObj.quiz.answer}`);
                 }
             }
+
+            // 규칙: 퀴즈 선택지 언어 일관성
+            if (['ko', 'ja', 'zh', 'ru', 'ar'].includes(lang)) {
+                if (contentObj.quiz && contentObj.quiz.question) {
+                    const lines = contentObj.quiz.question.split('\n');
+                    const opts = [];
+
+                    lines.forEach(line => {
+                        const trimmed = line.trim();
+                        if (trimmed.startsWith('A.') || trimmed.startsWith('B.') || trimmed.startsWith('C.')) {
+                            // "A. 내용" -> "내용" 추출
+                            opts.push(trimmed.substring(2).trim());
+                        }
+                    });
+
+                    if (opts.length === 3) {
+                        const isTarget = (s) => {
+                            if (lang === 'ko') return REGEX.hangul.test(s);
+                            if (lang === 'ja') return REGEX.kana.test(s) || REGEX.han.test(s);
+                            if (lang === 'zh') return REGEX.han.test(s);
+                            if (lang === 'ru') return REGEX.cyrillic.test(s);
+                            if (lang === 'ar') return REGEX.arabic.test(s);
+                            return false;
+                        };
+                        const cnt = opts.filter(isTarget).length;
+                        // 3개 모두 타겟 언어이거나(3), 모두 영어(0)여야 함.
+                        if (cnt !== 0 && cnt !== 3) {
+                            errors.push(`Quiz Options (${lang}) must be consistent (All English OR All Target). Mixed scripts found.`);
+                        }
+                    }
+                }
+            }
         });
     }
 
     // 5. 대화: 최상위 레벨 배열
     if (item.dialogue && Array.isArray(item.dialogue)) {
+        // 규칙: 대화는 2~4턴 사이여야 함 (프롬프트는 2~3턴 권장하나, 4턴도 허용)
+        if (item.dialogue.length < 2 || item.dialogue.length > 4) {
+            errors.push(`Dialogue length must be between 2 and 4. Found: ${item.dialogue.length}`);
+        }
+
         item.dialogue.forEach((dItem, idx) => {
             if (dItem.en) {
                 if (REGEX.hangul.test(dItem.en) || REGEX.kana.test(dItem.en)) {
