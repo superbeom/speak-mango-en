@@ -2,12 +2,27 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-13: PWA iOS Splash Screen Fix (Troubleshooting & Resolution)
+
+### ✅ 진행 사항
+
+- **Explicit Head Injection**: Next.js `metadata.appleWebApp` 설정이 iOS에서 무시되는 현상을 해결하기 위해, `layout.tsx`에 수동으로 `<head>` 태그를 선언하고 `<link rel="apple-touch-startup-image">`를 직접 주입.
+- **Standalone Mode Enforcement**: `apple-mobile-web-app-capable` 메타 태그를 명시적으로 추가하여 홈 화면 추가 시 Standalone 모드로 실행되도록 보장.
+
+### 🚨 트러블슈팅 (Troubleshooting)
+
+#### iOS Splash Screen White Screen Issue
+
+- **문제**: 정해진 규격의 스플래시 이미지를 모두 생성했음에도 불구하고, iOS 기기에서 앱 실행 시 스플래시 스크린 대신 흰 화면이 잠시 뜨는 현상.
+- **원인**: Next.js의 Metadata API가 생성하는 태그 구성 방식이 iOS의 PWA 인식 메커니즘과 충돌하거나 시점이 늦는 것으로 파악됨.
+- **해결**: Metadata abstraction을 우회하고 원시 HTML `<link>` 태그를 `<head>` 최상단부에 직접 배치하여 해결.
+
 ## 2026-01-13: Service Essentials Update (PWA Splash & Theme Color)
 
 ### ✅ 진행 사항
 
 - **Dynamic Theme Color**: `viewport` 설정에서 `themeColor`를 배열로 확장하여, 시스템 테마(Light/Dark)에 따라 브라우저 상단 바 색상이 `#ffffff` 또는 `#0a0a0a`로 자동 전환되도록 개선.
-- **Splash Screen Data Injection**: `pwa-asset-generator`로 생성된 모든 iOS 기기별 스플래시 스크린(30여 종)의 메타 태그 정보를 `layout.tsx`에 완전하게 주입하여, 모든 기기 대응력을 100%로 끌어올림.
+- **Splash Screen Data Generation**: `pwa-asset-generator`를 통해 30여 종의 iOS 해상도별 스플래시 이미지 생성 및 에셋 확보.
 - **Manifest Connection**: `layout.tsx` 메타데이터에 `manifest: "/manifest.ts"`를 명시적으로 연결.
 
 ### 💬 주요 Q&A 및 의사결정

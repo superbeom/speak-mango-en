@@ -2,6 +2,18 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.11.5: PWA iOS Splash Screen Fix (2026-01-13)
+
+### 1. Explicit Head Injection (iOS Compatibility)
+
+- **Problem**: Next.js Metadata API를 통한 `startupImage` 설정이 iOS PWA 환경에서 간헐적으로 무시되어 앱 실행 시 흰 화면이 노출되는 문제 발생.
+- **Solution**: `layout.tsx`에 수동으로 `<head>` 태그를 구성하고 30여 개의 `<link rel="apple-touch-startup-image" ...>` 태그를 직접 주입하여 안정성 확보.
+- **Result**: iOS 기기별 모든 해상도 및 방향(Portrait/Landscape)에서 스플래시 스크린 정상 동작 확인.
+
+### 2. Standalone Mode Assurance
+
+- **Meta Tag**: `apple-mobile-web-app-capable` 메타 태그를 수동 시스템에 추가하여, "홈 화면에 추가" 시 브라우저 UI 없이 독립형(Standalone) 앱으로 구동되도록 강제함.
+
 ## v0.11.4: Service Essentials Update (PWA Splash & Theme Color) (2026-01-13)
 
 ### 1. Dynamic Theme Color

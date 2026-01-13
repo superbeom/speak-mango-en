@@ -433,6 +433,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - `pwa-asset-generator`를 사용하여 30여 종의 해상도별 이미지를 생성했습니다.
   - **Padding Logic**: 로고가 화면에 꽉 차지 않고 여백을 갖도록, HTML 기반 렌더링 시 **Portrait(세로) 30%**, **Landscape(가로) 20%**의 패딩을 주어 생성했습니다. 이를 통해 아이패드 등 태블릿 가로 모드에서도 로고가 잘리지 않고 안정적으로 표시됩니다.
 - **Build Config**: `next-pwa`와 Turbopack의 호환성 문제 및 Vercel 배포 안정성을 위해, Dev/Build 스크립트에 `--webpack` 플래그를 명시적으로 적용했습니다.
+- **Explicit Injection (iOS Fix)**: Next.js `metadata.appleWebApp`의 자동 생성 태그가 iOS에서 스플래시 스크린을 제대로 트리거하지 못하는 이슈(White Screen)가 확인되어, `app/layout.tsx`에 수동으로 `<head>` 태그를 선언하고 `<link rel="apple-touch-startup-image">`를 직접 주입하는 **Hard-coded Link Strategy**를 채택했습니다. 또한 `apple-mobile-web-app-capable` 태그도 명시적으로 추가하여 Standalone 모드를 보장합니다.
 
 ### 13.4 PWA Theme Color (동적 테마 컬러)
 
