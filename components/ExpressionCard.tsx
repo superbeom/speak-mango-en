@@ -165,6 +165,7 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
                 <Tag
                   key={tag}
                   label={tag}
+                  source="card"
                   onClick={(e) => handleTagClick(e, tag)}
                 />
               ))}

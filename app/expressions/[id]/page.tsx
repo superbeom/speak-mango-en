@@ -237,7 +237,12 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
             <div className="flex flex-wrap gap-2">
               {expression.tags?.map((tag) => (
-                <Tag key={tag} label={tag} href={getHomeWithFilters({ tag })} />
+                <Tag
+                  key={tag}
+                  label={tag}
+                  source="detail"
+                  href={getHomeWithFilters({ tag })}
+                />
               ))}
             </div>
           </div>

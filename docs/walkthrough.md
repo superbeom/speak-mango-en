@@ -2,6 +2,58 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.2: Analytics Phase 3 완료 - 학습 모드, 필터, 검색, 태그 추적 (2026-01-14)
+
+### 1. Learning Mode Toggle Tracking
+
+- **Implementation**: `DialogueSection.tsx`에 `trackLearningModeToggle` 추가
+  - **Blind Listening Mode**: Headphones 아이콘 클릭 시 `mode: "blind_listening"`, `action: "enable"/"disable"` 전송
+  - **Translation Blur Mode**: Eye 아이콘 클릭 시 `mode: "translation_blur"`, `action: "enable"/"disable"` 전송
+- **Logic**: 각 모드의 활성화/비활성화 상태 변화를 정확히 추적
+- **Result**: 사용자의 학습 패턴 및 모드 사용률 분석 가능
+
+### 2. Category Filter Tracking
+
+- **Implementation**: `FilterBar.tsx`에 `trackFilterApply` 추가
+  - 카테고리 버튼 클릭 시 `filterType: "category"`, `filterValue: cat` 전송
+  - 중복 클릭 방지: 이미 선택된 카테고리 재클릭 시에만 "all"로 변경 이벤트 전송
+- **Result**: 사용자의 카테고리 탐색 패턴 및 인기 카테고리 파악 가능
+
+### 3. Search Tracking
+
+- **Implementation**: `SearchBar.tsx`에 `trackSearch` 추가
+  - 검색 제출 시 `searchTerm: value` 전송
+  - 빈 검색어는 추적하지 않음 (`value.trim()` 체크)
+- **Result**: 사용자 검색 의도 및 검색어 패턴 분석 가능
+
+### 4. Tag Click Tracking
+
+- **Implementation**: `Tag.tsx`에 `trackTagClick` 추가
+  - **Props 확장**: `source` prop 추가 (`"card" | "detail" | "filter"`)
+  - **Client Component**: `"use client"` 지시어 추가하여 클라이언트 컴포넌트화
+  - **Source Distinction**:
+    - `ExpressionCard.tsx`: `source="card"` 전달 (홈 피드 카드)
+    - `app/expressions/[id]/page.tsx`: `source="detail"` 전달 (상세 페이지)
+- **Result**: 태그 클릭이 발생하는 위치별 사용자 행동 패턴 분석 가능
+
+### 5. Documentation Updates
+
+- **docs/project_history.md**: Analytics Phase 3 완료 항목 추가 (Q&A, 구현 상세, 검증 방법)
+- **docs/product/features_list.md**: Phase 3 이벤트 상태를 ⏳에서 ✅로 변경
+- **docs/analytics/analytics_guide.md**: Phase 3 완료 상태 반영
+- **docs/analytics/implementation_guide.md**: 체크리스트 및 디렉토리 구조 업데이트
+
+### 6. Result
+
+- **Phase 3 완료**: 7개 이벤트 추적 구현 완료
+  - ✅ `expression_click`, `expression_view`
+  - ✅ `audio_play`
+  - ✅ `learning_mode_toggle` (Blind Listening, Translation Blur)
+  - ✅ `filter_apply` (카테고리)
+  - ✅ `search`
+  - ✅ `tag_click` (source 구분)
+- **향후 구현**: `audio_complete`, `related_click`, `share_click` 등
+
 ## v0.12.1: Analytics 모듈 재구성 및 Phase 3 이벤트 추적 구현 (2026-01-14)
 
 ### 1. Analytics Module Structure Reorganization

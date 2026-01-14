@@ -150,7 +150,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 
 ## 5. 구현 계획
 
-### 5.1 Phase 1: 기본 설정 (1일)
+### 5.1 Phase 1: 기본 설정
 
 **작업 내용:**
 
@@ -164,7 +164,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 - GA4 측정 ID: `G-XXXXXXXXXX`
 - Analytics 초기화 코드
 
-### 5.2 Phase 2: 페이지 뷰 추적 (0.5일)
+### 5.2 Phase 2: 페이지 뷰 추적
 
 **작업 내용:**
 
@@ -176,39 +176,43 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 
 - GA4 실시간 보고서에서 페이지 뷰 확인
 
-### 5.3 Phase 3: 이벤트 추적 (2일)
+### 5.3 Phase 3: 이벤트 추적
 
 **작업 내용:**
 
 1. **표현 관련 이벤트**
 
-   - `ExpressionCard.tsx`: 클릭 추적
-   - `app/expressions/[id]/page.tsx`: 조회 추적
+   - ✅ `ExpressionCard.tsx`: 클릭 추적
+   - ✅ `ExpressionViewTracker.tsx`: 조회 추적 (서버/클라이언트 분리)
 
 2. **오디오 관련 이벤트**
 
-   - `DialogueAudioButton.tsx`: 재생/완료 추적
-   - `DialogueSection.tsx`: 전체 듣기 추적
+   - ✅ `DialogueAudioButton.tsx`: 재생 추적
+   - ⏳ `DialogueAudioButton.tsx`: 재생 완료 추적 (향후 구현)
 
 3. **학습 모드 이벤트**
 
-   - `DialogueSection.tsx`: 모드 전환 추적
+   - ✅ `DialogueSection.tsx`: Blind Listening 모드 전환 추적
+   - ✅ `DialogueSection.tsx`: Translation Blur 모드 전환 추적
 
 4. **탐색 이벤트**
 
-   - `FilterBar.tsx`: 필터/검색 추적
-   - `Tag.tsx`: 태그 클릭 추적
+   - ✅ `FilterBar.tsx`: 카테고리 필터 추적
+   - ✅ `SearchBar.tsx`: 검색 실행 추적
+   - ✅ `Tag.tsx`: 태그 클릭 추적 (source: card/detail/filter 구분)
+   - ⏳ `RelatedExpressions.tsx`: 관련 표현 클릭 추적 (향후 구현)
 
 5. **공유 이벤트 (향후 구현)**
-   - `ShareButton.tsx`: 공유 버튼 클릭 및 플랫폼 선택 추적
-   - Web Share API 사용 여부 추적
+   - ⏳ `ShareButton.tsx`: 공유 버튼 클릭 및 플랫폼 선택 추적
+   - ⏳ Web Share API 사용 여부 추적
 
 **검증:**
 
-- GA4 DebugView에서 각 이벤트 확인
-- 파라미터 정확성 검증
+- ✅ 개발 환경에서 콘솔 로그 확인
+- ✅ 모든 이벤트 파라미터 정확성 검증
+- ⏳ GA4 DebugView에서 각 이벤트 확인 (프로덕션 배포 후)
 
-### 5.4 Phase 4: 대시보드 구축 (1일)
+### 5.4 Phase 4: 대시보드 구축
 
 **작업 내용:**
 
@@ -224,7 +228,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 - 오디오 재생률
 - 학습 모드 사용률
 
-### 5.5 Phase 5: 문서화 및 테스트 (0.5일)
+### 5.5 Phase 5: 문서화 및 테스트
 
 **작업 내용:**
 
@@ -247,7 +251,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 1. **쿠키 동의 (Cookie Consent)**
 
    - 한국/EU 사용자를 위한 간소화된 동의 방식
-   - 향후 구현 예정 (Phase 5 수익화 단계)
+   - 향후 구현 예정 (Phase 6 수익화 단계)
 
 2. **IP 익명화**
 

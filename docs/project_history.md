@@ -2,6 +2,161 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-14: Analytics Phase 3 완료 (학습 모드, 필터, 검색, 태그 추적)
+
+### ✅ 진행 사항
+
+- **Phase 3: 나머지 이벤트 추적 구현 완료**
+  - Learning Mode Toggle Tracking (`DialogueSection.tsx`)
+  - Category Filter Tracking (`FilterBar.tsx`)
+  - Search Tracking (`SearchBar.tsx`)
+  - Tag Click Tracking (`Tag.tsx`)
+- **Props 확장**:
+  - `Tag`: `source` prop 추가 (`"card" | "detail" | "filter"` 구분)
+- **상위 컴포넌트 수정**:
+  - `ExpressionCard`: Tag에 `source="card"` 전달
+  - `app/expressions/[id]/page.tsx`: Tag에 `source="detail"` 전달
+- **문서 업데이트**:
+  - `docs/product/features_list.md`: Phase 3 이벤트 상태를 ⏳에서 ✅로 변경
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 학습 모드 토글 추적은 어떻게 구현했나?**
+
+- **A.** `DialogueSection` 컴포넌트의 두 가지 학습 모드를 각각 추적:
+  1. **Blind Listening Mode**: Headphones 아이콘 클릭 시 `mode: "blind_listening"` 전송
+  2. **Translation Blur**: Eye 아이콘 클릭 시 `mode: "translation_blur"` 전송
+  - 각 모드의 활성화/비활성화를 `action: "enable" | "disable"`로 구분하여 사용자의 학습 패턴 파악 가능
+
+**Q. 카테고리 필터 추적에서 중복 클릭은 어떻게 처리했나?**
+
+- **A.** `FilterBar`에서 이미 선택된 카테고리를 다시 클릭하는 경우:
+  - `"all"` 카테고리는 아무 동작도 하지 않음 (중복 페칭 방지)
+  - 다른 카테고리는 선택 해제(`category: "all"`)하고 해당 이벤트 전송
+  - 실제로 필터가 변경될 때만 이벤트를 전송하여 데이터 정확성 확보
+
+**Q. Tag 컴포넌트의 source는 왜 필요한가?**
+
+- **A.** 태그 클릭이 발생하는 위치에 따라 사용자 행동 패턴이 다름:
+  - `"card"`: 홈 피드의 카드에서 태그 클릭 (탐색 초기 단계)
+  - `"detail"`: 상세 페이지에서 태그 클릭 (콘텐츠 소비 후 관련 탐색)
+  - `"filter"`: 필터 바에서 태그 클릭 (향후 구현 예정)
+  - 이를 통해 어느 단계에서 태그 기반 탐색이 활발한지 분석 가능
+
+**Q. 빈 검색어는 왜 추적하지 않나?**
+
+- **A.** `SearchBar`의 `handleSubmit`에서 `value.trim()`이 비어있으면 이벤트를 전송하지 않음. 빈 검색어는 사용자가 실수로 Enter를 누르거나 검색을 취소하는 경우가 많아 의미 있는 데이터가 아니므로 제외.
+
+### 🏗️ 구현 상세
+
+**1. Learning Mode Toggle Tracking**
+
+```typescript
+// DialogueSection.tsx
+import { trackLearningModeToggle } from "@/analytics";
+
+// Blind Listening 활성화
+trackLearningModeToggle({
+  mode: "blind_listening",
+  action: "enable",
+});
+
+// Translation Blur 비활성화 (모두 보기)
+trackLearningModeToggle({
+  mode: "translation_blur",
+  action: "disable",
+});
+```
+
+**2. Category Filter Tracking**
+
+```typescript
+// FilterBar.tsx
+import { trackFilterApply } from "@/analytics";
+
+// 카테고리 변경 시
+trackFilterApply({
+  filterType: "category",
+  filterValue: cat, // "business", "travel", "all" 등
+});
+```
+
+**3. Search Tracking**
+
+```typescript
+// SearchBar.tsx
+import { trackSearch } from "@/analytics";
+
+// 검색 제출 시 (빈 검색어 제외)
+if (value.trim()) {
+  trackSearch({
+    searchTerm: value,
+  });
+}
+```
+
+**4. Tag Click Tracking**
+
+```typescript
+// Tag.tsx
+import { trackTagClick } from "@/analytics";
+
+// 태그 클릭 시
+trackTagClick({
+  tagName: label,
+  source: source, // "card", "detail", "filter"
+});
+```
+
+### 📊 현재 추적 가능한 이벤트 (Phase 3 완료)
+
+**자동 추적 (Phase 1-2):**
+
+- ✅ `page_view`: 모든 페이지 뷰 (AnalyticsProvider)
+
+**수동 추적 (Phase 3 - 구현 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생
+- ✅ `learning_mode_toggle`: 학습 모드 전환 (**신규**)
+- ✅ `filter_apply`: 필터 적용 (**신규**)
+- ✅ `search`: 검색 실행 (**신규**)
+- ✅ `tag_click`: 태그 클릭 (**신규**)
+
+**수동 추적 (향후 구현 예정):**
+
+- ⏳ `audio_complete`: 오디오 재생 완료
+- ⏳ `related_click`: 관련 표현 클릭
+- ⏳ `share_click`: 공유 버튼 클릭
+- ⏳ `share_complete`: 공유 완료
+
+### 🔍 검증 방법
+
+**개발 환경 콘솔 로그 확인:**
+
+```bash
+# 개발 서버 실행
+yarn dev
+```
+
+브라우저 콘솔에서 다음 이벤트 로그 확인:
+
+1. **학습 모드 토글**: 상세 페이지에서 Headphones/Eye 아이콘 클릭
+   - `[Analytics] Event: learning_mode_toggle { mode: "blind_listening", action: "enable" }`
+2. **카테고리 필터**: 홈 페이지에서 카테고리 버튼 클릭
+   - `[Analytics] Event: filter_apply { filter_type: "category", filter_value: "business" }`
+3. **검색**: 검색창에 "hello" 입력 후 Enter
+   - `[Analytics] Event: search { search_term: "hello" }`
+4. **태그 클릭**: 카드 또는 상세 페이지의 태그 클릭
+   - `[Analytics] Event: tag_click { tag_name: "daily", source: "card" }`
+
+### 🔄 다음 단계
+
+- [ ] `audio_complete` 이벤트 구현 (`DialogueAudioButton.tsx`)
+- [ ] `related_click` 이벤트 구현 (`RelatedExpressions.tsx`)
+- [ ] GA4 대시보드에서 실제 데이터 수집 검증 (프로덕션 배포 후)
+
 ## 2026-01-14: Analytics Phase 3 구현 (컴포넌트 이벤트 추적 및 모듈 재구성)
 
 ### ✅ 진행 사항

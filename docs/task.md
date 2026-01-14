@@ -76,7 +76,14 @@
 - [x] **Module Organization**: Analytics 모듈 구조화 (`analytics/`) 및 루트 레벨 격상
 - [x] **Tracking (Page View)**: 라우트 변경 시 자동 페이지 뷰 추적 (`AnalyticsProvider`)
 - [x] **Tracking (Expression)**: 표현 카드 클릭(`expression_click`) 및 상세 조회(`expression_view`) 추적
-- [x] **Tracking (Audio)**: 오디오 재생 추적 인프라 구축 및 적용 (`trackAudioPlay`)
+- [x] **Tracking (Audio)**: 오디오 재생 추적 (`trackAudioPlay`)
+- [x] **Tracking (Learning Mode)**: 학습 모드 전환 추적 (`trackLearningModeToggle` - Blind Listening, Translation Blur)
+- [x] **Tracking (Filter)**: 카테고리 필터 적용 추적 (`trackFilterApply`)
+- [x] **Tracking (Search)**: 검색 실행 추적 (`trackSearch`)
+- [x] **Tracking (Tag)**: 태그 클릭 추적 (`trackTagClick` - source 구분: card/detail/filter)
+- [ ] **Tracking (Audio Complete)**: 오디오 재생 완료 추적 (`trackAudioComplete`)
+- [ ] **Tracking (Related)**: 관련 표현 클릭 추적 (`trackRelatedClick`)
+- [ ] **Tracking (Share)**: 공유 버튼 클릭 및 완료 추적 (향후 구현)
 
 ## Phase 6: Monetization (수익화)
 

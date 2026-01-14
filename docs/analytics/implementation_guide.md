@@ -46,23 +46,23 @@
 **권장 구조:**
 
 ```
-lib/
-└── analytics/
-    ├── index.ts              # 유틸리티 함수 (이벤트 추적)
-    └── AnalyticsProvider.tsx # Provider 컴포넌트 (페이지 뷰 자동 추적)
+analytics/
+├── index.ts              # 유틸리티 함수 (이벤트 추적)
+├── AnalyticsProvider.tsx # Provider 컴포넌트 (페이지 뷰 자동 추적)
+└── ExpressionViewTracker.tsx # 표현 상세 조회 추적 컴포넌트
 ```
 
 **이유:**
 
+- ✅ 독립성: Analytics는 완전한 기능 모듈로 루트 레벨에 배치
 - ✅ 확장성: 향후 다른 analytics 관련 파일 추가 용이
-- ✅ 일관성: `lib/` 폴더는 비즈니스 로직 및 유틸리티 담당
-- ✅ 모듈화: analytics 관련 코드를 한 곳에 집중
+- ✅ 일관성: `components/`, `hooks/`와 동일한 레벨의 독립 모듈
 
 ---
 
 ### 1.3 Analytics 유틸리티 함수 작성
 
-**파일**: `lib/analytics/index.ts`
+**파일**: `analytics/index.ts`
 
 **핵심 기능:**
 
@@ -122,7 +122,7 @@ lib/
 
 ### 1.4 AnalyticsProvider 컴포넌트 작성
 
-**파일**: `lib/analytics/AnalyticsProvider.tsx`
+**파일**: `analytics/AnalyticsProvider.tsx`
 
 **핵심 로직:**
 
@@ -176,8 +176,8 @@ export default function AnalyticsProvider({
 
 ```typescript
 import Script from "next/script";
-import AnalyticsProvider from "@/lib/analytics/AnalyticsProvider";
-import { GA_MEASUREMENT_ID } from "@/lib/analytics";
+import AnalyticsProvider from "@/analytics/AnalyticsProvider";
+import { GA_MEASUREMENT_ID } from "@/analytics";
 ```
 
 **2단계: GA4 스크립트 추가**
@@ -411,12 +411,19 @@ const handleClick = () => {
 - [x] Title 중복 문제 해결 (i18n 수정)
 - [ ] GA4 실시간 보고서 확인 (선택사항)
 
-### Phase 3: 이벤트 추적 (예정)
+### Phase 3: 이벤트 추적
 
-- [ ] 표현 관련 이벤트 추가
-- [ ] 오디오 관련 이벤트 추가
-- [ ] 학습 모드 이벤트 추가
-- [ ] 탐색 이벤트 추가
+- [x] 표현 관련 이벤트 추가
+  - [x] `ExpressionCard.tsx`: 표현 클릭 추적
+  - [x] `ExpressionViewTracker.tsx`: 표현 상세 조회 추적
+- [x] 오디오 관련 이벤트 추가
+  - [x] `DialogueAudioButton.tsx`: 오디오 재생 추적
+- [x] 학습 모드 이벤트 추가
+  - [x] `DialogueSection.tsx`: Blind Listening, Translation Blur 토글 추적
+- [x] 탐색 이벤트 추가
+  - [x] `FilterBar.tsx`: 카테고리 필터 추적
+  - [x] `SearchBar.tsx`: 검색 실행 추적
+  - [x] `Tag.tsx`: 태그 클릭 추적 (source 구분)
 
 ---
 
@@ -431,8 +438,10 @@ const handleClick = () => {
 ### 내부 문서
 
 - `docs/analytics/analytics_guide.md`: 전체 Analytics 계획 및 이벤트 설계
-- `lib/analytics/index.ts`: 유틸리티 함수 구현
-- `lib/analytics/AnalyticsProvider.tsx`: Provider 컴포넌트
+- `docs/analytics/implementation_guide.md`: 단계별 구현 가이드 (본 문서)
+- `analytics/index.ts`: 유틸리티 함수 구현
+- `analytics/AnalyticsProvider.tsx`: Provider 컴포넌트
+- `analytics/ExpressionViewTracker.tsx`: 표현 조회 추적 컴포넌트
 
 ---
 

@@ -203,13 +203,9 @@ export const trackFilterApply = (params: {
 /**
  * 검색 추적
  */
-export const trackSearch = (params: {
-  searchTerm: string;
-  resultsCount: number;
-}): void => {
+export const trackSearch = (params: { searchTerm: string }): void => {
   trackEvent("search", {
     search_term: params.searchTerm,
-    results_count: params.resultsCount,
   });
 };
 
