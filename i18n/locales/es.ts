@@ -46,5 +46,8 @@ export const es = {
     label: "Expresión de Hoy",
     situationQuestion: "¿Cuál es la situación?",
     noDescription: "No hay descripción disponible.",
+    share: "Compartir",
+    shareCopied: "¡Enlace copiado!",
+    shareFailed: "Error al compartir",
   },
 };

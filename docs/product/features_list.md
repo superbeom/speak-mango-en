@@ -62,6 +62,7 @@
   - **Share**: Web Share API를 활용한 네이티브 공유 기능.
     - **모바일**: Instagram, Twitter, KakaoTalk 등 설치된 앱으로 직접 공유
     - **데스크탑**: 클립보드 복사 + 토스트 알림 (폴백)
+    - **Card Integration**: 표현 카드 우측 하단에 compact 공유 버튼 배치 (absolute 포지셔닝)
     - **Analytics**: 공유 클릭 및 완료 이벤트 추적 (`trackShareClick`, `trackShareComplete`)
 - **관련 표현 추천**:
   - 하단에 동일 카테고리의 다른 표현들을 추천.

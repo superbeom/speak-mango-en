@@ -45,5 +45,8 @@ export const ja = {
     label: "今日の表現",
     situationQuestion: "どんな状況？",
     noDescription: "説明がありません。",
+    share: "共有",
+    shareCopied: "リンクをコピーしました！",
+    shareFailed: "共有に失敗しました",
   },
 };

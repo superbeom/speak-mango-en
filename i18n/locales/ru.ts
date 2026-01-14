@@ -44,5 +44,8 @@ export const ru = {
     label: "Выражение дня",
     situationQuestion: "Какая ситуация?",
     noDescription: "Описание недоступно.",
+    share: "Поделиться",
+    shareCopied: "Ссылка скопирована!",
+    shareFailed: "Ошибка при обмене",
   },
 };

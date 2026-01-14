@@ -725,3 +725,106 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   ```
 - **Import Path**: `@/analytics` (기존 `@/lib/analytics`에서 변경)
 - **Comment Convention**: 모든 주석 한국어로 통일 (프로젝트 규칙 준수)
+
+## 15. Share Functionality Implementation (공유 기능 구현)
+
+사용자가 표현을 소셜 미디어나 메신저로 공유할 수 있도록 Web Share API와 Clipboard API를 활용한 크로스 플랫폼 공유 시스템입니다.
+
+### 15.1 ShareButton Component Architecture (컴포넌트 아키텍처)
+
+- **File**: `components/ShareButton.tsx`
+- **Strategy**: Progressive Enhancement (점진적 향상)
+  - **Primary**: Web Share API (모바일 네이티브 공유)
+  - **Fallback**: Clipboard API (데스크탑 복사)
+- **Variant Support**:
+  - `default`: 아이콘 + 텍스트 (상세 페이지용)
+  - `compact`: 아이콘만 (카드용, 공간 효율적)
+
+### 15.2 Web Share API Integration (네이티브 공유 통합)
+
+- **Feature Detection**: `navigator.share` 존재 여부로 지원 확인
+- **Share Data**:
+  ```typescript
+  await navigator.share({
+    title: `${expressionText} - Speak Mango`,
+    text: meaning,
+    url: shareUrl,
+  });
+  ```
+- **Platform Support**:
+  - **Mobile**: Instagram, Twitter, KakaoTalk, WhatsApp 등 설치된 앱으로 직접 공유
+  - **Desktop**: 대부분 미지원 → Clipboard Fallback 자동 전환
+
+### 15.3 Clipboard Fallback Strategy (클립보드 폴백)
+
+- **API**: `navigator.clipboard.writeText(url)`
+- **User Feedback**: Toast 알림으로 복사 성공/실패 피드백
+- **URL Generation**: `lib/utils.ts`의 `getShareUrl` 함수
+  ```typescript
+  export function getShareUrl(
+    expressionId: string,
+    utmParams?: Record<string, string>
+  ): string {
+    const url = `${BASE_URL}/expressions/${expressionId}`;
+    if (!utmParams) return url;
+    const params = new URLSearchParams(utmParams);
+    return `${url}?${params.toString()}`;
+  }
+  ```
+- **UTM Parameters**: 공유 출처 추적 (`utm_source=share`, `utm_medium=native`)
+
+### 15.4 Toast Notification System (토스트 알림 시스템)
+
+- **Component**: `components/ui/Toast.tsx`
+- **Type System**: `types/toast.ts`
+  - `ToastType`: `"success" | "error"`
+  - `TOAST_TYPE`: 상수 객체 (`SUCCESS`, `ERROR`)
+- **Design Pattern**: 재사용 가능한 독립 컴포넌트
+  - ShareButton뿐만 아니라 향후 다른 기능(북마크, 좋아요 등)에서도 활용 가능
+- **Animation**: Framer Motion 기반 fade-in + slide-in 효과
+- **Auto-dismiss**: 3초 후 자동 사라짐
+
+### 15.5 Event Propagation Prevention (이벤트 전파 방지)
+
+- **Problem**: Expression Card는 전체가 `<Link>`로 감싸져 있어, 공유 버튼 클릭 시 상세 페이지로 이동하는 문제 발생
+- **Solution**: 이중 방어 전략
+  1. **ShareButton 내부**: `handleShare`에서 `e.preventDefault()` + `e.stopPropagation()`
+  2. **ExpressionCard**: ShareButton의 `onClick` prop에서 `e.stopPropagation()`
+- **Result**: 공유 버튼 클릭 시 페이지 이동 없이 공유 기능만 실행
+
+### 15.6 Card Integration with Absolute Positioning (카드 통합)
+
+- **Layout Strategy**: Absolute 포지셔닝으로 독립적 배치
+  ```tsx
+  <Link className="relative block h-full">
+    {/* 카드 내용 */}
+
+    <div className="absolute bottom-5 right-5">
+      <ShareButton variant="compact" ... />
+    </div>
+  </Link>
+  ```
+- **Design Decision**:
+  - **Initial Attempt**: 태그와 함께 flex 레이아웃 → 태그 개수에 따라 위치 변동
+  - **Final Solution**: Absolute 포지셔닝 → 항상 우측 하단 고정 위치
+- **Benefits**:
+  - 일관된 위치 (태그 개수 무관)
+  - 시각적 균형 확보
+  - 태그 영역 침범 없음
+
+### 15.7 Analytics Integration (분석 통합)
+
+- **Events**:
+  - `trackShareClick`: 공유 버튼 클릭 시 자동 호출
+    - `shareMethod`: `"native"` (Web Share API) | `"copy_link"` (Clipboard)
+    - `sharePlatform`: `"native"` | `"clipboard"`
+  - `trackShareComplete`: 공유 성공 시 자동 호출
+- **Implementation**: ShareButton 내부에서 자동 추적, 컴포넌트 사용자는 별도 로직 불필요
+
+### 15.8 Internationalization (다국어 지원)
+
+- **Translation Keys**: 9개 언어 (EN, KO, JA, ES, FR, DE, RU, ZH, AR)
+  - `detail.share`: "Share" / "공유" / "共有" 등
+  - `detail.shareCopied`: "Link copied!" / "링크 복사됨!" 등
+  - `detail.shareFailed`: "Failed to share" / "공유 실패" 등
+  - `card.share`, `card.shareCopied`, `card.shareFailed`: 카드용 동일 텍스트

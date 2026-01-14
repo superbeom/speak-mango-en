@@ -46,5 +46,8 @@ export const fr = {
     label: "Expression du Jour",
     situationQuestion: "Quelle est la situation ?",
     noDescription: "Aucune description disponible.",
+    share: "Partager",
+    shareCopied: "Lien copié !",
+    shareFailed: "Échec du partage",
   },
 };

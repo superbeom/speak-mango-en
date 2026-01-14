@@ -44,5 +44,8 @@ export const ar = {
     label: "تعبير اليوم",
     situationQuestion: "ما هو الموقف؟",
     noDescription: "لا يوجد وصف متاح.",
+    share: "مشاركة",
+    shareCopied: "تم نسخ الرابط!",
+    shareFailed: "فشلت المشاركة",
   },
 };

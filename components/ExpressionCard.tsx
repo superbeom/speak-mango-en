@@ -13,6 +13,7 @@ import { ROUTES, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
+import ShareButton from "@/components/ShareButton";
 
 interface ExpressionCardProps {
   item: Expression;
@@ -88,7 +89,7 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
     >
       <Link
         href={ROUTES.EXPRESSION_DETAIL(item.id)}
-        className="block h-full"
+        className="relative block h-full"
         onClick={() => {
           // Track expression click event
           trackExpressionClick({
@@ -171,6 +172,20 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Share Button */}
+        <div className="absolute bottom-5 right-5">
+          <ShareButton
+            variant="compact"
+            expressionId={item.id}
+            expressionText={item.expression}
+            meaning={meaning}
+            shareLabel={dict.card.share}
+            shareCopiedLabel={dict.card.shareCopied}
+            shareFailedLabel={dict.card.shareFailed}
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       </Link>
     </motion.div>

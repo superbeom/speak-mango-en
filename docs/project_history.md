@@ -2,6 +2,107 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-14: 표현 카드 공유 버튼 통합 (Card Share Integration)
+
+### ✅ 진행 사항
+
+- **Expression Card Layout Update**: `components/ExpressionCard.tsx`
+  - ShareButton을 absolute 포지셔닝으로 우측 하단에 배치
+  - Link 컴포넌트에 `relative` 추가 (포지셔닝 컨텍스트)
+  - 태그와 독립적인 영역으로 분리
+- **Event Propagation Enhancement**: 이벤트 전파 방지 강화
+- **i18n Update**: 9개 언어에 card.share 관련 텍스트 추가 (이전 커밋에서 누락)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. ShareButton을 왜 absolute 포지셔닝으로 배치했나?**
+
+- **A.** 초기에는 태그와 함께 flex 레이아웃에 배치했으나, 태그 개수에 따라 공유 버튼 위치가 변동되는 문제 발생. absolute 포지셔닝으로 우측 하단(`bottom-5 right-5`)에 고정하여:
+  1. **일관된 위치**: 태그 개수와 무관하게 항상 같은 위치
+  2. **시각적 균형**: 우측 하단 고정으로 카드 레이아웃 안정성 확보
+  3. **공간 효율**: 태그 영역을 침범하지 않고 독립적으로 배치
+
+**Q. Link에 `relative`와 `block`을 함께 사용해도 괜찮은가?**
+
+- **A.** 완전히 유효한 조합임:
+  - `block`: display 속성 (레이아웃 타입) - Link가 카드 전체 높이(`h-full`) 차지
+  - `relative`: position 속성 (포지셔닝 컨텍스트) - ShareButton의 absolute 기준점
+  - 두 속성은 서로 다른 CSS 속성이므로 충돌 없이 함께 작동
+
+**Q. 이벤트 전파 방지는 어떻게 강화했나?**
+
+- **A.** 이중 방어 전략:
+  1. **ShareButton 내부**: `handleShare`에서 `e.preventDefault()` + `e.stopPropagation()`
+  2. **ExpressionCard**: ShareButton의 `onClick` prop에서 `e.stopPropagation()`
+  - 두 레벨에서 이벤트 전파를 차단하여 카드 클릭 이벤트와 완전히 분리
+
+**Q. 태그와 공유 버튼을 왜 분리했나?**
+
+- **A.** 초기 grid 레이아웃(2:1 비율)도 시도했으나, absolute 포지셔닝이 더 나은 이유:
+  - **유연성**: 태그가 많아져도 레이아웃 깨지지 않음
+  - **명확성**: 공유 버튼이 항상 예측 가능한 위치에 있어 사용자 학습 비용 감소
+  - **반응형**: 모바일/데스크탑 모두에서 일관된 경험 제공
+
+### 🏗️ 구현 상세
+
+**1. Absolute Positioning**
+
+```tsx
+// ExpressionCard.tsx
+<Link
+  href={ROUTES.EXPRESSION_DETAIL(item.id)}
+  className="relative block h-full" // relative 추가
+>
+  {/* 카드 내용 */}
+
+  {/* ShareButton - absolute 포지셔닝 */}
+  <div className="absolute bottom-5 right-5">
+    <ShareButton
+      variant="compact"
+      expressionId={item.id}
+      expressionText={item.expression}
+      meaning={meaning}
+      shareLabel={dict.card.share}
+      shareCopiedLabel={dict.card.shareCopied}
+      shareFailedLabel={dict.card.shareFailed}
+      onClick={(e) => e.stopPropagation()}
+    />
+  </div>
+</Link>
+```
+
+**2. Event Propagation Prevention**
+
+```tsx
+// ShareButton.tsx - handleShare
+const handleShare = async (e: React.MouseEvent) => {
+  e.preventDefault(); // 기본 동작 방지
+  e.stopPropagation(); // 이벤트 전파 차단
+
+  if (onClick) onClick(e); // 추가 핸들러 실행
+  // ... 공유 로직
+};
+```
+
+### 🔍 검증 방법
+
+**브라우저 테스트**:
+
+1. **메인 페이지 카드**:
+
+   - 공유 버튼이 우측 하단에 고정 위치로 표시
+   - 공유 버튼 클릭 시 페이지 이동 없이 공유 기능만 실행 ✅
+   - Toast 알림 정상 표시 ✅
+
+2. **관련 표현 섹션**:
+   - 데스크탑 Marquee 스크롤 중에도 공유 버튼 정상 작동
+   - 모바일 세로 리스트에서도 동일하게 작동
+
+### 🔄 다음 단계
+
+- [ ] 사용자 피드백 수집 (공유 버튼 위치 및 크기)
+- [ ] GA4에서 카드 공유 vs 상세 페이지 공유 비율 분석
+
 ## 2026-01-14: Share 기능 구현 (Web Share API + Toast System)
 
 ### ✅ 진행 사항

@@ -44,5 +44,8 @@ export const zh = {
     label: "今日表达",
     situationQuestion: "是什么情况？",
     noDescription: "暂无描述。",
+    share: "分享",
+    shareCopied: "已复制链接！",
+    shareFailed: "分享失败",
   },
 };

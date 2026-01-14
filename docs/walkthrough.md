@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.5: 표현 카드 공유 버튼 통합 (2026-01-14)
+
+### 1. Card Layout Redesign
+
+- **Independent Share Button Positioning**:
+  - ShareButton을 카드 우측 하단에 absolute 포지셔닝
+  - `bottom-5 right-5` 위치로 고정하여 태그와 독립적으로 배치
+  - Link 컴포넌트에 `relative` 추가하여 포지셔닝 컨텍스트 제공
+
+### 2. Event Propagation Prevention
+
+- **Robust Click Handling**:
+  - ShareButton 내부: `e.preventDefault()` + `e.stopPropagation()`
+  - ExpressionCard: `onClick={(e) => e.stopPropagation()}`
+  - 카드 클릭(상세 페이지 이동)과 공유 버튼 클릭 완전 분리
+
+### 3. UI/UX Improvements
+
+- **Visual Hierarchy**:
+  - 태그는 좌측에 자연스럽게 흐르도록 flex-wrap
+  - 공유 버튼은 우측 하단 고정 위치로 시각적 균형 확보
+  - compact variant로 공간 효율성 극대화
+
+### 4. Result
+
+- ✅ **카드 통합 완료**: 메인 페이지 및 관련 표현 섹션에서 바로 공유 가능
+- ✅ **이벤트 분리**: 공유 버튼 클릭 시 페이지 이동 없이 공유 기능만 실행
+- ✅ **일관된 UX**: 상세 페이지와 동일한 공유 경험 제공
+
 ## v0.12.4: Share 기능 구현 (Web Share API + Analytics) (2026-01-14)
 
 ### 1. ShareButton Component Implementation

@@ -46,5 +46,8 @@ export const de = {
     label: "Ausdruck des Tages",
     situationQuestion: "Was ist die Situation?",
     noDescription: "Keine Beschreibung verfügbar.",
+    share: "Teilen",
+    shareCopied: "Link kopiert!",
+    shareFailed: "Teilen fehlgeschlagen",
   },
 };

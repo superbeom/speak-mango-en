@@ -367,7 +367,7 @@ expressionTitle: "{expression}";
 
 **대상 컴포넌트:**
 
-- `ExpressionCard.tsx`: 표현 클릭
+- `ExpressionCard.tsx`: 표현 클릭, 공유 버튼 (카드 통합)
 - `DialogueAudioButton.tsx`: 오디오 재생
 - `DialogueSection.tsx`: 학습 모드 전환
 - `FilterBar.tsx`: 필터/검색

@@ -45,5 +45,8 @@ export const ko = {
     label: "오늘의 표현",
     situationQuestion: "어떤 상황인가요?",
     noDescription: "설명이 없습니다.",
+    share: "공유",
+    shareCopied: "링크 복사됨!",
+    shareFailed: "공유 실패",
   },
 };

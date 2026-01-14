@@ -205,6 +205,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 5. **공유 이벤트**
    - ✅ `ShareButton.tsx`: 공유 버튼 클릭 및 방식(native/link) 추적
    - ✅ `ShareButton.tsx`: 공유 완료 추적 (Web Share API 완료 또는 복사 완료)
+   - ✅ `ExpressionCard.tsx`: 카드 우측 하단에 compact 공유 버튼 통합 (absolute 포지셔닝)
 
 **검증:**
 

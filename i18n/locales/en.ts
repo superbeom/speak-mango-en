@@ -45,5 +45,8 @@ export const en = {
     label: "Today's Expression",
     situationQuestion: "What's the situation?",
     noDescription: "No description available.",
+    share: "Share",
+    shareCopied: "Link copied!",
+    shareFailed: "Failed to share",
   },
 };
