@@ -71,7 +71,8 @@ speak-mango-en/
 │       ├── code/        # 각 노드의 JavaScript 코드 파일 (단계별 분리)
 │       └── expressions_workflow_template.json # 워크플로우 템플릿
 ├── types/               # TypeScript 타입 정의
-│   └── database.ts      # Supabase Generated Types
+│   ├── database.ts      # Supabase Generated Types
+│   └── toast.ts         # Toast 알림 타입 및 상수
 ├── verification/        # 데이터 검증 스크립트
 │   └── verify_db_data.js # 로컬 데이터 검증 (Strict Validation)
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
@@ -178,6 +179,10 @@ speak-mango-en/
   - **Hover Effects**: 모바일(터치 디바이스)에서는 호버 효과(`hover:` 클래스, `whileHover` 애니메이션 등)를 비활성화해야 합니다. 터치 스크롤 시 의도치 않은 시각적 피드백이나 애니메이션이 발생하는 것을 방지하기 위해 `useIsMobile` 훅을 사용하여 조건부로 적용합니다.
   - **Clickable Elements**: 버튼, 링크, 칩 등 클릭 가능한 모든 요소에는 `cursor-pointer` 클래스를 명시적으로 적용하여 데스크탑 환경에서의 Affordance를 보장합니다.
 - **Reusable UI Logic**: 스크롤 감지, 화면 크기 확인 등 반복되는 UI 동작 로직은 커스텀 훅(예: `useScroll`, `useIsMobile`)으로 추출하여 `hooks/` 디렉토리에서 관리합니다. 이를 통해 컴포넌트 코드를 간결하게 유지하고 로직 중복을 최소화합니다.
+- **Toast Notification System**: 사용자 피드백이 필요한 액션(복사, 저장, 공유 등)에는 `components/ui/Toast.tsx` 컴포넌트를 활용합니다.
+  - **Type Safety**: `types/toast.ts`에 정의된 `ToastType` 및 `TOAST_TYPE` 상수를 사용하여 타입 안정성 확보.
+  - **Consistency**: 모든 Toast 알림은 동일한 디자인과 애니메이션을 사용하여 UX 일관성 유지.
+  - **Reusability**: Toast 컴포넌트는 독립적으로 설계되어 어떤 컴포넌트에서든 재사용 가능.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
 

@@ -36,6 +36,9 @@ export const zh = {
     relatedTitle: "📚 这些表达怎么样？",
     playAll: "全部播放",
     stop: "停止",
+    share: "分享",
+    shareCopied: "链接已复制到剪贴板！",
+    shareFailed: "分享失败。请重试。",
   },
   card: {
     label: "今日表达",

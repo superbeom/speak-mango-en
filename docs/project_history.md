@@ -2,6 +2,162 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-14: Share 기능 구현 (Web Share API + Toast System)
+
+### ✅ 진행 사항
+
+- **Share Button Component**: `components/ShareButton.tsx` 생성
+  - Web Share API 활용 (모바일 네이티브 공유)
+  - Clipboard Fallback (데스크탑 복사)
+  - Variant 지원 (`default` / `compact`)
+  - Analytics 자동 추적 통합
+- **Toast Notification System**: 재사용 가능한 Toast 컴포넌트 및 타입 시스템 구축
+  - `components/ui/Toast.tsx`: 독립 컴포넌트
+  - `types/toast.ts`: 중앙 집중식 타입 관리
+- **Share URL Generation**: `lib/utils.ts`에 `getShareUrl` 함수 추가
+- **i18n 업데이트**: 9개 언어에 share 관련 텍스트 추가
+- **UI Integration**: 상세 페이지 및 표현 카드에 ShareButton 통합
+- **Documentation**: Analytics, Features, Task 문서 업데이트
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Toast를 별도 컴포넌트로 분리했나?**
+
+- **A.** ShareButton 내부에 Toast 로직을 포함시키면 재사용성이 떨어짐. 향후 다른 기능(예: 북마크, 좋아요 등)에서도 Toast 알림이 필요할 수 있으므로, `components/ui/Toast.tsx`로 독립시켜 범용 컴포넌트로 만듦. 이를 통해 일관된 알림 UX 제공 가능.
+
+**Q. Toast 타입을 왜 `types/toast.ts`로 분리했나?**
+
+- **A.** `ToastType`과 `TOAST_TYPE` 상수를 ShareButton과 Toast 컴포넌트 모두에서 사용함. 두 컴포넌트가 서로 다른 파일에 있으므로, 타입을 중앙 집중식으로 관리하여 일관성 확보. 향후 Toast 타입이 확장될 때(예: `warning`, `info` 추가) 한 곳에서만 수정하면 됨.
+
+**Q. Web Share API가 지원되지 않는 환경은 어떻게 처리하나?**
+
+- **A.** `navigator.share` 존재 여부를 체크하여 분기 처리:
+  - **지원**: Web Share API 사용 (`sharePlatform: "native"`)
+  - **미지원**: Clipboard API로 URL 복사 (`sharePlatform: "clipboard"`)
+  - 두 경우 모두 Toast로 사용자에게 피드백 제공.
+
+**Q. Analytics 추적은 어떻게 구현했나?**
+
+- **A.** ShareButton 내부에서 자동으로 추적:
+  1. **Share Click**: 버튼 클릭 시 `trackShareClick` 호출
+     - `shareMethod`: `"native"` (Web Share API) 또는 `"copy_link"` (클립보드)
+     - `sharePlatform`: `"native"` 또는 `"clipboard"`
+  2. **Share Complete**: 공유 성공 시 `trackShareComplete` 호출
+     - Web Share API 완료 또는 클립보드 복사 성공 시
+  - 컴포넌트 사용자는 Analytics 로직을 신경 쓸 필요 없이 자동으로 추적됨.
+
+### 🏗️ 구현 상세
+
+**1. ShareButton Component**
+
+```typescript
+// components/ShareButton.tsx
+export default function ShareButton({
+  expressionId,
+  expressionText,
+  meaning,
+  shareLabel,
+  shareCopiedLabel,
+  shareFailedLabel,
+  variant = "default",
+  onClick,
+}: ShareButtonProps) {
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (onClick) onClick(e);
+
+    const shareUrl = getShareUrl(expressionId, {
+      utm_source: "share",
+      utm_medium: "native",
+    });
+
+    if (navigator.share) {
+      // Web Share API
+      await navigator.share({ title, text, url: shareUrl });
+      trackShareComplete({ expressionId, sharePlatform: "native" });
+    } else {
+      // Clipboard Fallback
+      await navigator.clipboard.writeText(shareUrl);
+      trackShareComplete({ expressionId, sharePlatform: "clipboard" });
+    }
+  };
+}
+```
+
+**2. Toast Component**
+
+```typescript
+// components/ui/Toast.tsx
+export default function Toast({ message, type, isVisible }: ToastProps) {
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className={cn(
+        "fixed bottom-8 left-1/2 -translate-x-1/2 z-50",
+        type === TOAST_TYPE.SUCCESS ? "bg-green-500" : "bg-red-500"
+      )}
+    >
+      {type === TOAST_TYPE.SUCCESS && <Check />}
+      {type === TOAST_TYPE.ERROR && <X />}
+      <span>{message}</span>
+    </div>
+  );
+}
+```
+
+**3. Type System**
+
+```typescript
+// types/toast.ts
+export type ToastType = "success" | "error";
+
+export const TOAST_TYPE = {
+  SUCCESS: "success" as const,
+  ERROR: "error" as const,
+} satisfies Record<string, ToastType>;
+```
+
+### 📊 현재 추적 가능한 이벤트 (Phase 5 완료)
+
+**자동 추적:**
+
+- ✅ `page_view`: 모든 페이지 뷰
+
+**수동 추적 (Phase 3-5 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생
+- ✅ `audio_complete`: 오디오 재생 완료
+- ✅ `learning_mode_toggle`: 학습 모드 전환
+- ✅ `filter_apply`: 필터 적용
+- ✅ `search`: 검색 실행
+- ✅ `tag_click`: 태그 클릭
+- ✅ `related_click`: 관련 표현 클릭
+- ✅ `share_click`: 공유 버튼 클릭
+- ✅ `share_complete`: 공유 완료
+
+### 🔍 검증 방법
+
+**개발 환경 콘솔 로그 확인:**
+
+1. **모바일 (Web Share API)**:
+
+   - Share 버튼 클릭 → 네이티브 공유 다이얼로그 표시
+   - Instagram, Twitter, KakaoTalk 등 설치된 앱으로 공유 가능
+   - `[Analytics] Event: share_click { expression_id: "...", share_method: "native", share_platform: "native" }`
+   - `[Analytics] Event: share_complete { expression_id: "...", share_platform: "native" }`
+
+2. **데스크탑 (Clipboard)**:
+
+   - Share 버튼 클릭 → URL 클립보드 복사
+   - Toast 알림: "Link copied!"
+   - `[Analytics] Event: share_click { expression_id: "...", share_method: "copy_link", share_platform: "clipboard" }`
+   - `[Analytics] Event: share_complete { expression_id: "...", share_platform: "clipboard" }`
+
 ## 2026-01-14: Analytics Phase 3 완료 (audio_complete, related_click 추적)
 
 ### ✅ 진행 사항

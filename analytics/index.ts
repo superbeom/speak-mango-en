@@ -235,14 +235,14 @@ export const trackRelatedClick = (params: {
   });
 };
 
-// 향후: 소셜 공유 추적
 /**
- * 공유 버튼 클릭 추적 (구현 예정)
+ * 공유 버튼 클릭 추적
+ * Web Share API 사용 시 'native', 클립보드 복사 시 'clipboard'
  */
 export const trackShareClick = (params: {
   expressionId: string;
-  shareMethod: "native" | "button" | "copy_link";
-  sharePlatform: "twitter" | "facebook" | "kakaotalk" | "clipboard";
+  shareMethod: "native" | "copy_link";
+  sharePlatform: "native" | "clipboard";
 }): void => {
   trackEvent("share_click", {
     expression_id: params.expressionId,
@@ -250,9 +250,8 @@ export const trackShareClick = (params: {
     share_platform: params.sharePlatform,
   });
 };
-
 /**
- * 공유 완료 추적 (구현 예정)
+ * 공유 완료 추적
  */
 export const trackShareComplete = (params: {
   expressionId: string;

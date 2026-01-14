@@ -110,7 +110,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 | `tag_click`     | 태그 클릭      | `tag_name`, `source`                     |
 | `related_click` | 관련 표현 클릭 | `from_expression_id`, `to_expression_id` |
 
-#### 공유 이벤트 (향후 구현)
+#### 공유 이벤트
 
 | 이벤트명         | 설명           | 파라미터                                          |
 | ---------------- | -------------- | ------------------------------------------------- |
@@ -142,11 +142,11 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 - `search_term`: 검색어
 - `results_count`: 검색 결과 개수
 
-**공유 관련 (향후):**
+**공유 관련:**
 
-- `share_method`: 공유 방식 (`native` | `button` | `copy_link`)
-- `share_platform`: 공유 플랫폼 (`twitter` | `facebook` | `kakaotalk` | `clipboard`)
-- `utm_source`: 공유 출처 추적용 UTM 파라미터
+- `share_method`: 공유 방식 (`native` | `copy_link`)
+- `share_platform`: 공유 플랫폼 (`native` | `clipboard`)
+- `utm_source`: 공유 출처 추적용 UTM 파라미터 (URL에 포함)
 
 ## 5. 구현 계획
 
@@ -202,9 +202,9 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
    - ✅ `Tag.tsx`: 태그 클릭 추적 (source: card/detail/filter 구분)
    - ✅ `RelatedExpressions.tsx`: 관련 표현 클릭 추적
 
-5. **공유 이벤트 (향후 구현)**
-   - ⏳ `ShareButton.tsx`: 공유 버튼 클릭 및 플랫폼 선택 추적
-   - ⏳ Web Share API 사용 여부 추적
+5. **공유 이벤트**
+   - ✅ `ShareButton.tsx`: 공유 버튼 클릭 및 방식(native/link) 추적
+   - ✅ `ShareButton.tsx`: 공유 완료 추적 (Web Share API 완료 또는 복사 완료)
 
 **검증:**
 

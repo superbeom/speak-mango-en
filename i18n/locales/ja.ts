@@ -37,6 +37,9 @@ export const ja = {
     relatedTitle: "📚 こんな表現もどうですか？",
     playAll: "すべて再生",
     stop: "停止",
+    share: "共有",
+    shareCopied: "リンクがクリップボードにコピーされました！",
+    shareFailed: "共有に失敗しました。もう一度お試しください。",
   },
   card: {
     label: "今日の表現",

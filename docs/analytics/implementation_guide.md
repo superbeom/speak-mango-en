@@ -372,6 +372,7 @@ expressionTitle: "{expression}";
 - `DialogueSection.tsx`: 학습 모드 전환
 - `FilterBar.tsx`: 필터/검색
 - `Tag.tsx`: 태그 클릭
+- `ShareButton.tsx`: 소셜 공유
 
 **구현 예시:**
 
@@ -426,8 +427,8 @@ const handleClick = () => {
   - [x] `SearchBar.tsx`: 검색 실행 추적
   - [x] `Tag.tsx`: 태그 클릭 추적 (source 구분)
   - [x] `RelatedExpressions.tsx`: 관련 표현 클릭 추적
-
----
+- [x] 공유 이벤트 추가
+  - [x] `ShareButton.tsx`: 공유 버튼 클릭 및 완료 추적 (Native API & Clipboard)
 
 ## 참고 자료
 

@@ -38,6 +38,9 @@ export const fr = {
     relatedTitle: "📚 Que pensez-vous de ces expressions ?",
     playAll: "Tout écouter",
     stop: "Arrêter",
+    share: "Partager",
+    shareCopied: "Lien copié dans le presse-papiers !",
+    shareFailed: "Échec du partage. Veuillez réessayer.",
   },
   card: {
     label: "Expression du Jour",

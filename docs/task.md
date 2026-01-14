@@ -83,7 +83,7 @@
 - [x] **Tracking (Search)**: 검색 실행 추적 (`trackSearch`)
 - [x] **Tracking (Tag)**: 태그 클릭 추적 (`trackTagClick` - source 구분: card/detail/filter)
 - [x] **Tracking (Related)**: 관련 표현 클릭 추적 (`trackRelatedClick`)
-- [ ] **Tracking (Share)**: 공유 버튼 클릭 및 완료 추적 (향후 구현)
+- [x] **Tracking (Share)**: 공유 버튼 클릭 및 완료 추적
 
 ## Phase 6: Monetization (수익화)
 

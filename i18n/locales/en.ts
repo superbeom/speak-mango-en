@@ -37,6 +37,9 @@ export const en = {
     relatedTitle: "📚 How about these expressions?",
     playAll: "Play All",
     stop: "Stop",
+    share: "Share",
+    shareCopied: "Link copied to clipboard!",
+    shareFailed: "Failed to share. Please try again.",
   },
   card: {
     label: "Today's Expression",

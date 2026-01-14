@@ -18,6 +18,7 @@ import Tag from "@/components/Tag";
 import RelatedExpressions from "@/components/RelatedExpressions";
 import BackButton from "@/components/BackButton";
 import DialogueSection from "@/components/DialogueSection";
+import ShareButton from "@/components/ShareButton";
 
 interface PageProps {
   params: Promise<{
@@ -234,7 +235,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             </details>
           </section>
 
-          {/* Tags & Source */}
+          {/* Tags & Share */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
             <div className="flex flex-wrap gap-2">
               {expression.tags?.map((tag) => (
@@ -246,6 +247,15 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 />
               ))}
             </div>
+
+            <ShareButton
+              expressionId={expression.id}
+              expressionText={expression.expression}
+              meaning={meaning}
+              shareLabel={dict.detail.share}
+              shareCopiedLabel={dict.detail.shareCopied}
+              shareFailedLabel={dict.detail.shareFailed}
+            />
           </div>
         </article>
 

@@ -59,6 +59,10 @@
     - **Sequential Playback (Play All)**: '전체 듣기' 버튼을 통해 A/B 대화를 끊김 없이 이어서 듣는 기능. 재생 중인 버블 하이라이트 지원.
     - **Feature Gating Infrastructure**: 재생 전 권한 체크를 위한 `onPlayAttempt` 콜백 시스템 도입. 향후 유료 티어(Pro) 전용 기능으로 전환할 수 있는 확장 가능한 구조 확보.
   - **Quiz**: 간단한 퀴즈로 학습 내용 확인.
+  - **Share**: Web Share API를 활용한 네이티브 공유 기능.
+    - **모바일**: Instagram, Twitter, KakaoTalk 등 설치된 앱으로 직접 공유
+    - **데스크탑**: 클립보드 복사 + 토스트 알림 (폴백)
+    - **Analytics**: 공유 클릭 및 완료 이벤트 추적 (`trackShareClick`, `trackShareComplete`)
 - **관련 표현 추천**:
   - 하단에 동일 카테고리의 다른 표현들을 추천.
   - **Adaptive Layout**: 모바일에서는 세로 리스트, 데스크탑에서는 Marquee 스크롤로 자동 전환 (마우스를 올리지 않아도 천천히 흐르는 무한 루프 애니메이션).
@@ -128,17 +132,17 @@
 - **Google Analytics 4 Integration**: 사용자 행동 분석을 위한 GA4 통합 완료.
 - **Environment-Based Configuration**: 개발/프로덕션 환경별로 별도의 GA4 속성 사용하여 테스트 데이터와 실제 데이터 분리.
 - **Automatic Page View Tracking**: 라우트 변경 시 자동으로 페이지 뷰 추적 (`AnalyticsProvider`).
-- **Component-Level Event Tracking** (Phase 3 진행 중):
-  - ✅ **Expression Click** (`trackExpressionClick`): 표현 카드 클릭 추적 (`ExpressionCard.tsx`)
-  - ✅ **Expression View** (`trackExpressionView`): 표현 상세 조회 추적 (`ExpressionViewTracker.tsx`)
-  - ✅ **Audio Play** (`trackAudioPlay`): 오디오 재생 추적 인프라 구축 (`DialogueAudioButton.tsx`)
-  - ✅ **Audio Complete** (`trackAudioComplete`): 오디오 재생 완료 추적 (`DialogueAudioButton.tsx`)
-  - ✅ **Learning Mode Toggle** (`trackLearningModeToggle`): 학습 모드 전환 추적 (`DialogueSection.tsx`)
-  - ✅ **Filter Apply** (`trackFilterApply`): 필터 적용 추적 (`FilterBar.tsx`)
-  - ✅ **Search** (`trackSearch`): 검색 실행 추적 (`SearchBar.tsx`)
-  - ✅ **Tag Click** (`trackTagClick`): 태그 클릭 추적 (`Tag.tsx`)
-  - ✅ **Related Click** (`trackRelatedClick`): 관련 표현 클릭 추적 (`RelatedExpressions.tsx`)
-  - ⏳ **Share Click** (`trackShareClick`): 공유 버튼 클릭 추적 (향후 구현)
-  - ⏳ **Share Complete** (`trackShareComplete`): 공유 완료 추적 (향후 구현)
+- **Component-Level Event Tracking**:
+  - **Expression Click** (`trackExpressionClick`): 표현 카드 클릭 추적 (`ExpressionCard.tsx`)
+  - **Expression View** (`trackExpressionView`): 표현 상세 조회 추적 (`ExpressionViewTracker.tsx`)
+  - **Audio Play** (`trackAudioPlay`): 오디오 재생 추적 (`DialogueAudioButton.tsx`)
+  - **Audio Complete** (`trackAudioComplete`): 오디오 재생 완료 추적 (`DialogueAudioButton.tsx`)
+  - **Learning Mode Toggle** (`trackLearningModeToggle`): 학습 모드 전환 추적 (`DialogueSection.tsx`)
+  - **Filter Apply** (`trackFilterApply`): 필터 적용 추적 (`FilterBar.tsx`)
+  - **Search** (`trackSearch`): 검색 실행 추적 (`SearchBar.tsx`)
+  - **Tag Click** (`trackTagClick`): 태그 클릭 추적 (`Tag.tsx`)
+  - **Related Click** (`trackRelatedClick`): 관련 표현 클릭 추적 (`RelatedExpressions.tsx`)
+  - **Share Click** (`trackShareClick`): 공유 버튼 클릭 추적 (`ShareButton.tsx`)
+  - **Share Complete** (`trackShareComplete`): 공유 완료 추적 (`ShareButton.tsx`)
 - **Development Tools**: 개발 환경에서는 콘솔 로그로 이벤트 확인, 프로덕션에서만 GA4로 전송.
 - **Module Organization**: 독립된 `analytics/` 모듈로 구성 (루트 레벨).

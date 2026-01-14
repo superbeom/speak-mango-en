@@ -37,6 +37,9 @@ export const ko = {
     relatedTitle: "📚 이런 표현은 어때요?",
     playAll: "전체 듣기",
     stop: "멈춤",
+    share: "공유하기",
+    shareCopied: "링크가 클립보드에 복사되었습니다!",
+    shareFailed: "공유에 실패했습니다. 다시 시도해 주세요.",
   },
   card: {
     label: "오늘의 표현",

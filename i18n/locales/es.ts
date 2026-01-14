@@ -38,6 +38,9 @@ export const es = {
     relatedTitle: "📚 ¿Qué tal estas expresiones?",
     playAll: "Reproducir todo",
     stop: "Detener",
+    share: "Compartir",
+    shareCopied: "¡Enlace copiado al portapapeles!",
+    shareFailed: "Error al compartir. Inténtalo de nuevo.",
   },
   card: {
     label: "Expresión de Hoy",

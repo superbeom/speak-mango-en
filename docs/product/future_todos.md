@@ -4,13 +4,6 @@
 
 ## Improvements
 
-- [ ] **Social Share Button**: 표현별 공유 버튼 추가로 바이럴 마케팅 및 사용자 참여도 향상.
-
-  - [ ] **Share Button UI**: 상세 페이지 상단에 공유 버튼 추가 (SNS 아이콘: Twitter, Facebook, KakaoTalk, 링크 복사)
-  - [ ] **Web Share API**: 모바일 환경에서 네이티브 공유 시트 활용
-  - [ ] **Analytics Integration**: 공유 버튼 클릭 및 공유 채널 추적 (`share_click` 이벤트)
-  - [ ] **Share URL Optimization**: UTM 파라미터 추가로 공유 경로 추적 (예: `?utm_source=twitter&utm_medium=share`)
-
 - [ ] **Mobile Interaction**: 모바일 환경에서의 카드 리스트 뷰 최적화 (스와이프 제스처, 긴 탭 인터랙션 등).
 
 - [ ] **Category Expansion**: 현재 비활성화된 대분류(`domain`) 필터 활성화 및 데이터 연동.

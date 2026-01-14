@@ -38,6 +38,9 @@ export const de = {
     relatedTitle: "📚 Wie wäre es mit diesen Ausdrücken?",
     playAll: "Alles abspielen",
     stop: "Stopp",
+    share: "Teilen",
+    shareCopied: "Link in die Zwischenablage kopiert!",
+    shareFailed: "Teilen fehlgeschlagen. Bitte versuchen Sie es erneut.",
   },
   card: {
     label: "Ausdruck des Tages",

@@ -2,6 +2,84 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.4: Share 기능 구현 (Web Share API + Analytics) (2026-01-14)
+
+### 1. ShareButton Component Implementation
+
+- **Component**: `components/ShareButton.tsx` 생성
+  - **Web Share API**: 모바일 환경에서 네이티브 공유 다이얼로그 지원
+  - **Clipboard Fallback**: 데스크탑 환경에서 클립보드 복사 기능 제공
+  - **Variant Support**: `default` (아이콘 + 텍스트) 및 `compact` (아이콘만) 모드 지원
+  - **Event Propagation Prevention**: 카드 통합 시 이벤트 전파 방지 (`e.preventDefault()` + `e.stopPropagation()`)
+  - **Analytics Integration**: `trackShareClick` 및 `trackShareComplete` 자동 호출
+
+### 2. Toast Notification System
+
+- **Component**: `components/ui/Toast.tsx` 생성
+  - 재사용 가능한 독립 컴포넌트로 설계
+  - `success` / `error` 타입 지원
+  - Framer Motion 기반 애니메이션 (fade-in + slide-in)
+- **Type System**: `types/toast.ts` 생성
+  - `ToastType` 타입 정의
+  - `TOAST_TYPE` 상수 정의 (`SUCCESS`, `ERROR`)
+  - 중앙 집중식 타입 관리로 재사용성 향상
+
+### 3. Share URL Generation
+
+- **Utility**: `lib/utils.ts`에 `getShareUrl` 함수 추가
+  - 표현 ID 기반 공유 URL 생성
+  - UTM 파라미터 지원 (`utm_source=share`, `utm_medium=native`)
+  - `BASE_URL` 상수 활용 (환경별 URL 자동 전환)
+
+### 4. Analytics Tracking
+
+- **Events**: `analytics/index.ts`
+  - `trackShareClick`: 공유 버튼 클릭 추적
+    - `shareMethod`: `"native"` (Web Share API) | `"copy_link"` (클립보드)
+    - `sharePlatform`: `"native"` | `"clipboard"`
+  - `trackShareComplete`: 공유 완료 추적
+- **Integration**: ShareButton 내부에서 자동 호출
+  - 네이티브 공유 성공 시: `sharePlatform: "native"`
+  - 클립보드 복사 성공 시: `sharePlatform: "clipboard"`
+
+### 5. Internationalization (i18n)
+
+- **9개 언어 지원**: EN, KO, JA, ES, FR, DE, RU, ZH, AR
+- **Translation Keys**:
+  - `detail.share`: "Share" / "공유" / "共有" 등
+  - `detail.shareCopied`: "Link copied!" / "링크 복사됨!" 등
+  - `detail.shareFailed`: "Failed to share" / "공유 실패" 등
+  - `card.share`, `card.shareCopied`, `card.shareFailed`: 카드용 동일 텍스트
+
+### 6. UI Integration
+
+- **Detail Page**: `app/expressions/[id]/page.tsx`
+  - Tags & Source 섹션에 ShareButton 추가 (default variant)
+
+### 7. Documentation Updates
+
+- **Analytics Guide**: `docs/analytics/analytics_guide.md`
+  - 공유 이벤트 섹션 업데이트 ("향후 구현" → "구현 완료")
+  - `share_method` 및 `share_platform` 파라미터 정의 업데이트
+- **Implementation Guide**: `docs/analytics/implementation_guide.md`
+  - ShareButton 컴포넌트 추가
+  - 공유 이벤트 체크리스트 완료 표시
+- **Features List**: `docs/product/features_list.md`
+  - Share 기능 상세 설명 추가 (모바일/데스크탑 동작 방식)
+  - Analytics 섹션에서 Share 이벤트 완료 표시
+- **Future Todos**: `docs/product/future_todos.md`
+  - Social Share Button 섹션 삭제 (구현 완료)
+- **Task**: `docs/task.md`
+  - Phase 5 Analytics - Tracking (Share) 완료 표시
+
+### 8. Result
+
+- ✅ **Web Share API 구현**: 모바일에서 Instagram, Twitter, KakaoTalk 등 네이티브 앱으로 직접 공유 가능
+- ✅ **Clipboard Fallback**: 데스크탑에서 클립보드 복사 + Toast 알림
+- ✅ **Analytics 추적**: 공유 클릭 및 완료 이벤트 자동 추적
+- ✅ **9개 언어 지원**: 모든 언어에서 공유 기능 사용 가능
+- ✅ **재사용 가능한 Toast**: 향후 다른 기능에서도 Toast 컴포넌트 활용 가능
+
 ## v0.12.3: Analytics Phase 3 완료 (Audio Complete & Related Click) (2026-01-14)
 
 ### 1. Audio Complete Tracking
