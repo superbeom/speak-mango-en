@@ -70,7 +70,15 @@
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 
-## Phase 5: Monetization (수익화)
+## Phase 5: Analytics (데이터 분석)
+
+- [x] **GA4 Integration**: Google Analytics 4 연동 및 환경별(dev/prod) 측정 ID 분리
+- [x] **Module Organization**: Analytics 모듈 구조화 (`analytics/`) 및 루트 레벨 격상
+- [x] **Tracking (Page View)**: 라우트 변경 시 자동 페이지 뷰 추적 (`AnalyticsProvider`)
+- [x] **Tracking (Expression)**: 표현 카드 클릭(`expression_click`) 및 상세 조회(`expression_view`) 추적
+- [x] **Tracking (Audio)**: 오디오 재생 추적 인프라 구축 및 적용 (`trackAudioPlay`)
+
+## Phase 6: Monetization (수익화)
 
 - [ ] **Feature Gating (Audio Support)**: 음성 지원(TTS) 기능을 사용자 티어(`free`/`pro`)에 따라 차별화하여 제공.
   - [x] **Scalable Architecture**: `DialogueAudioButton`에 `onPlayAttempt` 콜백을 추가하여 부동한 권한 체크 로직을 주입할 수 있는 구조로 개선.

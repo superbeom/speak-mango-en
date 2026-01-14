@@ -1,5 +1,5 @@
-// Analytics utility functions for Google Analytics 4 (GA4)
-// This module provides type-safe event tracking and page view monitoring
+// Google Analytics 4 (GA4) 분석 유틸리티 함수
+// 타입 안전한 이벤트 추적 및 페이지 뷰 모니터링 제공
 
 declare global {
   interface Window {
@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-// GA4 Measurement ID (environment-based selection)
+// GA4 측정 ID (환경별 자동 선택)
 const GA_MEASUREMENT_ID_DEV =
   process.env.NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID || "";
 const GA_MEASUREMENT_ID_PROD =
@@ -23,14 +23,14 @@ export const GA_MEASUREMENT_ID =
     ? GA_MEASUREMENT_ID_PROD
     : GA_MEASUREMENT_ID_DEV;
 
-// Check if analytics is enabled
+// 분석 기능 활성화 여부 확인
 export const isAnalyticsEnabled = (): boolean => {
   return typeof window !== "undefined" && !!GA_MEASUREMENT_ID;
 };
 
 /**
- * Initialize Google Analytics
- * This should be called once when the app loads
+ * Google Analytics 초기화
+ * 앱 로드 시 한 번만 호출되어야 함
  */
 export const initAnalytics = (): void => {
   if (!isAnalyticsEnabled()) {
@@ -40,7 +40,7 @@ export const initAnalytics = (): void => {
     return;
   }
 
-  // Initialize dataLayer
+  // dataLayer 초기화
   window.dataLayer = window.dataLayer || [];
   window.gtag = function gtag() {
     window.dataLayer?.push(arguments);
@@ -48,17 +48,17 @@ export const initAnalytics = (): void => {
 
   window.gtag("js", new Date());
   window.gtag("config", GA_MEASUREMENT_ID, {
-    send_page_view: false, // We'll handle page views manually
+    send_page_view: false, // 페이지 뷰는 수동으로 처리
   });
 
   console.log("[Analytics] Initialized with ID:", GA_MEASUREMENT_ID);
 };
 
 /**
- * Track a page view
- * @param path - The page path (e.g., '/expressions/123')
- * @param title - The page title
- * @param lang - Current language (ko, en, ja, etc.)
+ * 페이지 뷰 추적
+ * @param path - 페이지 경로 (예: '/expressions/123')
+ * @param title - 페이지 제목
+ * @param lang - 현재 언어 (ko, en, ja 등)
  */
 export const trackPageView = (
   path: string,
@@ -78,9 +78,9 @@ export const trackPageView = (
 };
 
 /**
- * Track a custom event
- * @param eventName - Name of the event (e.g., 'expression_click')
- * @param properties - Event properties/parameters
+ * 커스텀 이벤트 추적
+ * @param eventName - 이벤트 이름 (예: 'expression_click')
+ * @param properties - 이벤트 속성/파라미터
  */
 export const trackEvent = (
   eventName: string,
@@ -95,10 +95,10 @@ export const trackEvent = (
 };
 
 /**
- * Track a conversion event (for future monetization)
- * @param type - Conversion type (e.g., 'feature_gate_view', 'payment_intent')
- * @param value - Optional monetary value
- * @param properties - Additional properties
+ * 전환 이벤트 추적 (향후 수익화용)
+ * @param type - 전환 유형 (예: 'feature_gate_view', 'payment_intent')
+ * @param value - 선택적 금액 값
+ * @param properties - 추가 속성
  */
 export const trackConversion = (
   type: string,
@@ -112,10 +112,10 @@ export const trackConversion = (
   });
 };
 
-// Predefined event tracking functions for type safety and consistency
+// 타입 안전성과 일관성을 위한 사전 정의된 이벤트 추적 함수
 
 /**
- * Track expression view (detail page)
+ * 표현 조회 추적 (상세 페이지)
  */
 export const trackExpressionView = (params: {
   expressionId: string;
@@ -130,7 +130,7 @@ export const trackExpressionView = (params: {
 };
 
 /**
- * Track expression card click
+ * 표현 카드 클릭 추적
  */
 export const trackExpressionClick = (params: {
   expressionId: string;
@@ -147,7 +147,7 @@ export const trackExpressionClick = (params: {
 };
 
 /**
- * Track audio playback
+ * 오디오 재생 추적
  */
 export const trackAudioPlay = (params: {
   expressionId: string;
@@ -162,7 +162,7 @@ export const trackAudioPlay = (params: {
 };
 
 /**
- * Track audio playback completion
+ * 오디오 재생 완료 추적
  */
 export const trackAudioComplete = (params: {
   expressionId: string;
@@ -175,7 +175,7 @@ export const trackAudioComplete = (params: {
 };
 
 /**
- * Track learning mode toggle
+ * 학습 모드 전환 추적
  */
 export const trackLearningModeToggle = (params: {
   mode: "blind_listening" | "translation_blur";
@@ -188,7 +188,7 @@ export const trackLearningModeToggle = (params: {
 };
 
 /**
- * Track filter application
+ * 필터 적용 추적
  */
 export const trackFilterApply = (params: {
   filterType: "category" | "tag" | "search";
@@ -201,7 +201,7 @@ export const trackFilterApply = (params: {
 };
 
 /**
- * Track search
+ * 검색 추적
  */
 export const trackSearch = (params: {
   searchTerm: string;
@@ -214,7 +214,7 @@ export const trackSearch = (params: {
 };
 
 /**
- * Track tag click
+ * 태그 클릭 추적
  */
 export const trackTagClick = (params: {
   tagName: string;
@@ -227,7 +227,7 @@ export const trackTagClick = (params: {
 };
 
 /**
- * Track related expression click
+ * 관련 표현 클릭 추적
  */
 export const trackRelatedClick = (params: {
   fromExpressionId: string;
@@ -239,9 +239,9 @@ export const trackRelatedClick = (params: {
   });
 };
 
-// Future: Social share tracking
+// 향후: 소셜 공유 추적
 /**
- * Track share button click (to be implemented)
+ * 공유 버튼 클릭 추적 (구현 예정)
  */
 export const trackShareClick = (params: {
   expressionId: string;
@@ -256,7 +256,7 @@ export const trackShareClick = (params: {
 };
 
 /**
- * Track share completion (to be implemented)
+ * 공유 완료 추적 (구현 예정)
  */
 export const trackShareComplete = (params: {
   expressionId: string;

@@ -2,13 +2,13 @@
 
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { trackPageView } from "@/lib/analytics";
+import { trackPageView } from "@/analytics";
 
 /**
  * AnalyticsProvider
  *
- * Automatically tracks page views when the route changes.
- * This component should be placed in the root layout.
+ * 라우트 변경 시 자동으로 페이지 뷰를 추적합니다.
+ * 이 컴포넌트는 루트 레이아웃에 배치되어야 합니다.
  */
 export default function AnalyticsProvider({
   children,
@@ -21,13 +21,13 @@ export default function AnalyticsProvider({
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Track page view on route change
+    // 라우트 변경 시 페이지 뷰 추적
     const url =
       pathname +
       (searchParams?.toString() ? `?${searchParams.toString()}` : "");
 
-    // Wait for document.title to be set by Next.js metadata
-    // This ensures we capture the correct title in analytics
+    // Next.js 메타데이터가 document.title을 설정할 때까지 대기
+    // 이를 통해 분석에서 올바른 제목을 캡처할 수 있음
     const timer = setTimeout(() => {
       trackPageView(url, document.title, lang);
     }, 100);

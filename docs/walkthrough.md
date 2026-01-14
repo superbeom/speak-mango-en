@@ -2,6 +2,59 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.1: Analytics 모듈 재구성 및 Phase 3 이벤트 추적 구현 (2026-01-14)
+
+### 1. Analytics Module Structure Reorganization
+
+- **Directory Move**: `lib/analytics/` → `analytics/` (루트 레벨로 이동)
+  - 독립된 모듈로 분리하여 발견 가능성 향상
+  - Import 경로 단순화: `@/lib/analytics` → `@/analytics`
+- **Comment Localization**: 모든 영어 주석을 한국어로 변환
+  - `analytics/index.ts`: 12개 이벤트 함수 주석 한국어화
+  - `analytics/AnalyticsProvider.tsx`: Provider 주석 한국어화
+  - `analytics/ExpressionViewTracker.tsx`: Tracker 주석 한국어화
+- **Import Path Updates**: 7개 파일의 import 경로 업데이트
+  - `app/layout.tsx`
+  - `app/expressions/[id]/page.tsx`
+  - `components/ExpressionCard.tsx`
+  - `components/DialogueAudioButton.tsx`
+  - `analytics/index.ts`
+  - `analytics/AnalyticsProvider.tsx`
+  - `analytics/ExpressionViewTracker.tsx`
+
+### 2. Phase 3: Component-Level Event Tracking Implementation
+
+- **Expression Click Tracking** (`ExpressionCard.tsx`)
+  - `trackExpressionClick()` 호출 추가
+  - 파라미터: `expressionId`, `expressionText`, `category`, `source: "home_feed"`
+  - 사용자가 홈 피드에서 표현 카드를 클릭할 때 자동 추적
+- **Expression View Tracking** (`ExpressionViewTracker.tsx`)
+  - 새로운 클라이언트 컴포넌트 생성
+  - 표현 상세 페이지 로드 시 `trackExpressionView()` 자동 호출
+  - 파라미터: `expressionId`, `category`, `lang`
+  - 서버 컴포넌트(`page.tsx`)에서 사용 가능하도록 설계
+- **Audio Play Tracking Infrastructure** (`DialogueAudioButton.tsx`)
+  - Props 추가: `expressionId`, `audioIndex`, `playType`
+  - 오디오 재생 시작 시 `trackAudioPlay()` 호출
+  - 파라미터 조건부 전송 (props가 있을 때만)
+  - 향후 `DialogueSection`에서 props 전달 필요
+
+### 3. Documentation Updates
+
+- **project_context.md**: 디렉토리 구조 업데이트
+  - `lib/analytics/` 제거
+  - `analytics/` 추가 (3개 파일 명시)
+
+### 4. Result
+
+- Analytics 모듈이 독립적이고 발견하기 쉬운 구조로 개선
+- 모든 주석이 한국어로 통일되어 프로젝트 규칙 준수
+- 핵심 사용자 상호작용 3가지 자동 추적 시작:
+  1. 표현 카드 클릭 (홈 피드)
+  2. 표현 상세 조회
+  3. 오디오 재생 (인프라 구축)
+- Phase 3 나머지 이벤트 추적을 위한 기반 마련
+
 ## v0.12.0: Analytics Implementation (Google Analytics 4) (2026-01-14)
 
 ### 1. GA4 Integration & Infrastructure

@@ -2,6 +2,117 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-14: Analytics Phase 3 구현 (컴포넌트 이벤트 추적 및 모듈 재구성)
+
+### ✅ 진행 사항
+
+- **Analytics Module Reorganization**: `lib/analytics/` → `analytics/` (루트 레벨로 이동)
+  - 독립된 모듈로 분리하여 발견 가능성 및 유지보수성 향상
+  - Import 경로 단순화: `@/lib/analytics` → `@/analytics`
+  - 7개 파일의 import 경로 업데이트 완료
+- **Comment Localization**: 모든 영어 주석을 한국어로 변환
+  - `analytics/index.ts`: 12개 이벤트 함수 주석 한국어화
+  - `analytics/AnalyticsProvider.tsx`: Provider 주석 한국어화
+  - `analytics/ExpressionViewTracker.tsx`: Tracker 주석 한국어화
+- **Phase 3: Component-Level Event Tracking**
+  - Expression Click Tracking (`ExpressionCard.tsx`)
+  - Expression View Tracking (`ExpressionViewTracker.tsx` 신규 생성)
+  - Audio Play Tracking Infrastructure (`DialogueAudioButton.tsx`)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Analytics 모듈을 왜 `lib/`에서 루트로 이동했나?**
+
+- **A.** Analytics는 단순 유틸리티가 아니라 독립적인 기능 모듈임. `lib/`은 범용 유틸리티 함수를 위한 공간이고, Analytics는 GA4 통합, Provider, Tracker 등 여러 컴포넌트로 구성된 완전한 모듈이므로 루트 레벨에서 관리하는 것이 적절함. 이는 `components/`, `hooks/`, `context/`와 동일한 레벨의 독립 모듈로 취급.
+
+**Q. ExpressionViewTracker를 왜 별도 컴포넌트로 분리했나?**
+
+- **A.** 표현 상세 페이지(`app/expressions/[id]/page.tsx`)는 서버 컴포넌트인데, Analytics 추적은 클라이언트에서만 가능함(`useEffect` 필요). 따라서 클라이언트 컴포넌트인 `ExpressionViewTracker`를 별도로 만들어 서버 컴포넌트에서 import하여 사용. 이를 통해 서버/클라이언트 경계를 명확히 분리하고 코드 재사용성 향상.
+
+**Q. DialogueAudioButton에 analytics props를 왜 선택적(optional)으로 만들었나?**
+
+- **A.** `DialogueAudioButton`은 범용 컴포넌트로 다양한 곳에서 사용될 수 있음. Analytics가 필요 없는 경우(예: 미리보기, 테스트 환경)에도 동작해야 하므로 props를 선택적으로 설계. Props가 제공되면 추적하고, 없으면 추적하지 않는 조건부 로직 적용.
+
+**Q. 주석을 왜 모두 한국어로 변경했나?**
+
+- **A.** 프로젝트 전체가 한국어 주석을 사용하는 규칙을 따르고 있음. Analytics 모듈만 영어 주석을 사용하면 일관성이 깨지고, 향후 유지보수 시 혼란을 야기할 수 있음. 코드베이스 전체의 일관성 유지가 장기적으로 더 중요.
+
+### 🏗️ 구현 상세
+
+**1. Expression Click Tracking**
+
+```typescript
+// ExpressionCard.tsx
+trackExpressionClick({
+  expressionId: item.id,
+  expressionText: item.expression,
+  category: item.category,
+  source: "home_feed",
+});
+```
+
+**2. Expression View Tracking**
+
+```typescript
+// ExpressionViewTracker.tsx (새로운 클라이언트 컴포넌트)
+useEffect(() => {
+  trackExpressionView({
+    expressionId,
+    category,
+    lang,
+  });
+}, [expressionId, category, lang]);
+```
+
+**3. Audio Play Tracking**
+
+```typescript
+// DialogueAudioButton.tsx
+interface DialogueAudioButtonProps {
+  // ... 기존 props
+  // Analytics props (선택적)
+  expressionId?: string;
+  audioIndex?: number;
+  playType?: "individual" | "sequential";
+}
+
+// 재생 시작 시
+if (expressionId !== undefined && audioIndex !== undefined) {
+  trackAudioPlay({
+    expressionId,
+    audioIndex,
+    playType,
+  });
+}
+```
+
+### 📊 현재 추적 가능한 이벤트
+
+**자동 추적 (Phase 1-2):**
+
+- ✅ `page_view`: 모든 페이지 뷰 (AnalyticsProvider)
+
+**수동 추적 (Phase 3 - 구현 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생 (인프라 구축, props 전달 필요)
+
+**수동 추적 (Phase 3 - 구현 예정):**
+
+- ⏳ `learning_mode_toggle`: 학습 모드 전환
+- ⏳ `filter_apply`: 필터 적용
+- ⏳ `search`: 검색 실행
+- ⏳ `tag_click`: 태그 클릭
+- ⏳ `related_click`: 관련 표현 클릭
+
+### 🔄 다음 단계
+
+- `DialogueSection.tsx`에 `expressionId` prop 추가 및 `DialogueItem`으로 전달
+- 나머지 Phase 3 이벤트 추적 구현 (학습 모드, 필터, 검색, 태그, 관련 표현)
+- 개발 환경에서 콘솔 로그 테스트
+- GA4 대시보드에서 실제 데이터 수집 검증
+
 ## 2026-01-14: Analytics Implementation (Google Analytics 4 Integration)
 
 ### ✅ 진행 사항

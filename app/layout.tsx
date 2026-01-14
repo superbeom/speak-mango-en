@@ -2,11 +2,11 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { GA_MEASUREMENT_ID } from "@/analytics";
+import AnalyticsProvider from "@/analytics/AnalyticsProvider";
 import { ExpressionProvider } from "@/context/ExpressionContext";
 import { getI18n } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
-import { GA_MEASUREMENT_ID } from "@/lib/analytics";
-import AnalyticsProvider from "@/lib/analytics/AnalyticsProvider";
 import { formatMessage } from "@/lib/utils";
 import ScrollToTop from "@/components/ScrollToTop";
 

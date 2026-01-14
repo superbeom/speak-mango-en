@@ -49,6 +49,10 @@ speak-mango-en/
 │   ├── layout.tsx       # 레이아웃
 │   ├── template.tsx     # 페이지 전환 초기화 (스크롤 리셋 등)
 │   └── globals.css      # 전역 스타일
+├── analytics/           # 사용자 행동 분석 (Google Analytics 4)
+│   ├── index.ts                # 이벤트 추적 유틸리티 함수 (12개 핵심 이벤트)
+│   ├── AnalyticsProvider.tsx   # 페이지 뷰 자동 추적 Provider
+│   └── ExpressionViewTracker.tsx # 표현 조회 추적 컴포넌트
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
 ├── constants/           # 전역 상수 관리
@@ -59,9 +63,6 @@ speak-mango-en/
 ├── hooks/               # 커스텀 React 훅
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
-│   ├── analytics/       # Analytics 관련 (GA4 통합)
-│   │   ├── index.ts            # 이벤트 추적 유틸리티 함수
-│   │   └── AnalyticsProvider.tsx # 페이지 뷰 자동 추적 Provider
 │   ├── supabase/        # Supabase 클라이언트 설정 (server/client)
 │   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수

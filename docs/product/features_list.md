@@ -128,10 +128,17 @@
 - **Google Analytics 4 Integration**: 사용자 행동 분석을 위한 GA4 통합 완료.
 - **Environment-Based Configuration**: 개발/프로덕션 환경별로 별도의 GA4 속성 사용하여 테스트 데이터와 실제 데이터 분리.
 - **Automatic Page View Tracking**: 라우트 변경 시 자동으로 페이지 뷰 추적 (`AnalyticsProvider`).
-- **Type-Safe Event Tracking**: 12개의 타입 안전한 이벤트 추적 함수 제공:
-  - 표현 관련: `trackExpressionView`, `trackExpressionClick`, `trackRelatedClick`
-  - 오디오 관련: `trackAudioPlay`, `trackAudioComplete`
-  - 학습 관련: `trackLearningModeToggle`
-  - 탐색 관련: `trackFilterApply`, `trackSearch`, `trackTagClick`
-  - 향후 구현: `trackShareClick`, `trackShareComplete`
+- **Component-Level Event Tracking** (Phase 3 진행 중):
+  - ✅ **Expression Click** (`trackExpressionClick`): 표현 카드 클릭 추적 (`ExpressionCard.tsx`)
+  - ✅ **Expression View** (`trackExpressionView`): 표현 상세 조회 추적 (`ExpressionViewTracker.tsx`)
+  - ✅ **Audio Play** (`trackAudioPlay`): 오디오 재생 추적 인프라 구축 (`DialogueAudioButton.tsx`)
+  - ⏳ **Audio Complete** (`trackAudioComplete`): 오디오 재생 완료 추적 (구현 예정)
+  - ⏳ **Learning Mode Toggle** (`trackLearningModeToggle`): 학습 모드 전환 추적 (구현 예정)
+  - ⏳ **Filter Apply** (`trackFilterApply`): 필터 적용 추적 (구현 예정)
+  - ⏳ **Search** (`trackSearch`): 검색 실행 추적 (구현 예정)
+  - ⏳ **Tag Click** (`trackTagClick`): 태그 클릭 추적 (구현 예정)
+  - ⏳ **Related Click** (`trackRelatedClick`): 관련 표현 클릭 추적 (구현 예정)
+  - ⏳ **Share Click** (`trackShareClick`): 공유 버튼 클릭 추적 (향후 구현)
+  - ⏳ **Share Complete** (`trackShareComplete`): 공유 완료 추적 (향후 구현)
 - **Development Tools**: 개발 환경에서는 콘솔 로그로 이벤트 확인, 프로덕션에서만 GA4로 전송.
+- **Module Organization**: 독립된 `analytics/` 모듈로 구성 (루트 레벨).

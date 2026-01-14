@@ -608,4 +608,120 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
   />
   ```
 - **Configuration**: `send_page_view: false`로 설정하여 자동 페이지 뷰를 비활성화하고 `AnalyticsProvider`에서 수동 제어
-- **Single Source of Truth**: `GA_MEASUREMENT_ID`를 `lib/analytics/index.ts`에서 export하여 환경별 선택 로직을 한 곳에 집중
+- **Single Source of Truth**: `GA_MEASUREMENT_ID`를 `analytics/index.ts`에서 export하여 환경별 선택 로직을 한 곳에 집중
+
+### 14.7 Component-Level Event Tracking (컴포넌트 레벨 이벤트 추적)
+
+Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
+
+#### A. Expression Click Tracking (표현 클릭 추적)
+
+- **Component**: `components/ExpressionCard.tsx`
+- **Implementation**:
+
+  ```typescript
+  import { trackExpressionClick } from "@/analytics";
+
+  // Link onClick handler
+  onClick={() => {
+    trackExpressionClick({
+      expressionId: item.id,
+      expressionText: item.expression,
+      category: item.category,
+      source: "home_feed",
+    });
+    // ... 기존 스크롤 리셋 로직
+  }}
+  ```
+
+- **Trigger**: 사용자가 홈 피드에서 표현 카드를 클릭할 때
+- **Parameters**:
+  - `expressionId`: 표현 고유 ID
+  - `expressionText`: 표현 텍스트 (예: "snap up")
+  - `category`: 카테고리 (예: "daily", "business")
+  - `source`: 클릭 출처 (`"home_feed"`, `"related"`, `"search"`)
+
+#### B. Expression View Tracking (표현 조회 추적)
+
+- **Component**: `analytics/ExpressionViewTracker.tsx` (신규 생성)
+- **Pattern**: Server-Client Component Separation
+- **Challenge**: 표현 상세 페이지(`app/expressions/[id]/page.tsx`)는 서버 컴포넌트이지만, Analytics 추적은 클라이언트에서만 가능(`useEffect` 필요)
+- **Solution**: 별도의 클라이언트 컴포넌트 생성
+
+  ```typescript
+  "use client";
+
+  export default function ExpressionViewTracker({
+    expressionId,
+    category,
+    lang,
+  }: ExpressionViewTrackerProps) {
+    useEffect(() => {
+      trackExpressionView({
+        expressionId,
+        category,
+        lang,
+      });
+    }, [expressionId, category, lang]);
+
+    return null; // UI 없음, 추적만 수행
+  }
+  ```
+
+- **Usage**: 서버 컴포넌트에서 import하여 사용
+  ```typescript
+  // app/expressions/[id]/page.tsx
+  <ExpressionViewTracker
+    expressionId={id}
+    category={expression.category}
+    lang={locale}
+  />
+  ```
+- **Benefit**: 서버/클라이언트 경계를 명확히 분리하고 코드 재사용성 향상
+
+#### C. Audio Play Tracking (오디오 재생 추적)
+
+- **Component**: `components/DialogueAudioButton.tsx`
+- **Pattern**: Optional Analytics Props
+- **Implementation**:
+
+  ```typescript
+  interface DialogueAudioButtonProps {
+    // ... 기존 props
+    // Analytics props (선택적)
+    expressionId?: string;
+    audioIndex?: number;
+    playType?: "individual" | "sequential";
+  }
+
+  // 재생 시작 시
+  if (expressionId !== undefined && audioIndex !== undefined) {
+    trackAudioPlay({
+      expressionId,
+      audioIndex,
+      playType,
+    });
+  }
+  ```
+
+- **Design Decision**: Props를 선택적(optional)으로 설계
+  - **Reason**: `DialogueAudioButton`은 범용 컴포넌트로 다양한 곳에서 사용됨
+  - Analytics가 필요 없는 경우(미리보기, 테스트)에도 동작해야 함
+  - Props가 제공되면 추적하고, 없으면 추적하지 않는 조건부 로직
+- **Next Step**: `DialogueSection.tsx`에서 `expressionId` prop을 받아 `DialogueItem`으로 전달 필요
+
+### 14.8 Analytics Module Organization (모듈 구조)
+
+- **Directory**: `analytics/` (루트 레벨, `lib/`에서 이동)
+- **Rationale**: Analytics는 단순 유틸리티가 아니라 독립적인 기능 모듈
+  - GA4 통합, Provider, Tracker 등 여러 컴포넌트로 구성
+  - `components/`, `hooks/`, `context/`와 동일한 레벨의 독립 모듈로 취급
+- **Structure**:
+  ```
+  analytics/
+  ├── index.ts                    # 12개 이벤트 추적 함수
+  ├── AnalyticsProvider.tsx       # 페이지 뷰 자동 추적
+  └── ExpressionViewTracker.tsx   # 표현 조회 추적 컴포넌트
+  ```
+- **Import Path**: `@/analytics` (기존 `@/lib/analytics`에서 변경)
+- **Comment Convention**: 모든 주석 한국어로 통일 (프로젝트 규칙 준수)

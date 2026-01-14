@@ -1,6 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SUPPORTED_LANGUAGES, getContentLocale, SupportedLanguage } from "@/i18n";
+import ExpressionViewTracker from "@/analytics/ExpressionViewTracker";
+import {
+  SUPPORTED_LANGUAGES,
+  getContentLocale,
+  SupportedLanguage,
+} from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { getI18n } from "@/i18n/server";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
@@ -22,7 +27,9 @@ interface PageProps {
 
 export const revalidate = 3600;
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { id } = await params;
   const expression = await getExpressionById(id);
 
@@ -74,8 +81,12 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
   const { locale, dict } = await getI18n();
 
   // 감지된 언어의 데이터가 있는지 확인, 없으면 영어(en)를 기본값으로 사용
-  const content = expression.content[getContentLocale(expression.content, locale)] || expression.content[SupportedLanguage.EN];
-  const meaning = expression.meaning[getContentLocale(expression.meaning, locale)] || expression.meaning[SupportedLanguage.EN];
+  const content =
+    expression.content[getContentLocale(expression.content, locale)] ||
+    expression.content[SupportedLanguage.EN];
+  const meaning =
+    expression.meaning[getContentLocale(expression.meaning, locale)] ||
+    expression.meaning[SupportedLanguage.EN];
 
   if (!content || !meaning) {
     notFound();
@@ -96,6 +107,13 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-layout pb-20">
+      {/* Track expression view */}
+      <ExpressionViewTracker
+        expressionId={id}
+        category={expression.category}
+        lang={locale}
+      />
+
       <Header>
         <div className="flex items-center">
           <BackButton label={dict.common.back} />
