@@ -1,4 +1,14 @@
+import { SERVICE_NAME } from "@/constants";
+
 export const ko = {
+  meta: {
+    expressionTitle: "{expression}",
+    expressionDesc:
+      "{meaning} | {serviceName}에서 원어민 발음과 함께 배워보세요.",
+    mainTitle: "{serviceName} - 하루 한 문장 영어 회화",
+    mainDescription: `${SERVICE_NAME}가 매일 엄선한 신선한 영어 표현. 하루 한 문장으로 비즈니스, 여행, 일상 회화 실력을 키워보세요. 원어민 발음과 생생한 뉘앙스 해설까지.`,
+    keywords: `영어 회화, 비즈니스 영어, 생활 영어, 하루 한 문장, 영어 표현, ${SERVICE_NAME}, 스픽 망고, 영어 공부`,
+  },
   common: {
     back: "뒤로가기",
     loading: "로딩 중...",
@@ -27,10 +37,16 @@ export const ko = {
     relatedTitle: "📚 이런 표현은 어때요?",
     playAll: "전체 듣기",
     stop: "멈춤",
+    share: "공유하기",
+    shareCopied: "링크가 클립보드에 복사되었습니다!",
+    shareFailed: "공유에 실패했습니다. 다시 시도해 주세요.",
   },
   card: {
     label: "오늘의 표현",
     situationQuestion: "어떤 상황인가요?",
     noDescription: "설명이 없습니다.",
+    share: "공유",
+    shareCopied: "링크 복사됨!",
+    shareFailed: "공유 실패",
   },
 };

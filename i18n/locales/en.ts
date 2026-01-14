@@ -1,4 +1,14 @@
+import { SERVICE_NAME } from "@/constants";
+
 export const en = {
+  meta: {
+    expressionTitle: "{expression}",
+    expressionDesc:
+      "{meaning} | Learn with native pronunciation on {serviceName}.",
+    mainTitle: "{serviceName} - Daily English Conversation",
+    mainDescription: `Fresh English expressions hand-picked by ${SERVICE_NAME} every day. Improve your business, travel, and daily conversation skills with one sentence a day. Includes native pronunciation and nuance explanation.`,
+    keywords: `English conversation, Business English, Daily English, One sentence a day, English expression, ${SERVICE_NAME}, English study`,
+  },
   common: {
     back: "Back",
     loading: "Loading...",
@@ -27,10 +37,16 @@ export const en = {
     relatedTitle: "📚 How about these expressions?",
     playAll: "Play All",
     stop: "Stop",
+    share: "Share",
+    shareCopied: "Link copied to clipboard!",
+    shareFailed: "Failed to share. Please try again.",
   },
   card: {
     label: "Today's Expression",
     situationQuestion: "What's the situation?",
     noDescription: "No description available.",
+    share: "Share",
+    shareCopied: "Link copied!",
+    shareFailed: "Failed to share",
   },
 };

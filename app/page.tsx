@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { getI18n } from "@/i18n/server";
-import { getExpressions } from "@/lib/expressions";
-import { SERVICE_NAME } from "@/constants";
+import { SUPPORTED_LANGUAGES } from "@/i18n";
+import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
+import { getExpressions } from "@/lib/expressions";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
 import FilterBar from "@/components/FilterBar";
@@ -48,6 +49,23 @@ export default async function Home({ searchParams }: PageProps) {
 
       {/* Main Content */}
       <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: SERVICE_NAME,
+              url: BASE_URL,
+              inLanguage: SUPPORTED_LANGUAGES,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${BASE_URL}/?search={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
         <div className="mb-10">
           <h2 className="text-3xl font-bold text-main">{dict.home.title}</h2>
           <p className="mt-2 text-secondary">{dict.home.description}</p>

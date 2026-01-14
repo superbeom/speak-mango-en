@@ -7,8 +7,8 @@ let results = [];
 items.forEach((item, itemIndex) => {
   const data = item.json;
 
-  // ko 기반으로 대화문 추출 (모든 언어가 동일한 en 대화문을 공유하므로)
-  const dialogueEntries = data.content?.ko?.dialogue || [];
+  // top-level dialogue 추출
+  const dialogueEntries = data.dialogue || [];
   const expressionId = data.id;
 
   dialogueEntries.forEach((entry, lineIndex) => {

@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { trackExpressionClick } from "@/analytics";
 import { Expression } from "@/types/database";
 import { useEnableHover } from "@/hooks/useIsMobile";
-import { getDictionary } from "@/i18n";
+import { getDictionary, SupportedLanguage } from "@/i18n";
 import { SCROLL_RESET_KEY } from "@/constants";
 import { cn } from "@/lib/utils";
 import { ROUTES, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
+import ShareButton from "@/components/ShareButton";
 
 interface ExpressionCardProps {
   item: Expression;
@@ -36,8 +38,8 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
   const enableHover = useEnableHover();
   const dict = getDictionary(locale);
 
-  const content = item.content[locale] || item.content["ko"];
-  const meaning = item.meaning[locale] || item.meaning["ko"];
+  const content = item.content[locale] || item.content[SupportedLanguage.EN];
+  const meaning = item.meaning[locale] || item.meaning[SupportedLanguage.EN];
 
   // UI Config 통합 가져오기
   const { domain, category } = getExpressionUIConfig(
@@ -87,15 +89,26 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
     >
       <Link
         href={ROUTES.EXPRESSION_DETAIL(item.id)}
-        className="block h-full"
+        className="relative block h-full"
         onClick={() => {
+          // Track expression click event
+          trackExpressionClick({
+            expressionId: item.id,
+            expressionText: item.expression,
+            category: item.category,
+            source: "home_feed",
+          });
+
           // 1. 새 페이지 진입 신호를 남깁니다. (app/expressions/[id]/template.tsx에서 확인)
           if (typeof sessionStorage !== "undefined") {
             sessionStorage.setItem(SCROLL_RESET_KEY, "true");
           }
 
           // 2. 즉시 auto 모드로 전환하여 Next.js/Browser의 기본 동작을 돕습니다.
-          if (typeof history !== "undefined" && "scrollRestoration" in history) {
+          if (
+            typeof history !== "undefined" &&
+            "scrollRestoration" in history
+          ) {
             history.scrollRestoration = "auto";
           }
         }}
@@ -104,7 +117,7 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
           className={cn(
             "group h-full overflow-hidden rounded-3xl border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",
             enableHover &&
-            "hover:border-blue-200/50 hover:shadow-xl dark:hover:border-blue-500/30 dark:hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
+              "hover:border-blue-200/50 hover:shadow-xl dark:hover:border-blue-500/30 dark:hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
           )}
         >
           <div className="mb-5">
@@ -128,7 +141,7 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
               className={cn(
                 "text-2xl font-bold text-main leading-tight transition-colors",
                 enableHover &&
-                "group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  "group-hover:text-blue-600 dark:group-hover:text-blue-400"
               )}
             >
               {item.expression}
@@ -153,11 +166,26 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
                 <Tag
                   key={tag}
                   label={tag}
+                  source="card"
                   onClick={(e) => handleTagClick(e, tag)}
                 />
               ))}
             </div>
           )}
+        </div>
+
+        {/* Share Button */}
+        <div className="absolute bottom-5 right-5">
+          <ShareButton
+            variant="compact"
+            expressionId={item.id}
+            expressionText={item.expression}
+            meaning={meaning}
+            shareLabel={dict.card.share}
+            shareCopiedLabel={dict.card.shareCopied}
+            shareFailedLabel={dict.card.shareFailed}
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       </Link>
     </motion.div>

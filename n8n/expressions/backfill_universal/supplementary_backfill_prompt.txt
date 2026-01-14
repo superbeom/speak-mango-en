@@ -1,0 +1,122 @@
+Role: Professional Multi-Language Content Creator.
+Task: Create content for the following expression in **German (de), French (fr), Russian (ru), Chinese (zh), and Arabic (ar)**.
+
+Expression: {{ $json.expression }}
+Domain: {{ $json.domain }}
+Category: {{ $json.category }}
+
+**Reference Style (Korean):**
+Tip: {{ $json.content.ko.tip }}
+Situation: {{ $json.content.ko.situation }}
+
+**Reference Dialogue (English):**
+{{ JSON.stringify($json.dialogue) }}
+
+Requirements:
+1. **TARGET LANGUAGES**: Generate content for `de`, `fr`, `ru`, `zh`, `ar` (Do NOT generate `en`).
+2. **TONE**: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language consistently** for explanations.
+    - **French**: Use **'Tu' form** for engagement but maintain a polite, helpful tone (or 'Vous' if context demands strict formality, but 'Tu' is preferred for 20-30s friendly content).
+    - **German**: Use **'Du' form** (friendly, for 20-30s audience).
+    - **Russian**: Use **'Вы' (Polite)** for general explanations to maintain authority, or **'ты'** if very casual. (Stick to **Friendly 'Вы'** or respectful **'ты'**). Let's use **Friendly 'Ты'** for this target audience (20-30s blog style).
+    - **Chinese**: Use **Polite yet friendly (你 + 敬语/Polite particles)**.
+    - **Arabic**: Use **Modern Standard Arabic (MSA)** but with a friendly, accessible tone (avoid overly archaic vocabulary).
+
+3. For the 'meaning' field in ALL languages:
+   - **Tone**: Use a **casual tone** by default.
+     - **French**: Use **Informal 'Tu' form**.
+     - **German**: Use **Informal 'Du' form**.
+     - **Russian**: Use **Informal 'ты' form**.
+     - **Chinese**: Use **Casual speech**.
+     - **Arabic**: Use **MSA** (simplified).
+   - **EXCEPTION**: If the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I...", business emails, addressing a superior), use a **polite tone** in all languages.
+     - **French**: Formal 'Vous' form.
+     - **German**: Formal 'Sie' form.
+     - **Russian**: Formal 'Вы' form.
+     - **Chinese**: Polite speech (using '您' instead of '你').
+     - **Arabic**: Formal MSA (Fusha).
+
+4. **Formatting & Emojis (CRITICAL)**:
+   - **Tip**: Check the "Reference Style (Korean)" tip above.
+     - **COPY the starting emoji** (e.g., 💡, 🚨, ✨) used in the Korean tip.
+     - **COPY the Bold Header format** but translated (e.g., if Korean has "**꿀팁!**", French uses "**Conseil !**", etc.).
+   - **Situation**: Check the "Reference Style (Korean)" situation above.
+     - **COPY the starting emoji** used in the Korean situation.
+
+5. **Fields**:
+   - `meaning`: Simple definition or synonym.
+   - `content`: `situation`, `tip`, `quiz`.
+   - `dialogue_translations`: 
+     - You MUST generate translations for the provided English dialogue.
+     - Output an array matching the input dialogue order.
+     - Each item must contain keys for `de, fr, ru, zh, ar`.
+
+6. **Output JSON Schema**:
+   ```json
+   {
+     "meaning": {
+       "de": "sich nicht gut fühlen · angeschlagen sein",
+       "fr": "se sentir mal · être patraque",
+       "ru": "неважно себя чувствовать · приболеть",
+       "zh": "身体不舒服 · 感觉不太好",
+       "ar": "لست على ما يرام · أشعر بالمرض"
+     },
+     "content": {
+       "de": {
+         "situation": "Perfekt für Tage, an denen man aufwacht und sich einfach schlapp fühlt. 😱 Ein toller Ausdruck, um zu sagen, dass man nicht 100% fit ist, aber auch nicht ernsthaft krank! 🤒✨",
+         "tip": "💡 **Schon gewusst?** Diese Redewendung stammt angeblich von Seeleuten, die bei schlechtem Wetter unter Deck gingen, wenn sie seekrank waren! ⚓️🌊",
+         "quiz": {
+           "question": "Wann ist der beste Zeitpunkt, 'under the weather' zu verwenden?\n\nA. 🥳 Wenn du fröhlich auf einer Party tanzt.\nB. 😴 Wenn du im Bett liegst und dich etwas kränklich fühlst.\nC. 🏋️‍♀️ Wenn du im Fitnessstudio energiegeladen Gewichte hebst.",
+           "answer": "B"
+         }
+       },
+       "fr": {
+         "situation": "C'est parfait pour les jours où vous vous réveillez un peu mou. 😱 C'est une super expression pour dire que vous n'êtes pas à 100%, sans être gravement malade ! 🤒✨",
+         "tip": "💡 **Le saviez-vous ?** Cette expression viendrait des marins qui descendaient sous le pont pour s'abriter du mauvais temps quand ils avaient le mal de mer ! ⚓️🌊",
+         "quiz": {
+           "question": "Quand est-il le plus approprié d'utiliser 'under the weather' ?\n\nA. 🥳 Quand vous dansez joyeusement à une fête.\nB. 😴 Quand vous êtes au lit et que vous vous sentez un peu fébrile.\nC. 🏋️‍♀️ Quand vous soulevez des poids énergiquement à la salle de sport.",
+           "answer": "B"
+         }
+       },
+       "ru": {
+         "situation": "Это идеально подходит для тех дней, когда вы просыпаетесь с чувством вялости. 😱 Отличное выражение, чтобы сказать, что вы не на 100% в форме, но и не серьезно больны! 🤒✨",
+         "tip": "💡 **Интересный факт!** Говорят, что эта идиома пошла от моряков, которые спускались под палубу (under the weather rail), когда их укачивало во время шторма! ⚓️🌊",
+         "quiz": {
+           "question": "Когда уместнее всего использовать 'under the weather'?\n\nA. 🥳 Когда вы радостно танцуете на вечеринке.\nB. 😴 Когда вы лежите в кровати и чувствуете легкое недомогание.\nC. 🏋️‍♀️ Когда вы энергично поднимаете тяжести в спортзале.",
+           "answer": "B"
+         }
+       },
+       "zh": {
+         "situation": "当你早上醒来感觉有点没精神或者不舒服的时候，用这个词再合适不过了！😱 这是一个很好的表达，用来形容你状态不是100%好，但也没生什么大病！🤒✨",
+         "tip": "💡 **冷知识！** 据说这句习语源于水手，当遇到恶劣天气感到晕船时，他们会躲到甲板下面（under the weather rail）！⚓️🌊",
+         "quiz": {
+           "question": "什么时候最适合使用 'under the weather'？\n\nA. 🥳 当你在派对上开心地跳舞时。\nB. 😴 当你躺在床上感觉有点发冷不舒服时。\nC. 🏋️‍♀️ 当你在健身房精力充沛地举重时。",
+           "answer": "B"
+         }
+       },
+       "ar": {
+         "situation": "هذا التعبير مثالي للأيام التي تستيقظ فيها وأنت تشعر ببعض الخمول أو التعب. 😱 إنه تعبير رائع لتقول إنك لست في كامل لياقتك، لكنك لست مريضاً بشكل خطير أيضاً! 🤒✨",
+         "tip": "💡 **حقيقة ممتعة!** يقال إن هذا المصطلح جاء من البحارة الذين كانوا ينزلون تحت سطح السفينة (تحت حاجز الطقس) عندما يشعرون بدوار البحر أثناء الطقس السيئ! ⚓️🌊",
+         "quiz": {
+           "question": "متى يكون الوقت الأنسب لاستخدام عبارة 'under the weather'؟\n\nA. 🥳 عندما ترقص بسعادة في حفلة.\nB. 😴 عندما تكون مستلقياً في السرير وتشعر ببعض البرودة والتوعك.\nC. 🏋️‍♀️ عندما ترفع الأثقال بنشاط في صالة الألعاب الرياضية.",
+           "answer": "B"
+         }
+       }
+     },
+     "dialogue_translations": [
+       {
+         "de": "Hey, du siehst ein bisschen niedergeschlagen aus. Alles okay?",
+         "fr": "Hé, tu as l'air un peu déprimé. Ça va ?",
+         "ru": "Эй, ты выглядишь немного подавленным. Ты в порядке?",
+         "zh": "嘿，你看起来有点沮丧。你还好吗？",
+         "ar": "مهلاً، تبدو محبطاً قليلاً. هل أنت بخير؟"
+       },
+       {
+         "de": "Ich fühle mich heute etwas angeschlagen, deshalb werde ich wohl früher nach Hause gehen.",
+         "fr": "Je ne me sens pas très bien aujourd'hui, donc je pense que je vais rentrer plus tôt.",
+         "ru": "Я сегодня неважно себя чувствую, поэтому думаю пойти домой пораньше.",
+         "zh": "我今天身体有点不舒服，想早点回家。",
+         "ar": "أشعر بتوعك قليل اليوم، لذا سأعود إلى المنزل مبكراً."
+       }
+     ]
+   }
+   ```

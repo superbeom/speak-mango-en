@@ -2,6 +2,1130 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-14: 표현 카드 공유 버튼 통합 (Card Share Integration)
+
+### ✅ 진행 사항
+
+- **Expression Card Layout Update**: `components/ExpressionCard.tsx`
+  - ShareButton을 absolute 포지셔닝으로 우측 하단에 배치
+  - Link 컴포넌트에 `relative` 추가 (포지셔닝 컨텍스트)
+  - 태그와 독립적인 영역으로 분리
+- **Event Propagation Enhancement**: 이벤트 전파 방지 강화
+- **i18n Update**: 9개 언어에 card.share 관련 텍스트 추가 (이전 커밋에서 누락)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. ShareButton을 왜 absolute 포지셔닝으로 배치했나?**
+
+- **A.** 초기에는 태그와 함께 flex 레이아웃에 배치했으나, 태그 개수에 따라 공유 버튼 위치가 변동되는 문제 발생. absolute 포지셔닝으로 우측 하단(`bottom-5 right-5`)에 고정하여:
+  1. **일관된 위치**: 태그 개수와 무관하게 항상 같은 위치
+  2. **시각적 균형**: 우측 하단 고정으로 카드 레이아웃 안정성 확보
+  3. **공간 효율**: 태그 영역을 침범하지 않고 독립적으로 배치
+
+**Q. Link에 `relative`와 `block`을 함께 사용해도 괜찮은가?**
+
+- **A.** 완전히 유효한 조합임:
+  - `block`: display 속성 (레이아웃 타입) - Link가 카드 전체 높이(`h-full`) 차지
+  - `relative`: position 속성 (포지셔닝 컨텍스트) - ShareButton의 absolute 기준점
+  - 두 속성은 서로 다른 CSS 속성이므로 충돌 없이 함께 작동
+
+**Q. 이벤트 전파 방지는 어떻게 강화했나?**
+
+- **A.** 이중 방어 전략:
+  1. **ShareButton 내부**: `handleShare`에서 `e.preventDefault()` + `e.stopPropagation()`
+  2. **ExpressionCard**: ShareButton의 `onClick` prop에서 `e.stopPropagation()`
+  - 두 레벨에서 이벤트 전파를 차단하여 카드 클릭 이벤트와 완전히 분리
+
+**Q. 태그와 공유 버튼을 왜 분리했나?**
+
+- **A.** 초기 grid 레이아웃(2:1 비율)도 시도했으나, absolute 포지셔닝이 더 나은 이유:
+  - **유연성**: 태그가 많아져도 레이아웃 깨지지 않음
+  - **명확성**: 공유 버튼이 항상 예측 가능한 위치에 있어 사용자 학습 비용 감소
+  - **반응형**: 모바일/데스크탑 모두에서 일관된 경험 제공
+
+### 🏗️ 구현 상세
+
+**1. Absolute Positioning**
+
+```tsx
+// ExpressionCard.tsx
+<Link
+  href={ROUTES.EXPRESSION_DETAIL(item.id)}
+  className="relative block h-full" // relative 추가
+>
+  {/* 카드 내용 */}
+
+  {/* ShareButton - absolute 포지셔닝 */}
+  <div className="absolute bottom-5 right-5">
+    <ShareButton
+      variant="compact"
+      expressionId={item.id}
+      expressionText={item.expression}
+      meaning={meaning}
+      shareLabel={dict.card.share}
+      shareCopiedLabel={dict.card.shareCopied}
+      shareFailedLabel={dict.card.shareFailed}
+      onClick={(e) => e.stopPropagation()}
+    />
+  </div>
+</Link>
+```
+
+**2. Event Propagation Prevention**
+
+```tsx
+// ShareButton.tsx - handleShare
+const handleShare = async (e: React.MouseEvent) => {
+  e.preventDefault(); // 기본 동작 방지
+  e.stopPropagation(); // 이벤트 전파 차단
+
+  if (onClick) onClick(e); // 추가 핸들러 실행
+  // ... 공유 로직
+};
+```
+
+### 🔍 검증 방법
+
+**브라우저 테스트**:
+
+1. **메인 페이지 카드**:
+
+   - 공유 버튼이 우측 하단에 고정 위치로 표시
+   - 공유 버튼 클릭 시 페이지 이동 없이 공유 기능만 실행 ✅
+   - Toast 알림 정상 표시 ✅
+
+2. **관련 표현 섹션**:
+   - 데스크탑 Marquee 스크롤 중에도 공유 버튼 정상 작동
+   - 모바일 세로 리스트에서도 동일하게 작동
+
+### 🔄 다음 단계
+
+- [ ] 사용자 피드백 수집 (공유 버튼 위치 및 크기)
+- [ ] GA4에서 카드 공유 vs 상세 페이지 공유 비율 분석
+
+## 2026-01-14: Share 기능 구현 (Web Share API + Toast System)
+
+### ✅ 진행 사항
+
+- **Share Button Component**: `components/ShareButton.tsx` 생성
+  - Web Share API 활용 (모바일 네이티브 공유)
+  - Clipboard Fallback (데스크탑 복사)
+  - Variant 지원 (`default` / `compact`)
+  - Analytics 자동 추적 통합
+- **Toast Notification System**: 재사용 가능한 Toast 컴포넌트 및 타입 시스템 구축
+  - `components/ui/Toast.tsx`: 독립 컴포넌트
+  - `types/toast.ts`: 중앙 집중식 타입 관리
+- **Share URL Generation**: `lib/utils.ts`에 `getShareUrl` 함수 추가
+- **i18n 업데이트**: 9개 언어에 share 관련 텍스트 추가
+- **UI Integration**: 상세 페이지 및 표현 카드에 ShareButton 통합
+- **Documentation**: Analytics, Features, Task 문서 업데이트
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Toast를 별도 컴포넌트로 분리했나?**
+
+- **A.** ShareButton 내부에 Toast 로직을 포함시키면 재사용성이 떨어짐. 향후 다른 기능(예: 북마크, 좋아요 등)에서도 Toast 알림이 필요할 수 있으므로, `components/ui/Toast.tsx`로 독립시켜 범용 컴포넌트로 만듦. 이를 통해 일관된 알림 UX 제공 가능.
+
+**Q. Toast 타입을 왜 `types/toast.ts`로 분리했나?**
+
+- **A.** `ToastType`과 `TOAST_TYPE` 상수를 ShareButton과 Toast 컴포넌트 모두에서 사용함. 두 컴포넌트가 서로 다른 파일에 있으므로, 타입을 중앙 집중식으로 관리하여 일관성 확보. 향후 Toast 타입이 확장될 때(예: `warning`, `info` 추가) 한 곳에서만 수정하면 됨.
+
+**Q. Web Share API가 지원되지 않는 환경은 어떻게 처리하나?**
+
+- **A.** `navigator.share` 존재 여부를 체크하여 분기 처리:
+  - **지원**: Web Share API 사용 (`sharePlatform: "native"`)
+  - **미지원**: Clipboard API로 URL 복사 (`sharePlatform: "clipboard"`)
+  - 두 경우 모두 Toast로 사용자에게 피드백 제공.
+
+**Q. Analytics 추적은 어떻게 구현했나?**
+
+- **A.** ShareButton 내부에서 자동으로 추적:
+  1. **Share Click**: 버튼 클릭 시 `trackShareClick` 호출
+     - `shareMethod`: `"native"` (Web Share API) 또는 `"copy_link"` (클립보드)
+     - `sharePlatform`: `"native"` 또는 `"clipboard"`
+  2. **Share Complete**: 공유 성공 시 `trackShareComplete` 호출
+     - Web Share API 완료 또는 클립보드 복사 성공 시
+  - 컴포넌트 사용자는 Analytics 로직을 신경 쓸 필요 없이 자동으로 추적됨.
+
+### 🏗️ 구현 상세
+
+**1. ShareButton Component**
+
+```typescript
+// components/ShareButton.tsx
+export default function ShareButton({
+  expressionId,
+  expressionText,
+  meaning,
+  shareLabel,
+  shareCopiedLabel,
+  shareFailedLabel,
+  variant = "default",
+  onClick,
+}: ShareButtonProps) {
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (onClick) onClick(e);
+
+    const shareUrl = getShareUrl(expressionId, {
+      utm_source: "share",
+      utm_medium: "native",
+    });
+
+    if (navigator.share) {
+      // Web Share API
+      await navigator.share({ title, text, url: shareUrl });
+      trackShareComplete({ expressionId, sharePlatform: "native" });
+    } else {
+      // Clipboard Fallback
+      await navigator.clipboard.writeText(shareUrl);
+      trackShareComplete({ expressionId, sharePlatform: "clipboard" });
+    }
+  };
+}
+```
+
+**2. Toast Component**
+
+```typescript
+// components/ui/Toast.tsx
+export default function Toast({ message, type, isVisible }: ToastProps) {
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className={cn(
+        "fixed bottom-8 left-1/2 -translate-x-1/2 z-50",
+        type === TOAST_TYPE.SUCCESS ? "bg-green-500" : "bg-red-500"
+      )}
+    >
+      {type === TOAST_TYPE.SUCCESS && <Check />}
+      {type === TOAST_TYPE.ERROR && <X />}
+      <span>{message}</span>
+    </div>
+  );
+}
+```
+
+**3. Type System**
+
+```typescript
+// types/toast.ts
+export type ToastType = "success" | "error";
+
+export const TOAST_TYPE = {
+  SUCCESS: "success" as const,
+  ERROR: "error" as const,
+} satisfies Record<string, ToastType>;
+```
+
+### 📊 현재 추적 가능한 이벤트 (Phase 5 완료)
+
+**자동 추적:**
+
+- ✅ `page_view`: 모든 페이지 뷰
+
+**수동 추적 (Phase 3-5 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생
+- ✅ `audio_complete`: 오디오 재생 완료
+- ✅ `learning_mode_toggle`: 학습 모드 전환
+- ✅ `filter_apply`: 필터 적용
+- ✅ `search`: 검색 실행
+- ✅ `tag_click`: 태그 클릭
+- ✅ `related_click`: 관련 표현 클릭
+- ✅ `share_click`: 공유 버튼 클릭
+- ✅ `share_complete`: 공유 완료
+
+### 🔍 검증 방법
+
+**개발 환경 콘솔 로그 확인:**
+
+1. **모바일 (Web Share API)**:
+
+   - Share 버튼 클릭 → 네이티브 공유 다이얼로그 표시
+   - Instagram, Twitter, KakaoTalk 등 설치된 앱으로 공유 가능
+   - `[Analytics] Event: share_click { expression_id: "...", share_method: "native", share_platform: "native" }`
+   - `[Analytics] Event: share_complete { expression_id: "...", share_platform: "native" }`
+
+2. **데스크탑 (Clipboard)**:
+
+   - Share 버튼 클릭 → URL 클립보드 복사
+   - Toast 알림: "Link copied!"
+   - `[Analytics] Event: share_click { expression_id: "...", share_method: "copy_link", share_platform: "clipboard" }`
+   - `[Analytics] Event: share_complete { expression_id: "...", share_platform: "clipboard" }`
+
+## 2026-01-14: Analytics Phase 3 완료 (audio_complete, related_click 추적)
+
+### ✅ 진행 사항
+
+- **Phase 3: 나머지 이벤트 추적 구현 완료**
+  - Audio Complete Tracking (`DialogueAudioButton.tsx`)
+  - Related Expression Click Tracking (`RelatedExpressions.tsx`)
+- **Props 확장**:
+  - `DialogueSection`: `expressionId` prop 추가 및 하위 컴포넌트로 전달
+  - `DialogueItem`: `isAutoPlaying`, `expressionId`, `audioIndex` props 추가
+  - `DialogueAudioButton`: `isAutoPlaying` prop 추가 및 `play()` 함수 시그니처 확장
+  - `RelatedExpressions`: `currentExpressionId` prop 추가
+- **중복 추적 방지 로직 구현**:
+  - 전체 듣기(Play All) 시 개별 `audio_play` 이벤트 중복 방지
+  - 일시정지 후 재개(Resume) 시 `audio_play` 이벤트 스킵
+- **문서 업데이트**:
+  - `docs/product/features_list.md`: Phase 3 이벤트 상태를 ⏳에서 ✅로 변경
+  - `docs/task.md`: Audio Complete, Related Click 작업 완료 표시
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 전체 듣기 중에 개별 audio_play 이벤트가 중복 발생하는 문제를 어떻게 해결했나?**
+
+- **A.** React의 state 업데이트는 비동기이므로, `setIsAutoPlaying(true)` 후 즉시 `play()`를 호출해도 컴포넌트는 아직 `isAutoPlaying: false` 상태임. 이를 해결하기 위해:
+  1. `DialogueAudioButtonHandle.play()` 함수에 `isSequential` 파라미터 추가
+  2. `DialogueSection`에서 전체 듣기 시 `play(true)` 호출하여 명시적으로 sequential 재생임을 전달
+  3. `DialogueAudioButton`의 `togglePlay` 함수를 `useCallback`으로 감싸고 dependency에 `isAutoPlaying` 포함
+  4. `useImperativeHandle`의 dependency에 `togglePlay` 추가하여 최신 클로저 참조
+
+**Q. 일시정지 후 재개할 때 audio_play 이벤트가 발생하는 문제는?**
+
+- **A.** 일시정지 상태(`isPaused`)를 체크하여 resume인지 새로운 재생인지 구분:
+  ```typescript
+  const isResume = isPaused;
+  const shouldSkipTracking = (forcePlay && isSequential) || isResume;
+  ```
+  Resume인 경우 추적을 스킵하여 중복 방지.
+
+**Q. 전체 듣기 중에 다른 오디오를 클릭하면 어떻게 되나?**
+
+- **A.** 사용자가 직접 버튼을 클릭한 경우(`forcePlay: false`)는 항상 개별 듣기로 추적됨:
+  ```typescript
+  const shouldSkipTracking = (forcePlay && isSequential) || isResume;
+  ```
+  `forcePlay`가 `false`이면 `shouldSkipTracking`도 `false`가 되어 정상적으로 추적됨.
+
+**Q. Related Expression 클릭 추적은 어떻게 구현했나?**
+
+- **A.** `RelatedExpressions` 컴포넌트에 `currentExpressionId` prop을 추가하고, 카드 클릭 시 `trackRelatedClick` 호출:
+  ```typescript
+  trackRelatedClick({
+    fromExpressionId: currentExpressionId,
+    toExpressionId: item.id,
+  });
+  ```
+  모바일(세로 리스트)과 데스크탑(Marquee 스크롤) 모두에서 동일하게 작동.
+
+### 🏗️ 구현 상세
+
+**1. Audio Complete Tracking**
+
+```typescript
+// DialogueAudioButton.tsx - handleEnded
+const handleEnded = () => {
+  setIsPlaying(false);
+  setIsPaused(false);
+
+  // Track audio complete event
+  if (expressionId !== undefined && audioIndex !== undefined) {
+    trackAudioComplete({
+      expressionId,
+      audioIndex,
+    });
+  }
+
+  onEndedRef.current?.();
+};
+```
+
+**2. Sequential Play with Explicit Parameter**
+
+```typescript
+// DialogueSection.tsx - handlePlayAll
+const handlePlayAll = () => {
+  // ...
+  setIsAutoPlaying(true);
+  setPlayingIndex(0);
+  // Pass true to indicate this is sequential playback
+  buttonRefs.current[0]?.play(true);
+
+  trackAudioPlay({
+    expressionId,
+    audioIndex: 0,
+    playType: "sequential",
+  });
+};
+```
+
+**3. Smart Tracking Logic**
+
+```typescript
+// DialogueAudioButton.tsx - togglePlay
+const isResume = isPaused;
+
+// Skip tracking if:
+// 1. This is a forced play (from ref.play()) AND isSequential is true (auto-play sequence)
+// 2. This is a resume from paused state (not a new play)
+const shouldSkipTracking = (forcePlay && isSequential) || isResume;
+
+if (
+  !shouldSkipTracking &&
+  expressionId !== undefined &&
+  audioIndex !== undefined
+) {
+  trackAudioPlay({
+    expressionId,
+    audioIndex,
+    playType,
+  });
+}
+```
+
+**4. Related Expression Click Tracking**
+
+```typescript
+// RelatedExpressions.tsx
+const handleCardClick = (toExpressionId: string) => {
+  trackRelatedClick({
+    fromExpressionId: currentExpressionId,
+    toExpressionId: toExpressionId,
+  });
+};
+```
+
+### 📊 현재 추적 가능한 이벤트 (Phase 3 완료)
+
+**자동 추적:**
+
+- ✅ `page_view`: 모든 페이지 뷰 (AnalyticsProvider)
+
+**수동 추적 (Phase 3 - 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생
+- ✅ `audio_complete`: 오디오 재생 완료 (**신규**)
+- ✅ `learning_mode_toggle`: 학습 모드 전환
+- ✅ `filter_apply`: 필터 적용
+- ✅ `search`: 검색 실행
+- ✅ `tag_click`: 태그 클릭
+- ✅ `related_click`: 관련 표현 클릭 (**신규**)
+
+**향후 구현 예정:**
+
+- ⏳ `share_click`: 공유 버튼 클릭
+- ⏳ `share_complete`: 공유 완료
+
+### 🔍 검증 방법
+
+**개발 환경 콘솔 로그 확인:**
+
+```bash
+# 개발 서버 실행
+yarn dev
+```
+
+브라우저 콘솔에서 다음 시나리오 테스트:
+
+1. **전체 듣기**: 상세 페이지에서 "Play All" 버튼 클릭
+
+   - `[Analytics] Event: audio_play { expression_id: "...", audio_index: 0, play_type: "sequential" }` (1회만)
+   - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 0 }`
+   - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 1 }`
+
+2. **개별 듣기**: 대화 버블의 오디오 버튼 클릭
+
+   - `[Analytics] Event: audio_play { expression_id: "...", audio_index: 0, play_type: "individual" }`
+   - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 0 }`
+
+3. **일시정지 후 재개**: 재생 중 버튼 클릭 → 다시 클릭
+
+   - 재개 시 `audio_play` 이벤트 발생하지 않음 ✅
+
+4. **관련 표현 클릭**: 상세 페이지 하단의 관련 표현 카드 클릭
+   - `[Analytics] Event: related_click { from_expression_id: "...", to_expression_id: "..." }`
+
+### 🔄 다음 단계
+
+- [ ] GA4 대시보드에서 실제 데이터 수집 검증 (프로덕션 배포 후)
+- [ ] 공유 기능 구현 시 `share_click`, `share_complete` 이벤트 추가
+
+## 2026-01-14: Analytics Phase 3 완료 (학습 모드, 필터, 검색, 태그 추적)
+
+### ✅ 진행 사항
+
+- **Phase 3: 나머지 이벤트 추적 구현 완료**
+  - Learning Mode Toggle Tracking (`DialogueSection.tsx`)
+  - Category Filter Tracking (`FilterBar.tsx`)
+  - Search Tracking (`SearchBar.tsx`)
+  - Tag Click Tracking (`Tag.tsx`)
+- **Props 확장**:
+  - `Tag`: `source` prop 추가 (`"card" | "detail" | "filter"` 구분)
+- **상위 컴포넌트 수정**:
+  - `ExpressionCard`: Tag에 `source="card"` 전달
+  - `app/expressions/[id]/page.tsx`: Tag에 `source="detail"` 전달
+- **문서 업데이트**:
+  - `docs/product/features_list.md`: Phase 3 이벤트 상태를 ⏳에서 ✅로 변경
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 학습 모드 토글 추적은 어떻게 구현했나?**
+
+- **A.** `DialogueSection` 컴포넌트의 두 가지 학습 모드를 각각 추적:
+  1. **Blind Listening Mode**: Headphones 아이콘 클릭 시 `mode: "blind_listening"` 전송
+  2. **Translation Blur**: Eye 아이콘 클릭 시 `mode: "translation_blur"` 전송
+  - 각 모드의 활성화/비활성화를 `action: "enable" | "disable"`로 구분하여 사용자의 학습 패턴 파악 가능
+
+**Q. 카테고리 필터 추적에서 중복 클릭은 어떻게 처리했나?**
+
+- **A.** `FilterBar`에서 이미 선택된 카테고리를 다시 클릭하는 경우:
+  - `"all"` 카테고리는 아무 동작도 하지 않음 (중복 페칭 방지)
+  - 다른 카테고리는 선택 해제(`category: "all"`)하고 해당 이벤트 전송
+  - 실제로 필터가 변경될 때만 이벤트를 전송하여 데이터 정확성 확보
+
+**Q. Tag 컴포넌트의 source는 왜 필요한가?**
+
+- **A.** 태그 클릭이 발생하는 위치에 따라 사용자 행동 패턴이 다름:
+  - `"card"`: 홈 피드의 카드에서 태그 클릭 (탐색 초기 단계)
+  - `"detail"`: 상세 페이지에서 태그 클릭 (콘텐츠 소비 후 관련 탐색)
+  - `"filter"`: 필터 바에서 태그 클릭 (향후 구현 예정)
+  - 이를 통해 어느 단계에서 태그 기반 탐색이 활발한지 분석 가능
+
+**Q. 빈 검색어는 왜 추적하지 않나?**
+
+- **A.** `SearchBar`의 `handleSubmit`에서 `value.trim()`이 비어있으면 이벤트를 전송하지 않음. 빈 검색어는 사용자가 실수로 Enter를 누르거나 검색을 취소하는 경우가 많아 의미 있는 데이터가 아니므로 제외.
+
+### 🏗️ 구현 상세
+
+**1. Learning Mode Toggle Tracking**
+
+```typescript
+// DialogueSection.tsx
+import { trackLearningModeToggle } from "@/analytics";
+
+// Blind Listening 활성화
+trackLearningModeToggle({
+  mode: "blind_listening",
+  action: "enable",
+});
+
+// Translation Blur 비활성화 (모두 보기)
+trackLearningModeToggle({
+  mode: "translation_blur",
+  action: "disable",
+});
+```
+
+**2. Category Filter Tracking**
+
+```typescript
+// FilterBar.tsx
+import { trackFilterApply } from "@/analytics";
+
+// 카테고리 변경 시
+trackFilterApply({
+  filterType: "category",
+  filterValue: cat, // "business", "travel", "all" 등
+});
+```
+
+**3. Search Tracking**
+
+```typescript
+// SearchBar.tsx
+import { trackSearch } from "@/analytics";
+
+// 검색 제출 시 (빈 검색어 제외)
+if (value.trim()) {
+  trackSearch({
+    searchTerm: value,
+  });
+}
+```
+
+**4. Tag Click Tracking**
+
+```typescript
+// Tag.tsx
+import { trackTagClick } from "@/analytics";
+
+// 태그 클릭 시
+trackTagClick({
+  tagName: label,
+  source: source, // "card", "detail", "filter"
+});
+```
+
+### 📊 현재 추적 가능한 이벤트 (Phase 3 완료)
+
+**자동 추적 (Phase 1-2):**
+
+- ✅ `page_view`: 모든 페이지 뷰 (AnalyticsProvider)
+
+**수동 추적 (Phase 3 - 구현 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생
+- ✅ `learning_mode_toggle`: 학습 모드 전환 (**신규**)
+- ✅ `filter_apply`: 필터 적용 (**신규**)
+- ✅ `search`: 검색 실행 (**신규**)
+- ✅ `tag_click`: 태그 클릭 (**신규**)
+
+**수동 추적 (향후 구현 예정):**
+
+- ⏳ `audio_complete`: 오디오 재생 완료
+- ⏳ `related_click`: 관련 표현 클릭
+- ⏳ `share_click`: 공유 버튼 클릭
+- ⏳ `share_complete`: 공유 완료
+
+### 🔍 검증 방법
+
+**개발 환경 콘솔 로그 확인:**
+
+```bash
+# 개발 서버 실행
+yarn dev
+```
+
+브라우저 콘솔에서 다음 이벤트 로그 확인:
+
+1. **학습 모드 토글**: 상세 페이지에서 Headphones/Eye 아이콘 클릭
+   - `[Analytics] Event: learning_mode_toggle { mode: "blind_listening", action: "enable" }`
+2. **카테고리 필터**: 홈 페이지에서 카테고리 버튼 클릭
+   - `[Analytics] Event: filter_apply { filter_type: "category", filter_value: "business" }`
+3. **검색**: 검색창에 "hello" 입력 후 Enter
+   - `[Analytics] Event: search { search_term: "hello" }`
+4. **태그 클릭**: 카드 또는 상세 페이지의 태그 클릭
+   - `[Analytics] Event: tag_click { tag_name: "daily", source: "card" }`
+
+### 🔄 다음 단계
+
+- [ ] `audio_complete` 이벤트 구현 (`DialogueAudioButton.tsx`)
+- [ ] `related_click` 이벤트 구현 (`RelatedExpressions.tsx`)
+- [ ] GA4 대시보드에서 실제 데이터 수집 검증 (프로덕션 배포 후)
+
+## 2026-01-14: Analytics Phase 3 구현 (컴포넌트 이벤트 추적 및 모듈 재구성)
+
+### ✅ 진행 사항
+
+- **Analytics Module Reorganization**: `lib/analytics/` → `analytics/` (루트 레벨로 이동)
+  - 독립된 모듈로 분리하여 발견 가능성 및 유지보수성 향상
+  - Import 경로 단순화: `@/lib/analytics` → `@/analytics`
+  - 7개 파일의 import 경로 업데이트 완료
+- **Comment Localization**: 모든 영어 주석을 한국어로 변환
+  - `analytics/index.ts`: 12개 이벤트 함수 주석 한국어화
+  - `analytics/AnalyticsProvider.tsx`: Provider 주석 한국어화
+  - `analytics/ExpressionViewTracker.tsx`: Tracker 주석 한국어화
+- **Phase 3: Component-Level Event Tracking**
+  - Expression Click Tracking (`ExpressionCard.tsx`)
+  - Expression View Tracking (`ExpressionViewTracker.tsx` 신규 생성)
+  - Audio Play Tracking Infrastructure (`DialogueAudioButton.tsx`)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Analytics 모듈을 왜 `lib/`에서 루트로 이동했나?**
+
+- **A.** Analytics는 단순 유틸리티가 아니라 독립적인 기능 모듈임. `lib/`은 범용 유틸리티 함수를 위한 공간이고, Analytics는 GA4 통합, Provider, Tracker 등 여러 컴포넌트로 구성된 완전한 모듈이므로 루트 레벨에서 관리하는 것이 적절함. 이는 `components/`, `hooks/`, `context/`와 동일한 레벨의 독립 모듈로 취급.
+
+**Q. ExpressionViewTracker를 왜 별도 컴포넌트로 분리했나?**
+
+- **A.** 표현 상세 페이지(`app/expressions/[id]/page.tsx`)는 서버 컴포넌트인데, Analytics 추적은 클라이언트에서만 가능함(`useEffect` 필요). 따라서 클라이언트 컴포넌트인 `ExpressionViewTracker`를 별도로 만들어 서버 컴포넌트에서 import하여 사용. 이를 통해 서버/클라이언트 경계를 명확히 분리하고 코드 재사용성 향상.
+
+**Q. DialogueAudioButton에 analytics props를 왜 선택적(optional)으로 만들었나?**
+
+- **A.** `DialogueAudioButton`은 범용 컴포넌트로 다양한 곳에서 사용될 수 있음. Analytics가 필요 없는 경우(예: 미리보기, 테스트 환경)에도 동작해야 하므로 props를 선택적으로 설계. Props가 제공되면 추적하고, 없으면 추적하지 않는 조건부 로직 적용.
+
+**Q. 주석을 왜 모두 한국어로 변경했나?**
+
+- **A.** 프로젝트 전체가 한국어 주석을 사용하는 규칙을 따르고 있음. Analytics 모듈만 영어 주석을 사용하면 일관성이 깨지고, 향후 유지보수 시 혼란을 야기할 수 있음. 코드베이스 전체의 일관성 유지가 장기적으로 더 중요.
+
+### 🏗️ 구현 상세
+
+**1. Expression Click Tracking**
+
+```typescript
+// ExpressionCard.tsx
+trackExpressionClick({
+  expressionId: item.id,
+  expressionText: item.expression,
+  category: item.category,
+  source: "home_feed",
+});
+```
+
+**2. Expression View Tracking**
+
+```typescript
+// ExpressionViewTracker.tsx (새로운 클라이언트 컴포넌트)
+useEffect(() => {
+  trackExpressionView({
+    expressionId,
+    category,
+    lang,
+  });
+}, [expressionId, category, lang]);
+```
+
+**3. Audio Play Tracking**
+
+```typescript
+// DialogueAudioButton.tsx
+interface DialogueAudioButtonProps {
+  // ... 기존 props
+  // Analytics props (선택적)
+  expressionId?: string;
+  audioIndex?: number;
+  playType?: "individual" | "sequential";
+}
+
+// 재생 시작 시
+if (expressionId !== undefined && audioIndex !== undefined) {
+  trackAudioPlay({
+    expressionId,
+    audioIndex,
+    playType,
+  });
+}
+```
+
+### 📊 현재 추적 가능한 이벤트
+
+**자동 추적 (Phase 1-2):**
+
+- ✅ `page_view`: 모든 페이지 뷰 (AnalyticsProvider)
+
+**수동 추적 (Phase 3 - 구현 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생 (인프라 구축, props 전달 필요)
+
+**수동 추적 (Phase 3 - 구현 예정):**
+
+- ⏳ `learning_mode_toggle`: 학습 모드 전환
+- ⏳ `filter_apply`: 필터 적용
+- ⏳ `search`: 검색 실행
+- ⏳ `tag_click`: 태그 클릭
+- ⏳ `related_click`: 관련 표현 클릭
+
+### 🔄 다음 단계
+
+- `DialogueSection.tsx`에 `expressionId` prop 추가 및 `DialogueItem`으로 전달
+- 나머지 Phase 3 이벤트 추적 구현 (학습 모드, 필터, 검색, 태그, 관련 표현)
+- 개발 환경에서 콘솔 로그 테스트
+- GA4 대시보드에서 실제 데이터 수집 검증
+
+## 2026-01-14: Analytics Implementation (Google Analytics 4 Integration)
+
+### ✅ 진행 사항
+
+- **GA4 Integration**: Google Analytics 4를 Next.js 16 App Router 프로젝트에 통합하여 사용자 행동 분석 인프라 구축.
+- **Environment-Based Configuration**: 개발/프로덕션 환경별로 별도의 GA4 속성 사용하도록 환경 변수 기반 자동 전환 구현.
+- **Analytics Module Structure**: `lib/analytics/` 폴더 생성 및 모듈화
+  - `index.ts`: 타입 안전한 이벤트 추적 유틸리티 함수 (10개 핵심 이벤트 + 2개 공유 이벤트)
+  - `AnalyticsProvider.tsx`: 페이지 뷰 자동 추적 Provider 컴포넌트
+- **Automatic Page View Tracking**: `usePathname` + `useSearchParams` 훅을 활용한 라우트 변경 감지 및 자동 페이지 뷰 전송.
+- **Title Duplication Fix**: i18n 파일의 `expressionTitle`에서 `| {serviceName}` 제거하여 `layout.tsx`의 `title.template`과 중복 방지.
+- **Documentation**:
+  - `analytics_guide.md`: 전체 Analytics 전략 및 이벤트 설계 문서
+  - `implementation_guide.md`: 다른 프로젝트에서 재사용 가능한 실전 구현 가이드
+
+### 🏗️ 아키텍처 설계
+
+**디렉토리 구조:**
+
+```
+lib/analytics/
+├── index.ts              # 유틸리티 함수 (이벤트 추적)
+└── AnalyticsProvider.tsx # Provider 컴포넌트 (페이지 뷰 자동 추적)
+```
+
+**환경별 분리:**
+
+- 개발 환경: `NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID` (Speak Mango EN (Dev) 속성)
+- 프로덕션 환경: `NEXT_PUBLIC_PROD_GA_MEASUREMENT_ID` (Speak Mango EN 속성)
+- `process.env.NODE_ENV`에 따라 자동 선택
+
+**Provider 계층:**
+
+```tsx
+<AnalyticsProvider>
+  {" "}
+  // 최상위 (독립적)
+  <ExpressionProvider>{children}</ExpressionProvider>
+</AnalyticsProvider>
+```
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Analytics를 components가 아닌 lib 폴더에 두었나?**
+
+- **A.** `AnalyticsProvider`는 UI 컴포넌트가 아니라 부수 효과(side effect)를 처리하는 유틸리티 Provider임. `ExpressionProvider`처럼 상태 관리를 하는 Context와 달리, 단순히 `useEffect`로 이벤트를 추적하는 역할만 수행. `lib/analytics.ts`와 함께 있는 것이 논리적이며, 향후 확장성을 고려하여 `lib/analytics/` 폴더로 모듈화.
+
+**Q. 개발/프로덕션 환경을 왜 별도 GA4 속성으로 분리했나?**
+
+- **A.** 개발 중 테스트 데이터가 실제 프로덕션 통계에 섞이는 것을 방지하기 위함. 두 개의 환경 변수(`NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID`, `NEXT_PUBLIC_PROD_GA_MEASUREMENT_ID`)를 `.env.local`에 설정하고, `lib/analytics/index.ts`에서 `NODE_ENV`에 따라 자동 선택하도록 구현. 이 방식은 `.env.local`과 `.env.production` 파일을 분리하는 것보다 안전하고 관리가 용이함.
+
+**Q. `document.title`이 빈 값으로 추적되는 문제를 어떻게 해결했나?**
+
+- **A.** `AnalyticsProvider`가 클라이언트 컴포넌트로 렌더링될 때, Next.js가 아직 `document.title`을 설정하지 않은 상태임. `setTimeout` 100ms를 추가하여 Next.js Metadata API가 title을 설정할 시간을 확보. 이는 SSR 환경에서 클라이언트 컴포넌트가 hydration되는 타이밍 이슈를 해결하는 일반적인 패턴.
+
+**Q. Title 중복 문제(`snap up | Speak Mango | Speak Mango`)는 어떻게 발생했나?**
+
+- **A.** `layout.tsx`의 `title.template`이 `%s | Speak Mango` 형식이고, i18n 파일의 `expressionTitle`이 `{expression} | {serviceName}` 형식이어서 중복 발생. 9개 언어 파일 모두에서 `expressionTitle`을 `{expression}`으로 수정하여 해결. `layout.tsx`의 template이 자동으로 서비스명을 추가하므로 중복 불필요.
+
+**Q. GA4 스크립트를 왜 `layout.tsx`에서 `GA_MEASUREMENT_ID`를 import해서 사용하나?**
+
+- **A.** 환경별 측정 ID 선택 로직을 `lib/analytics/index.ts`에 집중시키기 위함. `layout.tsx`에서 환경 변수를 직접 참조하면 로직이 분산되고, 향후 환경 추가 시 여러 파일을 수정해야 함. `GA_MEASUREMENT_ID`를 export하여 단일 진실 공급원(Single Source of Truth) 유지.
+
+**Q. 타입 에러(`Argument of type 'Date' is not assignable to parameter of type 'string'`)는 어떻게 해결했나?**
+
+- **A.** `gtag` 함수의 타입 정의가 단일 시그니처로 되어 있어서, `gtag("js", new Date())`처럼 `Date` 객체를 전달할 때 타입 에러 발생. 함수 오버로드를 사용하여 각 명령어(`js`, `config`, `event`)별로 다른 타입의 파라미터를 받을 수 있도록 수정:
+  ```typescript
+  gtag?: {
+    (command: "js", date: Date): void;
+    (command: "config", targetId: string, config?: Record<string, any>): void;
+    (command: "event", eventName: string, params?: Record<string, any>): void;
+  };
+  ```
+
+### 📊 구현된 이벤트 함수
+
+**핵심 이벤트 (10개):**
+
+1. `trackPageView` - 페이지 뷰 (자동)
+2. `trackExpressionView` - 표현 상세 조회
+3. `trackExpressionClick` - 표현 카드 클릭
+4. `trackAudioPlay` - 오디오 재생
+5. `trackAudioComplete` - 오디오 재생 완료
+6. `trackLearningModeToggle` - 학습 모드 전환
+7. `trackFilterApply` - 필터 적용
+8. `trackSearch` - 검색 실행
+9. `trackTagClick` - 태그 클릭
+10. `trackRelatedClick` - 관련 표현 클릭
+
+**향후 구현 예정 (2개):** 11. `trackShareClick` - 공유 버튼 클릭 12. `trackShareComplete` - 공유 완료
+
+### 🔄 다음 단계
+
+- **Phase 3**: 컴포넌트별 이벤트 추적 구현
+  - `ExpressionCard.tsx`: 표현 클릭 추적
+  - `DialogueAudioButton.tsx`: 오디오 재생 추적
+  - `DialogueSection.tsx`: 학습 모드 전환 추적
+  - `FilterBar.tsx`: 필터/검색 추적
+  - `Tag.tsx`: 태그 클릭 추적
+
+## 2026-01-13: PWA iOS Splash Screen Fix (Troubleshooting & Resolution)
+
+### ✅ 진행 사항
+
+- **Explicit Head Injection**: Next.js `metadata.appleWebApp` 설정이 iOS에서 무시되는 현상을 해결하기 위해, `layout.tsx`에 수동으로 `<head>` 태그를 선언하고 `<link rel="apple-touch-startup-image">`를 직접 주입.
+- **Standalone Mode Enforcement**: `apple-mobile-web-app-capable` 메타 태그를 명시적으로 추가하여 홈 화면 추가 시 Standalone 모드로 실행되도록 보장.
+
+### 🚨 트러블슈팅 (Troubleshooting)
+
+#### iOS Splash Screen White Screen Issue
+
+- **문제**: 정해진 규격의 스플래시 이미지를 모두 생성했음에도 불구하고, iOS 기기에서 앱 실행 시 스플래시 스크린 대신 흰 화면이 잠시 뜨는 현상.
+- **원인**: Next.js의 Metadata API가 생성하는 태그 구성 방식이 iOS의 PWA 인식 메커니즘과 충돌하거나 시점이 늦는 것으로 파악됨.
+- **해결**: Metadata abstraction을 우회하고 원시 HTML `<link>` 태그를 `<head>` 최상단부에 직접 배치하여 해결.
+
+## 2026-01-13: Service Essentials Update (PWA Splash & Theme Color)
+
+### ✅ 진행 사항
+
+- **Dynamic Theme Color**: `viewport` 설정에서 `themeColor`를 배열로 확장하여, 시스템 테마(Light/Dark)에 따라 브라우저 상단 바 색상이 `#ffffff` 또는 `#0a0a0a`로 자동 전환되도록 개선.
+- **Splash Screen Data Generation**: `pwa-asset-generator`를 통해 30여 종의 iOS 해상도별 스플래시 이미지 생성 및 에셋 확보.
+- **Manifest Connection**: `layout.tsx` 메타데이터에 `manifest: "/manifest.ts"`를 명시적으로 연결.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Theme Color를 왜 동적으로 바꿨나?**
+
+- **A.** 단일 색상(`#ffffff`)으로 고정할 경우, 다크 모드 사용자에게 눈부심을 유발하고 앱의 통합성을 해침. 미디어 쿼리(`prefers-color-scheme`)를 지원하는 Next.js `viewport` 설정을 통해 사용자 시스템 설정에 맞는 UI 경험을 제공함.
+
+## 2026-01-13: Dynamic OG Image Design & Metadata Polish
+
+### ✅ 진행 사항
+
+- **Dynamic OG Image Redesign (Expression Detail)**:
+
+  - **Visual Upgrade**: 메인 OG 이미지의 디자인 언어(White BG, Gradient Text, Logo Header)를 상세 페이지(`app/expressions/[id]/opengraph-image.tsx`)에도 적용.
+  - **Runtime Switch**: 고화질 로고(`logo.png`) 및 폰트 파일(`inter-*.ttf`) 직접 로딩을 위해 `edge`에서 `nodejs` 런타임으로 변경.
+  - **Typography**: `Inter` 폰트(Bold 700, Black 900, Medium 500)를 사용하여 가독성 및 브랜드 일관성 강화.
+
+- **i18n Metadata Optimization**:
+  - **Expression Description Refinement**: 9개 국어 로케일 파일에서 `meaning`을 `expression`보다 먼저 노출하도록 포맷 수정.
+  - **Reason**: 검색 결과 및 소셜 공유 시 핵심 정보인 '뜻'을 강조하여 클릭률(CTR) 유도.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Edge Runtime을 포기하고 Node.js로 전환했나?**
+
+- **A.** `edge` 런타임은 파일 시스템(`fs`) 접근이 제한적이라 로컬에 저장된 고화질 로고와 폰트 파일을 효율적으로 읽어올 수 없었음. 디자인 완성도를 높이기 위해 Node.js 환경의 파일 시스템 API를 활용하기로 결정함.
+
+## 2026-01-13: Dialogue Generation Rules Refinement (Gender & Names)
+
+### ✅ 진행 사항
+
+- **Dialogue Role & Name Standardization**:
+  - **Gender Roles**: Role A(여성), Role B(남성)으로 성별을 고정하여 대화의 일관성 확보.
+  - **Name Convention**: 미국식 이름(Sarah, Mike 등) 사용을 기본 원칙으로 하되, "이름을 사용할 경우(If using names)"에만 적용되도록 유연화.
+  - **Anti-Pattern Prevention**: 한국어 이름(민지, 철수 등) 사용을 명시적으로 금지하여 영어 학습 콘텐츠로서의 몰입도 저해 방지.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 이름을 강제하지 않고 "사용할 경우"로 바꿨나?**
+
+- **A.** 모든 대화에 이름을 부르는 것은 부자연스러울 수 있음. "Hey, Mike" 처럼 자연스러운 문맥에서만 이름을 사용하도록 하여 대화의 자연스러움을 높임.
+
+## 2026-01-13: Validation Logic Synchronization & Data Fix (Strict Parity)
+
+### ✅ 진행 사항
+
+- **검증 로직 완전 동기화 (Strict Parity)**:
+  - `verification/verify_db_data.js`를 최신 n8n 로직(`10_validate_content.js`)과 100% 동일하게 업데이트.
+  - 대화 턴수(2~4), 퀴즈 선택지 언어 일관성, 문장 부호 검사 등의 엄격한 규칙이 로컬 스크립트에도 적용됨.
+
+## 2026-01-13: n8n Workflow V2 Optimization (Single-Shot Generation)
+
+### ✅ 진행 사항
+
+- **Single-Shot AI 전환 (V2 Architecture)**:
+  - 기존의 2-Step (표현 생성 -> 콘텐츠 생성) 방식을 **단일 Gemini 호출**로 통합하여 API 호출 횟수를 50% 절감하고 속도를 2배 향상시킴.
+  - 관련 프롬프트 및 파싱 로직을 `n8n/expressions/code_v2/` 폴더에 분리하여 관리 (`04_gemini_master_generator_prompt.txt`, `05_parse_master_json.js`).
+- **Fail-Fast 검증 로직 적용**:
+  - 데이터 검증 단계(`Validate Content`)를 DB 중복 확인 및 ID 생성 이전으로 앞당겨, 잘못된 데이터가 후속 로직(DB 조회, TTS 등)에 영향을 주지 않도록 개선.
+  - `06_validate_content.js`에서 불필요한 변수(`id`) 제거 및 로직 최적화.
+- **문서 동기화 (Sync)**:
+  - `docs/n8n/expressions/optimization_steps_v2.md`를 신규 작성하여, 워크플로우의 실제 노드 순서와 문서의 단계(1~15)를 1:1로 완벽하게 일치시킴.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 한 번에 생성(Single-Shot)하는 방식으로 바꿨나?**
+
+- **A.**
+  1. **속도 및 비용**: 두 번의 LLM 호출과 그 사이의 네트워크 오버헤드를 줄여 전체 처리 속도를 높임.
+  2. **문맥 일관성**: 표현을 선정하는 AI와 예문을 만드는 AI가 동일한 컨텍스트(프롬프트) 내에서 동작하므로, 선정된 표현의 뉘앙스가 예문과 설명에 더 정확하게 반영됨.
+
+**Q. 검증 로직을 왜 앞단으로 옮겼나?**
+
+- **A.** 기존에는 DB 중복 체크 후에 검증을 수행했으나, 형식이 잘못된 데이터(예: JSON 파싱 실패)를 가지고 DB를 조회하는 것 자체가 비효율적임. 데이터 무결성을 먼저 확보한 후 비즈니스 로직(중복 체크, 저장)을 수행하는 것이 안정적임.
+
+## 2026-01-12: Dialogue Turn Length Validation & Logic Refinement
+
+### ✅ 진행 사항
+
+- **대화 턴수 검증 로치 강화 (Dialogue Length Validation)**:
+  - n8n Code Node 전용 `10_validate_content.js`에 대화 턴수 검증 규칙(2~4턴)을 추가하여 데이터 품질 균일화.
+  - 관련 내용을 `docs/n8n/expressions/optimization_steps.md`에 반영하여 문서 현행화.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 대화 턴수를 2~4턴으로 제한했나?**
+
+- **A.** Gemini 프롬프트에서는 2~3턴을 권장하고 있으나, 상황에 따라 A-B-A-B 구조가 자연스러울 때가 있음. 너무 짧으면 맥락 파악이 어렵고, 너무 길면 학습 피로도가 높으므로 2~4턴을 표준 범위로 설정함.
+
+## 2026-01-12: V2 워크플로우 아키텍처 (개발 중)
+
+### ✅ 진행 사항
+
+- **V2 파일 격리 (Isolation)**:
+  - V2 개발의 안정성을 위해 관련 모든 파일(`js`, `txt`, `json`)을 `n8n/expressions/v2/` 디렉토리로 이동하여 V1과의 의존성을 완전히 분리함.
+- **Fan-out 아키텍처 도입**:
+  - 다중 카테고리를 동시에 처리하기 위한 병렬 실행 구조를 설계하고 `01_pick_category_v2.js`에 구현함.
+- **Rate Limiting (Groq TTS)**:
+  - `15_groq_tts_v2.js`에 배치 처리(Batch Size: 10)와 대기 로직(Wait: 65s)을 구현하여 Groq API Rate Limit을 준수하도록 설계.
+  - **Note**: 해당 로직에 대한 라이브 환경 검증(Verification)이 필수적으로 요구됨.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 V2 파일을 별도 폴더로 분리했나?**
+
+- **A.** V2는 구조적 변경(Fan-out)이 커서 기존 워크플로우를 깨뜨릴 위험이 있음. 개발 중인 V2 파일들이 실수로 V1에 참조되지 않도록 물리적으로 격리함.
+
+**Q. V2는 언제 배포 가능한가?**
+
+- **A.** 현재 아키텍처 설계와 코딩은 완료되었으나, 실제 데이터 파이프라인에서의 전체 검증(특히 TTS 배치 처리의 안정성)이 완료될 때까지는 V1을 프로덕션으로 유지함.
+
+## 2026-01-12: Verification Logic Refinement & Local Script Setup
+
+### ✅ 진행 사항
+
+- **엄격한 데이터 검증 로직 도입 (Strict Data Verification)**:
+  - 기존의 `verify_gemini_response.js` 로직을 n8n Code Node용 `10_validate_content.js`로 이식 및 최적화.
+  - **English Inclusion Rule**: 번역된 텍스트에 영어가 섞여 있는지 확인하는 로직을 강화(소문자 단어 검출, 고유명사 허용 등).
+  - **Local Verification Script**: 로컬 환경에서도 `temp.json`을 검증할 수 있도록 `verification/verify_db_data.js` 스크립트 구축.
+- **Bug Fix (Supabase Insert Error)**:
+  - `_validation` 필드가 Supabase 테이블 스키마에 존재하지 않아 발생하던 `PGRST204` 에러 해결.
+  - `15_aggregate_tts_results.js`에서 DB 저장 직전 `_validation` 필드를 명시적으로 삭제하도록 로직 수정.
+- **문서 현행화**: `docs/n8n/expressions/optimization_steps.md`에 변경된 검증 및 정리 로직 반영.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 로컬 검증 스크립트(`verification/verify_db_data.js`)를 만들었나?**
+
+- **A.** n8n 워크플로우를 매번 실행하지 않고도, 로컬에 저장된 데이터(`temp.json`)를 대상으로 검증 로직을 빠르게 테스트하고 수정하기 위함임. n8n의 코드와 로직을 100% 동일하게 유지하여 신뢰성을 확보함.
+
+## 2026-01-11: Prompt Refinement (No Mixed Language)
+
+### ✅ 진행 사항
+
+- **프롬프트 강화 (혼합 언어 방지)**:
+  - 대화 번역 프롬프트에 "Target Language ONLY" 및 "No Mixed Language" 제약 조건을 엄격하게 적용하여, 번역 결과에 영어(English)가 유출되는 현상을 방지함.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 혼합 언어 방지 프롬프트를 추가했나?**
+
+- **A.** LLM이 간헐적으로 번역 결과에 원문(영어)을 포함하거나, 타겟 언어 외의 다른 언어를 섞어 출력하는 경우가 발생함. 이는 번역 품질을 저해하고 후처리 과정을 복잡하게 만들 수 있어, 프롬프트 레벨에서 명확한 제약을 두어 모델의 일관된 출력을 유도함.
+
+## 2026-01-11: n8n Batch Backfill & Prompt Optimization (Dialogue Translations)
+
+### ✅ 진행 사항
+
+- **Backfill Workflow 최적화 (Batch Processing)**:
+  - 기존의 단건 처리 방식에서 벗어나, `Batch Size: 20`으로 묶어 처리하는 `batch_dialogue_translation_prompt.txt` 및 파싱 로직(`batch_dialogue_translation_parse_code.js`) 구현.
+  - 이를 통해 대량의 데이터를 효율적으로 처리하고 API 호출 횟수를 획기적으로 절감함.
+- **Prompt Strengthening (Critical Logic)**:
+  - `08_gemini_content_generator_prompt.txt` 및 `optimization_steps.md`에 `**CRITICAL**` 경고 문구를 추가하여, 8개 언어(`ko, ja, es, fr, de, ru, zh, ar`) 번역이 절대 누락되지 않도록 제약 강화.
+- **Legacy Code Removal**:
+  - `optimization_steps.md`, `prepare_tts_requests.js`, `aggregate_tts_results.js`에서 구버전 데이터 경로(`data.content.ko.dialogue`)를 참조하던 레거시 코드를 최신 스키마(`data.dialogue`)로 일괄 업데이트.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Batch Processing을 도입했나?**
+
+- **A.** 112개의 기존 데이터를 하나씩 처리하면 112번의 LLM 호출과 오버헤드가 발생함. 20개씩 묶어서 처리함으로써 호출 횟수를 약 1/20로 줄이고 처리 속도를 대폭 향상시킴.
+
+**Q. 프롬프트에 `CRITICAL`을 추가한 이유는?**
+
+- **A.** LLM이 간헐적으로 일부 언어(특히 아랍어 등)를 누락하는 현상이 발견됨. 이를 "절대 생략 불가" 영역으로 명시하여 모델이 모든 언어를 강제로 출력하도록 유도함.
+
+## 2026-01-11: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
+
+### ✅ 진행 사항
+
+- **하드코딩 제거 (Removal of Hardcoded Strings)**:
+  - codebase 전반(components, i18n utilities, pages)에 걸쳐 `'en'`, `'ko'` 등으로 산재해 있던 하드코딩된 언어 문자열을 `SupportedLanguage` 상수로 대체.
+  - 이를 통해 로케일 코드 변경 시 중앙(`i18n/index.ts`)에서 일괄 제어가 가능하도록 구조 개선.
+- **컴포넌트 로직 정교화**:
+  - `ExpressionCard`, `DialogueSection` 등에서 특정 언어에 의존적이던 로직을 제거하고 `SupportedLanguage.EN`을 명시적 Fallback으로 사용하도록 통일.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 하드코딩된 문자열을 상수로 바꿨나?**
+
+- **A.** 9개 국어로 확장됨에 따라 `'en'`, `'ko'` 같은 문자열이 오타로 인해 버그를 유발할 가능성이 높아짐. `SupportedLanguage` enum/object를 사용하면 IDE의 자동 완성을 지원받을 수 있고, 휴먼 에러를 원천 차단할 수 있음.
+
+## 2026-01-11: 5개국어 추가 및 i18n 타입 안정성 강화 (v0.9.5)
+
+### ✅ 진행 사항
+
+- **5개 신규 언어 지원 (Language Expansion)**:
+  - 프랑스어(FR), 독일어(DE), 러시아어(RU), 중국어(ZH), 아랍어(AR) 로케일 추가.
+  - 기존 4개국어(EN, KO, JA, ES) 포함 총 9개 국어 지원 체계 완성.
+- **Strict i18n Type Safety (타입 안정성 강화)**:
+  - `i18n/index.ts`에서 `en` 딕셔너리를 기준으로 `Dictionary` 타입을 추론.
+  - 모든 언어 파일(`ko`, `fr` 등)이 `en`과 동일한 키 구조를 가지도록 강제.
+  - 키 누락 시 빌드 타임에 에러가 발생하여 런타임 `undefined` 참조 방지.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `en`을 기준으로 타입을 추론하나?**
+
+- **A.** 별도의 `interface`를 유지보수하는 것보다, 실제 가장 최신 상태인 영어 파일(`en.ts`)을 Source of Truth로 삼는 것이 관리 비용이 적고 직관적임.
+
+**Q. 신규 언어의 번역 퀄리티는?**
+
+- **A.** UI 표준 용어(Standard UI Terms)를 기준으로 생성하였으며, 추후 서비스 고도화 시 원어민 감수를 통해 톤 앤 매너를 다듬을 예정임.
+
+## 2026-01-11: Universal Backfill System 구축 (Multi-Language Expansion)
+
+### ✅ 진행 사항
+
+- **Dual Backfill Strategy (이원화 전략) 구현**:
+  - `universal_backfill_workflow.json`에 두 가지 병합 전략을 적용할 수 있도록 로직 분리.
+  - **Universal Mode**: 영문(`en`)을 포함한 6개 국어(`fr`, `de`, `ru`, `zh`, `ar`) 동시 생성 및 덮어쓰기.
+  - **Supplementary Mode**: 기존 영문 데이터는 유지하고 신규 5개 국어만 안전하게 병합.
+- **코드 모듈화**: 병합 로직을 `universal_backfill_parse_code.js`와 `supplementary_backfill_parse_code.js`로 분리하여 유지보수성 향상.
+- **프롬프트 표준화**: 모든 프롬프트의 언어 지원 범위를 9개 국어(EN, KO, JA, ES, FR, DE, RU, ZH, AR)로 통일하고 검증 규칙 강화.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Universal과 Supplementary 전략을 나눴나?**
+
+- **A.** 데이터의 상태에 따라 필요한 작업이 다르기 때문임.
+  1. **Universal**: 영문 콘텐츠 자체도 리뉴얼이 필요하거나, 초기 데이터가 부실할 때 전체를 새로 덮어써야 함.
+  2. **Supplementary**: 이미 검증된 영문 콘텐츠가 있고, 단지 새로운 언어만 "끼워 넣고" 싶을 때 기존 데이터를 보호해야 함.
+
+**Q. 병합 로직을 별도 JS 파일로 분리한 이유는?**
+
+- **A.** n8n 노드 내에서 코드를 수정하는 실수를 방지하고, 운영자가 상황에 맞게 파일 내용을 복사-붙여넣기 하는 것만으로 전략을 전환할 수 있도록 하여 운영 안정성을 높임.
+
+## 2026-01-11: 데이터베이스 스키마 리팩토링 (Database Schema Refactoring)
+
+### ✅ 진행 사항
+
+- **Dialogue 데이터 정규화**:
+  - `expressions` 테이블에 `dialogue` JSONB 컬럼을 추가하고 GIN 인덱스를 적용하여 쿼리 성능을 최적화함.
+  - 기존 `content` 컬럼 내부에 중첩되어 있던 대화문 데이터를 최상위 `dialogue` 컬럼으로 마이그레이션(`011_migrate_dialogue_data.sql`)하여 데이터 구조를 단순화함.
+- **문서 동기화**: `docs/database/schema.md`에 변경된 스키마(Dialogue 컬럼 및 인덱스) 반영 완료.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Dialogue 데이터를 별도 컬럼으로 분리했나?**
+
+- **A.**
+  1. **데이터 중복 제거**: 기존에는 `content` JSON 내부의 각 언어(`ko`, `ja`, `es`)마다 영어 대화문(`en`)과 오디오 경로(`audio_url`)가 반복해서 저장되는 비효율이 있었음. 이를 최상위 `dialogue` 컬럼으로 빼내어 영어 원문과 오디오는 한 번만 저장하고, 각 언어는 번역본만 관리하도록 리팩토링함.
+  2. **확장성**: `en` 필드가 공식적으로 추가됨에 따라, 영어 자체도 하나의 '언어'로서 동등하게 관리하고 TTS 생성 및 멀티턴 학습 등 독립적인 기능 확장의 기반을 마련함.
+  3. **성능**: `content`라는 거대한 JSON 안에 숨겨두기보다 최상위 컬럼으로 꺼내어 인덱싱(GIN)과 쿼리 효율을 높임.
+
+## 2026-01-10: n8n 콘텐츠 품질 고도화 (Content Quality Refinement)
+
+### ✅ 진행 사항
+
+- **Gemini 프롬프트 개선**:
+  - **영어(en) 지원 추가**: JSON 스키마 및 예시에 영어 필드를 추가하여 4개 국어(EN, KO, JA, ES) 지원 완성.
+  - **톤 매너 정교화**:
+    - 영어 설명 톤을 "Standard English (Friendly, conversational, yet educational)"로 정의.
+    - 문자 메시지체(Text-speak)나 과도한 슬랭 사용을 금지하여 교육 콘텐츠로서의 품질 확보.
+  - **퀴즈 편향 해결**: 정답이 특정 번호(B)로 쏠리는 현상을 방지하기 위해 "정답 위치 랜덤화(Randomize answer position)" 규칙을 명시적으로 추가.
+- **문서 동기화**: `n8n/expressions/expressions_workflow_template.json`, `docs/n8n/expressions/optimization_steps.md` 및 `n8n/expressions/code/08_gemini_content_generator_prompt.txt`에 변경된 프롬프트 내용을 동기화하여 코드-문서-템플릿 간의 정합성 유지.
+
+## 2026-01-10: 서비스 필수 요소 완성 (Service Essentials: PWA, SEO, i18n)
+
+### ✅ 진행 사항
+
+- **PWA (Progressive Web App) 완성**:
+  - **Manifest & Icons**: `manifest.ts`를 통해 안드로이드/데스크탑용 아이콘과 테마 색상을 설정함.
+  - **iOS 스플래시 스크린**: `pwa-asset-generator`를 사용하여 iOS 기기 해상도별 스플래시 이미지 30여 장을 생성(`public/assets/splash`)하고 `layout.tsx`에 `startupImage` 및 `appleWebApp` 메타데이터를 연결함.
+    - **디자인 최적화**: 세로 모드(Portrait)는 30% 여백, 가로 모드(Landscape)는 20% 여백을 적용하여 로고 시인성을 확보함.
+  - **개발 환경 최적화**: `next-pwa` 플러그인의 Webpack 의존성 호환을 위해 `next dev --webpack` 및 `next build --webpack`으로 스크립트 강제 설정.
+- **SEO (Search Engine Optimization) 고도화**:
+  - **동적 메타데이터**: `generateMetadata` 함수를 통해 각 페이지별 타이틀, 설명, 키워드를 i18n 딕셔너리에 맞춰 동적으로 생성.
+  - **Open Graph**: `opengraph-image.tsx`를 구현하여 상세 페이지의 표현(Expression) 텍스트가 포함된 동적 썸네일을 생성 및 제공.
+  - **JSON-LD**: 구글 리치 스니펫(Rich Snippet)을 위한 구조화된 데이터(LearningResource, Organization) 추가.
+  - **Sitemap & Robots**: `sitemap.ts`와 `robots.ts`를 구현하여 검색 엔진 크롤링 경로 최적화.
+- **Internationalization (i18n) 리팩토링**:
+  - **상수화**: `SupportedLanguage` 상수를 도입하여 언어 코드(`en`, `ko`, `ja`, `es`) 및 포맷(`locale`, `lang`, `og_locale`)을 중앙에서 일관되게 관리.
+  - **Type Safety**: 미들웨어 및 서버 로직에서 문자열 하드코딩을 제거하고 상수 기반으로 리팩토링하여 안정성 확보.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Turbopack 대신 Webpack을 강제했나?**
+
+- **A.** `next-pwa` 플러그인이 아직 Webpack 플러그인 시스템에 의존하고 있어 Turbopack 환경에서는 서비스 워커 생성이 불가능함. 기능 안정성을 위해 개발 및 빌드 환경 모두 Webpack으로 통일함. (프로덕션 성능에는 영향 없음)
+
+**Q. iOS 스플래시 스크린을 왜 이미지로 각각 생성했나?**
+
+- **A.** 안드로이드는 아이콘 하나로 OS가 자동 생성해주지만, iOS(Web Web App) 스펙상 아직 자동 생성을 지원하지 않음. 사용자가 앱을 켤 때 흰 화면(White screen)을 보지 않게 하려면 각 기기 해상도에 딱 맞는 이미지를 `link rel="apple-touch-startup-image"`로 일일이 지정해줘야 함.
+
+**Q. 가로 모드에서 스플래시 여백을 줄인 이유는?**
+
+- **A.** 가로 모드는 세로 높이가 낮아, 30% 여백 적용 시 로고가 너무 작아지거나 잘려 보일 수 있음. 가로 모드만 20%로 여백을 줄여 시각적 균형을 맞춤.
+
 ## 2026-01-09: 프로젝트 고도화 및 품질 개선 (Code Refactoring & Optimization)
 
 ### ✅ 진행 사항
@@ -33,12 +1157,14 @@
 ### 💬 주요 Q&A 및 의사결정
 
 **Q. 왜 DB에 상대 경로로 저장하고 클라이언트에서 변환하나?**
-- **A.** 
-  1. **유지보수**: Supabase 프로젝트 ID나 도메인이 바뀌어도 환경 변수 하나만 수정하면 되기 때문. 
+
+- **A.**
+  1. **유지보수**: Supabase 프로젝트 ID나 도메인이 바뀌어도 환경 변수 하나만 수정하면 되기 때문.
   2. **캡슐화**: "오디오 주소를 어떻게 구성하는가"에 대한 지식을 재생 컴포넌트 내부에 숨겨, 데이터 소유자(서버)는 인프라 정보에 신경 쓰지 않아도 됨.
   3. **최적화**: 서버에서 클라이언트로 넘어가는 JSON 데이터의 크기를 줄일 수 있음.
 
 **Q. 상세한 에러 로그를 남겨두는 이유는?**
+
 - **A.** 오디오 재생 에러는 네트워크, 코덱, 브라우저 정책 등 원인이 다양함. 단순 로그만으로는 원인 파악이 어렵기 때문에 구체적인 `MediaError` 코드를 남기는 것이 장기적인 유지보수에 훨씬 유리함.
 
 ## 2026-01-09: UI 비주얼 보정 및 리팩토링 (UI Visual Polish & Refactoring)
@@ -106,9 +1232,8 @@
 
 - **A.** 리스닝 모드는 소리에만 집중하는 단계이므로, 해석을 하나씩 열어보는 인터랙션까지 허용하면 학습 단계의 구분이 모호해짐. 우선은 영어 텍스트를 먼저 익히고, 나중에 리스닝 모드를 끄고 해석을 확인하는 흐름을 권장하기 위함임 (추후 피드백에 따라 상호작용 고도화 예정).
 
-
 ## 2026-01-08: 대화 전체 듣기(Play All) 로딩 동기화 및 안정화
-    
+
 ### ✅ 진행 사항
 
 - **로딩 동기화(Loading Sync)**: '전체 듣기' 버튼이 모든 개별 오디오 파일이 준비(`onReady`)될 때까지 로딩 상태를 유지하도록 개선하여, 재생 도중 끊기는 현상 방지.

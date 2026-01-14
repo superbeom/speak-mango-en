@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter } from "lucide-react";
+import { trackFilterApply } from "@/analytics";
 import { getDictionary } from "@/i18n";
 import { useScroll } from "@/hooks/useScroll";
 import { getCategoryConfig } from "@/lib/ui-config";
@@ -170,8 +171,18 @@ export default function FilterBar({ locale }: FilterBarProps) {
                     // 이미 선택된 카테고리를 다시 누른 경우
                     if (cat === "all") return; // '전체'는 아무 동작 안 함 (중복 페칭 방지)
                     updateFilters({ category: "all" }); // 다른 카테고리는 선택 해제
+                    // 카테고리 필터 해제 (전체로 변경)
+                    trackFilterApply({
+                      filterType: "category",
+                      filterValue: "all",
+                    });
                   } else {
                     updateFilters({ category: cat });
+                    // 카테고리 필터 적용
+                    trackFilterApply({
+                      filterType: "category",
+                      filterValue: cat,
+                    });
                   }
                 };
 

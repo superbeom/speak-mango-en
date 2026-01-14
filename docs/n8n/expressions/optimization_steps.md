@@ -13,12 +13,13 @@
 7.  **If New** (중복 여부 판단)
 8.  **Gemini Content Generator** (상세 콘텐츠 생성 - Role A/B 포함)
 9.  **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
-10. **Generate ID (Code)** (저장 경로용 UUID 미리 생성)
-11. **Prepare TTS Requests (Code)** (대화문 분리 및 목소리 할당)
-12. **Groq Orpheus TTS (HTTP)** (음성 합성 호출)
-13. **Upload to Storage (Supabase)** (오디오 파일 업로드)
-14. **Aggregate TTS Results (Code)** (오디오 경로를 데이터에 병합)
-15. **Supabase Insert** (데이터 저장)
+10. **Validate Content (Code)** (Gemini 응답 데이터 무결성 검증)
+11. **Generate ID (Code)** (저장 경로용 UUID 미리 생성)
+12. **Prepare TTS Requests (Code)** (대화문 분리 및 목소리 할당)
+13. **Groq Orpheus TTS (HTTP)** (음성 합성 호출)
+14. **Upload to Storage (Supabase)** (오디오 파일 업로드)
+15. **Aggregate TTS Results (Code)** (오디오 경로를 데이터에 병합)
+16. **Supabase Insert** (데이터 저장)
 
 ---
 
@@ -193,7 +194,7 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
   - **Must Match**: `Any Filter`
   - **Field Name or ID**: `expression - (string)`
   - **Condition**: `ILIKE operator`
-  - **Field Value**: `*{{ $('Parse Expression JSON').item.json.expression }}*`
+  - **Field Value**: `"*{{ $('Parse Expression JSON').item.json.expression }}*"`
   - _(참고: 'Equal' 대신 'Like'를 사용하여 "touch base"가 생성될 때 기존의 "Let's touch base"도 중복으로 감지하도록 함)_
 
 ### 7단계: If 노드 추가 (조건 분기)
@@ -214,36 +215,80 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
 
   ```text
   Role: Professional English Content Creator & Polyglot Teacher.
-  Task: Create a detailed study card for the following English expression in three languages: Korean (ko), Japanese (ja), and Spanish (es).
+  Task: Create a detailed study card for the following English expression in these languages: **English (en), Korean (ko), Japanese (ja), Spanish (es), French (fr), German (de), Russian (ru), Chinese (zh), and Arabic (ar)**.
 
   Expression: {{ $('Parse Expression JSON').item.json.expression }}
   Domain: {{ $('Pick Category').first().json.domain }}
   Category: {{ $('Pick Category').first().json.category }}
 
   Requirements:
-  1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language (존댓말/Desu-Masu form) consistently** for explanations.
+  1. Tone: Friendly, humorous, and engaging (target audience: 20-30s), BUT **MUST use polite language consistently** for explanations.
+      - **English**: Use **Standard English** (Friendly, conversational, yet educational).
+      - **Korean**: Use **존댓말 (Jondaetmal)**.
+      - **Japanese**: Use **Desu-Masu Form (丁寧語)**.
+      - **Spanish**: Use **'Tú' form** but keep it respectful and professional.
+      - **French**: Use **'Tu' form** for engagement but maintain a polite, helpful tone (or 'Vous' if context demands strict formality, but 'Tu' is preferred for 20-30s friendly content).
+      - **German**: Use **'Du' form** (friendly, for 20-30s audience).
+      - **Russian**: Use **'Вы' (Polite)** for general explanations to maintain authority, or **'ты'** if very casual. (Stick to **Friendly 'Вы'** or respectful **'ты'**). Let's use **Friendly 'Ты'** for this target audience (20-30s blog style).
+      - **Chinese**: Use **Polite yet friendly (你 + 敬语/Polite particles)**.
+      - **Arabic**: Use **Modern Standard Arabic (MSA)** but with a friendly, accessible tone (avoid overly archaic vocabulary).
   2. For the 'meaning' field in ALL languages:
-     - **Tone**: Use a casual tone (e.g., Korean: 반말) by default. **HOWEVER, if the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a polite tone (존댓말/Desu-Masu).**
+     - **Target Language ONLY**: Meanings must be in the specified Target Language. Do NOT mix with other languages (except for 'en', which uses English).
+     - **Core Objective**: Provide **natural synonyms or equivalent phrases** that accurately convey the core meaning in a concise way. Avoid long, robotic dictionary-style definitions.
+     - **Tone**: Use a **casual, spoken tone** by default.
+       - **Korean**: Use **반말 (Banmal)**.
+       - **Japanese**: Use **Plain Form (Tameguchi/タメ口)**.
+       - **Spanish**: Use **Informal 'Tú' form**.
+       - **French**: Use **Informal 'Tu' form**.
+       - **German**: Use **Informal 'Du' form**.
+       - **Russian**: Use **Informal 'ты' form**.
+       - **Chinese**: Use **Casual speech**.
+       - **Arabic**: Use **MSA** (simplified).
+     - **Tone Exception**: If the English expression is formal or typically used in a polite situation (e.g., "Could I...", "May I..."), use a **polite tone** in all languages.
+       - **Korean**: 존댓말 (Jondaetmal).
+       - **Japanese**: Desu-Masu Form (丁寧語).
+       - **Spanish**: Formal 'Usted' form.
+       - **French**: Formal 'Vous' form.
+       - **German**: Formal 'Sie' form.
+       - **Russian**: Formal 'Вы' form.
+       - **Chinese**: Polite speech (using '您' instead of '你').
+       - **Arabic**: Formal MSA (Fusha).
+     - For English (en) meaning: Provide a simple, clear definition or synonym in English.
      - **Punctuation**: If the English expression is a question (?), the meaning MUST also end with a question mark (?) or be phrased as a question. Do NOT use trailing periods (.) for statements.
      - If there are multiple meanings, separate them with ' · ' (middle dot).
   3. Formatting for 'expression':
      - **Capitalization**: **Start with an UPPERCASE letter** if the expression is a standalone sentence or interjection (e.g., "No worries", "Never mind", "Don't take it personally"). **Start with a lowercase letter** ONLY if it is a phrase or idiom used within a sentence (e.g., "spill the tea", "hit the road").
      - Punctuation: Do NOT include trailing periods (.) or commas (,). Exclamation marks (!) and question marks (?) are allowed.
   4. Constraint for content:
-     - **NEVER use casual speech (반말)** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
+     - **Language Usage**: Use the specific **Target Language** for all explanations (this applies to situation, tips, AND quiz questions/options).
+       *   **English Inclusion Allowed**: You MAY include the English expression or specific English keywords naturally for educational purposes.
+       *   **No Mixed Target Language Scripts**: Do NOT mix in other target languages (e.g., no Japanese characters in Korean content, no Hangul in Spanish).
+     - **NEVER use casual speech** in the explanation, tips, dialogue, or situation description (except for the 'meaning' field).
+       - **English**: Avoid text-speak (e.g., "u", "r") or excessive slang in explanations; keep it clear and accessible.
+       - **Korean**: No 반말 (Banmal).
+       - **Japanese**: No Plain Form (Tameguchi).
+       - **Spanish/French/German/Russian**: Maintain a helpful, teacher-like tone (avoid overly colloquial slang in the explanation text itself).
      - Do NOT mix polite and casual styles. Keep the tone consistent throughout.
      - Do NOT address the reader as specific groups like "Kids" or "Students". Use a general, relatable tone suitable for young adults.
   5. Output MUST be a valid JSON object matching the schema below.
-  6. 'meaning' and 'content' fields must contain keys for 'ko', 'ja', 'es'.
+  6. 'meaning' and 'content' fields must contain keys for **en, ko, ja, es, fr, de, ru, zh, ar**.
   7. **Dialogue & Roles (CRITICAL)**:
+     - The `dialogue` field is a **TOP-LEVEL array** (sibling to `meaning` and `content`), NOT inside `content`.
      - Create a **coherent, natural conversation** between two people (A and B).
      - **The dialogue MUST consist of 2 or 3 turns (A -> B or A -> B -> A).**
      - Ensure natural interaction where either speaker can use the target expression in a meaningful context (not limited to a Q&A pattern).
      - Each entry in the `dialogue` array MUST include:
        - `"role"`: Value "A" or "B" to distinguish speakers.
-       - `"en"`: The English sentence.
-       - `"translation"`: The translated sentence in the target language.
-  8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to Japanese and Spanish.
+         *   **Role A**: Female (Default name: Sarah/Emily).
+         *   **Role B**: Male (Default name: Mike/David).
+         *   **Name Rule**: **If using names**, use **typical American names** by default (e.g., Sarah, Mike). **DO NOT use Korean names** (e.g., Sujin, Minji) or other target language names unless specifically required by the context.
+       - `"en"`: The English sentence (**English ONLY**).
+       - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
+       *   **Do NOT omit this object or any languages.**
+       *   **Target Language ONLY**: The value MUST contain ONLY the translated text in the target language.
+       *   **Pure Text Only**: Do NOT use markdown formatting (e.g., **bold**, *italic*). **Natural punctuation** (e.g., . , ? ! ') IS allowed and expected to reflect the spoken tone.
+       *   **No Mixed Language (CRITICAL)**: **NEVER** include the original English text or the English expression in the translation. (e.g., **Bad**: "안녕하세요. Hello.", **Good**: "안녕하세요")
+  8. **Consistency**: Use the 'Example (Korean)' below as a reference for the depth, humor, and style. Apply the same quality to English, Japanese, Spanish, French, German, Russian, Chinese, and Arabic.
   9. **Fixed Fields**: Include the 'domain' and 'category' exactly as provided in the input.
   10. **Quiz Logic (CRITICAL)**:
       - The quiz must test the understanding of the English expression.
@@ -255,11 +300,12 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
         - **Pattern 3 (Negative Logic)**: Ask "Which situation is **NOT** appropriate for this expression?" in [Target Language]. -> The options (A, B, C) MUST be **situations described in [Target Language]**.
           *   *Example (Target Language: ko)*: Q: "다음 중 'Let's touch base.'의 사용이 적절하지 않은 상황은?\n\nA. 🙋‍♀️ 팀원과 주간 보고서에 대해 짧게 이야기할 때.\nB. 🥳 친구들과 주말에 놀러 갈 계획을 세울 때.\nC. 🧑‍💻 고객과 다음 단계 논의를 위해 연락할 때."
       - **Strict Formatting & Validation Rules**:
-        1. **These rules apply to ALL languages (ko, ja, es).**
+        1. **These rules apply to ALL languages (en, ko, ja, es, fr, de, ru, zh, ar).**
         2. You **MUST** provide 3 distinct options labeled A, B, and C.
         3. You **MUST** use `\n` (newline) to separate the question and each option.
         4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
-  11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase strings. These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
+        5. **Randomize the correct answer position**: The correct answer MUST be randomly assigned to A, B, or C. Do NOT default to 'B'. ensure equal distribution of A, B, and C across different generations.
+  11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase **English** strings (**English ONLY**). These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
   12. **Currency & Numbers**:
       - Always use **`$` (USD)** for currency to maintain consistency (e.g., "$10", "$50.50"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.
       - Use commas for numbers larger than 1,000 (e.g., "1,000", "10,000").
@@ -270,17 +316,27 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
     "domain": "conversation",
     "category": "daily",
     "meaning": {
+      "en": "not feeling well · feeling sick",
       "ko": "몸이 좀 안 좋아 · 컨디션이 별로야",
       "ja": "体調が少し悪い · 気分がすぐれない",
-      "es": "sentirse un poco mal · no estar al cien"
+      "es": "sentirse un poco mal · no estar al cien",
+      "fr": "se sentir mal · être patraque",
+      "de": "sich nicht gut fühlen · angeschlagen sein",
+      "ru": "неважно себя чувствовать · приболеть",
+      "zh": "身体不舒服 · 感觉不太好",
+      "ar": "لست على ما يرام · أشعر بالمرض"
     },
     "content": {
+      "en": {
+        "situation": "This is perfect for those days when you wake up feeling a bit sluggish or off. 😱 It's a great expression to say you're not 100%, but not seriously ill either! 🤒✨",
+        "tip": "💡 **Fun Fact!** This idiom is said to come from sailors who would go below deck (under the weather rail) when they felt seasick during bad weather! ⚓️🌊 Remember, if you are genuinely sick, it's better to say 'I'm sick' or 'I have a fever'.",
+        "quiz": {
+          "question": "When is the most appropriate time to use 'under the weather'?\n\nA. 🥳 When you are dancing happily at a party.\nB. 😴 When you are lying in bed feeling a bit chilly and off.\nC. 🏋️‍♀️ When you are lifting weights energetically at the gym.",
+          "answer": "B"
+        }
+      },
       "ko": {
         "situation": "🌟 아침에 일어났는데 왠지 모르게 몸이 축 처지고, 컨디션이 별로일 때! 😱 '아, 나 오늘 뭔가 좀 별론데... 병든 병아리 같아...' 할 때 쓰는 핵인싸 표현이에요! 진짜 아픈 건 아닌데 그렇다고 완전 쌩쌩하지도 않을 때, 가볍게 내 상태를 말하고 싶을 때 찰떡같이 쓸 수 있답니다! 🤒✨",
-        "dialogue": [
-          { "en": "Hey, you look a bit down. Are you okay?", "translation": "저기, 좀 기분이 안 좋아 보이는데. 괜찮아요?", "role": "A" },
-          { "en": "I'm feeling a bit under the weather today, so I think I'll just head home early.", "translation": "오늘 몸이 좀 안 좋아서, 일찍 집에 가려고요.", "role": "B" }
-        ],
         "tip": "🚨 **꿀팁 방출!** 'under the weather'는 진짜 심각하게 아플 때보다는 가볍게 '컨디션이 안 좋다', '감기 기운이 있다' 정도의 느낌이에요. 😷 만약 진짜 심하게 아프다면 'I'm sick' 또는 'I have a fever'처럼 구체적으로 말하는 게 좋아요. 😉 그리고 이 표현은 뱃사람들이 배에서 날씨가 안 좋을 때 아픈 사람을 갑판 아래로 보내 '날씨 아래'에 있게 했다는 유래가 있대요! 완전 신기하죠? ⚓️🌊",
         "quiz": {
           "question": "다음 중 'under the weather'를 사용하기 가장 적절한 상황은?\n\nA. 🥳 파티에서 신나게 춤추고 있다.\nB. 😴 침대에서 밍기적거리며 몸이 좀 으슬으슬하다.\nC. 🏋️‍♀️ 헬스장에서 역기를 들고 운동하고 있다.",
@@ -289,10 +345,6 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
       },
       "ja": {
         "situation": "朝起きた時に、なんとなく体がだるくて「今日はなんだか調子が悪いな…」と感じる時にぴったりの表現です！😷 本当にひどい病気ではないけれど、100%元気でもない時に、自分の状態をカジュアルに伝えることができます。✨",
-        "dialogue": [
-          { "en": "Hey, you look a bit down. Are you okay?", "translation": "ねえ、なんだか元気がないみたいだけど大丈夫？", "role": "A" },
-          { "en": "I'm feeling a bit under the weather today.", "translation": "今日はちょっと体調が悪くて。", "role": "B" }
-        ],
         "tip": "💡 **豆知識!** この表現は、昔の船乗りが天候が悪くて体調を崩した時に、甲板の下（Under the deck）に避難したことから「Under the weather」になったという説があります。⚓️ 本当に体調が悪い時は「I'm sick」を使いましょう！",
         "quiz": {
           "question": "「under the weather」を使うのに最も適した状況は？\n\nA. 🥳 パーティーで楽しく踊っている。\nB. 😴 風邪気味で、ベッドで休んでいる。\nC. 🏋️‍♀️ ジムで元気にトレーニングしている。",
@@ -301,17 +353,83 @@ Gemini가 생성한 표현 데이터가 문자열 형태(Markdown Code Block 등
       },
       "es": {
         "situation": "¡Cuando te despiertas y te sientes un poco cansado o sin energía! 😱 Es una expresión muy común para decir que no te sientes al 100%, pero tampoco estás gravemente enfermo. 🤒✨",
-        "dialogue": [
-          { "en": "Hey, you look a bit down. Are you okay?", "translation": "Oye, te ves un poco desanimado. ¿Estás bien?", "role": "A" },
-          { "en": "I'm feeling a bit under the weather today.", "translation": "Hoy me siento un poco mal.", "role": "B" }
-        ],
         "tip": "🚨 **¡Dato curioso!** El origen viene de los marineros. Cuando el clima era malo y se sentían mal, bajaban debajo de la cubierta para estar 'bajo el clima'. 🌊⚓️ Si estás realmente enfermo, es mejor usar 'I'm sick'.",
         "quiz": {
           "question": "¿En qué situación usarías \"under the weather\"?\n\nA. 🥳 En una fiesta bailando alegremente.\nB. 😴 Descansando en la cama porque te sientes un poco mal.\nC. 🏋️‍♀️ Entrenando con mucha energía en el gimnasio.",
           "answer": "B"
         }
+      },
+      "fr": {
+        "situation": "C'est parfait pour les jours où vous vous réveillez un peu mou. 😱 C'est une super expression pour dire que vous n'êtes pas à 100%, sans être gravement malade ! 🤒✨",
+        "tip": "💡 **Le saviez-vous ?** Cette expression viendrait des marins qui descendaient sous le pont pour s'abriter du mauvais temps quand ils avaient le mal de mer ! ⚓️🌊",
+        "quiz": {
+          "question": "Quand est-il le plus approprié d'utiliser 'under the weather' ?\n\nA. 🥳 Quand vous dansez joyeusement à une fête.\nB. 😴 Quand vous êtes au lit et que vous vous sentez un peu fébrile.\nC. 🏋️‍♀️ Quand vous soulevez des poids énergiquement à la salle de sport.",
+          "answer": "B"
+        }
+      },
+      "de": {
+        "situation": "Perfekt für Tage, an denen man aufwacht und sich einfach schlapp fühlt. 😱 Ein toller Ausdruck, um zu sagen, dass man nicht 100% fit ist, aber auch nicht ernsthaft krank! 🤒✨",
+        "tip": "💡 **Schon gewusst?** Diese Redewendung stammt angeblich von Seeleuten, die bei schlechtem Wetter unter Deck gingen, wenn sie seekrank waren! ⚓️🌊",
+        "quiz": {
+          "question": "Wann ist der beste Zeitpunkt, 'under the weather' zu verwenden?\n\nA. 🥳 Wenn du fröhlich auf einer Party tanzt.\nB. 😴 Wenn du im Bett liegst und dich etwas kränklich fühlst.\nC. 🏋️‍♀️ Wenn du im Fitnessstudio energiegeladen Gewichte hebst.",
+          "answer": "B"
+        }
+      },
+      "ru": {
+        "situation": "Это идеально подходит для тех дней, когда вы просыпаетесь с чувством вялости. 😱 Отличное выражение, чтобы сказать, что вы не на 100% в форме, но и не серьезно больны! 🤒✨",
+        "tip": "💡 **Интересный факт!** Говорят, что эта идиома пошла от моряков, которые спускались под палубу (under the weather rail), когда их укачивало во время шторма! ⚓️🌊",
+        "quiz": {
+          "question": "Когда уместнее всего использовать 'under the weather'?\n\nA. 🥳 Когда вы радостно танцуете на вечеринке.\nB. 😴 Когда вы лежите в кровати и чувствуете легкое недомогание.\nC. 🏋️‍♀️ Когда вы энергично поднимаете тяжести в спортзале.",
+          "answer": "B"
+        }
+      },
+      "zh": {
+        "situation": "当你早上醒来感觉有点没精神或者不舒服的时候，用这个词再合适不过了！😱 这是一个很好的表达，用来形容你状态不是100%好，但也没生什么大病！🤒✨",
+        "tip": "💡 **冷知识！** 据说这句习语源于水手，当遇到恶劣天气感到晕船时，他们会躲到甲板下面（under the weather rail）！⚓️🌊",
+        "quiz": {
+          "question": "什么时候最适合使用 'under the weather'？\n\nA. 🥳 当你在派对上开心地跳舞时。\nB. 😴 当你躺在床上感觉有点发冷不舒服时。\nC. 🏋️‍♀️ 当你在健身房精力充沛地举重时。",
+          "answer": "B"
+        }
+      },
+      "ar": {
+        "situation": "هذا التعبير مثالي للأيام التي تستيقظ فيها وأنت تشعر ببعض الخمول أو التعب. 😱 إنه تعبير رائع لتقول إنك لست في كامل لياقتك، لكنك لست مريضاً بشكل خطير أيضاً! 🤒✨",
+        "tip": "💡 **حقيقة ممتعة!** يقال إن هذا المصطلح جاء من البحارة الذين كانوا ينزلون تحت سطح السفينة (تحت حاجز الطقس) عندما يشعرون بدوار البحر أثناء الطقس السيئ! ⚓️🌊",
+        "quiz": {
+          "question": "متى يكون الوقت الأنسب لاستخدام عبارة 'under the weather'؟\n\nA. 🥳 عندما ترقص بسعادة في حفلة.\nB. 😴 عندما تكون مستلقياً في السرير وتشعر ببعض البرودة والتوعك.\nC. 🏋️‍♀️ عندما ترفع الأثقال بنشاط في صالة الألعاب الرياضية.",
+          "answer": "B"
+        }
       }
     },
+    "dialogue": [
+      {
+        "role": "A",
+        "en": "Hey, you look a bit down. Are you okay?",
+        "translations": {
+          "ko": "저기, 좀 기분이 안 좋아 보이는데. 괜찮아요?",
+          "ja": "ねえ、なんだか元気がないみたいだけど大丈夫？",
+          "es": "Oye, te ves un poco desanimado. ¿Estás bien?",
+          "fr": "Hé, tu as l'air un peu déprimé. Ça va ?",
+          "de": "Hey, du siehst ein bisschen niedergeschlagen aus. Alles okay?",
+          "ru": "Эй, ты выглядишь немного подавленным. Ты в порядке?",
+          "zh": "嘿，你看起来有点沮丧。你还好吗？",
+          "ar": "مهلاً، تبدو محبطاً قليلاً. هل أنت بخير؟"
+        }
+      },
+      {
+        "role": "B",
+        "en": "I'm feeling a bit under the weather today, so I think I'll just head home early.",
+        "translations": {
+          "ko": "오늘 몸이 좀 안 좋아서, 일찍 집에 가려고요.",
+          "ja": "今日はちょっと体調が悪いので、早めに帰ろうと思います。",
+          "es": "Hoy me siento un poco mal, así que creo que me iré a casa temprano.",
+          "fr": "Je ne me sens pas très bien aujourd'hui, donc je pense que je vais rentrer plus tôt.",
+          "de": "Ich fühle mich heute etwas angeschlagen, deshalb werde ich wohl früher nach Hause gehen.",
+          "ru": "Я сегодня неважно себя чувствую, поэтому думаю пойти домой пораньше.",
+          "zh": "我今天身体有点不舒服，想早点回家。",
+          "ar": "أشعر بتوعك قليل اليوم، لذا سأعود إلى المنزل مبكراً."
+        }
+      }
+    ],
     "tags": ["daily", "health", "lifestyle"]
   }
   ```
@@ -347,7 +465,250 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
   }
   ````
 
-### 10단계: Generate ID (Code)
+### 10단계: Validate Content (Code)
+
+Gemini가 생성한 콘텐츠가 모든 엄격한 규칙(언어 혼용 금지, 태그 규칙, 퀴즈 포맷 등)을 준수하는지 검증하는 마지막 관문입니다. 위반 사항 발생 시 워크플로우를 즉시 중단합니다.
+
+- **Name**: `Validate Content`
+- **Code**:
+
+  ```javascript
+  /**
+   * Gemini 출력에 대한 엄격한 검증 로직 (n8n 버전)
+   * 08_gemini_content_generator_prompt.txt의 규칙과 일치합니다.
+   * 
+   * 사용법:
+   * 1. 아래의 모든 코드를 n8n Code 노드에 복사하세요.
+   * 2. 'Parse Content JSON' 노드 뒤에 연결하세요.
+   * 3. 각 항목을 검증하며 위반 사항이 발견되면 워크플로우를 중단합니다.
+   */
+
+  // ==========================================================================
+  //  헬퍼 함수 및 상수
+  // ==========================================================================
+
+  const REGEX = {
+      // 한글 (한국어): 음절, 자모, 호환 자모
+      hangul: /[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uD7B0-\uD7FF]/,
+      // 가나 (일본어): 히라가나, 가타카나
+      kana: /[\u3040-\u309F\u30A0-\u30FF]/,
+      // 한자 (중국어/일본어): 통합 한자
+      han: /[\u4E00-\u9FCC\u3400-\u4DB5]/,
+      // 키릴 문자 (러시아어)
+      cyrillic: /[\u0400-\u04FF]/,
+      // 아랍어
+      arabic: /[\u0600-\u06FF\u0750-\u077F]/,
+      // 영어/라틴 문자 (누출 여부 엄격 검사)
+      english_letters: /[a-zA-Z]/,
+      // 마크다운 검사 (굵게/이탤릭 마커: **, *) - 쌍으로 사용되거나 시작/끝 확인
+      markdown_emphasis: /(\*\*|__|\*|_)/
+  };
+
+  const TARGET_LANGS = ['ko', 'ja', 'es', 'fr', 'de', 'ru', 'zh', 'ar'];
+
+  // 휴리스틱: 소문자로 시작하는 고유명사나 예외적인 케이스 명시적 허용
+  const ALLOWED_ENGLISH_TERMS = ['iPhone', 'eBay', 'iMac', 'iPad', 'iOS', 'macOS'];
+
+  function validateItem(item) {
+      let errors = [];
+      const id = item.id || 'unknown_id';
+
+      // 1. 구조 검사
+      if (!item.expression) errors.push("Missing 'expression' field.");
+      if (!item.meaning) errors.push("Missing 'meaning' field.");
+      if (!item.content) errors.push("Missing 'content' field.");
+      if (!item.tags) errors.push("Missing 'tags' field.");
+      if (!item.dialogue || !Array.isArray(item.dialogue)) errors.push("Missing 'dialogue' top-level array.");
+
+      // 2. 태그: 소문자 영어만 허용, '#' 금지
+      if (item.tags && Array.isArray(item.tags)) {
+          item.tags.forEach(tag => {
+              if (tag.includes('#')) errors.push(`Tag '${tag}' contains '#'.`);
+              if (tag !== tag.toLowerCase()) errors.push(`Tag '${tag}' must be lowercase.`);
+              if (!REGEX.english_letters.test(tag)) errors.push(`Tag '${tag}' must contain English letters.`);
+              if (REGEX.hangul.test(tag) || REGEX.kana.test(tag) || REGEX.cyrillic.test(tag) || REGEX.arabic.test(tag)) {
+                  errors.push(`Tag '${tag}' must be English ONLY.`);
+              }
+          });
+      }
+
+      // 3. 의미: 대상 언어만 허용 (영어 제외)
+      if (item.meaning) {
+          TARGET_LANGS.forEach(lang => {
+              const text = item.meaning[lang];
+              if (!text) return;
+              
+              // 규칙: 대상 언어 혼용 금지
+              if (lang === 'ko' && (REGEX.kana.test(text) || REGEX.han.test(text))) errors.push(`Meaning (${lang}) contains Mixed Foreign Script.`);
+              if (lang === 'ja' && REGEX.hangul.test(text)) errors.push(`Meaning (${lang}) contains Mixed Foreign Script (Hangul).`);
+               
+              // 규칙: 언어 혼용 금지 (영어 누출 검사)
+              if (['ko', 'ja', 'zh', 'ru', 'ar'].includes(lang)) {
+                  checkEnglishInclusion(text, `Meaning (${lang})`, errors);
+              }
+          });
+      }
+
+      // 4. 콘텐츠: 대상 언어 + 영어(설명용) 허용
+      if (item.content) {
+          TARGET_LANGS.forEach(lang => {
+              const contentObj = item.content[lang];
+              if (!contentObj) return;
+
+              const fieldsToCheck = [
+                  contentObj.situation, 
+                  contentObj.tip, 
+                  contentObj.quiz?.question,
+                  contentObj.quiz?.A,
+                  contentObj.quiz?.B,
+                  contentObj.quiz?.C
+              ].filter(Boolean);
+
+              fieldsToCheck.forEach(text => {
+                  if (lang === 'ko' && REGEX.kana.test(text)) errors.push(`Content (${lang}) contains Kana.`);
+                  else if (lang === 'ja' && REGEX.hangul.test(text)) errors.push(`Content (${lang}) contains Hangul.`);
+                  else if (['es', 'fr', 'de'].includes(lang)) {
+                      if (REGEX.hangul.test(text) || REGEX.kana.test(text) || REGEX.cyrillic.test(text) || REGEX.arabic.test(text)) {
+                           errors.push(`Content (${lang}) contains Mixed Foreign Script.`);
+                      }
+                  }
+              });
+              
+              if (contentObj.quiz && contentObj.quiz.answer) {
+                  if (!['A', 'B', 'C'].includes(contentObj.quiz.answer)) {
+                      errors.push(`Quiz Answer (${lang}) must be 'A', 'B', or 'C'. Found: ${contentObj.quiz.answer}`);
+                  }
+              }
+          });
+      }
+
+      // 5. 대화: 최상위 레벨 배열
+      if (item.dialogue && Array.isArray(item.dialogue)) {
+          // 규칙: 대화는 2~4턴 사이여야 함 (프롬프트는 2~3턴 권장하나, 4턴도 허용)
+          if (item.dialogue.length < 2 || item.dialogue.length > 4) {
+              errors.push(`Dialogue length must be between 2 and 4. Found: ${item.dialogue.length}`);
+          }
+        
+          item.dialogue.forEach((dItem, idx) => {
+              if (dItem.en) {
+                  if (REGEX.hangul.test(dItem.en) || REGEX.kana.test(dItem.en)) {
+                      errors.push(`Dialogue[${idx}].en contains non-English characters.`);
+                  }
+              }
+
+              if (dItem.translations) {
+                  TARGET_LANGS.forEach(lang => {
+                      const text = dItem.translations[lang];
+                      if (!text) return; 
+
+                      // 규칙: 순수 텍스트만 허용 (마크다운 금지)
+                      if (text.includes('**') || text.includes('__')) {
+                           errors.push(`Dialogue[${idx}].translations.${lang} contains Markdown Bold (**): "${text}"`);
+                      }
+                      
+                      // 규칙: 언어 혼용 금지 (영어 누출 검사)
+                      if (['ko', 'ja', 'zh', 'ru', 'ar'].includes(lang)) {
+                          checkEnglishInclusion(text, `Dialogue[${idx}].translations.${lang}`, errors);
+                      } else {
+                          // 라틴 계열 (es, fr, de): 전체 표현이 누출되었는지 확인
+                          if (item.expression && text.toLowerCase().includes(item.expression.toLowerCase())) {
+                              // 거짓 양성 필터링 (예: "Pizza" -> "Pizza")
+                              // 휴리스틱: 표현이 4글자보다 긴 경우에만 플래그 처리. 짧은 단어는 우연일 수 있음.
+                              if (item.expression.length > 4) {
+                                  errors.push(`Dialogue[${idx}].translations.${lang} contains English expression leakage: "${item.expression}"`);
+                              }
+                          }
+                      }
+                      
+                      // 규칙: 대상 언어 혼용 금지
+                     if (lang === 'ko' && (REGEX.kana.test(text) || REGEX.han.test(text))) errors.push(`Dialogue[${idx}].translations.${lang} contains foreign script.`);
+                     if (lang === 'ja' && REGEX.hangul.test(text)) errors.push(`Dialogue[${idx}].translations.${lang} contains Hangul.`);
+                  });
+              }
+          });
+      }
+
+      return {
+          valid: errors.length === 0,
+          errors: errors
+      };
+  }
+
+  /**
+   * 스마트 영어 포함 검사
+   * 허용:
+   * 1. 허용 목록의 용어 (iPhone, eBay...)
+   * 2. 고유명사 (대문자로 시작: Instagram, TikTok)
+   * 3. 약어 (모두 대문자: ROI, CEO)
+   * 차단:
+   * - 소문자 영어 단어 (누출 가능성 높음)
+   */
+  function checkEnglishInclusion(text, context, errors) {
+      const englishMatches = text.match(/[a-zA-Z]{2,}/g) || [];
+      
+      const invalidWords = englishMatches.filter(word => {
+          // 1. 허용 목록에 있으면 통과 (대소문자 무시)
+          if (ALLOWED_ENGLISH_TERMS.some(term => term.toLowerCase() === word.toLowerCase())) return false;
+
+          // 2. 대문자로 시작하면 통과 (고유명사 / 약어)
+          // 예: Instagram, TikTok, ROI, CEO, TV
+          if (/^[A-Z]/.test(word)) return false;
+
+          // 3. 그 외 (소문자)는 차단!
+          // 예: "reach", "out", "hello", "meaning"
+          return true; 
+      });
+
+      if (invalidWords.length > 0) {
+          errors.push(`${context} contains English leakage: ${invalidWords.join(", ")}`);
+      }
+  }
+
+
+  // ==========================================================================
+  //  N8N 실행 블록
+  // ==========================================================================
+
+  const allViolations = [];
+
+  // 모든 입력 항목 반복
+  for (const item of $input.all()) {
+      // 파싱된 JSON이 item.json에 있다고 가정
+      // n8n 출력 구조가 평탄화된 경우 'dataToCheck'를 그에게 맞게 조정하세요.
+      const dataToCheck = item.json; 
+      
+      // 검증 실행
+      const result = validateItem(dataToCheck); // dataToCheck는 expression, meaning 등을 포함하는 객체여야 함
+
+      if (!result.valid) {
+          allViolations.push({
+              expression: dataToCheck.expression,
+              errors: result.errors
+          });
+          
+          // 항목을 유효하지 않음으로 표시 (선택 사항, throw하지 않을 경우 다운스트림 디버깅용)
+          item.json._validation = { status: 'error', errors: result.errors };
+      } else {
+          item.json._validation = { status: 'success' };
+      }
+  }
+
+  // 위반 사항 발견 시 워크플로우 중단
+  if (allViolations.length > 0) {
+      // 에러 메시지 포맷팅
+      const errorMsg = allViolations.map(v => 
+          `[${v.expression}] Errors: ${v.errors.join('; ')}`
+      ).join('\n');
+      
+      // 에러를 발생시켜 워크플로우 중단 및 위반 사항 표시
+      throw new Error(`❌ Strict Validation Failed for ${allViolations.length} items:\n${errorMsg}`);
+  }
+
+  // 모두 통과 시 항목 반환
+  return $input.all();
+  ```
+
+### 11단계: Generate ID (Code)
 
 저장 경로 및 DB ID로 사용할 UUID를 여기서 생성해야 데이터가 덮어씌워지지 않습니다.
 
@@ -367,36 +728,52 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
   return { json: { ...$input.first().json, id: uuid } };
   ```
 
-### 11단계: Prepare TTS Requests
+### 12단계: Prepare TTS Requests
 
 대화문을 개별 오디오 요청으로 분리합니다.
 
 ```javascript
 const items = $input.all();
 let results = [];
+
 items.forEach((item, itemIndex) => {
   const data = item.json;
-  const dialogueEntries = data.content?.ko?.dialogue || [];
+
+  // top-level dialogue 추출
+  const dialogueEntries = data.dialogue || [];
   const expressionId = data.id;
+
   dialogueEntries.forEach((entry, lineIndex) => {
     const rawText = entry.en || "";
     const role = (entry.role || "A").toUpperCase();
+
+    // 텍스트 정제
+    const cleanedText = rawText.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+
+    // 역할별 목소리 할당
     const voice = role === "B" ? "troy" : "hannah";
+
     results.push({
       json: {
-        ...data,
-        tts_input: rawText.replace(/\n/g, " ").trim(),
+        ...data, // 원본 데이터 유지
+        tts_input: cleanedText.substring(0, 200),
         tts_voice: voice,
         tts_line_index: lineIndex,
+        tts_model: "canopylabs/orpheus-v1-english",
+        tts_format: "wav",
+        tts_endpoint: "https://api.groq.com/openai/v1/audio/speech",
+        // Storage 저장을 위한 경로 확정
         storage_path: `expressions/${expressionId}/${lineIndex}.wav`,
       },
+      pairedItem: { item: itemIndex },
     });
   });
 });
+
 return results;
 ```
 
-### 12단계: Groq Orpheus TTS (HTTP Request)
+### 13단계: Groq Orpheus TTS (HTTP Request)
 
 11단계에서 분리된 각 대화 문장을 실제 오디오 파일(WAV)로 변환하는 단계입니다.
 
@@ -416,7 +793,7 @@ return results;
 
 > **⚠️ 중요 (400 Bad Request 에러 발생 시)**: `canopylabs/orpheus-v1-english` 모델을 처음 사용하는 경우, 반드시 **[Groq Console](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english)**에 접속하여 해당 모델의 이용 약관(Terms)을 **승인(Accept)**해야 합니다. 승인하지 않으면 API 호출 시 에러가 발생합니다.
 
-### 13단계: Upload to Storage (Supabase REST API)
+### 14단계: Upload to Storage (Supabase REST API)
 
 공식 Supabase 노드는 파일 업로드를 지원하지 않으므로, **HTTP Request** 노드를 사용하여 직접 업로드합니다.
 
@@ -436,15 +813,60 @@ return results;
 - **Options**: `Response`
   - **Response Format**: `JSON`
 
-### 14단계: Aggregate TTS Results (Code)
+### 15단계: Aggregate TTS Results (Code)
 
 업로드된 오디오 파일들의 경로(`storage_path`)를 원본 데이터 구조의 각 대화문(`dialogue`) 항목에 다시 주입하고, 하나로 합칩니다.
 
 - **Name**: `Aggregate TTS Results`
-- **Code**: `n8n/aggregate_tts_results.js` 파일의 코드 입력
+- **Code**:
+
+  ```javascript
+  // n8n Code Node: Aggregate TTS Results
+  // 분리되었던 대화문 라인들을 다시 하나로 합치고 audio_url을 주입합니다.
+
+  const items = $input.all();
+  if (items.length === 0) return [];
+
+  // 1. 원본 데이터 복원 (Prepare TTS Requests 노드의 결과 참조)
+  const firstItem = items[0];
+  const parentItemIndex = firstItem.pairedItem.item;
+  const parentData = $items("Prepare TTS Requests")[parentItemIndex].json;
+
+  // 원본 데이터 복제 (deep copy)
+  let finalData = JSON.parse(JSON.stringify(parentData));
+
+  // 2. 불필요한 임시 필드 일괄 제거 (tts_ 로 시작하는 모든 필드)
+  Object.keys(finalData).forEach((key) => {
+    if (key.startsWith("tts_") || key === "storage_path" || key === "_validation") {
+      delete finalData[key];
+    }
+  });
+
+  // 3. 오디오 URL 주입
+  items.forEach((item) => {
+    const pIdx = item.pairedItem.item;
+    const originalReq = $items("Prepare TTS Requests")[pIdx].json;
+
+    const idx = originalReq.tts_line_index;
+    // Upload to Storage 결과(Key)에서 경로 추출
+    let path = item.json.Key || originalReq.storage_path;
+
+    // 버킷 명칭(speak-mango-en/)이 포함되어 있다면 제거하여 경로 정규화
+    if (path.startsWith("speak-mango-en/")) {
+      path = path.replace("speak-mango-en/", "");
+    }
+
+    // top-level dialogue에 audio_url 주입
+    if (finalData.dialogue && finalData.dialogue[idx]) {
+      finalData.dialogue[idx].audio_url = path;
+    }
+  });
+
+  return [{ json: finalData }];
+  ```
 - **역할**: 분산된 여러 아이템을 다시 1개의 아이템으로 병합하여 최종 저장을 준비합니다.
 
-### 15단계: Supabase Insert 설정
+### 16단계: Supabase Insert 설정
 
 `Parse JSON` 노드 뒤에 **Supabase** 노드를 연결하여 최종 데이터를 저장합니다.
 
@@ -465,3 +887,32 @@ return results;
 3.  이미 DB에 있는 표현이라면 `If New`에서 False로 빠지는지 확인합니다.
 4.  **Supabase Storage**에 `speak-mango-en` 버킷 생성 여부 확인.
 5.  DB `expressions` 테이블의 `content` 내 `audio_url` 경로 정상 저장 확인.
+
+---
+
+## 🔄 Universal Backfill Strategy (Multi-Language Expansion)
+
+기존 데이터에 새로운 언어(독일어, 프랑스어, 러시아어, 중국어, 아랍어)를 추가하거나, 전체 콘텐츠를 리뉴얼할 때 사용하는 **Universal Backfill System** 가이드입니다.
+
+### 📂 폴더 구조 및 파일 (`n8n/expressions/backfill_universal/`)
+
+1.  **`universal_backfill_workflow.json`**: 백필 전용 통합 워크플로우.
+2.  **`universal_backfill_prompt.txt`**: **6개 국어**(`en`, `fr`, `de`, `ru`, `zh`, `ar`)를 생성합니다. (기존 `ko`, `ja`, `es`는 보존됨)
+3.  **`supplementary_backfill_prompt.txt`**: 기존 언어(EN)는 유지하고 **추가 언어만** 생성하기 위한 프롬프트.
+4.  **`universal_backfill_parse_code.js`**: Universal 모드용 병합 로직 (EN 업데이트 포함).
+5.  **`supplementary_backfill_parse_code.js`**: Supplementary 모드용 병합 로직 (EN 보존).
+
+### 🚀 사용 가이드
+
+1.  **영어 및 신규 언어 추가 (Partial Update)**:
+    - `universal_backfill_prompt.txt` 내용을 복사하여 Gemini 노드에 설정.
+    - **주의**: `en` 및 신규 5개 국어(`fr`, `de`, `ru`, `zh`, `ar`)만 생성되며, 기존의 `ko`, `ja`, `es` 데이터는 보존됩니다.
+
+2.  **새로운 언어만 추가하고 싶은 경우**:
+    - `supplementary_backfill_prompt.txt` 내용을 복사하여 Gemini 노드에 설정.
+    - **주의**: 영어(`en`) 필드는 생성되지 않으며, `Parse Content JSON` 단계에서 기존 데이터와 병합될 때 기존 영어 데이터가 보존됩니다.
+
+3.  **데이터 병합 로직 (Javascript)**:
+    - **Universal**: `universal_backfill_parse_code.js`를 `Parse Content JSON` 노드에 복사하여 사용하세요. (영어 갱신 + 신규 언어 추가)
+    - **Supplementary**: `supplementary_backfill_parse_code.js`를 `Parse Content JSON` 노드에 복사하여 사용하세요. (영어 보존 + 신규 언어만 추가)
+    - **공통 동작**: `meaning`, `content` 및 `dialogue`의 `translations` 객체를 타겟 언어에 맞춰 지능적으로 병합합니다.

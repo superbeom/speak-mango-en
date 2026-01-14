@@ -54,10 +54,38 @@
 - [x] **UI/UX**: 학습 모드 상호작용 고도화 (Partial Reveal, Auto-Exposed, State Preservation)
 - [x] **Architecture**: Audio URL 정규화(Relative Path) 및 클라이언트 중심 해제 로직 리팩토링
 - [x] **UI/UX**: 상세 페이지 스크롤 리셋 전략 (Session Storage & Template) 구현
+- [x] **PWA**: iOS Splash Screen 생성 및 `apple-touch-startup-image` 메타데이터 최적화
+- [x] **PWA**: `manifest.ts` 설정 및 standalone 모드 구현
+- [x] **SEO**: 동적 `opengraph-image` 생성 (Edge Runtime) 및 스타일링
+- [x] **SEO**: JSON-LD 구조화된 데이터(Schema.org) 및 Sitemap 적용
+- [x] **i18n**: `SupportedLanguage` 상수 도입 및 타입 안전성 리팩토링
+- [x] **Automation**: n8n 프롬프트 고도화 (영어 톤 매너 정의 및 퀴즈 정답 랜덤화)
+- [x] **Architecture**: Dialogue 데이터 정규화(Top-level Column) 및 GIN 인덱스 적용
+- [x] **Automation**: Universal Backfill System 구축 (Dual Strategy: Universal & Supplementary)
+- [x] **Automation**: Dialogue Translation Batch Backfill 및 Prompt Strictness 강화
+- [x] **Automation**: Prompt Refinement (Forbid Mixed English in Dialogue Translations)
+- [x] **i18n**: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
+- [x] **Automation**: 대화 턴수 검증(2~4 turns) 규칙 도입 및 `10_validate_content.js` 반영
+- [x] **Automation**: 대화 생성 규칙 정교화 (Role Gender & American Names)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 
-## Phase 5: Monetization (수익화)
+## Phase 5: Analytics (데이터 분석)
+
+- [x] **GA4 Integration**: Google Analytics 4 연동 및 환경별(dev/prod) 측정 ID 분리
+- [x] **Module Organization**: Analytics 모듈 구조화 (`analytics/`) 및 루트 레벨 격상
+- [x] **Tracking (Page View)**: 라우트 변경 시 자동 페이지 뷰 추적 (`AnalyticsProvider`)
+- [x] **Tracking (Expression)**: 표현 카드 클릭(`expression_click`) 및 상세 조회(`expression_view`) 추적
+- [x] **Tracking (Audio)**: 오디오 재생 추적 (`trackAudioPlay`)
+- [x] **Tracking (Audio Complete)**: 오디오 재생 완료 추적 (`trackAudioComplete`)
+- [x] **Tracking (Learning Mode)**: 학습 모드 전환 추적 (`trackLearningModeToggle` - Blind Listening, Translation Blur)
+- [x] **Tracking (Filter)**: 카테고리 필터 적용 추적 (`trackFilterApply`)
+- [x] **Tracking (Search)**: 검색 실행 추적 (`trackSearch`)
+- [x] **Tracking (Tag)**: 태그 클릭 추적 (`trackTagClick` - source 구분: card/detail/filter)
+- [x] **Tracking (Related)**: 관련 표현 클릭 추적 (`trackRelatedClick`)
+- [x] **Tracking (Share)**: 공유 버튼 클릭 및 완료 추적
+
+## Phase 6: Monetization (수익화)
 
 - [ ] **Feature Gating (Audio Support)**: 음성 지원(TTS) 기능을 사용자 티어(`free`/`pro`)에 따라 차별화하여 제공.
   - [x] **Scalable Architecture**: `DialogueAudioButton`에 `onPlayAttempt` 콜백을 추가하여 부동한 권한 체크 로직을 주입할 수 있는 구조로 개선.

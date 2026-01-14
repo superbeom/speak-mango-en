@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search, X } from "lucide-react";
+import { trackSearch } from "@/analytics";
 
 interface SearchBarProps {
   placeholder: string;
@@ -23,6 +24,13 @@ export default function SearchBar({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(value);
+
+    // 검색 실행 추적 (빈 검색어는 제외)
+    if (value.trim()) {
+      trackSearch({
+        searchTerm: value,
+      });
+    }
   };
 
   const handleClear = () => {

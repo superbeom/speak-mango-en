@@ -2,6 +2,517 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.5: 표현 카드 공유 버튼 통합 (2026-01-14)
+
+### 1. Card Layout Redesign
+
+- **Independent Share Button Positioning**:
+  - ShareButton을 카드 우측 하단에 absolute 포지셔닝
+  - `bottom-5 right-5` 위치로 고정하여 태그와 독립적으로 배치
+  - Link 컴포넌트에 `relative` 추가하여 포지셔닝 컨텍스트 제공
+
+### 2. Event Propagation Prevention
+
+- **Robust Click Handling**:
+  - ShareButton 내부: `e.preventDefault()` + `e.stopPropagation()`
+  - ExpressionCard: `onClick={(e) => e.stopPropagation()}`
+  - 카드 클릭(상세 페이지 이동)과 공유 버튼 클릭 완전 분리
+
+### 3. UI/UX Improvements
+
+- **Visual Hierarchy**:
+  - 태그는 좌측에 자연스럽게 흐르도록 flex-wrap
+  - 공유 버튼은 우측 하단 고정 위치로 시각적 균형 확보
+  - compact variant로 공간 효율성 극대화
+
+### 4. Result
+
+- ✅ **카드 통합 완료**: 메인 페이지 및 관련 표현 섹션에서 바로 공유 가능
+- ✅ **이벤트 분리**: 공유 버튼 클릭 시 페이지 이동 없이 공유 기능만 실행
+- ✅ **일관된 UX**: 상세 페이지와 동일한 공유 경험 제공
+
+## v0.12.4: Share 기능 구현 (Web Share API + Analytics) (2026-01-14)
+
+### 1. ShareButton Component Implementation
+
+- **Component**: `components/ShareButton.tsx` 생성
+  - **Web Share API**: 모바일 환경에서 네이티브 공유 다이얼로그 지원
+  - **Clipboard Fallback**: 데스크탑 환경에서 클립보드 복사 기능 제공
+  - **Variant Support**: `default` (아이콘 + 텍스트) 및 `compact` (아이콘만) 모드 지원
+  - **Event Propagation Prevention**: 카드 통합 시 이벤트 전파 방지 (`e.preventDefault()` + `e.stopPropagation()`)
+  - **Analytics Integration**: `trackShareClick` 및 `trackShareComplete` 자동 호출
+
+### 2. Toast Notification System
+
+- **Component**: `components/ui/Toast.tsx` 생성
+  - 재사용 가능한 독립 컴포넌트로 설계
+  - `success` / `error` 타입 지원
+  - Framer Motion 기반 애니메이션 (fade-in + slide-in)
+- **Type System**: `types/toast.ts` 생성
+  - `ToastType` 타입 정의
+  - `TOAST_TYPE` 상수 정의 (`SUCCESS`, `ERROR`)
+  - 중앙 집중식 타입 관리로 재사용성 향상
+
+### 3. Share URL Generation
+
+- **Utility**: `lib/utils.ts`에 `getShareUrl` 함수 추가
+  - 표현 ID 기반 공유 URL 생성
+  - UTM 파라미터 지원 (`utm_source=share`, `utm_medium=native`)
+  - `BASE_URL` 상수 활용 (환경별 URL 자동 전환)
+
+### 4. Analytics Tracking
+
+- **Events**: `analytics/index.ts`
+  - `trackShareClick`: 공유 버튼 클릭 추적
+    - `shareMethod`: `"native"` (Web Share API) | `"copy_link"` (클립보드)
+    - `sharePlatform`: `"native"` | `"clipboard"`
+  - `trackShareComplete`: 공유 완료 추적
+- **Integration**: ShareButton 내부에서 자동 호출
+  - 네이티브 공유 성공 시: `sharePlatform: "native"`
+  - 클립보드 복사 성공 시: `sharePlatform: "clipboard"`
+
+### 5. Internationalization (i18n)
+
+- **9개 언어 지원**: EN, KO, JA, ES, FR, DE, RU, ZH, AR
+- **Translation Keys**:
+  - `detail.share`: "Share" / "공유" / "共有" 등
+  - `detail.shareCopied`: "Link copied!" / "링크 복사됨!" 등
+  - `detail.shareFailed`: "Failed to share" / "공유 실패" 등
+  - `card.share`, `card.shareCopied`, `card.shareFailed`: 카드용 동일 텍스트
+
+### 6. UI Integration
+
+- **Detail Page**: `app/expressions/[id]/page.tsx`
+  - Tags & Source 섹션에 ShareButton 추가 (default variant)
+
+### 7. Documentation Updates
+
+- **Analytics Guide**: `docs/analytics/analytics_guide.md`
+  - 공유 이벤트 섹션 업데이트 ("향후 구현" → "구현 완료")
+  - `share_method` 및 `share_platform` 파라미터 정의 업데이트
+- **Implementation Guide**: `docs/analytics/implementation_guide.md`
+  - ShareButton 컴포넌트 추가
+  - 공유 이벤트 체크리스트 완료 표시
+- **Features List**: `docs/product/features_list.md`
+  - Share 기능 상세 설명 추가 (모바일/데스크탑 동작 방식)
+  - Analytics 섹션에서 Share 이벤트 완료 표시
+- **Future Todos**: `docs/product/future_todos.md`
+  - Social Share Button 섹션 삭제 (구현 완료)
+- **Task**: `docs/task.md`
+  - Phase 5 Analytics - Tracking (Share) 완료 표시
+
+### 8. Result
+
+- ✅ **Web Share API 구현**: 모바일에서 Instagram, Twitter, KakaoTalk 등 네이티브 앱으로 직접 공유 가능
+- ✅ **Clipboard Fallback**: 데스크탑에서 클립보드 복사 + Toast 알림
+- ✅ **Analytics 추적**: 공유 클릭 및 완료 이벤트 자동 추적
+- ✅ **9개 언어 지원**: 모든 언어에서 공유 기능 사용 가능
+- ✅ **재사용 가능한 Toast**: 향후 다른 기능에서도 Toast 컴포넌트 활용 가능
+
+## v0.12.3: Analytics Phase 3 완료 (Audio Complete & Related Click) (2026-01-14)
+
+### 1. Audio Complete Tracking
+
+- **Implementation**: `DialogueAudioButton.tsx`의 `handleEnded` 함수에서 `trackAudioComplete` 호출
+  - **Logic**: 오디오 재생이 끝까지 완료되었을 때만 이벤트 전송
+  - **Sequential Play**: 전체 듣기 모드에서도 각 문장이 끝날 때마다 이벤트 발생
+
+### 2. Related Expression Click Tracking
+
+- **Implementation**: `RelatedExpressions.tsx`에 `trackRelatedClick` 추가
+  - **Props**: `currentExpressionId` prop 추가하여 출발지(Source) 추적
+  - **Action**: 관련 표현 카드 클릭 시 `from_expression_id`와 `to_expression_id` 전송
+- **Result**: 추천 콘텐츠의 클릭률(CTR) 및 연관 탐색 패턴 분석 가능
+
+### 3. Smart Tracking Logic (Duplicate Prevention)
+
+- **Problem**: '전체 듣기' 실행 시 개별 재생(`audio_play`) 이벤트가 중복 발생하거나, 일시정지 후 재개 시 중복 집계되는 문제
+- **Solution**:
+  - **Sequential Flag**: `play(true)` 파라미터를 통해 순차 재생임을 명시하고 중복 추적 방지
+  - **Resume Check**: `isPaused` 상태를 확인하여 일시정지 후 재개인 경우 이벤트 스킵
+
+### 4. Documentation Updates
+
+- **docs/product/features_list.md**: Phase 3 완료 상태 반영 (Audio Complete, Related Click)
+- **docs/analytics/implementation_guide.md**: 체크리스트 업데이트
+- **docs/analytics/analytics_guide.md**: 이벤트 구현 상태 업데이트
+
+### 5. Result
+
+- **Phase 3 완전 정복**: 기획된 10개 핵심 이벤트 중 공유(Share)를 제외한 모든 상호작용 추적 구현 완료
+- **Data Completeness**: 단순 클릭뿐만 아니라 '완청(Complete)' 데이터까지 확보하여 콘텐츠 몰입도 분석 가능
+
+## v0.12.2: Analytics Phase 3 완료 - 학습 모드, 필터, 검색, 태그 추적 (2026-01-14)
+
+### 1. Learning Mode Toggle Tracking
+
+- **Implementation**: `DialogueSection.tsx`에 `trackLearningModeToggle` 추가
+  - **Blind Listening Mode**: Headphones 아이콘 클릭 시 `mode: "blind_listening"`, `action: "enable"/"disable"` 전송
+  - **Translation Blur Mode**: Eye 아이콘 클릭 시 `mode: "translation_blur"`, `action: "enable"/"disable"` 전송
+- **Logic**: 각 모드의 활성화/비활성화 상태 변화를 정확히 추적
+- **Result**: 사용자의 학습 패턴 및 모드 사용률 분석 가능
+
+### 2. Category Filter Tracking
+
+- **Implementation**: `FilterBar.tsx`에 `trackFilterApply` 추가
+  - 카테고리 버튼 클릭 시 `filterType: "category"`, `filterValue: cat` 전송
+  - 중복 클릭 방지: 이미 선택된 카테고리 재클릭 시에만 "all"로 변경 이벤트 전송
+- **Result**: 사용자의 카테고리 탐색 패턴 및 인기 카테고리 파악 가능
+
+### 3. Search Tracking
+
+- **Implementation**: `SearchBar.tsx`에 `trackSearch` 추가
+  - 검색 제출 시 `searchTerm: value` 전송
+  - 빈 검색어는 추적하지 않음 (`value.trim()` 체크)
+- **Result**: 사용자 검색 의도 및 검색어 패턴 분석 가능
+
+### 4. Tag Click Tracking
+
+- **Implementation**: `Tag.tsx`에 `trackTagClick` 추가
+  - **Props 확장**: `source` prop 추가 (`"card" | "detail" | "filter"`)
+  - **Client Component**: `"use client"` 지시어 추가하여 클라이언트 컴포넌트화
+  - **Source Distinction**:
+    - `ExpressionCard.tsx`: `source="card"` 전달 (홈 피드 카드)
+    - `app/expressions/[id]/page.tsx`: `source="detail"` 전달 (상세 페이지)
+- **Result**: 태그 클릭이 발생하는 위치별 사용자 행동 패턴 분석 가능
+
+### 5. Documentation Updates
+
+- **docs/project_history.md**: Analytics Phase 3 완료 항목 추가 (Q&A, 구현 상세, 검증 방법)
+- **docs/product/features_list.md**: Phase 3 이벤트 상태를 ⏳에서 ✅로 변경
+- **docs/analytics/analytics_guide.md**: Phase 3 완료 상태 반영
+- **docs/analytics/implementation_guide.md**: 체크리스트 및 디렉토리 구조 업데이트
+
+### 6. Result
+
+- **Phase 3 완료**: 7개 이벤트 추적 구현 완료
+  - ✅ `expression_click`, `expression_view`
+  - ✅ `audio_play`
+  - ✅ `learning_mode_toggle` (Blind Listening, Translation Blur)
+  - ✅ `filter_apply` (카테고리)
+  - ✅ `search`
+  - ✅ `tag_click` (source 구분)
+- **향후 구현**: `audio_complete`, `related_click`, `share_click` 등
+
+## v0.12.1: Analytics 모듈 재구성 및 Phase 3 이벤트 추적 구현 (2026-01-14)
+
+### 1. Analytics Module Structure Reorganization
+
+- **Directory Move**: `lib/analytics/` → `analytics/` (루트 레벨로 이동)
+  - 독립된 모듈로 분리하여 발견 가능성 향상
+  - Import 경로 단순화: `@/lib/analytics` → `@/analytics`
+- **Comment Localization**: 모든 영어 주석을 한국어로 변환
+  - `analytics/index.ts`: 12개 이벤트 함수 주석 한국어화
+  - `analytics/AnalyticsProvider.tsx`: Provider 주석 한국어화
+  - `analytics/ExpressionViewTracker.tsx`: Tracker 주석 한국어화
+- **Import Path Updates**: 7개 파일의 import 경로 업데이트
+  - `app/layout.tsx`
+  - `app/expressions/[id]/page.tsx`
+  - `components/ExpressionCard.tsx`
+  - `components/DialogueAudioButton.tsx`
+  - `analytics/index.ts`
+  - `analytics/AnalyticsProvider.tsx`
+  - `analytics/ExpressionViewTracker.tsx`
+
+### 2. Phase 3: Component-Level Event Tracking Implementation
+
+- **Expression Click Tracking** (`ExpressionCard.tsx`)
+  - `trackExpressionClick()` 호출 추가
+  - 파라미터: `expressionId`, `expressionText`, `category`, `source: "home_feed"`
+  - 사용자가 홈 피드에서 표현 카드를 클릭할 때 자동 추적
+- **Expression View Tracking** (`ExpressionViewTracker.tsx`)
+  - 새로운 클라이언트 컴포넌트 생성
+  - 표현 상세 페이지 로드 시 `trackExpressionView()` 자동 호출
+  - 파라미터: `expressionId`, `category`, `lang`
+  - 서버 컴포넌트(`page.tsx`)에서 사용 가능하도록 설계
+- **Audio Play Tracking Infrastructure** (`DialogueAudioButton.tsx`)
+  - Props 추가: `expressionId`, `audioIndex`, `playType`
+  - 오디오 재생 시작 시 `trackAudioPlay()` 호출
+  - 파라미터 조건부 전송 (props가 있을 때만)
+  - 향후 `DialogueSection`에서 props 전달 필요
+
+### 3. Documentation Updates
+
+- **project_context.md**: 디렉토리 구조 업데이트
+  - `lib/analytics/` 제거
+  - `analytics/` 추가 (3개 파일 명시)
+
+### 4. Result
+
+- Analytics 모듈이 독립적이고 발견하기 쉬운 구조로 개선
+- 모든 주석이 한국어로 통일되어 프로젝트 규칙 준수
+- 핵심 사용자 상호작용 3가지 자동 추적 시작:
+  1. 표현 카드 클릭 (홈 피드)
+  2. 표현 상세 조회
+  3. 오디오 재생 (인프라 구축)
+- Phase 3 나머지 이벤트 추적을 위한 기반 마련
+
+## v0.12.0: Analytics Implementation (Google Analytics 4) (2026-01-14)
+
+### 1. GA4 Integration & Infrastructure
+
+- **Module Structure**: `lib/analytics/` 폴더 생성 및 모듈화
+  - `index.ts`: 타입 안전한 이벤트 추적 유틸리티 (12개 이벤트 함수)
+  - `AnalyticsProvider.tsx`: 자동 페이지 뷰 추적 Provider
+- **Environment-Based Configuration**: 개발/프로덕션 환경별 GA4 속성 자동 전환
+  - 개발: `NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID` (Speak Mango EN (Dev))
+  - 프로덕션: `NEXT_PUBLIC_PROD_GA_MEASUREMENT_ID` (Speak Mango EN)
+  - `process.env.NODE_ENV`에 따라 `lib/analytics/index.ts`에서 자동 선택
+- **Provider Architecture**: `AnalyticsProvider`를 최상위에 배치하여 `ExpressionProvider`와 독립적으로 작동
+- **Result**: 사용자 행동 분석 인프라 구축 완료, Phase 1-2 완료 (페이지 뷰 자동 추적)
+
+### 2. Automatic Page View Tracking
+
+- **Implementation**: `usePathname` + `useSearchParams` 훅으로 라우트 변경 감지
+- **Title Synchronization**: `setTimeout` 100ms로 Next.js Metadata API가 `document.title`을 설정할 시간 확보
+- **Result**: 모든 페이지 이동이 자동으로 GA4에 전송되며, 정확한 title과 lang 정보 포함
+
+### 3. TypeScript Type Safety
+
+- **Function Overloading**: `gtag` 함수의 타입 정의를 함수 오버로드로 구현하여 `Date` 객체 타입 에러 해결
+  ```typescript
+  gtag?: {
+    (command: "js", date: Date): void;
+    (command: "config", targetId: string, config?: Record<string, any>): void;
+    (command: "event", eventName: string, params?: Record<string, any>): void;
+  };
+  ```
+- **Event Helpers**: 12개의 타입 안전한 이벤트 추적 함수 (표현 클릭, 오디오 재생, 학습 모드 등)
+- **Result**: 컴파일 타임에 이벤트 파라미터 검증, 런타임 에러 방지
+
+### 4. i18n Title Duplication Fix
+
+- **Problem**: `layout.tsx`의 `title.template` (`%s | Speak Mango`)과 i18n 파일의 `expressionTitle` (`{expression} | {serviceName}`)이 중복되어 `snap up | Speak Mango | Speak Mango` 형태로 표시
+- **Solution**: 9개 언어 파일 모두에서 `expressionTitle`을 `{expression}`으로 수정
+- **Result**: `snap up | Speak Mango` 형태로 정상 표시
+
+### 5. Documentation
+
+- **Analytics Guide** (`docs/analytics/analytics_guide.md`): 전체 Analytics 전략, 이벤트 설계, 지표 정의
+- **Implementation Guide** (`docs/analytics/implementation_guide.md`): 다른 Next.js 프로젝트에서 재사용 가능한 실전 구현 가이드
+- **Project Context Update**: `lib/analytics/` 구조와 `docs/analytics/` 문서를 `project_context.md`에 추가
+
+### 6. Next Steps (Phase 3)
+
+- 컴포넌트별 이벤트 추적 구현 예정:
+  - `ExpressionCard.tsx`: 표현 클릭 추적
+  - `DialogueAudioButton.tsx`: 오디오 재생 추적
+  - `DialogueSection.tsx`: 학습 모드 전환 추적
+  - `FilterBar.tsx`: 필터/검색 추적
+  - `Tag.tsx`: 태그 클릭 추적
+
+## v0.11.5: PWA iOS Splash Screen Fix (2026-01-13)
+
+### 1. Explicit Head Injection (iOS Compatibility)
+
+- **Problem**: Next.js Metadata API를 통한 `startupImage` 설정이 iOS PWA 환경에서 간헐적으로 무시되어 앱 실행 시 흰 화면이 노출되는 문제 발생.
+- **Solution**: `layout.tsx`에 수동으로 `<head>` 태그를 구성하고 30여 개의 `<link rel="apple-touch-startup-image" ...>` 태그를 직접 주입하여 안정성 확보.
+- **Result**: iOS 기기별 모든 해상도 및 방향(Portrait/Landscape)에서 스플래시 스크린 정상 동작 확인.
+
+### 2. Standalone Mode Assurance
+
+- **Meta Tag**: `apple-mobile-web-app-capable` 메타 태그를 수동 시스템에 추가하여, "홈 화면에 추가" 시 브라우저 UI 없이 독립형(Standalone) 앱으로 구동되도록 강제함.
+
+## v0.11.4: Service Essentials Update (PWA Splash & Theme Color) (2026-01-13)
+
+### 1. Dynamic Theme Color
+
+- **Viewport Config**: Next.js의 `viewport` 설정을 통해 시스템 테마(Light/Dark)에 따라 브라우저 상단 바 색상을 동적으로 전환(`#ffffff` <-> `#0a0a0a`).
+- **UX Improvement**: 다크 모드 사용자에게 눈부심 없는 일관된 시각적 경험 제공.
+
+### 2. Complete PWA Asset Injection
+
+- **Splash Screens**: `pwa-asset-generator`로 생성된 iOS 기기별 스플래시 스크린(Startup Image) 메타 태그 30여 개를 `layout.tsx`에 모두 주입.
+- **Manifest**: `manifest` 파일 연결을 명시하여 PWA 설치 가능성 및 웹 앱 표준 준수 강화.
+
+## v0.11.3: Dynamic OG Image Design & Metadata Polish (2026-01-13)
+
+### 1. Dynamic OG Image Redesign (Expression Detail)
+
+- **Visual Upgrade**: 메인 OG 이미지의 디자인 언어(White BG, Gradient Text, Logo Header)를 상세 페이지인 `app/expressions/[id]/opengraph-image.tsx`에도 적용하여 브랜드 일관성 확보.
+- **Runtime Switch (Edge -> Node.js)**: 로컬 파일 시스템(`fs`)을 통해 고화질 로고(`logo.png`)와 폰트 파일(`inter-*.ttf`)을 직접 로드하기 위해 런타임 환경을 변경함.
+- **Typography Hierarchy**:
+  - **Service Name**: Inter Bold (700) + Gradient
+  - **Expression**: Inter Black (900)
+  - **Meaning**: Inter Medium (500)
+  - 각 요소의 중요도에 따라 폰트 두께를 차등 적용하여 가독성 최적화.
+
+### 2. i18n Metadata Optimization
+
+- **Expression Description**: 9개 국어 로케일 파일에서 `expressionDesc` 템플릿 수정. 중복되는 `expression` 변수를 제거하고 `meaning`을 전면에 배치하여 검색 결과 및 소셜 공유 시 정보 전달력 강화.
+
+## v0.11.2: 대화 생성 규칙 정교화 및 검증 로직 완화 (2026-01-13)
+
+### 1. Dialogue Generation Rules (Gender & Names)
+
+- **Gender Standardization**:
+  - **Role A**: 여성 (Female) - Default: Sarah/Emily
+  - **Role B**: 남성 (Male) - Default: Mike/David
+- **Name Usage Strategy**:
+  - **Flexible Rule**: "If using names"라는 조건을 추가하여, 대화의 자연스러운 흐름을 위해 필요한 경우에만 이름을 사용하도록 유도.
+  - **American Preferred**: 이름을 사용할 때는 전형적인 미국식 이름을 사용하며, 한국식 이름 사용은 지양.
+
+## v0.11.1: 검증 로직 완전 동기화 (Validation Parity) (2026-01-13)
+
+### 1. Verification Script Sync
+
+- **Strict Parity**: 로컬 검증 스크립트(`verification/verify_db_data.js`)를 n8n의 최신 검증 로직(`10_validate_content.js`)과 100% 일치시킴.
+- **Rules Applied**:
+  - **Dialogue Length**: 대화 턴수 2~4턴 강제.
+  - **Quiz Consistency**: 퀴즈 선택지의 언어 혼용(영어+타겟어) 금지.
+  - **Punctuation & Syntax**: 엄격한 문장 부호 및 태그 형식 검사.
+
+## v0.11.0: n8n Workflow V2 최적화 - Single-Shot AI Generation (2026-01-13)
+
+### 1. Single-Shot AI Architecture
+
+- **통합 생성 (Consolidated Generation)**: 기존의 2단계(표현 선정 -> 콘텐츠 생성) 호출을 하나의 `Gemini Master Generator` 호출로 통합함.
+- **성능 향상**: API 호출 횟수를 50% 절감하고, 네트워크 오버헤드를 제거하여 전체 생성 속도를 2배가량 향상시킴.
+- **문맥 일관성**: 동일한 프롬프트 컨텍스트 내에서 표현 선정과 다국어 설명을 동시 수행하여, AI가 선정한 표현의 뉘앙스가 예문과 상황 설명에 더 정교하게 반영되도록 개선함.
+
+### 2. Fail-Fast Validation Pipeline
+
+- **검증 단계 전진 배치**: `Validate Content` 로직을 DB 중복 확인 및 ID 생성보다 앞단으로 이동함.
+- **효율성 극대화**: 파싱 에러나 규격 미달 데이터가 발생할 경우 조기에 워크플로우를 중단하여, 불필요한 DB 쿼리와 Storage 요청을 방지함.
+- **코드 최적화**: `06_validate_content.js` 내의 미사용 변수(`id`)를 제거하여 ESLint 경고를 해결하고 로직을 정제함.
+
+### 3. Workflow Documentation Sync
+
+- **1:1 매칭 가이드**: `docs/n8n/expressions/optimization_steps_v2.md`를 신규 작성하여, 워크플로우의 실제 노드 순서(1~15번)와 문서의 단계 설명(1~15단계)을 완벽하게 일치시킴으로써 운영 가독성을 높임.
+
+## v0.10.1: 대화 턴수 검증 규칙 도입 (Dialogue Turn Length Validation) (2026-01-12)
+
+### 1. Dialogue Length Validation
+
+- **엄격한 턴수 제한**: n8n Code Node인 `10_validate_content.js`에 대화 턴수가 2~4턴 사이인지 검증하는 로직을 도입함.
+- **문서 동기화**: `docs/n8n/expressions/optimization_steps.md`에 해당 검증 규칙을 명시하여 데이터 품질 기준을 현행화함.
+
+## v0.10.0: V2 워크플로우 아키텍처 (개발 중) (2026-01-12)
+
+> **⚠️ 상태: 개발 중 (In Development)**
+> 이 V2 워크플로우는 현재 개발 중이며 아직 프로덕션 준비가 되지 않았습니다. 특히 `15_groq_tts_v2.js` 노드에 대한 검증이 필요합니다.
+
+### 1. Fan-out 아키텍처 구현
+
+- **병렬 처리 (Parallel Processing)**: `01_pick_category_v2.js`가 이제 여러 카테고리 아이템을 반환하여, 다양한 주제에 대한 콘텐츠 생성을 동시에 수행(Fan-out)할 수 있도록 개선됨.
+- **컨텍스트 보존 (Context Preservation)**: `04_prepare_prompt_data_v2.js` 및 다운스트림 노드들이 다중 실행 브랜치를 올바르게 처리하고 병합할 수 있도록 업데이트됨.
+
+### 2. 코드베이스 구조 재편 (V2)
+
+- **전용 디렉토리 (Dedicated Directory)**: 모든 V2 전용 로직과 프롬프트를 `n8n/expressions/v2/`로 이동하여 안정적인 V1 워크플로우와 완전히 격리함.
+- **파일 표준화**:
+  - `01_pick_category_v2.js`
+  - `12_validate_content_v2.js`: "Non-strict" 검증 구현 (실패 대신 필터링).
+  - `15_groq_tts_v2.js`: **[검증 필요]** Groq API 제한 준수를 위한 배치 처리(10개 항목) 및 속도 제한(65초 대기) 구현.
+
+### 3. 검증 로직 이원화 (Validation Logic Divergence)
+
+- **V1 (Strict)**: 유효하지 않은 데이터 발생 시 워크플로우를 중단함 (프로덕션용).
+- **V2 (Relaxed)**: 유효한 아이템만 통과시키고 유효하지 않은 것은 로그를 남겨, 엄격한 차단보다는 워크플로우의 지속적인 실행을 우선시함.
+
+## v0.9.9: 데이터 검증 로직 고도화 (Strict Validation) (2026-01-12)
+
+### 1. Verification Logic Refinement
+
+- **Strict Data Verification**: `10_validate_content.js`에 엄격한 규칙(Structure Check, Tag Rules, No Mixed Language) 도입.
+- **Local Script**: `verification/verify_db_data.js`를 신설하여 n8n 워크플로우 없이 로컬에서 `temp.json` 데이터를 검증할 수 있는 환경 구축.
+- **Bug Fix**: `15_aggregate_tts_results.js`에서 Supabase Insert 에러 `PGRST204`를 해결하기 위해 `_validation` 필드 삭제 로직 추가.
+
+## v0.9.8: 프롬프트 정교화 - 혼합 언어 방지 (2026-01-11)
+
+- **이슈**: 타겟 언어 번역에 영어 원문이 섞여 들어가는 현상 발견 (예: "Korean Text. English Text").
+- **해결**: `gemini_content_generator_prompt.txt` 및 `batch_dialogue_translation_prompt.txt`에 **"Target Language ONLY"** 및 **"No Mixed Language (CRITICAL)"** 제약 조건 추가.
+- **검증**: `docs/n8n/expressions/optimization_steps.md` 문서와 코드가 일치하는지 확인 및 검증 완료.
+
+## v0.9.7: n8n Batch Backfill Optimization & Prompt Strengthening (2026-01-11)
+
+### 1. Batch Processing for Backfill
+
+- **Efficiency**: 대량의 Dialogue 번역 누락 건을 처리하기 위해 Batch Size 20 기반의 처리 로직 도입.
+- **Workflow**: `batch_dialogue_translation_prompt.txt` 및 `batch_dialogue_translation_parse_code.js` 구현.
+
+### 2. Prompt Strictness
+
+- **Critical Warning**: `08_gemini_content_generator_prompt.txt`에 8개 언어(`ko, ja, es, fr, de, ru, zh, ar`) 필수 포함 규칙을 `**CRITICAL**` 키워드로 강조하여 누락 방지.
+
+### 3. Legacy Code Cleanup
+
+- **Schema Sync**: TTS 관련 코드(`prepare_tts_requests.js`, `aggregate_tts_results.js`)에서 구버전 `content.ko.dialogue` 경로를 제거하고 `data.dialogue`로 표준화.
+
+## v0.9.6: 하드코딩된 언어 문자열 제거 및 상수화 (2026-01-11)
+
+### 1. Hardcoded String Refactoring
+
+- **Removal of Hardcoded Strings**:
+  - codebase 전반(components, i18n utilities, pages)에 걸쳐 `'en'`, `'ko'` 등으로 산재해 있던 하드코딩된 언어 문자열을 `SupportedLanguage` 상수로 대체.
+  - `i18n/format.ts`, `i18n/server.ts`, `app/expressions/[id]/page.tsx`, `components/ExpressionCard.tsx` 등 프로젝트 전반의 로케일 로직을 정교화.
+- **Logic Standardization**: 특정 언어에 의존적이던 로직을 제거하고 `SupportedLanguage.EN`을 명시적 Fallback으로 사용하도록 통일하여 오타 방지 및 중앙 집중식 관리 실현.
+
+## v0.9.5: 5개국어 추가 및 i18n 타입 안정성 강화 (2026-01-11)
+
+### 1. Language Expansion (9 Languages Supported)
+
+- **New Locales**: FR (French), DE (German), RU (Russian), ZH (Chinese), AR (Arabic) 추가.
+- **Implementation**: `i18n/locales/`에 각 언어별 번역 파일 생성 및 `LOCALE_DETAILS` 메타데이터 업데이트.
+
+### 2. Strict Type Safety
+
+- **Dictionary Logic**: `en.ts`를 기준(Source of Truth)으로 삼아 `Dictionary` 타입을 정의.
+- **Enforcement**: `i18n/index.ts`에서 모든 언어 팩이 `Dictionary` 인터페이스를 완벽히 준수하도록 강제하여, 키 누락 시 컴파일 에러 발생.
+
+## v0.9.3: Universal Backfill System 구축 (Multi-Language Expansion) (2026-01-11)
+
+### 1. Dual Backfill Strategy (이원화 전략)
+
+- **Problem**: 기존 데이터에 새로운 언어(FR, DE, RU, ZH, AR)를 추가할 때, 이미 검증된 영어 콘텐츠(`en`)까지 덮어쓰여지는 위험과, 반대로 영어 콘텐츠 리뉴얼이 필요한 상황이 혼재.
+- **Solution**: 상황에 따라 선택 가능한 두 가지 전략으로 분리.
+  - **Universal Mode**: 영문(`en`)을 포함한 6개 국어를 동시 생성 및 갱신. (기존 `ko`, `ja`, `es`는 보존)
+  - **Supplementary Mode**: 기존 영문 데이터는 철저히 보존하고, 신규 5개 국어만 생성하여 안전하게 병합.
+
+### 2. Logic Separation (코드 분리)
+
+- **Files**:
+  - `universal_backfill_parse_code.js`: `en` 필드 업데이트를 허용하는 병합 로직.
+  - `supplementary_backfill_parse_code.js`: `en` 필드 업데이트를 차단하고 신규 언어만 주입하는 로직.
+- **Workflow**: `Parse Content JSON` 노드의 자바스크립트 코드를 별도 파일로 관리하여, 운영자가 전략에 맞춰 코드를 손쉽게 교체할 수 있도록 개선.
+
+## v0.9.2: 데이터베이스 스키마 리팩토링 (Database Schema Refactoring) (2026-01-11)
+
+### 1. Dialogue Data Normalization
+
+- **Structure Change**: 기존 `content` JSON 내부에 중첩되어 있던 대화문 데이터를 최상위 `dialogue` JSONB 컬럼으로 이동.
+- **Deduplication**: 영어 원문(`en`)과 오디오 경로(`audio_url`)가 각 언어별(`ko`, `ja` 등) 객체마다 반복 저장되던 비효율을 개선하여, 최상위 레벨에서 한 번만 저장하고 각 언어는 번역본(`translations`)만 관리하도록 구조 변경.
+- **Indexing**: 대화 내용 검색 성능 향상을 위해 `dialogue` 컬럼에 GIN 인덱스 추가.
+
+## v0.9.1: n8n 콘텐츠 품질 고도화 (Content Quality Refinement) (2026-01-10)
+
+### 1. Gemini Prompt Logic Improvement
+
+- **n8n/expressions/code/08_gemini_content_generator_prompt.txt**:
+  - **4-Language Support**: JSON 스키마에 영어(en) 필드를 추가하여, 다국어 콘텐츠 생성 파이프라인(EN/KO/JA/ES)을 완성.
+  - **Tone & Manner**: 영어 설명에 대해 "Standard English (Friendly yet educational)" 톤을 정의하고, 교육적 목적에 맞지 않는 Text-speak(문자체) 사용을 금지.
+  - **Quiz Randomization**: 퀴즈 정답이 'B'로 쏠리는 편향을 막기 위해, 정답 위치(Option A/B/C)를 무작위로 배정하라는 명시적 규칙 추가.
+
+## v0.9.0: 서비스 필수 요소 완성 (Service Essentials: PWA, SEO, i18n) (2026-01-10)
+
+### 1. PWA Implementation (iOS Completeness)
+
+- **`manifest.ts`**: 안드로이드 및 데스크탑을 위한 표준 매니페스트 설정 (아이콘, 테마 컬러, Standalone 모드).
+- **iOS Assets Generator**: `pwa-asset-generator`를 활용하여 iOS 기기별 스플래시 스크린(Startup Image) 30여 장 생성 및 `layout.tsx` 연결.
+  - **Logic**: 세로 30%, 가로 20%의 여백(Padding)을 차등 적용하여 모든 화면 회전 상태에서 로고 시인성 확보.
+- **Build Config**: `next-pwa`와 Turbopack의 충돌을 방지하기 위해 `next dev --webpack` 설정 강제.
+
+### 2. SEO & Metadata Strategy
+
+- **Dynamic Metadata**: `generateMetadata`를 통해 페이지별 콘텐츠에 최적화된 메타 태그(Title, Desc, Keywords) 동적 생성.
+- **Open Graph Image**: `opengraph-image.tsx`를 구현하여 상세 페이지 공유 시 해당 표현 텍스트가 렌더링된 썸네일 카드 자동 생성.
+- **Structured Data (JSON-LD)**: 학습 자료(LearningResource) 스키마를 적용하여 구글 검색 리치 스니펫 대응.
+
+### 3. I18n Infrastructure Refactoring
+
+- **Single Source of Truth**: `i18n/index.ts`에 `SupportedLanguage` 상수를 도입하여 흩어져 있던 언어 코드 정의를 중앙화.
+- **Refactoring**: `middleware.ts`, `server.ts`, `format.ts` 등 전반적인 i18n 로직이 문자열 대신 상수를 참조하도록 수정하여 타입 안정성(Type Safety) 강화.
+
 ## v0.8.18: 프로젝트 고도화 및 품질 개선 (2026-01-09)
 
 ### 1. 코드 리팩토링 및 훅 분리 (Hooks Extraction)
@@ -119,8 +630,8 @@
 
 ### 2. UI Consistency & Visibility
 
-- **Button Styling**: 
-  - `DialogueAudioButton`: `variant` prop(`default` | `blue`) 도입. 
+- **Button Styling**:
+  - `DialogueAudioButton`: `variant` prop(`default` | `blue`) 도입.
     - **Default (User A)**: Dark mode hover 개선(`dark:hover:bg-zinc-700`)하여 배경과 구분되도록 수정.
     - **Blue (User B)**: Dark mode에서도 Light mode와 동일한 파란색 테마 유지. 재생 중(Playing) 상태일 때 호버 배경색(`bg-blue-500`)을 그대로 사용하여 시각적 안정감 확보.
   - **Dark Mode**: '전체 듣기' 버튼의 호버 시 텍스트 색상을 `dark:hover:text-zinc-200`으로 명시하여, 어두운 배경(`bg-zinc-700`) 위에서도 가독성 확보.
@@ -163,7 +674,7 @@
 ### 2. High-Quality Content Generation Standards
 
 - **Dialogue Structure**: 대화문을 2~3턴(A-B 또는 A-B-A)으로 표준화. 학습자가 상황을 빠르게 이해할 수 있는 최적의 길이를 유지하고 TTS 생성 효율성 확보.
-- **Currency & Numeric Formatting**: 
+- **Currency & Numeric Formatting**:
   - 통화 표기를 USD(`$`)로 통일하여 데이터 일관성 부여.
   - 1,000 이상의 숫자에 쉼표(`,`)를 강제하여 가독성 상향 평준화.
 - **Requirement Updates**: 위 규칙들을 `n8n/expressions/code/08_gemini_content_generator_prompt.txt` 및 워크플로우 템플릿에 명시적으로 반영.

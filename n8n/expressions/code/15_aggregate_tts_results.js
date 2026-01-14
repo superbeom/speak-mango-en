@@ -14,7 +14,7 @@ let finalData = JSON.parse(JSON.stringify(parentData));
 
 // 2. 불필요한 임시 필드 일괄 제거 (tts_ 로 시작하는 모든 필드)
 Object.keys(finalData).forEach((key) => {
-  if (key.startsWith("tts_") || key === "storage_path") {
+  if (key.startsWith("tts_") || key === "storage_path" || key === "_validation") {
     delete finalData[key];
   }
 });
@@ -33,17 +33,10 @@ items.forEach((item) => {
     path = path.replace("speak-mango-en/", "");
   }
 
-  // 모든 언어의 대화문에 동일한 audio_url 주입
-  ["ko", "ja", "es"].forEach((lang) => {
-    if (
-      finalData.content &&
-      finalData.content[lang] &&
-      finalData.content[lang].dialogue &&
-      finalData.content[lang].dialogue[idx]
-    ) {
-      finalData.content[lang].dialogue[idx].audio_url = path;
-    }
-  });
+  // top-level dialogue에 audio_url 주입
+  if (finalData.dialogue && finalData.dialogue[idx]) {
+    finalData.dialogue[idx].audio_url = path;
+  }
 });
 
 return [{ json: finalData }];

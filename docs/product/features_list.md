@@ -59,6 +59,11 @@
     - **Sequential Playback (Play All)**: '전체 듣기' 버튼을 통해 A/B 대화를 끊김 없이 이어서 듣는 기능. 재생 중인 버블 하이라이트 지원.
     - **Feature Gating Infrastructure**: 재생 전 권한 체크를 위한 `onPlayAttempt` 콜백 시스템 도입. 향후 유료 티어(Pro) 전용 기능으로 전환할 수 있는 확장 가능한 구조 확보.
   - **Quiz**: 간단한 퀴즈로 학습 내용 확인.
+  - **Share**: Web Share API를 활용한 네이티브 공유 기능.
+    - **모바일**: Instagram, Twitter, KakaoTalk 등 설치된 앱으로 직접 공유
+    - **데스크탑**: 클립보드 복사 + 토스트 알림 (폴백)
+    - **Card Integration**: 표현 카드 우측 하단에 compact 공유 버튼 배치 (absolute 포지셔닝)
+    - **Analytics**: 공유 클릭 및 완료 이벤트 추적 (`trackShareClick`, `trackShareComplete`)
 - **관련 표현 추천**:
   - 하단에 동일 카테고리의 다른 표현들을 추천.
   - **Adaptive Layout**: 모바일에서는 세로 리스트, 데스크탑에서는 Marquee 스크롤로 자동 전환 (마우스를 올리지 않아도 천천히 흐르는 무한 루프 애니메이션).
@@ -96,6 +101,49 @@
 - **워크플로우 (Agent)**:
   - **문서 자동화**: 코드 변경 시 관련 문서들을 자동으로 점검하고 업데이트하는 지능형 워크플로우 내장.
 - **콘텐츠 생성**: 매일 오전 9시, AI가 스스로 주제를 선정하여 새로운 표현 생성.
-  - **표준화**: 2~3턴의 자연스러운 대화문, USD($) 통화 기호 사용, 천 단위 쉼표 표기 등 엄격한 품질 기준 적용.
+  - **표준화**:
+    - **통화/수치**: USD($) 통화 기호, 천 단위 쉼표 사용 강제.
+    - **대화 구조**: 2~3턴의 자연스러운 대화문 (A:여성, B:남성), 미국식 이름 기본 사용 규칙 적용.
 - **중복 방지**: 생성 전 기존 데이터를 조회하여(Pre-fetch) 중복 생성을 원천 차단하는 스마트한 파이프라인.
 - **다국어 생성**: 한 번의 실행으로 3개 국어(한/일/서) 콘텐츠 동시 생성.
+
+## 3. 시스템 필수 요소 (Service Essentials)
+
+### PWA (Progressive Web App)
+
+- **설치형 앱 경험**: 브라우저 주소창 없이 네이티브 앱처럼 설치하여 사용 가능.
+- **Splash Screen**: 안드로이드 자동 생성 지원 및 iOS 전용 30여 종의 고화질 스플래시 이미지(기기별 해상도/방향 최적화) 주입 완료.
+- **Dynamic Theme Color**: 시스템 설정(Light/Dark)에 맞춰 브라우저 상단 상태바 색상이 자동으로 전환되어 일관된 사용자 경험 제공.
+- **Standalone**: 홈 화면 아이콘을 통해 실행 시 상단바 색상 및 전체화면 경험 최적화.
+
+### SEO (검색 엔진 최적화)
+
+- **동적 메타데이터**: 페이지별 콘텐츠에 맞는 Title, Description, Keyword 자동 생성.
+- **Node.js-generated OG Image (OG)**: SNS 공유 시 표현(Expression) 텍스트와 의미가 포함된 고품질 미리보기 카드 제공. (Node.js Runtime)
+- **JSON-LD**: 구글 검색 결과에 학습 자료(LearningResource) 및 조직(Organization) 정보를 리치 스니펫으로 노출.
+- **검색 최적화**: `sitemap.xml` 및 `robots.txt`를 통한 검색 엔진 크롤링 경로 가이드.
+
+### I18n (국제화 인프라)
+
+- **확장성**: `SupportedLanguage` 상수를 통해 영어(EN), 한국어(KO), 일본어(JA), 스페인어(ES) 등 다국어 확장이 용이한 구조.
+- **Type-safe Locale**: 언어 코드 및 로케일 포맷(ISO 639-1, BCP 47)을 엄격한 타입으로 관리하여 안정성 확보.
+
+### Analytics (사용자 행동 분석)
+
+- **Google Analytics 4 Integration**: 사용자 행동 분석을 위한 GA4 통합 완료.
+- **Environment-Based Configuration**: 개발/프로덕션 환경별로 별도의 GA4 속성 사용하여 테스트 데이터와 실제 데이터 분리.
+- **Automatic Page View Tracking**: 라우트 변경 시 자동으로 페이지 뷰 추적 (`AnalyticsProvider`).
+- **Component-Level Event Tracking**:
+  - **Expression Click** (`trackExpressionClick`): 표현 카드 클릭 추적 (`ExpressionCard.tsx`)
+  - **Expression View** (`trackExpressionView`): 표현 상세 조회 추적 (`ExpressionViewTracker.tsx`)
+  - **Audio Play** (`trackAudioPlay`): 오디오 재생 추적 (`DialogueAudioButton.tsx`)
+  - **Audio Complete** (`trackAudioComplete`): 오디오 재생 완료 추적 (`DialogueAudioButton.tsx`)
+  - **Learning Mode Toggle** (`trackLearningModeToggle`): 학습 모드 전환 추적 (`DialogueSection.tsx`)
+  - **Filter Apply** (`trackFilterApply`): 필터 적용 추적 (`FilterBar.tsx`)
+  - **Search** (`trackSearch`): 검색 실행 추적 (`SearchBar.tsx`)
+  - **Tag Click** (`trackTagClick`): 태그 클릭 추적 (`Tag.tsx`)
+  - **Related Click** (`trackRelatedClick`): 관련 표현 클릭 추적 (`RelatedExpressions.tsx`)
+  - **Share Click** (`trackShareClick`): 공유 버튼 클릭 추적 (`ShareButton.tsx`)
+  - **Share Complete** (`trackShareComplete`): 공유 완료 추적 (`ShareButton.tsx`)
+- **Development Tools**: 개발 환경에서는 콘솔 로그로 이벤트 확인, 프로덕션에서만 GA4로 전송.
+- **Module Organization**: 독립된 `analytics/` 모듈로 구성 (루트 레벨).

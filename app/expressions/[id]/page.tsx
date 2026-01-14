@@ -1,14 +1,24 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ExpressionViewTracker from "@/analytics/ExpressionViewTracker";
+import {
+  SUPPORTED_LANGUAGES,
+  getContentLocale,
+  SupportedLanguage,
+} from "@/i18n";
+import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { getI18n } from "@/i18n/server";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
+import { formatMessage } from "@/lib/utils";
 import Header from "@/components/Header";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
 import RelatedExpressions from "@/components/RelatedExpressions";
 import BackButton from "@/components/BackButton";
 import DialogueSection from "@/components/DialogueSection";
+import ShareButton from "@/components/ShareButton";
 
 interface PageProps {
   params: Promise<{
@@ -17,6 +27,49 @@ interface PageProps {
 }
 
 export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const expression = await getExpressionById(id);
+
+  if (!expression) {
+    return {
+      title: "Expression Not Found",
+    };
+  }
+
+  const { locale, fullLocale, dict } = await getI18n();
+  const contentLocale = getContentLocale(expression.meaning, locale);
+  const primaryMeaning = expression.meaning[contentLocale] || "";
+
+  const title = formatMessage(dict.meta.expressionTitle, {
+    expression: expression.expression,
+    serviceName: SERVICE_NAME,
+  });
+
+  const description = formatMessage(dict.meta.expressionDesc, {
+    expression: expression.expression,
+    meaning: primaryMeaning,
+    serviceName: SERVICE_NAME,
+  });
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/expressions/${id}`,
+      locale: fullLocale,
+      type: "article",
+    },
+    alternates: {
+      canonical: `${BASE_URL}/expressions/${id}`,
+    },
+  };
+}
 
 export default async function ExpressionDetailPage({ params }: PageProps) {
   const { id } = await params;
@@ -28,9 +81,13 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
   const { locale, dict } = await getI18n();
 
-  // 감지된 언어의 데이터가 있는지 확인, 없으면 한국어(ko)를 기본값으로 사용
-  const content = expression.content[locale] || expression.content["ko"];
-  const meaning = expression.meaning[locale] || expression.meaning["ko"];
+  // 감지된 언어의 데이터가 있는지 확인, 없으면 영어(en)를 기본값으로 사용
+  const content =
+    expression.content[getContentLocale(expression.content, locale)] ||
+    expression.content[SupportedLanguage.EN];
+  const meaning =
+    expression.meaning[getContentLocale(expression.meaning, locale)] ||
+    expression.meaning[SupportedLanguage.EN];
 
   if (!content || !meaning) {
     notFound();
@@ -51,6 +108,13 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-layout pb-20">
+      {/* Track expression view */}
+      <ExpressionViewTracker
+        expressionId={id}
+        category={expression.category}
+        lang={locale}
+      />
+
       <Header>
         <div className="flex items-center">
           <BackButton label={dict.common.back} />
@@ -59,6 +123,34 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
       <main className="mx-auto max-w-layout px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
         <article className="mx-auto max-w-3xl space-y-6">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "LearningResource",
+                name: expression.expression,
+                description: formatMessage(dict.meta.expressionDesc, {
+                  expression: expression.expression,
+                  meaning: meaning,
+                  serviceName: SERVICE_NAME,
+                }),
+                learningResourceType: "Expression",
+                inLanguage: locale,
+                author: {
+                  "@type": "Organization",
+                  name: SERVICE_NAME,
+                },
+                url: `${BASE_URL}/expressions/${id}`,
+                image: `${BASE_URL}/expressions/${id}/opengraph-image`,
+                workTranslation: SUPPORTED_LANGUAGES.map((lang) => ({
+                  "@type": "LearningResource",
+                  inLanguage: lang,
+                  url: `${BASE_URL}/expressions/${id}?lang=${lang}`,
+                })),
+              }),
+            }}
+          />
           {/* Main Content Card */}
           <section className="overflow-hidden rounded-3xl border border-main bg-surface shadow-sm">
             <div className="p-6 sm:p-10">
@@ -101,7 +193,9 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 {/* Dialogue */}
                 <DialogueSection
                   title={dict.detail.dialogueTitle}
-                  dialogue={content?.dialogue || []}
+                  dialogue={expression.dialogue || []}
+                  locale={locale}
+                  expressionId={expression.id}
                   playAllLabel={dict.detail.playAll}
                   stopLabel={dict.detail.stop}
                   loadingLabel={dict.common.loading}
@@ -141,13 +235,27 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             </details>
           </section>
 
-          {/* Tags & Source */}
+          {/* Tags & Share */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
             <div className="flex flex-wrap gap-2">
               {expression.tags?.map((tag) => (
-                <Tag key={tag} label={tag} href={getHomeWithFilters({ tag })} />
+                <Tag
+                  key={tag}
+                  label={tag}
+                  source="detail"
+                  href={getHomeWithFilters({ tag })}
+                />
               ))}
             </div>
+
+            <ShareButton
+              expressionId={expression.id}
+              expressionText={expression.expression}
+              meaning={meaning}
+              shareLabel={dict.detail.share}
+              shareCopiedLabel={dict.detail.shareCopied}
+              shareFailedLabel={dict.detail.shareFailed}
+            />
           </div>
         </article>
 
@@ -157,6 +265,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             expressions={relatedExpressions}
             locale={locale}
             title={dict.detail.relatedTitle}
+            currentExpressionId={expression.id}
           />
         )}
       </main>

@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-08
+**최종 수정일**: 2026-01-14
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -49,6 +49,10 @@ speak-mango-en/
 │   ├── layout.tsx       # 레이아웃
 │   ├── template.tsx     # 페이지 전환 초기화 (스크롤 리셋 등)
 │   └── globals.css      # 전역 스타일
+├── analytics/           # 사용자 행동 분석 (Google Analytics 4)
+│   ├── index.ts                # 이벤트 추적 유틸리티 함수 (12개 핵심 이벤트)
+│   ├── AnalyticsProvider.tsx   # 페이지 뷰 자동 추적 Provider
+│   └── ExpressionViewTracker.tsx # 표현 조회 추적 컴포넌트
 ├── components/          # React 컴포넌트
 │   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
 ├── constants/           # 전역 상수 관리
@@ -67,7 +71,10 @@ speak-mango-en/
 │       ├── code/        # 각 노드의 JavaScript 코드 파일 (단계별 분리)
 │       └── expressions_workflow_template.json # 워크플로우 템플릿
 ├── types/               # TypeScript 타입 정의
-│   └── database.ts      # Supabase Generated Types
+│   ├── database.ts      # Supabase Generated Types
+│   └── toast.ts         # Toast 알림 타입 및 상수
+├── verification/        # 데이터 검증 스크립트
+│   └── verify_db_data.js # 로컬 데이터 검증 (Strict Validation)
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
 │   ├── n8n/                 # n8n 자동화 관련 가이드
 │   │   └── expressions/     # 영어 표현 워크플로우 문서
@@ -89,6 +96,9 @@ speak-mango-en/
 │   │   ├── feature_ideas.md      # 추가 기능 아이디어 및 브레인스토밍
 │   │   ├── features_list.md      # 구현 완료된 기능 목록 정리
 │   │   └── future_todos.md       # 기술 부채, 아이디어, 개선 사항 백로그
+│   ├── analytics/          # Analytics 관련 문서
+│   │   ├── analytics_guide.md        # Analytics 전략 및 이벤트 설계
+│   │   └── implementation_guide.md   # 실전 구현 가이드 (재사용 가능)
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
 │   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
@@ -132,7 +142,7 @@ speak-mango-en/
 
 - **메인 페이지 (Home)**: `manual` 모드를 사용하며, `ExpressionContext`의 캐시를 통해 필터별로 데이터와 스크롤 위치를 독립적으로 관리합니다.
 - **상세 페이지 (Detail)**: `auto` 모드를 우선하며, 브라우저의 기본 기능을 활용합니다.
-- **스크롤 리셋 (Scroll Reset)**: 
+- **스크롤 리셋 (Scroll Reset)**:
   - 새로운 상세 페이지 진입 시(`push`)에는 `sessionStorage`에 `SCROLL_RESET_KEY`를 설정하여 `template.tsx`에서 감지하고 `window.scrollTo(0, 0)`을 실행합니다.
   - 뒤로가기(`back`) 시에는 플래그가 없으므로 브라우저가 위치를 자동 복원하도록 설계합니다.
   - 리스트 컴포넌트(`ExpressionList`) 언마운트 시에는 항상 설정을 `auto`로 복구하여 부작용을 방지합니다.
@@ -169,6 +179,10 @@ speak-mango-en/
   - **Hover Effects**: 모바일(터치 디바이스)에서는 호버 효과(`hover:` 클래스, `whileHover` 애니메이션 등)를 비활성화해야 합니다. 터치 스크롤 시 의도치 않은 시각적 피드백이나 애니메이션이 발생하는 것을 방지하기 위해 `useIsMobile` 훅을 사용하여 조건부로 적용합니다.
   - **Clickable Elements**: 버튼, 링크, 칩 등 클릭 가능한 모든 요소에는 `cursor-pointer` 클래스를 명시적으로 적용하여 데스크탑 환경에서의 Affordance를 보장합니다.
 - **Reusable UI Logic**: 스크롤 감지, 화면 크기 확인 등 반복되는 UI 동작 로직은 커스텀 훅(예: `useScroll`, `useIsMobile`)으로 추출하여 `hooks/` 디렉토리에서 관리합니다. 이를 통해 컴포넌트 코드를 간결하게 유지하고 로직 중복을 최소화합니다.
+- **Toast Notification System**: 사용자 피드백이 필요한 액션(복사, 저장, 공유 등)에는 `components/ui/Toast.tsx` 컴포넌트를 활용합니다.
+  - **Type Safety**: `types/toast.ts`에 정의된 `ToastType` 및 `TOAST_TYPE` 상수를 사용하여 타입 안정성 확보.
+  - **Consistency**: 모든 Toast 알림은 동일한 디자인과 애니메이션을 사용하여 UX 일관성 유지.
+  - **Reusability**: Toast 컴포넌트는 독립적으로 설계되어 어떤 컴포넌트에서든 재사용 가능.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
 
@@ -176,6 +190,18 @@ speak-mango-en/
 
 - **운영 전략**: `docs/database/supabase_strategy.md`에 따라 단일 Pro 프로젝트 내 **스키마 분리** 전략을 사용합니다.
 - **스키마 명**: `speak_mango_en` (기본 public 스키마 사용 지양).
+
+### Internationalization (i18n)
+
+- **중앙 관리**: 모든 다국어 설정은 `i18n/index.ts`에서 관리합니다. 언어별 코드, 표시명, OG용 로케일 등은 `LOCALE_DETAILS` 상수에 정의되어 있습니다.
+- **지원 언어 (9개 국어)**: EN, KO, JA, ES, FR, DE, RU, ZH, AR.
+- **Type Safety**: `Dictionary` 타입을 `en.ts` 기준으로 추론하여 모든 언어 파일의 키 일관성을 강제합니다. 코드 내에서 'en', 'ko' 등 하드코딩된 문자열 대신 `SupportedLanguage` 상수를 사용해야 합니다.
+- **새로운 언어 추가 시 절차**:
+  1. `i18n/locales/{lang}.ts` 딕셔너리 파일 생성.
+  2. `i18n/index.ts`의 `SupportedLanguage` 상수에 새 언어 코드 추가.
+  3. `i18n/index.ts`의 `dictionaries` 객체에 import 및 매핑 추가.
+  4. `i18n/index.ts`의 `LOCALE_DETAILS` 객체에 해당 언어의 상세 정보(label, tag, ogLocale) 추가.
+  5. `SUPPORTED_LANGUAGES`는 `Object.values(SupportedLanguage)`를 사용하므로 자동 반영됩니다.
 
 ### Automation (n8n)
 
@@ -202,7 +228,9 @@ speak-mango-en/
 
 ## 7. 주요 제약 사항 & 이슈
 
-- **Gemini Free Tier**: 분당 15회 요청 제한이 있으므로, n8n 루프 실행 시 `Wait` 노드를 통해 속도를 조절해야 함.
+- **Gemini Free Tier**: 분당 5회 요청 제한 대응.
+  - **Single Item**: `Wait` 노드를 통해 속도 조절.
+  - **Batching**: 20개씩 묶음 처리하여 API 호출 횟수를 최소화(1/20)하고 안정성 확보.
 - **Supabase Free Tier**: 데이터베이스 용량(500MB)을 고려하여 불필요한 로그 데이터는 주기적으로 정리 필요.
 
 ## 8. 수익화 전략 (Monetization Strategy)

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { STORAGE_BUCKET } from "@/constants";
+import { BASE_URL, STORAGE_BUCKET } from "@/constants";
 
 /**
  * Tailwind CSS 클래스를 병합하고 충돌을 해결하는 유틸리티입니다.
@@ -57,4 +57,23 @@ export function getStorageUrl(path?: string) {
   const cleanPath = path.startsWith("/") ? path.slice(1) : path;
 
   return `${supabaseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${cleanPath}`;
+}
+
+/**
+ * 표현 상세 페이지의 공유 URL을 생성합니다.
+ * @param expressionId - 표현 ID
+ * @param utmParams - 선택적 UTM 추적 파라미터
+ */
+export function getShareUrl(
+  expressionId: string,
+  utmParams?: Record<string, string>
+): string {
+  const url = `${BASE_URL}/expressions/${expressionId}`;
+
+  if (!utmParams || Object.keys(utmParams).length === 0) {
+    return url;
+  }
+
+  const params = new URLSearchParams(utmParams);
+  return `${url}?${params.toString()}`;
 }

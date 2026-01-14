@@ -1,6 +1,8 @@
 export const SERVICE_NAME = "Speak Mango";
 export const DATABASE_SCHEMA = "speak_mango_en";
 export const STORAGE_BUCKET = "speak-mango-en";
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export const DOMAINS = ["all", "conversation", "test", "vocabulary"];
 
