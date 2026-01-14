@@ -122,3 +122,16 @@
 
 - **확장성**: `SupportedLanguage` 상수를 통해 영어(EN), 한국어(KO), 일본어(JA), 스페인어(ES) 등 다국어 확장이 용이한 구조.
 - **Type-safe Locale**: 언어 코드 및 로케일 포맷(ISO 639-1, BCP 47)을 엄격한 타입으로 관리하여 안정성 확보.
+
+### Analytics (사용자 행동 분석)
+
+- **Google Analytics 4 Integration**: 사용자 행동 분석을 위한 GA4 통합 완료.
+- **Environment-Based Configuration**: 개발/프로덕션 환경별로 별도의 GA4 속성 사용하여 테스트 데이터와 실제 데이터 분리.
+- **Automatic Page View Tracking**: 라우트 변경 시 자동으로 페이지 뷰 추적 (`AnalyticsProvider`).
+- **Type-Safe Event Tracking**: 12개의 타입 안전한 이벤트 추적 함수 제공:
+  - 표현 관련: `trackExpressionView`, `trackExpressionClick`, `trackRelatedClick`
+  - 오디오 관련: `trackAudioPlay`, `trackAudioComplete`
+  - 학습 관련: `trackLearningModeToggle`
+  - 탐색 관련: `trackFilterApply`, `trackSearch`, `trackTagClick`
+  - 향후 구현: `trackShareClick`, `trackShareComplete`
+- **Development Tools**: 개발 환경에서는 콘솔 로그로 이벤트 확인, 프로덕션에서만 GA4로 전송.

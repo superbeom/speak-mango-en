@@ -2,6 +2,60 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.0: Analytics Implementation (Google Analytics 4) (2026-01-14)
+
+### 1. GA4 Integration & Infrastructure
+
+- **Module Structure**: `lib/analytics/` 폴더 생성 및 모듈화
+  - `index.ts`: 타입 안전한 이벤트 추적 유틸리티 (12개 이벤트 함수)
+  - `AnalyticsProvider.tsx`: 자동 페이지 뷰 추적 Provider
+- **Environment-Based Configuration**: 개발/프로덕션 환경별 GA4 속성 자동 전환
+  - 개발: `NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID` (Speak Mango EN (Dev))
+  - 프로덕션: `NEXT_PUBLIC_PROD_GA_MEASUREMENT_ID` (Speak Mango EN)
+  - `process.env.NODE_ENV`에 따라 `lib/analytics/index.ts`에서 자동 선택
+- **Provider Architecture**: `AnalyticsProvider`를 최상위에 배치하여 `ExpressionProvider`와 독립적으로 작동
+- **Result**: 사용자 행동 분석 인프라 구축 완료, Phase 1-2 완료 (페이지 뷰 자동 추적)
+
+### 2. Automatic Page View Tracking
+
+- **Implementation**: `usePathname` + `useSearchParams` 훅으로 라우트 변경 감지
+- **Title Synchronization**: `setTimeout` 100ms로 Next.js Metadata API가 `document.title`을 설정할 시간 확보
+- **Result**: 모든 페이지 이동이 자동으로 GA4에 전송되며, 정확한 title과 lang 정보 포함
+
+### 3. TypeScript Type Safety
+
+- **Function Overloading**: `gtag` 함수의 타입 정의를 함수 오버로드로 구현하여 `Date` 객체 타입 에러 해결
+  ```typescript
+  gtag?: {
+    (command: "js", date: Date): void;
+    (command: "config", targetId: string, config?: Record<string, any>): void;
+    (command: "event", eventName: string, params?: Record<string, any>): void;
+  };
+  ```
+- **Event Helpers**: 12개의 타입 안전한 이벤트 추적 함수 (표현 클릭, 오디오 재생, 학습 모드 등)
+- **Result**: 컴파일 타임에 이벤트 파라미터 검증, 런타임 에러 방지
+
+### 4. i18n Title Duplication Fix
+
+- **Problem**: `layout.tsx`의 `title.template` (`%s | Speak Mango`)과 i18n 파일의 `expressionTitle` (`{expression} | {serviceName}`)이 중복되어 `snap up | Speak Mango | Speak Mango` 형태로 표시
+- **Solution**: 9개 언어 파일 모두에서 `expressionTitle`을 `{expression}`으로 수정
+- **Result**: `snap up | Speak Mango` 형태로 정상 표시
+
+### 5. Documentation
+
+- **Analytics Guide** (`docs/analytics/analytics_guide.md`): 전체 Analytics 전략, 이벤트 설계, 지표 정의
+- **Implementation Guide** (`docs/analytics/implementation_guide.md`): 다른 Next.js 프로젝트에서 재사용 가능한 실전 구현 가이드
+- **Project Context Update**: `lib/analytics/` 구조와 `docs/analytics/` 문서를 `project_context.md`에 추가
+
+### 6. Next Steps (Phase 3)
+
+- 컴포넌트별 이벤트 추적 구현 예정:
+  - `ExpressionCard.tsx`: 표현 클릭 추적
+  - `DialogueAudioButton.tsx`: 오디오 재생 추적
+  - `DialogueSection.tsx`: 학습 모드 전환 추적
+  - `FilterBar.tsx`: 필터/검색 추적
+  - `Tag.tsx`: 태그 클릭 추적
+
 ## v0.11.5: PWA iOS Splash Screen Fix (2026-01-13)
 
 ### 1. Explicit Head Injection (iOS Compatibility)
@@ -120,6 +174,7 @@
 - **Bug Fix**: `15_aggregate_tts_results.js`에서 Supabase Insert 에러 `PGRST204`를 해결하기 위해 `_validation` 필드 삭제 로직 추가.
 
 ## v0.9.8: 프롬프트 정교화 - 혼합 언어 방지 (2026-01-11)
+
 - **이슈**: 타겟 언어 번역에 영어 원문이 섞여 들어가는 현상 발견 (예: "Korean Text. English Text").
 - **해결**: `gemini_content_generator_prompt.txt` 및 `batch_dialogue_translation_prompt.txt`에 **"Target Language ONLY"** 및 **"No Mixed Language (CRITICAL)"** 제약 조건 추가.
 - **검증**: `docs/n8n/expressions/optimization_steps.md` 문서와 코드가 일치하는지 확인 및 검증 완료.
@@ -127,13 +182,16 @@
 ## v0.9.7: n8n Batch Backfill Optimization & Prompt Strengthening (2026-01-11)
 
 ### 1. Batch Processing for Backfill
+
 - **Efficiency**: 대량의 Dialogue 번역 누락 건을 처리하기 위해 Batch Size 20 기반의 처리 로직 도입.
 - **Workflow**: `batch_dialogue_translation_prompt.txt` 및 `batch_dialogue_translation_parse_code.js` 구현.
 
 ### 2. Prompt Strictness
+
 - **Critical Warning**: `08_gemini_content_generator_prompt.txt`에 8개 언어(`ko, ja, es, fr, de, ru, zh, ar`) 필수 포함 규칙을 `**CRITICAL**` 키워드로 강조하여 누락 방지.
 
 ### 3. Legacy Code Cleanup
+
 - **Schema Sync**: TTS 관련 코드(`prepare_tts_requests.js`, `aggregate_tts_results.js`)에서 구버전 `content.ko.dialogue` 경로를 제거하고 `data.dialogue`로 표준화.
 
 ## v0.9.6: 하드코딩된 언어 문자열 제거 및 상수화 (2026-01-11)
@@ -327,8 +385,8 @@
 
 ### 2. UI Consistency & Visibility
 
-- **Button Styling**: 
-  - `DialogueAudioButton`: `variant` prop(`default` | `blue`) 도입. 
+- **Button Styling**:
+  - `DialogueAudioButton`: `variant` prop(`default` | `blue`) 도입.
     - **Default (User A)**: Dark mode hover 개선(`dark:hover:bg-zinc-700`)하여 배경과 구분되도록 수정.
     - **Blue (User B)**: Dark mode에서도 Light mode와 동일한 파란색 테마 유지. 재생 중(Playing) 상태일 때 호버 배경색(`bg-blue-500`)을 그대로 사용하여 시각적 안정감 확보.
   - **Dark Mode**: '전체 듣기' 버튼의 호버 시 텍스트 색상을 `dark:hover:text-zinc-200`으로 명시하여, 어두운 배경(`bg-zinc-700`) 위에서도 가독성 확보.
@@ -371,7 +429,7 @@
 ### 2. High-Quality Content Generation Standards
 
 - **Dialogue Structure**: 대화문을 2~3턴(A-B 또는 A-B-A)으로 표준화. 학습자가 상황을 빠르게 이해할 수 있는 최적의 길이를 유지하고 TTS 생성 효율성 확보.
-- **Currency & Numeric Formatting**: 
+- **Currency & Numeric Formatting**:
   - 통화 표기를 USD(`$`)로 통일하여 데이터 일관성 부여.
   - 1,000 이상의 숫자에 쉼표(`,`)를 강제하여 가독성 상향 평준화.
 - **Requirement Updates**: 위 규칙들을 `n8n/expressions/code/08_gemini_content_generator_prompt.txt` 및 워크플로우 템플릿에 명시적으로 반영.

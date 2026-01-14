@@ -2,6 +2,106 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-14: Analytics Implementation (Google Analytics 4 Integration)
+
+### ✅ 진행 사항
+
+- **GA4 Integration**: Google Analytics 4를 Next.js 16 App Router 프로젝트에 통합하여 사용자 행동 분석 인프라 구축.
+- **Environment-Based Configuration**: 개발/프로덕션 환경별로 별도의 GA4 속성 사용하도록 환경 변수 기반 자동 전환 구현.
+- **Analytics Module Structure**: `lib/analytics/` 폴더 생성 및 모듈화
+  - `index.ts`: 타입 안전한 이벤트 추적 유틸리티 함수 (10개 핵심 이벤트 + 2개 공유 이벤트)
+  - `AnalyticsProvider.tsx`: 페이지 뷰 자동 추적 Provider 컴포넌트
+- **Automatic Page View Tracking**: `usePathname` + `useSearchParams` 훅을 활용한 라우트 변경 감지 및 자동 페이지 뷰 전송.
+- **Title Duplication Fix**: i18n 파일의 `expressionTitle`에서 `| {serviceName}` 제거하여 `layout.tsx`의 `title.template`과 중복 방지.
+- **Documentation**:
+  - `analytics_guide.md`: 전체 Analytics 전략 및 이벤트 설계 문서
+  - `implementation_guide.md`: 다른 프로젝트에서 재사용 가능한 실전 구현 가이드
+
+### 🏗️ 아키텍처 설계
+
+**디렉토리 구조:**
+
+```
+lib/analytics/
+├── index.ts              # 유틸리티 함수 (이벤트 추적)
+└── AnalyticsProvider.tsx # Provider 컴포넌트 (페이지 뷰 자동 추적)
+```
+
+**환경별 분리:**
+
+- 개발 환경: `NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID` (Speak Mango EN (Dev) 속성)
+- 프로덕션 환경: `NEXT_PUBLIC_PROD_GA_MEASUREMENT_ID` (Speak Mango EN 속성)
+- `process.env.NODE_ENV`에 따라 자동 선택
+
+**Provider 계층:**
+
+```tsx
+<AnalyticsProvider>
+  {" "}
+  // 최상위 (독립적)
+  <ExpressionProvider>{children}</ExpressionProvider>
+</AnalyticsProvider>
+```
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Analytics를 components가 아닌 lib 폴더에 두었나?**
+
+- **A.** `AnalyticsProvider`는 UI 컴포넌트가 아니라 부수 효과(side effect)를 처리하는 유틸리티 Provider임. `ExpressionProvider`처럼 상태 관리를 하는 Context와 달리, 단순히 `useEffect`로 이벤트를 추적하는 역할만 수행. `lib/analytics.ts`와 함께 있는 것이 논리적이며, 향후 확장성을 고려하여 `lib/analytics/` 폴더로 모듈화.
+
+**Q. 개발/프로덕션 환경을 왜 별도 GA4 속성으로 분리했나?**
+
+- **A.** 개발 중 테스트 데이터가 실제 프로덕션 통계에 섞이는 것을 방지하기 위함. 두 개의 환경 변수(`NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID`, `NEXT_PUBLIC_PROD_GA_MEASUREMENT_ID`)를 `.env.local`에 설정하고, `lib/analytics/index.ts`에서 `NODE_ENV`에 따라 자동 선택하도록 구현. 이 방식은 `.env.local`과 `.env.production` 파일을 분리하는 것보다 안전하고 관리가 용이함.
+
+**Q. `document.title`이 빈 값으로 추적되는 문제를 어떻게 해결했나?**
+
+- **A.** `AnalyticsProvider`가 클라이언트 컴포넌트로 렌더링될 때, Next.js가 아직 `document.title`을 설정하지 않은 상태임. `setTimeout` 100ms를 추가하여 Next.js Metadata API가 title을 설정할 시간을 확보. 이는 SSR 환경에서 클라이언트 컴포넌트가 hydration되는 타이밍 이슈를 해결하는 일반적인 패턴.
+
+**Q. Title 중복 문제(`snap up | Speak Mango | Speak Mango`)는 어떻게 발생했나?**
+
+- **A.** `layout.tsx`의 `title.template`이 `%s | Speak Mango` 형식이고, i18n 파일의 `expressionTitle`이 `{expression} | {serviceName}` 형식이어서 중복 발생. 9개 언어 파일 모두에서 `expressionTitle`을 `{expression}`으로 수정하여 해결. `layout.tsx`의 template이 자동으로 서비스명을 추가하므로 중복 불필요.
+
+**Q. GA4 스크립트를 왜 `layout.tsx`에서 `GA_MEASUREMENT_ID`를 import해서 사용하나?**
+
+- **A.** 환경별 측정 ID 선택 로직을 `lib/analytics/index.ts`에 집중시키기 위함. `layout.tsx`에서 환경 변수를 직접 참조하면 로직이 분산되고, 향후 환경 추가 시 여러 파일을 수정해야 함. `GA_MEASUREMENT_ID`를 export하여 단일 진실 공급원(Single Source of Truth) 유지.
+
+**Q. 타입 에러(`Argument of type 'Date' is not assignable to parameter of type 'string'`)는 어떻게 해결했나?**
+
+- **A.** `gtag` 함수의 타입 정의가 단일 시그니처로 되어 있어서, `gtag("js", new Date())`처럼 `Date` 객체를 전달할 때 타입 에러 발생. 함수 오버로드를 사용하여 각 명령어(`js`, `config`, `event`)별로 다른 타입의 파라미터를 받을 수 있도록 수정:
+  ```typescript
+  gtag?: {
+    (command: "js", date: Date): void;
+    (command: "config", targetId: string, config?: Record<string, any>): void;
+    (command: "event", eventName: string, params?: Record<string, any>): void;
+  };
+  ```
+
+### 📊 구현된 이벤트 함수
+
+**핵심 이벤트 (10개):**
+
+1. `trackPageView` - 페이지 뷰 (자동)
+2. `trackExpressionView` - 표현 상세 조회
+3. `trackExpressionClick` - 표현 카드 클릭
+4. `trackAudioPlay` - 오디오 재생
+5. `trackAudioComplete` - 오디오 재생 완료
+6. `trackLearningModeToggle` - 학습 모드 전환
+7. `trackFilterApply` - 필터 적용
+8. `trackSearch` - 검색 실행
+9. `trackTagClick` - 태그 클릭
+10. `trackRelatedClick` - 관련 표현 클릭
+
+**향후 구현 예정 (2개):** 11. `trackShareClick` - 공유 버튼 클릭 12. `trackShareComplete` - 공유 완료
+
+### 🔄 다음 단계
+
+- **Phase 3**: 컴포넌트별 이벤트 추적 구현
+  - `ExpressionCard.tsx`: 표현 클릭 추적
+  - `DialogueAudioButton.tsx`: 오디오 재생 추적
+  - `DialogueSection.tsx`: 학습 모드 전환 추적
+  - `FilterBar.tsx`: 필터/검색 추적
+  - `Tag.tsx`: 태그 클릭 추적
+
 ## 2026-01-13: PWA iOS Splash Screen Fix (Troubleshooting & Resolution)
 
 ### ✅ 진행 사항
@@ -36,6 +136,7 @@
 ### ✅ 진행 사항
 
 - **Dynamic OG Image Redesign (Expression Detail)**:
+
   - **Visual Upgrade**: 메인 OG 이미지의 디자인 언어(White BG, Gradient Text, Logo Header)를 상세 페이지(`app/expressions/[id]/opengraph-image.tsx`)에도 적용.
   - **Runtime Switch**: 고화질 로고(`logo.png`) 및 폰트 파일(`inter-*.ttf`) 직접 로딩을 위해 `edge`에서 `nodejs` 런타임으로 변경.
   - **Typography**: `Inter` 폰트(Bold 700, Black 900, Medium 500)를 사용하여 가독성 및 브랜드 일관성 강화.

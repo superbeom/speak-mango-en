@@ -275,7 +275,7 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 
 복잡해 보일 수 있는 스크롤 및 데이터 연동 로직은 성능과 사용자 경험 간의 최적의 균형을 위해 다음과 같이 설계되었습니다.
 
-- **Throttled Tracking (스크롤 추적 - 조용하고 효율적인 감시)**: 
+- **Throttled Tracking (스크롤 추적 - 조용하고 효율적인 감시)**:
   - `Passive Listener`: addEventListener에 { passive: true } 옵션을 주어, 브라우저가 스크롤 최적화를 방해받지 않고 즉시 수행하도록 했습니다. 이로 인해 브라우저의 스크롤 성능 저하를 차단합니다.
   - `200ms 디바운스(Debounce)`: 사용자가 스크롤을 멈추거나 아주 잠깐 멈추는 찰나에만 딱 한 번 캐시를 업데이트합니다. 1초에 수백 번 발생하는 이벤트를 1초에 최대 5번 정도로 압축한 셈이라 CPU 점유율이 매우 낮습니다.
 - **Efficient Restoration (복원 효율 - 가장 스마트한 대기)**:
@@ -334,10 +334,10 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 ### 10.7 Strict Prompt Engineering (No Mixed Language)
 
 LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Leakage)" 현상(예: "안녕하세요. Hello.")을 방지하기 위해 모든 프롬프트 템플릿에 강력한 제약 헤더를 추가했습니다.
+
 - **No Mixed Language (CRITICAL)**: 타겟 값에 영어 텍스트를 포함하는 것을 명시적으로 금지합니다.
 - **Target Language ONLY**: 오직 번역된 결과물만 허용됨을 강조합니다.
-이러한 제약 조건은 메인 콘텐츠 생성기와 배치 번역 프롬프트 모두에 적용됩니다.
-
+  이러한 제약 조건은 메인 콘텐츠 생성기와 배치 번역 프롬프트 모두에 적용됩니다.
 
 ### 10.8 Content Verification Logic (Strict Validation)
 
@@ -397,6 +397,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 학습 모드의 복잡한 상호작용을 체계적으로 관리하기 위해 3가지 상태를 가진 State Machine을 도입했습니다.
 
 - **State Definition**:
+
   - **`blind` (Default)**: 리스닝 집중 모드. 모든 영어/해석 텍스트가 블러 처리됨. '해석 전체 보기' 버튼은 Soft Disabled 상태가 됨.
   - **`partial`**: 부분 확인 모드. 사용자가 안 들리는 특정 영어 문장만 클릭하여 일부만 드러낸 상태. **이 상태에서는 해석을 클릭하여 개별적으로 확인하는 것도 허용됩니다.**
   - **`exposed`**: 학습 모드 해제 상태. 모든 텍스트가 제약 없이 사용자 설정(해석 숨김 여부 등)에 따라 표시됨.
@@ -443,7 +444,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-  ]
+  ];
   ```
 
 ### 13.2 Dynamic SEO & Open Graph (동적 SEO)
@@ -471,3 +472,140 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - `LOCALE_DETAILS`: 각 언어별 메타 정보(라벨, 태그, OG Locale)를 매핑한 객체.
   - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
 - **Benefit**: 새로운 언어 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 안정적인 확장이 가능합니다.
+
+## 14. Analytics Implementation (사용자 행동 분석)
+
+Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행동 데이터를 수집하고 분석하는 시스템입니다.
+
+### 14.1 Environment-Based Configuration (환경별 설정)
+
+- **Dual Property Strategy**: 개발과 프로덕션 환경에서 별도의 GA4 속성을 사용하여 테스트 데이터가 실제 통계에 섞이지 않도록 분리합니다.
+- **Environment Variables**:
+  - `NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID`: 개발용 측정 ID
+  - `NEXT_PUBLIC_PROD_GA_MEASUREMENT_ID`: 프로덕션용 측정 ID
+- **Automatic Selection**: `lib/analytics/index.ts`에서 `process.env.NODE_ENV`를 기반으로 자동 선택:
+  ```typescript
+  export const GA_MEASUREMENT_ID =
+    process.env.NODE_ENV === "production"
+      ? GA_MEASUREMENT_ID_PROD
+      : GA_MEASUREMENT_ID_DEV;
+  ```
+- **Benefit**: 환경 전환 시 수동 설정 변경 불필요, 실수 방지
+
+### 14.2 Type-Safe Event Tracking (타입 안전한 이벤트 추적)
+
+- **Function Overloading**: `gtag` 함수의 타입 정의를 함수 오버로드로 구현하여 각 명령어(`js`, `config`, `event`)별로 다른 타입의 파라미터를 받을 수 있도록 설계:
+  ```typescript
+  declare global {
+    interface Window {
+      gtag?: {
+        (command: "js", date: Date): void;
+        (
+          command: "config",
+          targetId: string,
+          config?: Record<string, any>
+        ): void;
+        (
+          command: "event",
+          eventName: string,
+          params?: Record<string, any>
+        ): void;
+      };
+      dataLayer?: any[];
+    }
+  }
+  ```
+- **Event Helpers**: 각 이벤트별로 타입 안전한 헬퍼 함수 제공:
+  ```typescript
+  export const trackExpressionClick = (params: {
+    expressionId: string;
+    expressionText: string;
+    category: string;
+    source: "home_feed" | "related" | "search";
+  }): void => {
+    trackEvent("expression_click", {
+      expression_id: params.expressionId,
+      expression_text: params.expressionText,
+      category: params.category,
+      source: params.source,
+    });
+  };
+  ```
+- **Benefit**: 컴파일 타임에 파라미터 검증, 런타임 에러 방지, IDE 자동 완성 지원
+
+### 14.3 Automatic Page View Tracking (자동 페이지 뷰 추적)
+
+- **Provider Component**: `lib/analytics/AnalyticsProvider.tsx`가 라우트 변경을 감지하여 자동으로 페이지 뷰 전송
+- **Implementation**:
+
+  ```typescript
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const url =
+      pathname +
+      (searchParams?.toString() ? `?${searchParams.toString()}` : "");
+
+    // Wait for document.title to be set by Next.js metadata
+    const timer = setTimeout(() => {
+      trackPageView(url, document.title, lang);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pathname, searchParams, lang]);
+  ```
+
+- **Title Synchronization**: `setTimeout` 100ms를 사용하여 Next.js Metadata API가 `document.title`을 설정할 시간을 확보
+  - **Problem**: 클라이언트 컴포넌트가 렌더링될 때 SSR에서 생성된 title이 아직 적용되지 않은 상태
+  - **Solution**: 짧은 지연을 통해 hydration이 완료되고 title이 설정될 때까지 대기
+- **Provider Hierarchy**: `AnalyticsProvider`를 최상위에 배치하여 다른 Provider와 독립적으로 작동:
+  ```tsx
+  <AnalyticsProvider lang={locale}>
+    <ExpressionProvider>{children}</ExpressionProvider>
+  </AnalyticsProvider>
+  ```
+
+### 14.4 Development vs Production Behavior (개발/프로덕션 동작 분리)
+
+- **Development Mode**:
+  - 콘솔 로그로 이벤트 출력: `console.log('[Analytics] Event:', eventName, properties)`
+  - GA4로 데이터 전송하지 않음
+  - 실시간 디버깅 용이
+- **Production Mode**:
+  - GA4로 실제 데이터 전송
+  - 콘솔 로그 출력 안 함
+- **Conditional Logic**:
+  ```typescript
+  export const isAnalyticsEnabled = (): boolean => {
+    return typeof window !== "undefined" && !!GA_MEASUREMENT_ID;
+  };
+  ```
+
+### 14.5 Event Taxonomy (이벤트 분류 체계)
+
+- **Naming Convention**: `{object}_{action}` 형식의 snake_case 사용
+- **Core Events** (10개):
+  1. `page_view`: 페이지 뷰 (자동)
+  2. `expression_view`: 표현 상세 조회
+  3. `expression_click`: 표현 카드 클릭
+  4. `audio_play`: 오디오 재생
+  5. `audio_complete`: 오디오 재생 완료
+  6. `learning_mode_toggle`: 학습 모드 전환
+  7. `filter_apply`: 필터 적용
+  8. `search`: 검색 실행
+  9. `tag_click`: 태그 클릭
+  10. `related_click`: 관련 표현 클릭
+- **Future Events** (2개): 11. `share_click`: 공유 버튼 클릭 12. `share_complete`: 공유 완료
+
+### 14.6 Integration with Next.js App Router (Next.js 통합)
+
+- **Script Injection**: `app/layout.tsx`에서 GA4 스크립트를 `afterInteractive` 전략으로 로드:
+  ```tsx
+  <Script
+    strategy="afterInteractive"
+    src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+  />
+  ```
+- **Configuration**: `send_page_view: false`로 설정하여 자동 페이지 뷰를 비활성화하고 `AnalyticsProvider`에서 수동 제어
+- **Single Source of Truth**: `GA_MEASUREMENT_ID`를 `lib/analytics/index.ts`에서 export하여 환경별 선택 로직을 한 곳에 집중

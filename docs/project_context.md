@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-12
+**최종 수정일**: 2026-01-14
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -59,6 +59,9 @@ speak-mango-en/
 ├── hooks/               # 커스텀 React 훅
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
+│   ├── analytics/       # Analytics 관련 (GA4 통합)
+│   │   ├── index.ts            # 이벤트 추적 유틸리티 함수
+│   │   └── AnalyticsProvider.tsx # 페이지 뷰 자동 추적 Provider
 │   ├── supabase/        # Supabase 클라이언트 설정 (server/client)
 │   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수
@@ -91,6 +94,9 @@ speak-mango-en/
 │   │   ├── feature_ideas.md      # 추가 기능 아이디어 및 브레인스토밍
 │   │   ├── features_list.md      # 구현 완료된 기능 목록 정리
 │   │   └── future_todos.md       # 기술 부채, 아이디어, 개선 사항 백로그
+│   ├── analytics/          # Analytics 관련 문서
+│   │   ├── analytics_guide.md        # Analytics 전략 및 이벤트 설계
+│   │   └── implementation_guide.md   # 실전 구현 가이드 (재사용 가능)
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
 │   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
@@ -134,7 +140,7 @@ speak-mango-en/
 
 - **메인 페이지 (Home)**: `manual` 모드를 사용하며, `ExpressionContext`의 캐시를 통해 필터별로 데이터와 스크롤 위치를 독립적으로 관리합니다.
 - **상세 페이지 (Detail)**: `auto` 모드를 우선하며, 브라우저의 기본 기능을 활용합니다.
-- **스크롤 리셋 (Scroll Reset)**: 
+- **스크롤 리셋 (Scroll Reset)**:
   - 새로운 상세 페이지 진입 시(`push`)에는 `sessionStorage`에 `SCROLL_RESET_KEY`를 설정하여 `template.tsx`에서 감지하고 `window.scrollTo(0, 0)`을 실행합니다.
   - 뒤로가기(`back`) 시에는 플래그가 없으므로 브라우저가 위치를 자동 복원하도록 설계합니다.
   - 리스트 컴포넌트(`ExpressionList`) 언마운트 시에는 항상 설정을 `auto`로 복구하여 부작용을 방지합니다.
@@ -180,6 +186,7 @@ speak-mango-en/
 - **스키마 명**: `speak_mango_en` (기본 public 스키마 사용 지양).
 
 ### Internationalization (i18n)
+
 - **중앙 관리**: 모든 다국어 설정은 `i18n/index.ts`에서 관리합니다. 언어별 코드, 표시명, OG용 로케일 등은 `LOCALE_DETAILS` 상수에 정의되어 있습니다.
 - **지원 언어 (9개 국어)**: EN, KO, JA, ES, FR, DE, RU, ZH, AR.
 - **Type Safety**: `Dictionary` 타입을 `en.ts` 기준으로 추론하여 모든 언어 파일의 키 일관성을 강제합니다. 코드 내에서 'en', 'ko' 등 하드코딩된 문자열 대신 `SupportedLanguage` 상수를 사용해야 합니다.

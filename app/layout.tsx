@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ExpressionProvider } from "@/context/ExpressionContext";
 import { getI18n } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
+import { GA_MEASUREMENT_ID } from "@/lib/analytics";
+import AnalyticsProvider from "@/lib/analytics/AnalyticsProvider";
 import { formatMessage } from "@/lib/utils";
 import ScrollToTop from "@/components/ScrollToTop";
 
@@ -313,10 +316,32 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ExpressionProvider>
-          {children}
-          <ScrollToTop />
-        </ExpressionProvider>
+        {/* Google Analytics 4 */}
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_MEASUREMENT_ID}', {
+                send_page_view: false
+              });
+            `,
+          }}
+        />
+
+        <AnalyticsProvider lang={locale}>
+          <ExpressionProvider>
+            {children}
+            <ScrollToTop />
+          </ExpressionProvider>
+        </AnalyticsProvider>
       </body>
     </html>
   );
