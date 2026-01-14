@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { trackRelatedClick } from "@/analytics";
 import { Expression } from "@/types/database";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import ExpressionCard from "@/components/ExpressionCard";
@@ -10,6 +11,7 @@ interface RelatedExpressionsProps {
   expressions: Expression[];
   locale: string;
   title: string;
+  currentExpressionId: string; // 현재 표현 ID (Analytics용)
 }
 
 const containerVariants = {
@@ -38,8 +40,17 @@ export default function RelatedExpressions({
   expressions,
   locale,
   title,
+  currentExpressionId,
 }: RelatedExpressionsProps) {
   const isMobile = useIsMobile();
+
+  const handleCardClick = (toExpressionId: string) => {
+    // Track related expression click
+    trackRelatedClick({
+      fromExpressionId: currentExpressionId,
+      toExpressionId: toExpressionId,
+    });
+  };
 
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
@@ -124,7 +135,7 @@ export default function RelatedExpressions({
         <h2 className="mb-6 text-xl font-bold text-main">{title}</h2>
         <div className="grid grid-cols-1 gap-4">
           {expressions.map((item) => (
-            <div key={item.id}>
+            <div key={item.id} onClick={() => handleCardClick(item.id)}>
               <ExpressionCard item={item} locale={locale} />
             </div>
           ))}
@@ -160,6 +171,7 @@ export default function RelatedExpressions({
                 key={`${item.id}-${index}`} // 복제된 아이템이므로 고유 키 생성
                 variants={itemVariants}
                 className="min-w-72 sm:min-w-80 flex-1"
+                onClick={() => handleCardClick(item.id)}
               >
                 <ExpressionCard item={item} locale={locale} />
               </motion.div>

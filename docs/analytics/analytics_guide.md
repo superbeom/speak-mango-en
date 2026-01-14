@@ -188,7 +188,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 2. **오디오 관련 이벤트**
 
    - ✅ `DialogueAudioButton.tsx`: 재생 추적
-   - ⏳ `DialogueAudioButton.tsx`: 재생 완료 추적 (향후 구현)
+   - ✅ `DialogueAudioButton.tsx`: 재생 완료 추적
 
 3. **학습 모드 이벤트**
 
@@ -200,7 +200,7 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
    - ✅ `FilterBar.tsx`: 카테고리 필터 추적
    - ✅ `SearchBar.tsx`: 검색 실행 추적
    - ✅ `Tag.tsx`: 태그 클릭 추적 (source: card/detail/filter 구분)
-   - ⏳ `RelatedExpressions.tsx`: 관련 표현 클릭 추적 (향후 구현)
+   - ✅ `RelatedExpressions.tsx`: 관련 표현 클릭 추적
 
 5. **공유 이벤트 (향후 구현)**
    - ⏳ `ShareButton.tsx`: 공유 버튼 클릭 및 플랫폼 선택 추적

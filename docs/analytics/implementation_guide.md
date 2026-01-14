@@ -418,12 +418,14 @@ const handleClick = () => {
   - [x] `ExpressionViewTracker.tsx`: 표현 상세 조회 추적
 - [x] 오디오 관련 이벤트 추가
   - [x] `DialogueAudioButton.tsx`: 오디오 재생 추적
+  - [x] `DialogueAudioButton.tsx`: 오디오 재생 완료 추적
 - [x] 학습 모드 이벤트 추가
   - [x] `DialogueSection.tsx`: Blind Listening, Translation Blur 토글 추적
 - [x] 탐색 이벤트 추가
   - [x] `FilterBar.tsx`: 카테고리 필터 추적
   - [x] `SearchBar.tsx`: 검색 실행 추적
   - [x] `Tag.tsx`: 태그 클릭 추적 (source 구분)
+  - [x] `RelatedExpressions.tsx`: 관련 표현 클릭 추적
 
 ---
 

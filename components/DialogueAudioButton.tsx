@@ -6,9 +6,10 @@ import {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useCallback,
 } from "react";
 import { Volume2, Loader2, Square, Pause, Play } from "lucide-react";
-import { trackAudioPlay } from "@/analytics";
+import { trackAudioPlay, trackAudioComplete } from "@/analytics";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { AUDIO_PLAYBACK_START } from "@/constants/events";
 import { cn, getStorageUrl } from "@/lib/utils";
@@ -21,7 +22,7 @@ declare global {
 }
 
 export interface DialogueAudioButtonHandle {
-  play: () => Promise<void>;
+  play: (isSequential?: boolean) => Promise<void>;
   stop: () => void;
 }
 
@@ -40,6 +41,7 @@ interface DialogueAudioButtonProps {
   onStop?: () => void;
   onReady?: () => void;
   // Analytics props
+  isAutoPlaying?: boolean; // True when part of sequential "Play All"
   expressionId?: string;
   audioIndex?: number;
   playType?: "individual" | "sequential";
@@ -93,6 +95,7 @@ const DialogueAudioButton = forwardRef<
       onPlay,
       onStop,
       onReady,
+      isAutoPlaying = false,
       expressionId,
       audioIndex,
       playType = "individual",
@@ -116,73 +119,103 @@ const DialogueAudioButton = forwardRef<
       onReadyRef.current = onReady;
     }, [onEnded, onReady]);
 
-    const togglePlay = async (forcePlay = false) => {
-      if (!audioRef.current) return;
+    const togglePlay = useCallback(
+      async (forcePlay = false, isSequential = false) => {
+        if (!audioRef.current) return;
 
-      // Resume AudioContext if suspended (browser policy)
-      if (audioContextRef.current?.state === "suspended") {
-        await audioContextRef.current.resume();
-      }
+        // Resume AudioContext if suspended (browser policy)
+        if (audioContextRef.current?.state === "suspended") {
+          await audioContextRef.current.resume();
+        }
 
-      if (isPlaying && !forcePlay) {
-        audioRef.current.pause();
-        if (stopBehavior === "reset") {
-          audioRef.current.currentTime = 0; // Reset to start
-          setIsPaused(false);
+        if (isPlaying && !forcePlay) {
+          audioRef.current.pause();
+          if (stopBehavior === "reset") {
+            audioRef.current.currentTime = 0; // Reset to start
+            setIsPaused(false);
+          } else {
+            setIsPaused(true);
+          }
+          setIsPlaying(false);
+          onStop?.();
         } else {
-          setIsPaused(true);
-        }
-        setIsPlaying(false);
-        onStop?.();
-      } else {
-        setIsPaused(false);
-        // Feature Gating: Check permissions if callback provided
-        if (onPlayAttempt) {
-          const canPlay = await onPlayAttempt();
-          if (!canPlay) return;
-        }
+          // Check if this is a resume (from paused state)
+          const isResume = isPaused;
+          setIsPaused(false);
 
-        // Dispatch custom event BEFORE playing to stop others first
-        window.dispatchEvent(
-          new CustomEvent(AUDIO_PLAYBACK_START, {
-            detail: { audio: audioRef.current },
-          })
-        );
-
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-
-          // Track audio play event
-          if (expressionId !== undefined && audioIndex !== undefined) {
-            trackAudioPlay({
-              expressionId,
-              audioIndex,
-              playType,
-            });
+          // Feature Gating: Check permissions if callback provided
+          if (onPlayAttempt) {
+            const canPlay = await onPlayAttempt();
+            if (!canPlay) return;
           }
 
-          onPlay?.();
-        } catch (error) {
-          console.error("Playback failed:", error);
-          setIsPlaying(false);
-        }
-      }
-    };
+          // Dispatch custom event BEFORE playing to stop others first
+          window.dispatchEvent(
+            new CustomEvent(AUDIO_PLAYBACK_START, {
+              detail: { audio: audioRef.current },
+            })
+          );
 
-    useImperativeHandle(ref, () => ({
-      play: async () => {
-        await togglePlay(true);
-      },
-      stop: () => {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-          setIsPlaying(false);
-          setIsPaused(false);
+          try {
+            await audioRef.current.play();
+            setIsPlaying(true);
+
+            // Skip tracking if:
+            // 1. This is a forced play (from ref.play()) AND isSequential is true (auto-play sequence)
+            // 2. This is a resume from paused state (not a new play)
+            const shouldSkipTracking = (forcePlay && isSequential) || isResume;
+
+            // Track audio play event (only if NOT part of auto-playing sequence and NOT a resume)
+            // When auto-playing, DialogueSection already tracked the sequential play
+            if (
+              !shouldSkipTracking &&
+              expressionId !== undefined &&
+              audioIndex !== undefined
+            ) {
+              trackAudioPlay({
+                expressionId,
+                audioIndex,
+                playType,
+              });
+            }
+
+            onPlay?.();
+          } catch (error) {
+            console.error("Playback failed:", error);
+            setIsPlaying(false);
+          }
         }
       },
-    }));
+      [
+        isPlaying,
+        stopBehavior,
+        onStop,
+        onPlayAttempt,
+        isAutoPlaying,
+        expressionId,
+        audioIndex,
+        playType,
+        onPlay,
+      ]
+    );
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        play: async (isSequential = false) => {
+          await togglePlay(true, isSequential);
+        },
+        stop: () => {
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            setIsPlaying(false);
+            setIsPaused(false);
+          }
+        },
+      }),
+      [togglePlay] // togglePlay가 변경될 때마다 ref 업데이트
+    );
 
     useEffect(() => {
       if (!audioUrl) return;
@@ -224,6 +257,15 @@ const DialogueAudioButton = forwardRef<
       const handleEnded = () => {
         setIsPlaying(false);
         setIsPaused(false);
+
+        // Track audio complete event
+        if (expressionId !== undefined && audioIndex !== undefined) {
+          trackAudioComplete({
+            expressionId,
+            audioIndex,
+          });
+        }
+
         onEndedRef.current?.();
       };
       const handleCanPlayThrough = () => {

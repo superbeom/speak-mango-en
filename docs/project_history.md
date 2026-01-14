@@ -2,6 +2,197 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-14: Analytics Phase 3 완료 (audio_complete, related_click 추적)
+
+### ✅ 진행 사항
+
+- **Phase 3: 나머지 이벤트 추적 구현 완료**
+  - Audio Complete Tracking (`DialogueAudioButton.tsx`)
+  - Related Expression Click Tracking (`RelatedExpressions.tsx`)
+- **Props 확장**:
+  - `DialogueSection`: `expressionId` prop 추가 및 하위 컴포넌트로 전달
+  - `DialogueItem`: `isAutoPlaying`, `expressionId`, `audioIndex` props 추가
+  - `DialogueAudioButton`: `isAutoPlaying` prop 추가 및 `play()` 함수 시그니처 확장
+  - `RelatedExpressions`: `currentExpressionId` prop 추가
+- **중복 추적 방지 로직 구현**:
+  - 전체 듣기(Play All) 시 개별 `audio_play` 이벤트 중복 방지
+  - 일시정지 후 재개(Resume) 시 `audio_play` 이벤트 스킵
+- **문서 업데이트**:
+  - `docs/product/features_list.md`: Phase 3 이벤트 상태를 ⏳에서 ✅로 변경
+  - `docs/task.md`: Audio Complete, Related Click 작업 완료 표시
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 전체 듣기 중에 개별 audio_play 이벤트가 중복 발생하는 문제를 어떻게 해결했나?**
+
+- **A.** React의 state 업데이트는 비동기이므로, `setIsAutoPlaying(true)` 후 즉시 `play()`를 호출해도 컴포넌트는 아직 `isAutoPlaying: false` 상태임. 이를 해결하기 위해:
+  1. `DialogueAudioButtonHandle.play()` 함수에 `isSequential` 파라미터 추가
+  2. `DialogueSection`에서 전체 듣기 시 `play(true)` 호출하여 명시적으로 sequential 재생임을 전달
+  3. `DialogueAudioButton`의 `togglePlay` 함수를 `useCallback`으로 감싸고 dependency에 `isAutoPlaying` 포함
+  4. `useImperativeHandle`의 dependency에 `togglePlay` 추가하여 최신 클로저 참조
+
+**Q. 일시정지 후 재개할 때 audio_play 이벤트가 발생하는 문제는?**
+
+- **A.** 일시정지 상태(`isPaused`)를 체크하여 resume인지 새로운 재생인지 구분:
+  ```typescript
+  const isResume = isPaused;
+  const shouldSkipTracking = (forcePlay && isSequential) || isResume;
+  ```
+  Resume인 경우 추적을 스킵하여 중복 방지.
+
+**Q. 전체 듣기 중에 다른 오디오를 클릭하면 어떻게 되나?**
+
+- **A.** 사용자가 직접 버튼을 클릭한 경우(`forcePlay: false`)는 항상 개별 듣기로 추적됨:
+  ```typescript
+  const shouldSkipTracking = (forcePlay && isSequential) || isResume;
+  ```
+  `forcePlay`가 `false`이면 `shouldSkipTracking`도 `false`가 되어 정상적으로 추적됨.
+
+**Q. Related Expression 클릭 추적은 어떻게 구현했나?**
+
+- **A.** `RelatedExpressions` 컴포넌트에 `currentExpressionId` prop을 추가하고, 카드 클릭 시 `trackRelatedClick` 호출:
+  ```typescript
+  trackRelatedClick({
+    fromExpressionId: currentExpressionId,
+    toExpressionId: item.id,
+  });
+  ```
+  모바일(세로 리스트)과 데스크탑(Marquee 스크롤) 모두에서 동일하게 작동.
+
+### 🏗️ 구현 상세
+
+**1. Audio Complete Tracking**
+
+```typescript
+// DialogueAudioButton.tsx - handleEnded
+const handleEnded = () => {
+  setIsPlaying(false);
+  setIsPaused(false);
+
+  // Track audio complete event
+  if (expressionId !== undefined && audioIndex !== undefined) {
+    trackAudioComplete({
+      expressionId,
+      audioIndex,
+    });
+  }
+
+  onEndedRef.current?.();
+};
+```
+
+**2. Sequential Play with Explicit Parameter**
+
+```typescript
+// DialogueSection.tsx - handlePlayAll
+const handlePlayAll = () => {
+  // ...
+  setIsAutoPlaying(true);
+  setPlayingIndex(0);
+  // Pass true to indicate this is sequential playback
+  buttonRefs.current[0]?.play(true);
+
+  trackAudioPlay({
+    expressionId,
+    audioIndex: 0,
+    playType: "sequential",
+  });
+};
+```
+
+**3. Smart Tracking Logic**
+
+```typescript
+// DialogueAudioButton.tsx - togglePlay
+const isResume = isPaused;
+
+// Skip tracking if:
+// 1. This is a forced play (from ref.play()) AND isSequential is true (auto-play sequence)
+// 2. This is a resume from paused state (not a new play)
+const shouldSkipTracking = (forcePlay && isSequential) || isResume;
+
+if (
+  !shouldSkipTracking &&
+  expressionId !== undefined &&
+  audioIndex !== undefined
+) {
+  trackAudioPlay({
+    expressionId,
+    audioIndex,
+    playType,
+  });
+}
+```
+
+**4. Related Expression Click Tracking**
+
+```typescript
+// RelatedExpressions.tsx
+const handleCardClick = (toExpressionId: string) => {
+  trackRelatedClick({
+    fromExpressionId: currentExpressionId,
+    toExpressionId: toExpressionId,
+  });
+};
+```
+
+### 📊 현재 추적 가능한 이벤트 (Phase 3 완료)
+
+**자동 추적:**
+
+- ✅ `page_view`: 모든 페이지 뷰 (AnalyticsProvider)
+
+**수동 추적 (Phase 3 - 완료):**
+
+- ✅ `expression_click`: 표현 카드 클릭
+- ✅ `expression_view`: 표현 상세 조회
+- ✅ `audio_play`: 오디오 재생
+- ✅ `audio_complete`: 오디오 재생 완료 (**신규**)
+- ✅ `learning_mode_toggle`: 학습 모드 전환
+- ✅ `filter_apply`: 필터 적용
+- ✅ `search`: 검색 실행
+- ✅ `tag_click`: 태그 클릭
+- ✅ `related_click`: 관련 표현 클릭 (**신규**)
+
+**향후 구현 예정:**
+
+- ⏳ `share_click`: 공유 버튼 클릭
+- ⏳ `share_complete`: 공유 완료
+
+### 🔍 검증 방법
+
+**개발 환경 콘솔 로그 확인:**
+
+```bash
+# 개발 서버 실행
+yarn dev
+```
+
+브라우저 콘솔에서 다음 시나리오 테스트:
+
+1. **전체 듣기**: 상세 페이지에서 "Play All" 버튼 클릭
+
+   - `[Analytics] Event: audio_play { expression_id: "...", audio_index: 0, play_type: "sequential" }` (1회만)
+   - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 0 }`
+   - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 1 }`
+
+2. **개별 듣기**: 대화 버블의 오디오 버튼 클릭
+
+   - `[Analytics] Event: audio_play { expression_id: "...", audio_index: 0, play_type: "individual" }`
+   - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 0 }`
+
+3. **일시정지 후 재개**: 재생 중 버튼 클릭 → 다시 클릭
+
+   - 재개 시 `audio_play` 이벤트 발생하지 않음 ✅
+
+4. **관련 표현 클릭**: 상세 페이지 하단의 관련 표현 카드 클릭
+   - `[Analytics] Event: related_click { from_expression_id: "...", to_expression_id: "..." }`
+
+### 🔄 다음 단계
+
+- [ ] GA4 대시보드에서 실제 데이터 수집 검증 (프로덕션 배포 후)
+- [ ] 공유 기능 구현 시 `share_click`, `share_complete` 이벤트 추가
+
 ## 2026-01-14: Analytics Phase 3 완료 (학습 모드, 필터, 검색, 태그 추적)
 
 ### ✅ 진행 사항

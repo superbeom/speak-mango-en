@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.3: Analytics Phase 3 완료 (Audio Complete & Related Click) (2026-01-14)
+
+### 1. Audio Complete Tracking
+
+- **Implementation**: `DialogueAudioButton.tsx`의 `handleEnded` 함수에서 `trackAudioComplete` 호출
+  - **Logic**: 오디오 재생이 끝까지 완료되었을 때만 이벤트 전송
+  - **Sequential Play**: 전체 듣기 모드에서도 각 문장이 끝날 때마다 이벤트 발생
+
+### 2. Related Expression Click Tracking
+
+- **Implementation**: `RelatedExpressions.tsx`에 `trackRelatedClick` 추가
+  - **Props**: `currentExpressionId` prop 추가하여 출발지(Source) 추적
+  - **Action**: 관련 표현 카드 클릭 시 `from_expression_id`와 `to_expression_id` 전송
+- **Result**: 추천 콘텐츠의 클릭률(CTR) 및 연관 탐색 패턴 분석 가능
+
+### 3. Smart Tracking Logic (Duplicate Prevention)
+
+- **Problem**: '전체 듣기' 실행 시 개별 재생(`audio_play`) 이벤트가 중복 발생하거나, 일시정지 후 재개 시 중복 집계되는 문제
+- **Solution**:
+  - **Sequential Flag**: `play(true)` 파라미터를 통해 순차 재생임을 명시하고 중복 추적 방지
+  - **Resume Check**: `isPaused` 상태를 확인하여 일시정지 후 재개인 경우 이벤트 스킵
+
+### 4. Documentation Updates
+
+- **docs/product/features_list.md**: Phase 3 완료 상태 반영 (Audio Complete, Related Click)
+- **docs/analytics/implementation_guide.md**: 체크리스트 업데이트
+- **docs/analytics/analytics_guide.md**: 이벤트 구현 상태 업데이트
+
+### 5. Result
+
+- **Phase 3 완전 정복**: 기획된 10개 핵심 이벤트 중 공유(Share)를 제외한 모든 상호작용 추적 구현 완료
+- **Data Completeness**: 단순 클릭뿐만 아니라 '완청(Complete)' 데이터까지 확보하여 콘텐츠 몰입도 분석 가능
+
 ## v0.12.2: Analytics Phase 3 완료 - 학습 모드, 필터, 검색, 태그 추적 (2026-01-14)
 
 ### 1. Learning Mode Toggle Tracking

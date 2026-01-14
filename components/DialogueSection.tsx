@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Play, Square, Loader2, Headphones, Eye, EyeOff } from "lucide-react";
-import { trackLearningModeToggle } from "@/analytics";
+import { trackLearningModeToggle, trackAudioPlay } from "@/analytics";
 import { DialogueItem as DialogueItemType } from "@/types/database";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { SupportedLanguage } from "@/i18n";
@@ -24,6 +24,7 @@ interface DialogueSectionProps {
   title: string;
   dialogue: DialogueItemType[];
   locale: string;
+  expressionId: string; // Analytics용 표현 ID
   playAllLabel?: string;
   stopLabel?: string;
   loadingLabel?: string;
@@ -66,6 +67,7 @@ export default function DialogueSection({
   title,
   dialogue,
   locale,
+  expressionId,
   playAllLabel = "Play All",
   stopLabel = "Stop",
   loadingLabel = "Loading...",
@@ -185,7 +187,15 @@ export default function DialogueSection({
       // Start from beginning
       setIsAutoPlaying(true);
       setPlayingIndex(0);
-      buttonRefs.current[0]?.play();
+      // Pass true to indicate this is sequential playback
+      buttonRefs.current[0]?.play(true);
+
+      // Track Play All event
+      trackAudioPlay({
+        expressionId,
+        audioIndex: 0,
+        playType: "sequential",
+      });
     }
   };
 
@@ -197,7 +207,8 @@ export default function DialogueSection({
         setPlayingIndex(nextIndex);
         // Add a small delay for natural conversation flow
         setTimeout(() => {
-          buttonRefs.current[nextIndex]?.play();
+          // Pass true to indicate this is sequential playback
+          buttonRefs.current[nextIndex]?.play(true);
         }, 500);
       } else {
         // Finished
@@ -364,6 +375,9 @@ export default function DialogueSection({
                 onReady={() => handleAudioReady(idx)}
                 isActive={isAutoPlaying && playingIndex === idx}
                 isMobile={!!isMobile}
+                isAutoPlaying={isAutoPlaying}
+                expressionId={expressionId}
+                audioIndex={idx}
               />
             </div>
           );

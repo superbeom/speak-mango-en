@@ -194,6 +194,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                   title={dict.detail.dialogueTitle}
                   dialogue={expression.dialogue || []}
                   locale={locale}
+                  expressionId={expression.id}
                   playAllLabel={dict.detail.playAll}
                   stopLabel={dict.detail.stop}
                   loadingLabel={dict.common.loading}
@@ -254,6 +255,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             expressions={relatedExpressions}
             locale={locale}
             title={dict.detail.relatedTitle}
+            currentExpressionId={expression.id}
           />
         )}
       </main>
