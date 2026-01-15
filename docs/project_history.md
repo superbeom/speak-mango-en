@@ -17,11 +17,11 @@
 - **A**: 인앱 브라우저에서 Web Audio API 초기화 실패 및 AudioContext suspended 상태 (Android vs iOS 차이)
   - **문제 1**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
   - **문제 2 (Android)**: 첫 페이지 로드 시 AudioContext가 `suspended` 상태로 시작하여 사용자 인터랙션 전까지 작동 안 함
-  - **문제 3 (iOS)**: iOS Safari는 더 엄격하여 `canplaythrough` 이벤트 자체가 발생하지 않음 + `resume()`도 사용자 제스처 내에서만 작동
+  - **문제 3 (iOS)**: iOS Safari는 더 엄격하여 오디오 로딩 전 `createMediaElementSource()` 호출 시 `loadeddata` 이벤트 자체가 발생하지 않음
   - **원인**: 카카오톡, 네이버 등 인앱 브라우저는 Web Audio API를 제한하거나 차단, autoplay 정책으로 AudioContext 자동 활성화 차단
   - **해결 1**: try-catch로 Web Audio API 실패 시 기본 HTML5 Audio로 자동 폴백
   - **해결 2 (Android)**: AudioContext 생성 시 즉시 `resume()` 호출 시도 (Android에서 작동)
-  - **해결 3 (iOS)**: 사용자 클릭 시점(`togglePlay`)에서 `resume()` 호출 + `loadeddata` 이벤트로 로딩 상태 해제
+  - **해결 3 (iOS)**: Web Audio API 초기화를 `loadeddata` 이벤트 후로 지연 + 사용자 클릭 시점(`togglePlay`)에서 `resume()` 호출
   - **효과**: 모든 인앱 브라우저(카카오톡, 네이버, 위챗, 왓츠앱 등)에서 Android/iOS 모두 첫 페이지 로드부터 오디오 정상 재생
 
 **Q. 특정 인앱 브라우저를 일일이 선언해야 하나?**

@@ -231,49 +231,66 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Problem**: 카카오톡, 네이버 등 인앱 브라우저에서 Web Audio API 초기화 실패 및 첫 페이지 로딩 문제 > 오디오 무한 로딩
 - **Root Cause 1**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
 - **Root Cause 2 (Android)**: AudioContext가 `suspended` 상태로 시작하여 사용자 인터랙션 전까지 작동 안 함 (autoplay 정책)
-- **Root Cause 3 (iOS)**: iOS Safari는 더 엄격하여 `canplaythrough` 이벤트 자체가 발생하지 않음 + `resume()`도 사용자 제스처 내에서만 작동
-- **Solution**: Try-catch 기반 범용 폴백 + AudioContext 활성화 (Android/iOS 차별화)
+- **Root Cause 3 (iOS)**: iOS Safari는 더 엄격하여 오디오 로딩 전 `createMediaElementSource()` 호출 시 `loadeddata` 이벤트 자체가 발생하지 않음
+- **Solution**: Try-catch 기반 범용 폴백 + AudioContext 활성화 (Android/iOS 차별화) + Web Audio API 지연 초기화 (iOS)
 
   ```tsx
-  // 1. Web Audio API 폴백
-  let webAudioInitialized = false;
+  // 1. Audio element 생성 (Web Audio API 초기화는 아직 안 함)
+  const audio = new Audio(audioUrl);
+  audio.crossOrigin = "anonymous";
+  audio.preload = "auto";
+  audioRef.current = audio;
 
-  try {
-    const ctx = new AudioContext();
-    // Note: iOS Safari requires AudioContext.resume() to be called
-    // within a user gesture. We handle this in togglePlay() instead.
-
-    const gainNode = ctx.createGain();
-    const source = ctx.createMediaElementSource(audio);
-    source.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    gainNode.gain.value = 2.0;
-    webAudioInitialized = true;
-  } catch (e) {
-    console.warn(
-      "Web Audio API initialization failed, using basic HTML5 Audio.",
-      e
-    );
-  }
-
-  if (!webAudioInitialized) {
-    audio.volume = 1.0; // 기본 HTML5 Audio 사용
-  }
-
-  // 2. iOS Safari 대응: loadeddata 이벤트 폴백
+  // 2. loadeddata 이벤트 핸들러에서 Web Audio API 초기화
   const handleLoadedData = () => {
     setIsLoading(false);
     onReadyRef.current?.();
-  };
-  audio.addEventListener("loadeddata", handleLoadedData);
 
-  // 3. 사용자 클릭 시 AudioContext 활성화 (iOS Safari)
+    // Initialize Web Audio API AFTER audio is loaded (iOS Safari fix)
+    if (!audioContextRef.current) {
+      initializeWebAudio();
+    }
+  };
+
+  // 3. Web Audio API 초기화 함수 (오디오 로딩 후 호출)
+  const initializeWebAudio = () => {
+    try {
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
+
+      if (AudioContextClass && audioRef.current) {
+        const ctx = new AudioContextClass();
+
+        // Android: Try to resume immediately (works on Android, ignored on iOS)
+        if (ctx.state === "suspended") {
+          ctx.resume().catch(() => {
+            // Silently fail on iOS, will be resumed on user gesture
+          });
+        }
+
+        const gainNode = ctx.createGain();
+        const source = ctx.createMediaElementSource(audioRef.current);
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        gainNode.gain.value = 2.0;
+
+        audioContextRef.current = ctx;
+      }
+    } catch (e) {
+      // Web Audio API failed, fallback to basic HTML5 Audio
+      if (audioRef.current) {
+        audioRef.current.volume = 1.0;
+      }
+    }
+  };
+
+  // 4. 사용자 클릭 시 AudioContext 활성화 (iOS Safari)
   const togglePlay = async () => {
     if (audioContextRef.current?.state === "suspended") {
       try {
         await audioContextRef.current.resume(); // 사용자 제스처 내에서 호출
       } catch (e) {
-        console.warn("AudioContext resume failed:", e);
+        // Silently fail
       }
     }
     // ... 오디오 재생
@@ -284,17 +301,21 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - User Agent 방식: 카카오톡, 네이버 등 일일이 선언 필요 → 새로운 앱 대응 불가
   - Try-Catch 방식: Web Audio API 실패 시 자동 폴백 → 모든 인앱 브라우저 자동 대응
   - 유지보수성: 새로운 인앱 브라우저 출시 시 코드 수정 불필요
+- **Why Deferred Initialization (iOS Safari)**:
+  - **문제**: 오디오 로딩 전 `createMediaElementSource()` 호출 시 iOS Safari에서 `loadeddata` 이벤트가 발생하지 않음
+  - **해결**: Web Audio API 초기화를 `loadeddata` 이벤트 **후**로 지연
+  - **효과**: iOS에서도 오디오가 정상적으로 로딩되고 `loadeddata` 이벤트 발생
+  - **Android**: 즉시 초기화해도 작동하지만, 지연 초기화도 문제없이 작동
 - **AudioContext Resume Logic (Android vs iOS)**:
   - **Android**: 페이지 로드 시 `resume()` 호출 시도 (작동함)
   - **iOS Safari**: 사용자 클릭 시점(`togglePlay`)에서 `resume()` 호출 (사용자 제스처 필요)
   - 다른 페이지 갔다 오면 작동하는 현상 해결 (AudioContext가 이미 running 상태였기 때문)
-- **iOS Safari loadeddata Event Fallback**:
-  - `canplaythrough` 이벤트는 AudioContext suspended 상태에서 발생하지 않음
-  - `loadeddata` 이벤트는 AudioContext 상태와 무관하게 발생
+- **iOS Safari loadeddata Event**:
+  - Web Audio API 초기화를 지연시켜 `loadeddata` 이벤트가 정상 발생하도록 보장
   - 로딩 스피너 제거 → 사용자가 재생 버튼 클릭 가능 → AudioContext 활성화 → 정상 재생
 - **Trade-off**:
   - 일반 브라우저: Web Audio API 사용 → 볼륨 2.0배 증폭 ✅
-  - 인앱 브라우저: 기본 HTML5 Audio → 볼륨 1.0 (최대) ✅
+  - 인앱 브라우저: 기본 HTML5 Audio 또는 Web Audio API (플랫폼에 따라) → 볼륨 1.0~2.0 ✅
   - 재생 기능은 모든 환경에서 보장됨
 
 ### 7.2 Path Resolution & Storage Strategy (경로 해석 및 저장 전략)
