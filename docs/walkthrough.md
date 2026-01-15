@@ -2,6 +2,43 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.10: SEO 개선 - Canonical URL 추가 (2026-01-15)
+
+### 1. Canonical URL 구현
+
+- **File**: `app/page.tsx`
+- **Addition**: `generateMetadata` 함수 추가
+  ```tsx
+  export async function generateMetadata(): Promise<Metadata> {
+    return {
+      alternates: {
+        canonical: BASE_URL,
+      },
+    };
+  }
+  ```
+
+### 2. Canonical URL이란?
+
+- **정의**: "이 페이지의 정식 주소는 이것입니다"라고 검색 엔진에 알려주는 메타 태그
+- **목적**: 같은 콘텐츠가 여러 URL로 접근 가능할 때 중복 방지
+  - 예: `/?lang=ko`, `/?utm_source=facebook` 등
+- **SEO 효과**: 검색 엔진이 어떤 URL을 색인할지 명확히 인식
+
+### 3. Google Search Console 리디렉션 경고
+
+- **경고 내용**: "리디렉션이 포함된 페이지" (`http://` → `https://`)
+- **결론**: **정상이며 걱정 불필요**
+  - HTTP → HTTPS 리디렉션은 보안을 위해 필수
+  - Google도 최종 HTTPS 페이지를 정상 색인
+  - Canonical URL 추가는 SEO 개선 효과 (리디렉션 해결 X)
+
+### 4. Result
+
+- ✅ **SEO 개선**: 홈 페이지 canonical URL 설정 완료
+- ✅ **중복 방지**: 쿼리 파라미터가 있어도 정식 URL 명확
+- ✅ **일관성**: 상세 페이지와 동일한 SEO 구조
+
 ## v0.12.9: PWA Meta Tag 업데이트 (2026-01-15)
 
 ### 1. Deprecation Fix

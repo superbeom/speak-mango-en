@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Metadata } from "next";
 import { getI18n } from "@/i18n/server";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
@@ -14,6 +15,15 @@ export const revalidate = 3600;
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+// SEO Metadata with Canonical URL
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    alternates: {
+      canonical: BASE_URL,
+    },
+  };
 }
 
 export default async function Home({ searchParams }: PageProps) {
