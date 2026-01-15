@@ -2,6 +2,52 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: 대화 성별-이름 일관성 검증 강화 및 문서 리팩토링
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `n8n/expressions/code/08_gemini_content_generator_prompt.txt`
+- `n8n/expressions/code/10_validate_content.js`
+- `n8n/expressions/code_v2/04_gemini_master_generator_prompt_v2.txt`
+- `n8n/expressions/code_v2/06_validate_content_v2.js`
+- `verification/verify_db_data.js`
+- `docs/n8n/expressions/optimization_steps.md`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 성별-이름 일관성 검증을 추가했나요?**
+
+- **A.** `temp.json` 데이터에서 성별-이름 불일치 발견:
+  - **문제**: Role A (여성)가 Role B를 "Emily"(여성 이름)로 호칭
+  - **프롬프트 규칙**: Role A = Female (Sarah/Emily), Role B = Male (Mike/David)
+  - **원인**: Gemini가 대화 생성 시 성별-이름 규칙을 무시
+  - **해결**: 프롬프트 강화 + 검증 로직 추가
+
+**Q. 어떤 검증 규칙이 추가되었나요?**
+
+- **A.** 호격 패턴 기반 성별-이름 일관성 검증:
+  - Role A (여성)가 여성 이름으로 상대를 부르는 경우 에러
+  - Role B (남성)가 남성 이름으로 상대를 부르는 경우 에러
+  - 자기 소개(`"Hi, I'm Emily"`)는 허용
+  - 상대방 언급(`"You're Mike, right?"`)은 허용
+
+**Q. 검증 패턴은 어떻게 구성되었나요?**
+
+- **A.** 4가지 호격 패턴으로 상대방을 부르는 경우만 검증:
+  1. `"Hey Mike"`, `"Hi Emily"`, `"Guess what, Emily"` - 문장 시작 패턴
+  2. `"..., Mike."`, `"..., Emily?"` - 쉼표 뒤 패턴
+  3. `"Mike, how are you?"` - 이름 + 쉼표 + 동사 패턴
+  4. `"Emily, you..."`, `"Mike, your..."` - 이름 + 쉼표 + 대명사 패턴
+
+**Q. 문서는 어떻게 개선되었나요?**
+
+- **A.** `optimization_steps.md`를 `optimization_steps_v2.md` 패턴에 맞춰 리팩토링:
+  - 인라인 코드 블록 → 파일 참조로 변경
+  - 8개 단계의 코드 블록을 파일 경로로 대체
+  - 문서 가독성 향상 및 유지보수 용이성 개선
+
 ## 2026-01-15: Quiz Validation 로직 강화 (DB 구조 검증)
 
 ### ✅ 진행 사항

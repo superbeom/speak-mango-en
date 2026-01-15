@@ -2,6 +2,103 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.13: 대화 성별-이름 일관성 검증 강화 및 문서 리팩토링 (2026-01-15)
+
+### 1. Problem
+
+**대화 데이터에서 성별-이름 불일치 발견**:
+
+- **Expected**: Role A (여성) → Role B를 남성 이름(Mike/David)으로 호칭
+- **Found**: Role A (여성) → Role B를 "Emily"(여성 이름)으로 호칭
+- **Root Cause**: Gemini가 프롬프트의 성별-이름 규칙을 무시하고 대화 생성
+
+**문서 유지보수 문제**:
+
+- `optimization_steps.md`에 200+ 줄의 인라인 코드 블록
+- 코드 변경 시 문서와 실제 파일 간 불일치 발생 가능
+
+### 2. Solution
+
+**두 가지 접근**:
+
+1. **프롬프트 강화**: 성별-이름 일관성 규칙 명시
+2. **검증 로직 추가**: 호격 패턴 기반 성별-이름 검증
+3. **문서 리팩토링**: 인라인 코드 → 파일 참조
+
+### 3. Implementation
+
+#### A. Gemini Prompt Enhancement
+
+**Files**:
+
+- `n8n/expressions/code/08_gemini_content_generator_prompt.txt`
+- `n8n/expressions/code_v2/04_gemini_master_generator_prompt_v2.txt`
+
+**Added Section** (Dialogue & Roles - Name Usage & Gender Consistency):
+
+- Role A (여성)는 Role B를 **남성 이름**(Mike/David)으로 호칭
+- Role B (남성)는 Role A를 **여성 이름**(Sarah/Emily)으로 호칭
+- 자기 소개와 상대방 언급은 허용
+- 잘못된 예시와 올바른 예시 제공
+
+#### B. Validation Logic Enhancement
+
+**Files**:
+
+- `n8n/expressions/code/10_validate_content.js`
+- `n8n/expressions/code_v2/06_validate_content_v2.js`
+- `verification/verify_db_data.js`
+
+**Added Validation**:
+
+호격 패턴 기반 성별-이름 일관성 검증 (4가지 패턴):
+
+1. 문장 시작: `"Hey Mike"`, `"Guess what, Emily"`
+2. 쉼표 뒤: `"..., Mike."`, `"..., Emily?"`
+3. 이름 + 동사: `"Mike, how are you?"`
+4. 이름 + 대명사: `"Emily, you..."`, `"Mike, your..."`
+
+**Key Features**:
+
+- 대소문자 구분 없이 검증
+- 자기 소개(`"Hi, I'm Emily"`)는 허용
+- 상대방 언급(`"You're Mike, right?"`)은 허용
+
+#### C. Documentation Refactoring
+
+**File**: `docs/n8n/expressions/optimization_steps.md`
+
+**Changes**:
+
+- 8개 단계의 인라인 코드 블록을 파일 참조로 변경
+- 영향받은 단계: 4, 5, 8, 9, 10, 11, 12, 15
+
+**Before**:
+
+````markdown
+### 8단계: Gemini Content Generator
+
+- **Prompt**:
+  ```text
+  [200+ lines of inline prompt]
+  ```
+````
+
+````
+
+**After**:
+```markdown
+### 8단계: Gemini Content Generator
+- **Prompt**: `n8n/expressions/code/08_gemini_content_generator_prompt.txt`의 내용을 사용합니다.
+````
+
+### 4. Key Learnings
+
+1. **정교한 패턴 설계**: 단순 이름 포함 검사는 정상 케이스(자기 소개)도 에러로 잡음
+2. **호격 패턴 분석**: 실제로 상대를 부르는 경우만 검증하도록 패턴 설계
+3. **문서 유지보수**: 코드를 파일로 분리하면 문서 가독성과 유지보수성 향상
+4. **일관성 보장**: v1과 v2 모두 동일한 규칙 적용으로 데이터 품질 보장
+
 ## v0.12.12: n8n Quiz Validation 강화 (2026-01-15)
 
 ### 1. Problem

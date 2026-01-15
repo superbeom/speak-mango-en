@@ -66,7 +66,16 @@ Requirements:
      - `"role"`: Value "A" or "B" to distinguish speakers.
        *   **Role A**: Female (Default name: Sarah/Emily).
        *   **Role B**: Male (Default name: Mike/David).
-       *   **Name Rule**: **If using names**, use **typical American names** by default (e.g., Sarah, Mike). **DO NOT use Korean names** (e.g., Sujin, Minji) or other target language names unless specifically required by the context.
+        *   **Name Rule**: **If using names**, use **typical American names** by default (e.g., Sarah, Mike). **DO NOT use Korean names** (e.g., Sujin, Minji) or other target language names unless specifically required by the context.
+        *   **Name Usage & Gender Consistency (CRITICAL)**:
+            -   Role A is **FEMALE** (Sarah/Emily). Role B is **MALE** (Mike/David).
+            -   When **addressing the OTHER person**:
+                *   Role A should call Role B by **MALE names** (Mike/David)
+                *   Role B should call Role A by **FEMALE names** (Sarah/Emily)
+            -   Self-introduction is allowed (e.g., "Hi, I'm Emily")
+            -   Referring to the other person is allowed (e.g., "You're Mike, right?")
+            -   **WRONG**: Role A saying "Hey Emily, ..." (calling another female)
+            -   **CORRECT**: Role A saying "Hey Mike, ..." (calling a male)
      - `"en"`: The English sentence (**English ONLY**).
      - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
        *   **Do NOT omit this object or any languages.**

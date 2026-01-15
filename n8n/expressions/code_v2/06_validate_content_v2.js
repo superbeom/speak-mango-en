@@ -290,6 +290,41 @@ function validateItem(item) {
             );
         });
       }
+
+      // 규칙: 성별-이름 일관성 검증 (Role A는 여성, Role B는 남성)
+      if (dItem.role && dItem.en) {
+        const femaleNames = ["sarah", "emily"];
+        const maleNames = ["mike", "david"];
+
+        // 호격 패턴 검사 (상대방을 부르는 경우만 검증)
+        const addressingPatterns = [
+          /^(hey|hi|hello|yo|well|so|oh|ah|guess)\s+(\w+)/i, // "Hey Mike", "Hi Emily", "Guess what, Emily"
+          /,\s*(\w+)[,\.\?!]/i, // "..., Mike.", "..., Emily?"
+          /(\w+),\s+(how|what|do|can|would|are|is)/i, // "Mike, how are you?"
+          /\b(\w+),\s+(you|your|do|did|can|could|would|will)/i, // "Emily, you...", "Mike, your..."
+        ];
+
+        addressingPatterns.forEach((pattern) => {
+          const match = dItem.en.match(pattern);
+          if (match) {
+            const addressedName = match[match.length - 1].toLowerCase();
+
+            // Role A(여성)가 여성 이름으로 상대를 부르는 경우
+            if (dItem.role === "A" && femaleNames.includes(addressedName)) {
+              errors.push(
+                `Dialogue[${idx}]: Role A (Female) is addressing someone as '${addressedName}' (female name). Should use male names (Mike/David).`
+              );
+            }
+
+            // Role B(남성)가 남성 이름으로 상대를 부르는 경우
+            if (dItem.role === "B" && maleNames.includes(addressedName)) {
+              errors.push(
+                `Dialogue[${idx}]: Role B (Male) is addressing someone as '${addressedName}' (male name). Should use female names (Sarah/Emily).`
+              );
+            }
+          }
+        });
+      }
     });
   }
 
