@@ -61,3 +61,34 @@
 - 디버깅 복잡도 증가
 
 **결론**: 현재는 불필요. GA4만 사용하는 상황에서는 현재 방식(직접 연동)이 더 명확하고 타입 안전함.
+
+---
+
+## SEO & Branding (검색 최적화 및 브랜딩)
+
+### Schema.org sameAs 속성 추가
+
+**현재 상태**: Organization 스키마에 `sameAs` 빈 배열
+
+**추가 시점**: 공식 소셜 미디어 계정 생성 후
+
+**추가할 내용**:
+
+```json
+"sameAs": [
+  "https://twitter.com/speakmango",
+  "https://facebook.com/speakmango",
+  "https://instagram.com/speakmango",
+  "https://linkedin.com/company/speakmango",
+  "https://youtube.com/@speakmango"
+]
+```
+
+**효과**:
+
+- **Knowledge Graph**: Google 검색 시 우측 정보 패널에 소셜 미디어 링크 표시
+- **브랜드 신뢰도**: Google이 "공식 소셜 미디어가 있는 진짜 브랜드"로 인식
+- **SEO 개선**: 검색 결과 순위 향상 가능
+- **검색 결과 강화**: 소셜 미디어 링크 및 "공식" 배지 표시 가능
+
+**우선순위**: 낮음 (소셜 미디어 계정 생성이 선행 조건)

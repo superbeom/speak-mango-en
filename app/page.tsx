@@ -59,6 +59,7 @@ export default async function Home({ searchParams }: PageProps) {
 
       {/* Main Content */}
       <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
+        {/* Schema.org Structured Data for SEO */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -73,6 +74,23 @@ export default async function Home({ searchParams }: PageProps) {
                 target: `${BASE_URL}/?search={search_term_string}`,
                 "query-input": "required name=search_term_string",
               },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: SERVICE_NAME,
+              url: BASE_URL,
+              logo: `${BASE_URL}/assets/logo.png`,
+              sameAs: [
+                // 소셜 미디어 프로필 URL (있다면 추가)
+                // "https://twitter.com/speakmango",
+                // "https://facebook.com/speakmango",
+              ],
             }),
           }}
         />

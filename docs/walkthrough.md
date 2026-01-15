@@ -2,6 +2,89 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.11: Google 검색 결과 로고 표시 (2026-01-15)
+
+### 1. Problem
+
+- Google 검색 결과에 로고 대신 **지구본 아이콘** 표시
+- Schema.org Organization 마크업 누락
+
+### 2. Solution
+
+- **File**: `app/page.tsx`
+- **Addition**: Schema.org Organization 구조화된 데이터 추가
+  ```tsx
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Speak Mango",
+    "url": "https://speakmango.com",
+    "logo": "https://speakmango.com/assets/logo.png"
+  }
+  ```
+
+### 3. Google Logo Requirements
+
+- **형식**: PNG, JPG, SVG
+- **크기**: 최소 112x112px (권장: 512x512px)
+- **비율**: 정사각형 또는 1:1에 가까운 비율
+- **현재 사용**: `/assets/logo.png` (1024x1024px)
+
+**1024x1024 선택 이유**:
+
+- 고해상도 디스플레이에서도 선명
+- Google이 다양한 크기로 리사이징
+- 권장 크기(512x512)의 2배로 미래 대비
+
+### 4. Schema.org 타입 차이
+
+**WebSite vs Organization**:
+
+| 타입           | 목적                  | Google 활용              |
+| -------------- | --------------------- | ------------------------ |
+| `WebSite`      | 사이트 검색 기능 정의 | 사이트 내 검색 박스 표시 |
+| `Organization` | 브랜드 로고/정보 정의 | 검색 결과에 로고 표시    |
+
+**왜 둘 다 사용?**
+
+- WebSite: 사이트 기능 (검색)
+- Organization: 브랜드 정보 (로고)
+- 함께 사용: 완전한 SEO 최적화
+
+### 5. sameAs 속성
+
+**정의**: 공식 소셜 미디어 프로필 URL 목록
+
+**효과**:
+
+- Knowledge Graph (지식 패널) 표시
+- 브랜드 신뢰도 향상
+- SEO 점수 개선
+
+**추가 가능한 URL**:
+
+```json
+"sameAs": [
+  "https://twitter.com/speakmango",
+  "https://facebook.com/speakmango",
+  "https://instagram.com/speakmango"
+]
+```
+
+**현재**: 빈 배열 (소셜 미디어 생성 후 추가 예정)
+
+### 6. Verification
+
+- **Rich Results Test**: https://search.google.com/test/rich-results
+- **Google Search Console**: URL 검사 → 색인 생성 요청
+- **예상 시간**: 며칠 ~ 몇 주 (크롤링 후 반영)
+
+### 7. Result
+
+- ✅ **Schema.org Organization**: 로고 정보 제공
+- ✅ **SEO 개선**: Google이 사이트 정보 정확히 인식
+- ✅ **브랜드 강화**: 검색 결과에 로고 표시 예정
+
 ## v0.12.10: SEO 개선 - Canonical URL 추가 (2026-01-15)
 
 ### 1. Canonical URL 구현

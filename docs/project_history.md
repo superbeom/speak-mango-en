@@ -2,6 +2,113 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: Google 검색 결과 로고 표시 (Schema.org Organization)
+
+### ✅ 진행 사항
+
+- **File**: `app/page.tsx`
+  - Schema.org Organization 마크업 추가
+  - 로고 URL 설정: `/assets/logo.png`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Google 검색 결과에 로고 대신 지구본 아이콘이 나왔나요?**
+
+- **A.** Google은 사이트 로고를 표시하기 위해 **Schema.org Organization** 구조화된 데이터를 찾습니다:
+  - 기존: WebSite 스키마만 있음 (검색 기능 정의)
+  - 추가: Organization 스키마 (로고, 조직 정보)
+  - Google이 로고를 인식하려면 `@type: "Organization"`과 `logo` 속성 필요
+
+**Q. 언제 로고가 표시되나요?**
+
+- **A.** Google이 사이트를 다시 크롤링한 후:
+  - 보통 며칠 ~ 몇 주 소요
+  - Google Search Console에서 "URL 검사" → "색인 생성 요청"으로 빠르게 처리 가능
+  - Rich Results Test로 즉시 확인 가능: https://search.google.com/test/rich-results
+
+**Q. 로고 이미지 요구사항은?**
+
+- **A.** Google 권장사항:
+  - 형식: PNG, JPG, SVG
+  - 크기: 최소 112x112px (권장: 512x512px)
+  - 비율: 정사각형 또는 1:1에 가까운 비율
+  - 현재 사용: `/assets/logo.png` (1024x1024px)
+
+### 🎯 구현 내용
+
+**Schema.org Organization 마크업**:
+
+```tsx
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Speak Mango",
+  "url": "https://speakmango.com",
+  "logo": "https://speakmango.com/assets/logo.png"
+}
+```
+
+### 📚 Schema.org 타입 차이
+
+**1. `@type: "WebSite"` - 웹사이트 기능**
+
+- **목적**: 사이트 검색 기능, 언어, URL 정의
+- **Google 활용**: 사이트 내 검색 박스 표시 (Google 검색 결과)
+- **효과**: 검색 결과에서 "사이트 내 검색" 기능 제공
+
+**2. `@type: "Organization"` - 브랜드 정보**
+
+- **목적**: 회사/브랜드의 로고, 이름, 소셜 미디어 정의
+- **Google 활용**: 검색 결과에 로고 표시 (지구본 → 로고)
+- **효과**: Knowledge Graph, 브랜드 신뢰도 향상
+
+**왜 둘 다 필요한가?**
+
+- WebSite: 사이트 기능 (검색)
+- Organization: 브랜드 정보 (로고)
+- 함께 사용: 완전한 SEO 최적화
+
+### 🖼️ 로고 크기 최적화
+
+**선택한 이미지**: `/assets/logo.png` (1024x1024)
+
+**Google 요구사항**:
+
+- 최소: 112x112px
+- 권장: 512x512px
+- **최적**: 더 큰 크기 (1024x1024 이상)
+
+**1024x1024 선택 이유**:
+
+- ✅ 고해상도 디스플레이에서도 선명
+- ✅ Google이 다양한 크기로 리사이징
+- ✅ 권장 크기(512x512)의 2배로 미래 대비
+- ✅ 정사각형 1:1 비율로 완벽
+
+### 🔗 sameAs 속성 (향후 추가 예정)
+
+**정의**: "이 브랜드는 다른 웹사이트에서도 같은 존재"를 알려주는 속성
+
+**효과**:
+
+- Knowledge Graph (지식 패널) 표시 가능
+- 브랜드 신뢰도 향상
+- SEO 점수 개선
+- 검색 결과에 소셜 미디어 링크 표시
+
+**추가 가능한 URL**:
+
+```json
+"sameAs": [
+  "https://twitter.com/speakmango",
+  "https://facebook.com/speakmango",
+  "https://instagram.com/speakmango",
+  "https://linkedin.com/company/speakmango"
+]
+```
+
+**현재 상태**: 빈 배열 (소셜 미디어 생성 후 추가 예정)
+
 ## 2026-01-15: SEO 개선 (Canonical URL 추가)
 
 ### ✅ 진행 사항
