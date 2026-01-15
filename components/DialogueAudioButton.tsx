@@ -124,8 +124,13 @@ const DialogueAudioButton = forwardRef<
         if (!audioRef.current) return;
 
         // Resume AudioContext if suspended (browser policy)
+        // iOS Safari requires this to be called within a user gesture
         if (audioContextRef.current?.state === "suspended") {
-          await audioContextRef.current.resume();
+          try {
+            await audioContextRef.current.resume();
+          } catch (e) {
+            console.warn("AudioContext resume failed:", e);
+          }
         }
 
         if (isPlaying && !forcePlay) {
@@ -236,11 +241,14 @@ const DialogueAudioButton = forwardRef<
         if (AudioContextClass) {
           const ctx = new AudioContextClass();
 
-          // 인앱 브라우저 autoplay 정책 대응: AudioContext를 즉시 resume
-          // 첫 페이지 로드 시에도 오디오가 작동하도록 보장
+          // Android: Try to resume immediately (works on Android, ignored on iOS)
+          // iOS Safari: Requires user gesture, handled in togglePlay() instead
           if (ctx.state === "suspended") {
             ctx.resume().catch((e) => {
-              console.warn("AudioContext resume failed:", e);
+              console.warn(
+                "AudioContext resume on init failed (expected on iOS):",
+                e
+              );
             });
           }
 
@@ -289,6 +297,13 @@ const DialogueAudioButton = forwardRef<
         setIsLoading(false);
         onReadyRef.current?.();
       };
+
+      // iOS Safari fallback: loadeddata fires even when AudioContext is suspended
+      const handleLoadedData = () => {
+        setIsLoading(false);
+        onReadyRef.current?.();
+      };
+
       const handleLoadStart = () => setIsLoading(true);
       const handleError = (e: Event) => {
         setIsLoading(false);
@@ -320,6 +335,7 @@ const DialogueAudioButton = forwardRef<
 
       audio.addEventListener("ended", handleEnded);
       audio.addEventListener("canplaythrough", handleCanPlayThrough);
+      audio.addEventListener("loadeddata", handleLoadedData); // iOS Safari fallback
       audio.addEventListener("loadstart", handleLoadStart);
       audio.addEventListener("error", handleError);
 
@@ -329,6 +345,7 @@ const DialogueAudioButton = forwardRef<
         audio.pause();
         audio.removeEventListener("ended", handleEnded);
         audio.removeEventListener("canplaythrough", handleCanPlayThrough);
+        audio.removeEventListener("loadeddata", handleLoadedData);
         audio.removeEventListener("loadstart", handleLoadStart);
         audio.removeEventListener("error", handleError);
         window.removeEventListener(AUDIO_PLAYBACK_START, handleGlobalStop);

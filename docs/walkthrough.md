@@ -6,20 +6,22 @@
 
 ### 1. Problem
 
-**카카오톡 공유 링크에서 오디오 무한 로딩**:
+**카카오톡 공유 링크에서 오디오 무한 로딩 (Android vs iOS 차이)**:
 
 - **증상 1**: 카카오톡으로 공유한 링크 접속 시 오디오가 계속 '로딩 중' 상태로 표시
-- **증상 2**: 첫 페이지에서는 안 되지만, 다른 표현 클릭 후 뒤로가기하면 정상 작동
+- **증상 2 (Android)**: 첫 페이지에서는 안 되지만, 다른 표현 클릭 후 뒤로가기하면 정상 작동
+- **증상 3 (iOS)**: Android 해결책 적용 후에도 iOS에서는 여전히 무한 로딩 표시
 - **범위**: 일반 브라우저(Chrome, Safari)에서는 정상 작동, 인앱 브라우저에서만 발생
 - **영향**: 사용자가 첫 접속 시 오디오를 재생할 수 없어 핵심 기능 사용 불가
 
 ### 2. Solution
 
-**범용적인 폴백 메커니즘 + AudioContext 활성화**:
+**범용적인 폴백 메커니즘 + AudioContext 활성화 + iOS Safari 대응**:
 
 - Web Audio API 초기화 실패 시 자동으로 기본 HTML5 Audio로 폴백
 - User Agent 감지 대신 try-catch 기반 접근으로 모든 인앱 브라우저 자동 대응
-- AudioContext 생성 시 즉시 `resume()` 호출하여 첫 페이지 로드부터 활성화
+- **Android**: AudioContext 생성 시 즉시 `resume()` 호출 시도
+- **iOS Safari**: `loadeddata` 이벤트로 로딩 상태 해제 + 사용자 클릭 시점에서 `resume()` 호출
 - 볼륨 증폭은 포기하되 재생 기능은 보장
 
 ### 3. Implementation
@@ -119,7 +121,61 @@ suspended → running 전환
 정상 작동 ✅
 ```
 
-#### C. 무한 로딩 문제 해결
+#### C. iOS Safari 대응
+
+**iOS Safari의 추가 제약**:
+
+- `AudioContext.resume()`도 **사용자 제스처 내에서만** 작동
+- `canplaythrough` 이벤트가 suspended 상태에서 발생하지 않음
+- 무한 로딩 표시 → 사용자가 클릭하지 않음 → 악순환
+
+**해결 1: loadeddata 이벤트 폴백**:
+
+```tsx
+// canplaythrough 대신 loadeddata 사용 (iOS에서도 발생)
+const handleLoadedData = () => {
+  setIsLoading(false);
+  onReadyRef.current?.();
+};
+
+audio.addEventListener("loadeddata", handleLoadedData);
+```
+
+**해결 2: 사용자 클릭 시 AudioContext 활성화**:
+
+```tsx
+const togglePlay = useCallback(async () => {
+  // iOS Safari requires this to be called within a user gesture
+  if (audioContextRef.current?.state === "suspended") {
+    try {
+      await audioContextRef.current.resume();
+    } catch (e) {
+      console.warn("AudioContext resume failed:", e);
+    }
+  }
+  // ... 오디오 재생
+}, []);
+```
+
+**동작 흐름**:
+
+```
+iOS Safari 첫 접속
+  ↓
+오디오 파일 로딩 (AudioContext suspended)
+  ↓
+loadeddata 이벤트 발생 ✅
+  ↓
+로딩 스피너 사라짐 ✅
+  ↓
+사용자가 재생 버튼 클릭
+  ↓
+AudioContext.resume() 호출 (사용자 제스처 내)
+  ↓
+정상 재생 ✅
+```
+
+#### D. 무한 로딩 문제 해결
 
 **기존 문제**:
 
