@@ -66,7 +66,16 @@ Requirements:
      - `"role"`: Value "A" or "B" to distinguish speakers.
        *   **Role A**: Female (Default name: Sarah/Emily).
        *   **Role B**: Male (Default name: Mike/David).
-       *   **Name Rule**: **If using names**, use **typical American names** by default (e.g., Sarah, Mike). **DO NOT use Korean names** (e.g., Sujin, Minji) or other target language names unless specifically required by the context.
+        *   **Name Rule**: **If using names**, use **typical American names** by default (e.g., Sarah, Mike). **DO NOT use Korean names** (e.g., Sujin, Minji) or other target language names unless specifically required by the context.
+        *   **Name Usage & Gender Consistency (CRITICAL)**:
+            -   Role A is **FEMALE** (Sarah/Emily). Role B is **MALE** (Mike/David).
+            -   When **addressing the OTHER person**:
+                *   Role A should call Role B by **MALE names** (Mike/David)
+                *   Role B should call Role A by **FEMALE names** (Sarah/Emily)
+            -   Self-introduction is allowed (e.g., "Hi, I'm Emily")
+            -   Referring to the other person is allowed (e.g., "You're Mike, right?")
+            -   **WRONG**: Role A saying "Hey Emily, ..." (calling another female)
+            -   **CORRECT**: Role A saying "Hey Mike, ..." (calling a male)
      - `"en"`: The English sentence (**English ONLY**).
      - `"translations"`: **CRITICAL** An object containing translations for **ALL 8 target languages**: `"ko"`, `"ja"`, `"es"`, `"fr"`, `"de"`, `"ru"`, `"zh"`, `"ar"`.
        *   **Do NOT omit this object or any languages.**
@@ -86,10 +95,14 @@ Requirements:
         *   *Example (Target Language: ko)*: Q: "다음 중 'Let's touch base.'의 사용이 적절하지 않은 상황은?\n\nA. 🙋‍♀️ 팀원과 주간 보고서에 대해 짧게 이야기할 때.\nB. 🥳 친구들과 주말에 놀러 갈 계획을 세울 때.\nC. 🧑‍💻 고객과 다음 단계 논의를 위해 연락할 때."
     - **Strict Formatting & Validation Rules**:
       1. **These rules apply to ALL languages (en, ko, ja, es, fr, de, ru, zh, ar).**
-      2. You **MUST** provide 3 distinct options labeled A, B, and C.
-      3. You **MUST** use `\n` (newline) to separate the question and each option.
-      4. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
-      5. **Randomize the correct answer position**: The correct answer MUST be randomly assigned to A, B, or C. Do NOT default to 'B'. ensure equal distribution of A, B, and C across different generations.
+      2. **Database Structure (CRITICAL)**: The quiz object MUST contain ONLY two fields: `"question"` and `"answer"`. **DO NOT** create an `"options"` field.
+      3. **Options in Question Field**: You **MUST** include all 3 options (A, B, C) **inside the `"question"` field** as part of the question text.
+      4. **Format**: Use `\n` (newline) to separate the question text and each option. Example format:
+         ```
+         "question": "Question text here?\n\nA. First option\nB. Second option\nC. Third option"
+         ```
+      5. The 'answer' field MUST be **only the uppercase letter** (e.g., "A", "B", "C"). **NEVER** include the full text of the answer.
+      6. **Randomize the correct answer position**: The correct answer MUST be randomly assigned to A, B, or C. Do NOT default to 'B'. ensure equal distribution of A, B, and C across different generations.
 11. **Tags (MANDATORY)**: Include a `"tags"` field containing an array of 3 to 5 lowercase **English** strings (**English ONLY**). These tags should be relevant keywords that help categorize the expression (e.g., "idiom", "office", "slang", "travel"). Do NOT include the '#' symbol.
 12. **Currency & Numbers**:
     - Always use **`$` (USD)** for currency to maintain consistency (e.g., "$10", "$50.50"). Do not use other currencies like 'won', 'yen', or 'euro' unless the expression specifically requires it.

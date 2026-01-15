@@ -1,6 +1,6 @@
 import { Suspense } from "react";
+import { Metadata } from "next";
 import { getI18n } from "@/i18n/server";
-import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
 import { getExpressions } from "@/lib/expressions";
@@ -14,6 +14,15 @@ export const revalidate = 3600;
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+// SEO Metadata with Canonical URL
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    alternates: {
+      canonical: BASE_URL,
+    },
+  };
 }
 
 export default async function Home({ searchParams }: PageProps) {
@@ -49,6 +58,7 @@ export default async function Home({ searchParams }: PageProps) {
 
       {/* Main Content */}
       <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
+        {/* SearchAction Schema - 홈페이지에만 검색 기능이 있으므로 여기에만 설정 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -57,7 +67,6 @@ export default async function Home({ searchParams }: PageProps) {
               "@type": "WebSite",
               name: SERVICE_NAME,
               url: BASE_URL,
-              inLanguage: SUPPORTED_LANGUAGES,
               potentialAction: {
                 "@type": "SearchAction",
                 target: `${BASE_URL}/?search={search_term_string}`,

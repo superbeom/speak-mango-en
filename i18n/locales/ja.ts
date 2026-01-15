@@ -38,15 +38,15 @@ export const ja = {
     playAll: "すべて再生",
     stop: "停止",
     share: "共有",
-    shareCopied: "リンクがクリップボードにコピーされました！",
-    shareFailed: "共有に失敗しました。もう一度お試しください。",
+    shareCopied: "共有完了！",
+    shareFailed: "共有に失敗しました",
   },
   card: {
     label: "今日の表現",
     situationQuestion: "どんな状況？",
     noDescription: "説明がありません。",
     share: "共有",
-    shareCopied: "リンクをコピーしました！",
+    shareCopied: "共有完了！",
     shareFailed: "共有に失敗しました",
   },
 };

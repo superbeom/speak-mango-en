@@ -2,6 +2,633 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.15: SEO 개선 - JSON-LD 구조화된 데이터 추가 (2026-01-15)
+
+### 1. Problem
+
+**Google 검색 결과에 브랜드명 대신 도메인 주소 표시**:
+
+- **Issue**: Google 검색 시 "Speak Mango" 대신 "speakmango.com" 표시
+- **Comparison**: Apple은 "Apple"로 표시되지만, Speak Mango는 도메인 주소만 표시
+- **Root Cause**: 구조화된 데이터(Structured Data) 부재로 Google이 브랜드를 인식하지 못함
+
+### 2. Solution
+
+**JSON-LD 형식의 Schema.org 구조화된 데이터 추가**:
+
+1. **Organization Schema**: 브랜드 정보 (이름, 로고, 소셜 미디어)
+2. **WebSite Schema**: 웹사이트 정보 (이름, URL, 지원 언어)
+3. **SearchAction Schema**: 검색 기능 (홈페이지만)
+
+### 3. Implementation
+
+#### A. Global Schemas (`app/layout.tsx`)
+
+**모든 페이지에 적용되는 전역 스키마**:
+
+```tsx
+// Organization Schema - 브랜드 정보
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "logo": `${BASE_URL}/assets/logo.png`,
+  "sameAs": []  // 향후 소셜 미디어 추가 예정
+}
+
+// WebSite Schema - 기본 정보 + 다국어 지원
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "inLanguage": SUPPORTED_LANGUAGES  // 9개 언어
+}
+```
+
+**Import 추가**:
+
+```tsx
+import { SUPPORTED_LANGUAGES } from "@/i18n";
+```
+
+#### B. Homepage Schema (`app/page.tsx`)
+
+**검색 기능 스키마 (홈페이지만)**:
+
+```tsx
+// WebSite Schema with SearchAction
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${BASE_URL}/?search={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+}
+```
+
+**Why Homepage Only?**
+
+- 검색 바는 홈페이지에만 존재
+- 상세 페이지에는 검색 기능 없음
+- 스키마는 실제 기능이 있는 페이지에만 배치
+
+#### C. TypeScript Config (`tsconfig.json`)
+
+**코드 품질 개선**:
+
+```json
+{
+  "noUnusedLocals": true,
+  "noUnusedParameters": true
+}
+```
+
+- 사용하지 않는 import 자동 감지
+- 사용하지 않는 함수 매개변수 경고
+
+### 4. Schema Organization Strategy
+
+**전역 vs 페이지별 구분**:
+
+| Schema Type                | Location                    | Purpose                  | Scope         |
+| -------------------------- | --------------------------- | ------------------------ | ------------- |
+| `Organization`             | `layout.tsx`                | 브랜드 정보 (이름, 로고) | 전역          |
+| `WebSite` (basic)          | `layout.tsx`                | 사이트 정보 + 다국어     | 전역          |
+| `WebSite` + `SearchAction` | `page.tsx`                  | 검색 기능                | 홈페이지만    |
+| `LearningResource`         | `expressions/[id]/page.tsx` | 학습 콘텐츠              | 상세 페이지만 |
+
+**Why This Structure?**
+
+1. **전역 스키마** (`layout.tsx`):
+
+   - 모든 페이지에 공통으로 적용
+   - 브랜드 정보는 변하지 않음
+   - 다국어 지원은 사이트 전체 속성
+
+2. **페이지별 스키마**:
+   - 실제 기능이 있는 페이지에만 추가
+   - 검색 기능 → 홈페이지
+   - 학습 콘텐츠 → 상세 페이지
+
+### 5. Key Decisions
+
+**Q1. 왜 WebSite 스키마가 layout.tsx와 page.tsx 둘 다에 있나?**
+
+- **A**: 서로 다른 목적:
+  - `layout.tsx`: 기본 정보 (`name`, `url`, `inLanguage`)
+  - `page.tsx`: 검색 기능 (`potentialAction`)
+  - Google은 동일한 `@type`의 스키마를 자동으로 병합
+
+**Q2. inLanguage는 왜 전역에 설정했나?**
+
+- **A**: 다국어 지원은 사이트 전체 속성:
+  - 9개 언어 지원 (`SUPPORTED_LANGUAGES`)
+  - Google이 각 언어별 검색 결과에서 적절하게 표시
+  - 국제 SEO 개선
+
+**Q3. SearchAction은 왜 홈페이지에만?**
+
+- **A**: 검색 기능은 홈페이지에만 존재:
+  - 상세 페이지에는 검색 바 없음
+  - 스키마는 실제 기능만 설명해야 함
+  - Google이 사이트 내 검색 박스를 검색 결과에 표시 가능
+
+### 6. Expected Results
+
+**Before**:
+
+- ❌ Google 검색 결과: `speakmango.com`
+- ❌ 브랜드 인식 없음
+- ❌ 일반 웹사이트로 취급
+
+**After** (Google 재크롤링 후):
+
+- ✅ Google 검색 결과: `Speak Mango`
+- ✅ 브랜드 신뢰도 향상
+- ✅ Knowledge Graph 표시 가능성
+- ✅ 검색 결과에 사이트 내 검색 박스 표시 가능
+
+### 7. Verification Steps
+
+1. **Rich Results Test**: https://search.google.com/test/rich-results
+
+   - URL 입력 후 Organization 및 WebSite 스키마 인식 확인
+
+2. **Google Search Console**:
+
+   - "URL 검사" → "색인 생성 요청"
+   - 빠른 크롤링 요청
+
+3. **Live Search Results**:
+   - 며칠 ~ 몇 주 후 Google 검색에서 확인
+   - "Speak Mango" 또는 "speakmango.com" 검색
+
+### 8. Future Improvements
+
+**Social Media Integration**:
+
+```json
+"sameAs": [
+  "https://twitter.com/speakmango",
+  "https://facebook.com/speakmango",
+  "https://instagram.com/speakmango",
+  "https://linkedin.com/company/speakmango"
+]
+```
+
+**Benefits**:
+
+- Knowledge Graph 표시 가능성 증가
+- 브랜드 신뢰도 향상
+- 소셜 미디어와 메인 사이트 연결
+
+### 9. Result
+
+- ✅ **Organization Schema**: 브랜드 정보 제공
+- ✅ **WebSite Schema**: 사이트 정보 + 다국어 지원
+- ✅ **SearchAction**: 검색 기능 명시
+- ✅ **TypeScript 품질**: 미사용 코드 자동 감지
+- ✅ **SEO 개선**: Google이 "Speak Mango"를 브랜드로 인식 가능
+
+## v0.12.14: i18n 언어팩 일관성 검증 스크립트 추가 (2026-01-15)
+
+### 1. Problem
+
+**i18n 언어 파일의 언어 일관성 보장 필요**:
+
+- **Challenge**: 9개 언어 파일을 수동으로 관리하다 보면 다른 언어가 섞일 수 있음
+- **Risk**: 한국어 파일에 일본어나 영어가 섞이는 경우
+- **Need**: 자동화된 검증으로 언어 일관성 보장
+
+### 2. Solution
+
+**자동화된 언어 일관성 검증 스크립트 개발**:
+
+1. **언어별 스크립트 검증**: 각 언어 파일이 해당 언어만 포함하는지 검증
+2. **영어 누출 검사**: 비라틴 언어에서 소문자 영어 단어 차단
+3. **템플릿 변수 허용**: 동적으로 치환되는 변수명 허용
+
+### 3. Implementation
+
+#### A. Validation Script Structure
+
+**File**: `verification/verify_i18n_locales.js`
+
+#### B. Validation Logic
+
+**4-Step Process**:
+
+1. **TypeScript 파일 파싱**: JSON 변환 또는 Fallback 메서드
+2. **문자열 추출**: 모든 문자열 값 재귀적 추출
+3. **금지된 스크립트 검사**: 언어별 금지 문자 검증
+4. **영어 누출 검사**: 비라틴 언어만 소문자 영어 차단
+
+**Smart English Inclusion Check**:
+
+- ✅ **허용**: 대문자 시작 (Instagram, TikTok)
+- ✅ **허용**: 허용 목록의 용어 (serviceName, expression)
+- ❌ **차단**: 소문자 영어 단어 (hello, world)
+
+## v0.12.13: 대화 성별-이름 일관성 검증 강화 및 문서 리팩토링 (2026-01-15)
+
+### 1. Problem
+
+**대화 데이터에서 성별-이름 불일치 발견**:
+
+- **Expected**: Role A (여성) → Role B를 남성 이름(Mike/David)으로 호칭
+- **Found**: Role A (여성) → Role B를 "Emily"(여성 이름)으로 호칭
+- **Root Cause**: Gemini가 프롬프트의 성별-이름 규칙을 무시하고 대화 생성
+
+**문서 유지보수 문제**:
+
+- `optimization_steps.md`에 200+ 줄의 인라인 코드 블록
+- 코드 변경 시 문서와 실제 파일 간 불일치 발생 가능
+
+### 2. Solution
+
+**두 가지 접근**:
+
+1. **프롬프트 강화**: 성별-이름 일관성 규칙 명시
+2. **검증 로직 추가**: 호격 패턴 기반 성별-이름 검증
+3. **문서 리팩토링**: 인라인 코드 → 파일 참조
+
+### 3. Implementation
+
+#### A. Gemini Prompt Enhancement
+
+**Files**:
+
+- `n8n/expressions/code/08_gemini_content_generator_prompt.txt`
+- `n8n/expressions/code_v2/04_gemini_master_generator_prompt_v2.txt`
+
+**Added Section** (Dialogue & Roles - Name Usage & Gender Consistency):
+
+- Role A (여성)는 Role B를 **남성 이름**(Mike/David)으로 호칭
+- Role B (남성)는 Role A를 **여성 이름**(Sarah/Emily)으로 호칭
+- 자기 소개와 상대방 언급은 허용
+- 잘못된 예시와 올바른 예시 제공
+
+#### B. Validation Logic Enhancement
+
+**Files**:
+
+- `n8n/expressions/code/10_validate_content.js`
+- `n8n/expressions/code_v2/06_validate_content_v2.js`
+- `verification/verify_db_data.js`
+
+**Added Validation**:
+
+호격 패턴 기반 성별-이름 일관성 검증 (4가지 패턴):
+
+1. 문장 시작: `"Hey Mike"`, `"Guess what, Emily"`
+2. 쉼표 뒤: `"..., Mike."`, `"..., Emily?"`
+3. 이름 + 동사: `"Mike, how are you?"`
+4. 이름 + 대명사: `"Emily, you..."`, `"Mike, your..."`
+
+**Key Features**:
+
+- 대소문자 구분 없이 검증
+- 자기 소개(`"Hi, I'm Emily"`)는 허용
+- 상대방 언급(`"You're Mike, right?"`)은 허용
+
+#### C. Documentation Refactoring
+
+**File**: `docs/n8n/expressions/optimization_steps.md`
+
+**Changes**:
+
+- 8개 단계의 인라인 코드 블록을 파일 참조로 변경
+- 영향받은 단계: 4, 5, 8, 9, 10, 11, 12, 15
+
+**Before**:
+
+````markdown
+### 8단계: Gemini Content Generator
+
+- **Prompt**:
+  ```text
+  [200+ lines of inline prompt]
+  ```
+````
+
+````
+
+**After**:
+```markdown
+### 8단계: Gemini Content Generator
+- **Prompt**: `n8n/expressions/code/08_gemini_content_generator_prompt.txt`의 내용을 사용합니다.
+````
+
+### 4. Key Learnings
+
+1. **정교한 패턴 설계**: 단순 이름 포함 검사는 정상 케이스(자기 소개)도 에러로 잡음
+2. **호격 패턴 분석**: 실제로 상대를 부르는 경우만 검증하도록 패턴 설계
+3. **문서 유지보수**: 코드를 파일로 분리하면 문서 가독성과 유지보수성 향상
+4. **일관성 보장**: v1과 v2 모두 동일한 규칙 적용으로 데이터 품질 보장
+
+## v0.12.12: n8n Quiz Validation 강화 (2026-01-15)
+
+### 1. Problem
+
+**DB에서 잘못된 quiz 구조 발견**:
+
+- **Expected**: `quiz: { question: string, answer: string }`
+- **Found**: `quiz: { question: string, answer: string, options: string[] }`
+- Gemini가 `question` 필드에 선택지를 넣지 않고 `options` 배열을 별도로 생성
+
+### 2. Solution
+
+**두 가지 접근**:
+
+1. **Gemini 프롬프트 강화**: DB 구조 명시
+2. **Validation 로직 강화**: 잘못된 구조 차단
+
+### 3. Implementation
+
+#### A. Gemini Prompt Update
+
+**Files**:
+
+- `n8n/expressions/code/08_gemini_content_generator_prompt.txt`
+- `n8n/expressions/code_v2/04_gemini_master_generator_prompt_v2.txt`
+
+**Added Rules** (Rule 10 - Strict Formatting & Validation Rules):
+
+- **Rule 2**: Database Structure (CRITICAL) - quiz는 `question`과 `answer` 필드만 포함, `options` 필드 금지
+- **Rule 3**: Options in Question Field - 선택지를 `question` 필드 안에 포함
+- **Rule 4**: Format 예시 제공
+
+#### B. Validation Logic Update
+
+**Files**:
+
+- `n8n/expressions/code/10_validate_content.js`
+- `n8n/expressions/code_v2/06_validate_content_v2.js`
+- `verification/verify_db_data.js`
+
+**Added Checks**:
+
+1. **`quiz.options` 필드 금지**: DB 구조 위반 시 에러
+2. **`quiz.question` 내 선택지 필수**: A, B, C 선택지가 모두 포함되어야 함
+
+### 4. Code Quality
+
+**Validation Logic**:
+
+```javascript
+// 1. quiz.options 필드 금지
+if (contentObj.quiz.options) {
+  errors.push(
+    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`
+  );
+}
+
+// 2. quiz.question 내 선택지 A, B, C 필수
+const hasOptionA = /\nA\.\s/.test(questionText) || /^A\.\s/.test(questionText);
+const hasOptionB = /\nB\.\s/.test(questionText);
+const hasOptionC = /\nC\.\s/.test(questionText);
+
+if (!hasOptionA || !hasOptionB || !hasOptionC) {
+  const missing = [];
+  if (!hasOptionA) missing.push("A");
+  if (!hasOptionB) missing.push("B");
+  if (!hasOptionC) missing.push("C");
+  errors.push(
+    `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
+      ", "
+    )}`
+  );
+}
+```
+
+### 5. Result
+
+**Gemini 생성**:
+
+- ✅ 올바른 quiz 구조로 생성하도록 명확히 지시
+- ✅ `options` 필드 생성 방지
+
+**Validation**:
+
+- ✅ 잘못된 구조 즉시 차단
+- ✅ 선택지 누락 감지
+- ✅ 명확한 에러 메시지로 디버깅 용이
+
+**Data Quality**:
+
+- ✅ 향후 생성되는 모든 데이터는 올바른 구조 보장
+- ⚠️ 기존 DB에 잘못된 구조가 있다면 수동 수정 필요
+
+---
+
+## v0.12.11: Google 검색 결과 로고 표시 (2026-01-15)
+
+### 1. Problem
+
+- Google 검색 결과에 로고 대신 **지구본 아이콘** 표시
+- Schema.org Organization 마크업 누락
+
+### 2. Solution
+
+- **File**: `app/page.tsx`
+- **Addition**: Schema.org Organization 구조화된 데이터 추가
+  ```tsx
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Speak Mango",
+    "url": "https://speakmango.com",
+    "logo": "https://speakmango.com/assets/logo.png"
+  }
+  ```
+
+### 3. Google Logo Requirements
+
+- **형식**: PNG, JPG, SVG
+- **크기**: 최소 112x112px (권장: 512x512px)
+- **비율**: 정사각형 또는 1:1에 가까운 비율
+- **현재 사용**: `/assets/logo.png` (1024x1024px)
+
+**1024x1024 선택 이유**:
+
+- 고해상도 디스플레이에서도 선명
+- Google이 다양한 크기로 리사이징
+- 권장 크기(512x512)의 2배로 미래 대비
+
+### 4. Schema.org 타입 차이
+
+**WebSite vs Organization**:
+
+| 타입           | 목적                  | Google 활용              |
+| -------------- | --------------------- | ------------------------ |
+| `WebSite`      | 사이트 검색 기능 정의 | 사이트 내 검색 박스 표시 |
+| `Organization` | 브랜드 로고/정보 정의 | 검색 결과에 로고 표시    |
+
+**왜 둘 다 사용?**
+
+- WebSite: 사이트 기능 (검색)
+- Organization: 브랜드 정보 (로고)
+- 함께 사용: 완전한 SEO 최적화
+
+### 5. sameAs 속성
+
+**정의**: 공식 소셜 미디어 프로필 URL 목록
+
+**효과**:
+
+- Knowledge Graph (지식 패널) 표시
+- 브랜드 신뢰도 향상
+- SEO 점수 개선
+
+**추가 가능한 URL**:
+
+```json
+"sameAs": [
+  "https://twitter.com/speakmango",
+  "https://facebook.com/speakmango",
+  "https://instagram.com/speakmango"
+]
+```
+
+**현재**: 빈 배열 (소셜 미디어 생성 후 추가 예정)
+
+### 6. Verification
+
+- **Rich Results Test**: https://search.google.com/test/rich-results
+- **Google Search Console**: URL 검사 → 색인 생성 요청
+- **예상 시간**: 며칠 ~ 몇 주 (크롤링 후 반영)
+
+### 7. Result
+
+- ✅ **Schema.org Organization**: 로고 정보 제공
+- ✅ **SEO 개선**: Google이 사이트 정보 정확히 인식
+- ✅ **브랜드 강화**: 검색 결과에 로고 표시 예정
+
+## v0.12.10: SEO 개선 - Canonical URL 추가 (2026-01-15)
+
+### 1. Canonical URL 구현
+
+- **File**: `app/page.tsx`
+- **Addition**: `generateMetadata` 함수 추가
+  ```tsx
+  export async function generateMetadata(): Promise<Metadata> {
+    return {
+      alternates: {
+        canonical: BASE_URL,
+      },
+    };
+  }
+  ```
+
+### 2. Canonical URL이란?
+
+- **정의**: "이 페이지의 정식 주소는 이것입니다"라고 검색 엔진에 알려주는 메타 태그
+- **목적**: 같은 콘텐츠가 여러 URL로 접근 가능할 때 중복 방지
+  - 예: `/?lang=ko`, `/?utm_source=facebook` 등
+- **SEO 효과**: 검색 엔진이 어떤 URL을 색인할지 명확히 인식
+
+### 3. Google Search Console 리디렉션 경고
+
+- **경고 내용**: "리디렉션이 포함된 페이지" (`http://` → `https://`)
+- **결론**: **정상이며 걱정 불필요**
+  - HTTP → HTTPS 리디렉션은 보안을 위해 필수
+  - Google도 최종 HTTPS 페이지를 정상 색인
+  - Canonical URL 추가는 SEO 개선 효과 (리디렉션 해결 X)
+
+### 4. Result
+
+- ✅ **SEO 개선**: 홈 페이지 canonical URL 설정 완료
+- ✅ **중복 방지**: 쿼리 파라미터가 있어도 정식 URL 명확
+- ✅ **일관성**: 상세 페이지와 동일한 SEO 구조
+
+## v0.12.9: PWA Meta Tag 업데이트 (2026-01-15)
+
+### 1. Deprecation Fix
+
+- **File**: `app/layout.tsx`
+- **Change**: Meta tag 업데이트
+  - **Before**: `<meta name="apple-mobile-web-app-capable" content="yes" />`
+  - **After**: `<meta name="mobile-web-app-capable" content="yes" />`
+
+### 2. Reason
+
+- Chrome DevTools deprecation 경고 해결
+- 표준화된 메타 태그로 업데이트
+- 향후 브라우저 호환성 확보
+
+### 3. Result
+
+- ✅ **Deprecation 경고 제거**: DevTools에서 경고 사라짐
+- ✅ **표준 준수**: 최신 PWA 표준 메타 태그 사용
+- ✅ **기능 유지**: Standalone 모드 정상 작동
+
+## v0.12.8: Open Graph 이미지 중앙 정렬 개선 (2026-01-15)
+
+### 1. Layout Adjustment
+
+- **File**: `app/opengraph-image.tsx`
+- **Issue**: 로고와 텍스트가 오른쪽으로 치우쳐 보이는 문제
+- **Solution**: CSS transform을 사용한 미세 조정
+  - Container: `transform: translateX(-25px)`
+  - Text: `transform: translateX(-15px)`
+
+### 2. Result
+
+- ✅ **시각적 균형**: 로고와 서비스명이 중앙에 정렬
+- ✅ **소셜 미디어 최적화**: 공유 시 더 나은 썸네일 표시
+
+## v0.12.7: Share 메시지 개선 (i18n) (2026-01-15)
+
+### 1. i18n Message Update
+
+- **Files**: 9개 언어 파일 (`i18n/locales/*.ts`)
+- **Change**: `shareCopied` 메시지 개선
+  - **Before**: "Link copied to clipboard!" / "링크가 클립보드에 복사되었습니다!"
+  - **After**: "Shared successfully!" / "공유 완료!"
+
+### 2. Reason
+
+- ShareButton은 두 가지 방식으로 작동:
+  - **Web Share API** (모바일): 네이티브 공유 다이얼로그
+  - **Clipboard API** (데스크탑): 클립보드 복사
+- 기존 메시지는 데스크탑에만 정확, 모바일에서는 부정확
+- 두 방식 모두에 적합한 일반적인 메시지로 통일
+
+### 3. Result
+
+- ✅ **정확한 사용자 피드백**: 모바일/데스크탑 모두에서 정확한 메시지 표시
+- ✅ **일관된 UX**: 플랫폼 무관하게 동일한 메시지 경험
+- ✅ **9개 언어 지원**: 모든 언어에서 개선된 메시지 제공
+
+## v0.12.6: Google Tag Manager 향후 고려사항 문서화 (2026-01-14)
+
+### 1. Documentation Update
+
+- **File**: `docs/product/future_todos.md`
+  - Marketing & Analytics 섹션 신규 추가
+  - Google Tag Manager (GTM) 도입을 선택적 개선사항으로 문서화
+
+### 2. Key Points (GTM)
+
+- **Current State**: GA4를 `gtag.js`로 직접 연동 중 (타입 안전, 명확)
+- **GTM Adoption Criteria**:
+  - 마케팅 도구 2개 이상 사용
+  - 마케팅 팀 구성 (비개발자 태그 관리)
+  - 빈번한 A/B 테스트
+- **Conclusion**: 현재는 GTM 불필요, 향후 프로젝트 복잡도 증가 시 고려
+
+### 3. Result
+
+- ✅ **명확한 의사결정 프레임워크**: GTM 도입 시점 및 조건 문서화
+- ✅ **조기 최적화 방지**: 현재 단일 도구 환경에서는 직접 연동이 최적
+- ✅ **향후 가이드 제공**: 마케팅 도구 확장 시 참고 자료
+
 ## v0.12.5: 표현 카드 공유 버튼 통합 (2026-01-14)
 
 ### 1. Card Layout Redesign

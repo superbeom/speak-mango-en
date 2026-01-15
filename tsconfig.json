@@ -13,6 +13,8 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "noUnusedLocals": true, // 사용하지 않는 지역 변수 경고
+    "noUnusedParameters": true, // 사용하지 않는 함수 매개변수 경고
     "plugins": [
       {
         "name": "next"

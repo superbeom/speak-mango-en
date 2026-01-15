@@ -39,15 +39,15 @@ export const fr = {
     playAll: "Tout écouter",
     stop: "Arrêter",
     share: "Partager",
-    shareCopied: "Lien copié dans le presse-papiers !",
-    shareFailed: "Échec du partage. Veuillez réessayer.",
+    shareCopied: "Partagé avec succès !",
+    shareFailed: "Échec du partage",
   },
   card: {
     label: "Expression du Jour",
     situationQuestion: "Quelle est la situation ?",
     noDescription: "Aucune description disponible.",
     share: "Partager",
-    shareCopied: "Lien copié !",
+    shareCopied: "Partagé avec succès !",
     shareFailed: "Échec du partage",
   },
 };

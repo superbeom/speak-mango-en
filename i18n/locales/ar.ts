@@ -37,15 +37,15 @@ export const ar = {
     playAll: "تشغيل الكل",
     stop: "توقف",
     share: "مشاركة",
-    shareCopied: "تم نسخ الرابط إلى الحافظة!",
-    shareFailed: "فشلت المشاركة. يرجى المحاولة مرة أخرى.",
+    shareCopied: "تمت المشاركة بنجاح!",
+    shareFailed: "فشلت المشاركة",
   },
   card: {
     label: "تعبير اليوم",
     situationQuestion: "ما هو الموقف؟",
     noDescription: "لا يوجد وصف متاح.",
     share: "مشاركة",
-    shareCopied: "تم نسخ الرابط!",
+    shareCopied: "تمت المشاركة بنجاح!",
     shareFailed: "فشلت المشاركة",
   },
 };
