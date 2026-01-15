@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-14
+**최종 수정일**: 2026-01-15
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -74,7 +74,8 @@ speak-mango-en/
 │   ├── database.ts      # Supabase Generated Types
 │   └── toast.ts         # Toast 알림 타입 및 상수
 ├── verification/        # 데이터 검증 스크립트
-│   └── verify_db_data.js # 로컬 데이터 검증 (Strict Validation)
+│   ├── verify_db_data.js       # 로컬 데이터 검증 (Strict Validation)
+│   └── verify_i18n_locales.js  # i18n 언어팩 일관성 검증
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
 │   ├── n8n/                 # n8n 자동화 관련 가이드
 │   │   └── expressions/     # 영어 표현 워크플로우 문서

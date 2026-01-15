@@ -524,6 +524,185 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
 - **Benefit**: 새로운 언어 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 안정적인 확장이 가능합니다.
 
+### 13.4 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
+
+**File**: `verification/verify_i18n_locales.js`
+
+**Purpose**: 9개 언어 파일(`i18n/locales/*.ts`)이 각각 해당 언어만 포함하는지 자동으로 검증하여 언어 일관성을 보장합니다.
+
+#### A. Language Configuration (언어별 설정)
+
+각 언어별로 허용/금지 스크립트를 정의합니다:
+
+```javascript
+const LANGUAGE_CONFIG = {
+  ko: {
+    name: "Korean",
+    primaryScript: REGEX.hangul,
+    allowedScripts: [REGEX.hangul],
+    forbiddenScripts: [REGEX.kana, REGEX.han, REGEX.cyrillic, REGEX.arabic],
+  },
+  ja: {
+    name: "Japanese",
+    primaryScript: REGEX.kana,
+    allowedScripts: [REGEX.kana, REGEX.han], // 일본어는 한자 사용
+    forbiddenScripts: [REGEX.hangul, REGEX.cyrillic, REGEX.arabic],
+  },
+  // ... 다른 언어들
+};
+```
+
+**Unicode Ranges**:
+
+- **한글**: `\uAC00-\uD7AF` (음절), `\u1100-\u11FF` (자모)
+- **가나**: `\u3040-\u309F` (히라가나), `\u30A0-\u30FF` (가타카나)
+- **한자**: `\u4E00-\u9FCC` (통합 한자)
+- **키릴**: `\u0400-\u04FF` (러시아어)
+- **아랍**: `\u0600-\u06FF` (아랍어)
+
+#### B. Template Variable Handling (템플릿 변수 처리)
+
+동적으로 치환되는 변수명과 고유명사를 허용 목록으로 관리합니다:
+
+```javascript
+const ALLOWED_ENGLISH_TERMS = [
+  // 고유명사 (브랜드명)
+  "iPhone",
+  "eBay",
+  "Instagram",
+  "TikTok",
+  "YouTube",
+
+  // 템플릿 변수 (동적 치환)
+  "serviceName",
+  "expression",
+  "meaning",
+  "tag",
+];
+```
+
+**Smart English Inclusion Check**:
+
+- ✅ **허용**: 대문자로 시작하는 단어 (Instagram, TikTok)
+- ✅ **허용**: 허용 목록의 용어 (serviceName, expression)
+- ❌ **차단**: 소문자 영어 단어 (hello, world) - 누출로 간주
+
+#### C. TypeScript Parsing Strategy (파싱 전략)
+
+**Primary Method**: JSON Parsing
+
+```javascript
+// 1. 템플릿 리터럴 제거
+objectStr = objectStr.replace(/`[^`]*`/g, (match) => {
+  return JSON.stringify(match.slice(1, -1));
+});
+
+// 2. 주석 제거
+objectStr = objectStr.replace(/\/\/.*/g, "");
+objectStr = objectStr.replace(/\/\*[\s\S]*?\*\//g, "");
+
+// 3. 키를 따옴표로 감싸기
+objectStr = objectStr.replace(/(\w+):/g, '"$1":');
+
+// 4. JSON 파싱
+return JSON.parse(objectStr);
+```
+
+**Fallback Method**: Regex Extraction
+
+템플릿 리터럴(`\`...\``)과 변수 삽입(`${SERVICE_NAME}`)으로 인해 JSON 파싱이 실패할 경우 정규표현식으로 문자열 값만 추출합니다:
+
+```javascript
+function parseFallback(content) {
+  const result = {};
+  const lines = content.split("\n");
+
+  for (const line of lines) {
+    const match = line.match(/(\w+):\s*["']([^"']+)["']/);
+    if (match) {
+      result[match[1]] = match[2];
+    }
+  }
+
+  return result;
+}
+```
+
+#### D. Validation Logic (검증 로직)
+
+**4-Step Process**:
+
+1. **TypeScript 파일 파싱**: JSON 변환 또는 Fallback 메서드
+2. **문자열 추출**: 모든 문자열 값 재귀적 추출
+3. **금지된 스크립트 검사**: 언어별 금지 문자 검증
+4. **영어 누출 검사**: 비라틴 언어만 소문자 영어 차단
+
+```javascript
+function validateLocaleFile(lang, filePath) {
+  const config = LANGUAGE_CONFIG[lang];
+  const errors = [];
+
+  // 1. 파일 파싱
+  const localeData = parseLocaleFile(filePath);
+
+  // 2. 문자열 추출
+  const strings = extractStrings(localeData);
+
+  // 3. 각 문자열 검증
+  strings.forEach(({ path, value }) => {
+    // 금지된 스크립트 검사
+    config.forbiddenScripts.forEach((forbiddenRegex) => {
+      if (forbiddenRegex.test(value)) {
+        errors.push(`[${path}] Contains forbidden script`);
+      }
+    });
+
+    // 영어 누출 검사 (비라틴 언어만)
+    if (!["es", "fr", "de", "en"].includes(lang)) {
+      checkEnglishInclusion(value, `[${path}]`, errors);
+    }
+  });
+
+  return { valid: errors.length === 0, errors };
+}
+```
+
+#### E. Key Design Decisions (주요 설계 결정)
+
+1. **EXCLUDED_KEYS 제거**: 초기에는 `expressionTitle`, `expressionDesc` 필드를 검증에서 제외했으나, 템플릿 변수를 허용 목록으로 관리하면서 불필요해져 제거했습니다.
+
+2. **언어별 특성 반영**:
+
+   - 일본어는 한자 사용이 필수이므로 `allowedScripts`에 포함
+   - 라틴 계열 언어는 영어 알파벳을 사용하므로 영어 누출 검사 제외
+
+3. **Fallback 전략**: TypeScript 파일의 복잡한 구조(템플릿 리터럴, 변수 삽입)로 인한 파싱 실패에 대비하여 정규표현식 기반 Fallback 메서드 구현
+
+4. **조용한 실패**: Fallback 메서드 사용 시 경고 메시지를 출력하지 않아 출력이 깔끔하게 유지됨
+
+#### F. Usage (사용법)
+
+```bash
+$ node verification/verify_i18n_locales.js
+
+🔍 Validating 9 locale files...
+
+📄 Checking ar.ts (Arabic)...
+   ✅ All checks passed
+📄 Checking ko.ts (Korean)...
+   ✅ All checks passed
+# ... 다른 언어들
+
+============================================================
+✅ All locale files passed validation!
+============================================================
+```
+
+**Exit Codes**:
+
+- `0`: 모든 검증 통과
+- `1`: 하나 이상의 언어 파일에서 위반 발견
+
 ## 14. Analytics Implementation (사용자 행동 분석)
 
 Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행동 데이터를 수집하고 분석하는 시스템입니다.
