@@ -14,11 +14,13 @@
 
 **Q. 카카오톡으로 공유한 링크에서 오디오가 무한 로딩 중으로 표시되는 이유는?**
 
-- **A**: 인앱 브라우저에서 Web Audio API 초기화 실패
-  - **문제**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
-  - **원인**: 카카오톡, 네이버 등 인앱 브라우저는 Web Audio API를 제한하거나 차단
-  - **해결**: try-catch로 Web Audio API 실패 시 기본 HTML5 Audio로 자동 폴백
-  - **효과**: 모든 인앱 브라우저(카카오톡, 네이버, 위챗, 왓츠앱 등)에서 오디오 정상 재생
+- **A**: 인앱 브라우저에서 Web Audio API 초기화 실패 및 AudioContext suspended 상태
+  - **문제 1**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
+  - **문제 2**: 첫 페이지 로드 시 AudioContext가 `suspended` 상태로 시작하여 사용자 인터랙션 전까지 작동 안 함
+  - **원인**: 카카오톡, 네이버 등 인앱 브라우저는 Web Audio API를 제한하거나 차단, autoplay 정책으로 AudioContext 자동 활성화 차단
+  - **해결 1**: try-catch로 Web Audio API 실패 시 기본 HTML5 Audio로 자동 폴백
+  - **해결 2**: AudioContext 생성 시 즉시 `resume()` 호출하여 `suspended` → `running` 전환
+  - **효과**: 모든 인앱 브라우저(카카오톡, 네이버, 위챗, 왓츠앱 등)에서 첫 페이지 로드부터 오디오 정상 재생
 
 **Q. 특정 인앱 브라우저를 일일이 선언해야 하나?**
 

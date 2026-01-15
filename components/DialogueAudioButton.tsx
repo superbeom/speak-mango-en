@@ -235,6 +235,15 @@ const DialogueAudioButton = forwardRef<
 
         if (AudioContextClass) {
           const ctx = new AudioContextClass();
+
+          // 인앱 브라우저 autoplay 정책 대응: AudioContext를 즉시 resume
+          // 첫 페이지 로드 시에도 오디오가 작동하도록 보장
+          if (ctx.state === "suspended") {
+            ctx.resume().catch((e) => {
+              console.warn("AudioContext resume failed:", e);
+            });
+          }
+
           const gainNode = ctx.createGain();
 
           // Connect: Source -> Gain -> Destination
