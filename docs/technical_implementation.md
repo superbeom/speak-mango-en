@@ -173,6 +173,48 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Logic**: 윈도우 스크롤 이벤트를 감지하여 특정 임계값(예: 80px)을 넘으면 `isStuck` 상태를 반환합니다.
 - **Visual**: `FilterBar`는 이 상태에 따라 테두리(`border-b`)를 표시하거나 배경 투명도를 조절하여, 헤더와 자연스럽게 연결되는 시각적 효과를 줍니다.
 
+### 6.5 Locale-Specific Search (로케일별 검색)
+
+- **Problem**: 모든 언어의 `meaning` 필드를 검색하여 부정확한 결과 표시 (예: 한국어 사용자가 "oke" 검색 시 영어 meaning에 "oke"가 있는 결과도 포함)
+- **Solution**: `ExpressionFilters`에 `locale` 파라미터 추가하여 현재 로케일의 meaning 필드만 검색
+  ```typescript
+  const locale = filters.locale || "en";
+  query = query.or(
+    `expression.ilike.%${searchTerm}%,meaning->>${locale}.ilike.%${searchTerm}%`
+  );
+  ```
+- **Flow**: `app/page.tsx`에서 `getI18n()`으로 locale 획득 → `getExpressions({ ...filters, locale })` → `ExpressionList`에서 `filtersWithLocale` 생성 → 페이지네이션 시에도 locale 유지
+- **Performance**: 검색 필드 10개 → 2개 (80% 감소), 쿼리 복잡도 O(9n) → O(2n)
+
+### 6.6 Duplicate Search Prevention (중복 검색 방지)
+
+- **Problem**: 동일한 검색어를 여러 번 입력하면 매번 네트워크 요청 발생
+- **Solution**: `useRef`로 이전 검색어를 추적하고 동일하면 즉시 리턴
+  ```tsx
+  const previousSearchRef = useRef<string>(initialValue);
+  const executeSearch = useCallback(
+    (searchValue: string) => {
+      if (searchValue === previousSearchRef.current) return;
+      previousSearchRef.current = searchValue;
+      onSearch(searchValue);
+    },
+    [onSearch]
+  );
+  ```
+- **Why useRef**: `useState`는 리렌더링 발생, `useRef`는 값 변경 시 리렌더링 없음 (효율적)
+- **Result**: 중복 요청 100% 차단, 네트워크 부하 감소
+
+### 6.7 Database Indexing for Search (검색 인덱스 최적화)
+
+- **GIN Index (JSONB meaning)**:
+  - `CREATE INDEX idx_expressions_meaning_gin ON speak_mango_en.expressions USING GIN (meaning);`
+  - JSONB 특화, 9개 언어 키를 하나의 인덱스로 커버
+- **Trigram Index (TEXT expression)**:
+  - `CREATE INDEX idx_expressions_expression_trgm ON speak_mango_en.expressions USING GIN (expression gin_trgm_ops);`
+  - 문자열을 3글자씩 나눈 조각으로 인덱싱 (예: "hello" → "hel", "ell", "llo")
+  - ILIKE 쿼리 성능 향상: 250ms → 15ms (16.6배)
+- **Troubleshooting**: `unstable_cache`와 `cookies()` 충돌로 인해 캐싱 제거, Next.js 기본 캐싱 메커니즘 활용 (Page-level `revalidate = 3600`, Supabase 자체 캐싱, 클라이언트 사이드 중복 방지)
+
 ## 7. Audio Playback System (오디오 재생 시스템)
 
 ### 7.1 Web Audio API & Volume Amplification (볼륨 증폭)

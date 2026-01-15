@@ -25,10 +25,13 @@ export default function ExpressionList({
 }: ExpressionListProps) {
   const cacheKey = serializeFilters(filters);
 
+  // 로케일을 포함한 필터 (페이지네이션 시 사용)
+  const filtersWithLocale = { ...filters, locale };
+
   // 1. 페이지네이션 데이터 관리
   const { items, hasMore, loading, loadMore } = usePaginatedList({
     initialItems,
-    filters,
+    filters: filtersWithLocale,
     cacheKey,
   });
 

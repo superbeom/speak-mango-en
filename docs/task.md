@@ -67,6 +67,12 @@
 - [x] **i18n**: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
 - [x] **Automation**: 대화 턴수 검증(2~4 turns) 규칙 도입 및 `10_validate_content.js` 반영
 - [x] **Automation**: 대화 생성 규칙 정교화 (Role Gender & American Names)
+- [x] **SEO**: JSON-LD 구조화된 데이터 추가 (Organization, WebSite, SearchAction)
+- [x] **UI/UX**: 검색 기능 개선 (Icon Click, Multilingual, Duplicate Prevention)
+  - [x] 검색 아이콘 클릭으로 검색 실행
+  - [x] 다국어 검색 지원 (로케일별 meaning 필드 검색)
+  - [x] 중복 검색 방지 (useRef로 이전 검색어 추적)
+  - [x] 데이터베이스 인덱스 최적화 (GIN, Trigram)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

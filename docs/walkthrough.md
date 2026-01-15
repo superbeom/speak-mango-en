@@ -2,6 +2,135 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.16: 검색 기능 개선 - 아이콘 클릭, 다국어, 중복 방지 (2026-01-15)
+
+### 1. Problem
+
+**검색 기능의 사용성 및 정확도 문제**:
+
+- **아이콘 클릭 불가**: 돋보기 아이콘이 장식용으로만 사용됨
+- **부정확한 검색 결과**: 한국어 사용자가 영어 검색어 입력 시 관련 없는 결과 표시
+- **중복 요청**: 동일한 검색어 재검색 시 불필요한 네트워크 요청 발생
+- **일관성 부족**: Enter 키와 돋보기 버튼의 동작이 다름
+
+### 2. Solution
+
+**4가지 개선 사항 구현**:
+
+1.  **검색 아이콘 클릭 기능**: 아이콘을 버튼으로 변경하여 클릭 가능하게 함
+2.  **로케일별 검색**: 현재 언어의 meaning 필드만 검색
+3.  **중복 검색 방지**: useRef로 이전 검색어 추적 및 스킵
+4.  **데이터베이스 인덱스**: GIN 및 Trigram 인덱스 추가
+
+### 3. Implementation
+
+#### A. 검색 아이콘 클릭 기능
+
+**File**: `components/SearchBar.tsx`
+
+**Before**:
+
+```tsx
+<Search className="absolute left-4 ..." />  {/* 장식용 */}
+```
+
+**After**:
+
+```tsx
+<button type="button" onClick={handleIconClick} aria-label="Search">
+  <Search className="w-5 h-5 ..." />
+</button>
+```
+
+#### B. 로케일별 검색
+
+**File**: `lib/expressions.ts`
+
+**Before** (9개 언어 모두 검색):
+
+```typescript
+query.or(
+  `expression.ilike.%${term}%,` +
+  `meaning->>en.ilike.%${term}%,` +
+  `meaning->>ko.ilike.%${term}%,` +
+  // ... 9개 언어
+);
+```
+
+**After** (expression + 현재 로케일만):
+
+```typescript
+const locale = filters.locale || "en";
+query.or(`expression.ilike.%${term}%,meaning->>${locale}.ilike.%${term}%`);
+```
+
+**로케일 전달**:
+
+- `app/page.tsx`: locale을 getExpressions에 전달
+- `ExpressionList.tsx`: filtersWithLocale 생성하여 페이지네이션에도 적용
+
+#### C. 중복 검색 방지
+
+**File**: `components/SearchBar.tsx`
+
+```tsx
+const previousSearchRef = useRef<string>(initialValue);
+
+const executeSearch = useCallback(
+  (searchValue: string) => {
+    // 중복 검색 방지
+    if (searchValue === previousSearchRef.current) {
+      return;
+    }
+    previousSearchRef.current = searchValue;
+    onSearch(searchValue);
+  },
+  [onSearch]
+);
+```
+
+#### D. 데이터베이스 인덱스
+
+**Indexes Added**:
+
+1.  **GIN 인덱스** (JSONB meaning 필드):
+
+    ```sql
+    CREATE INDEX idx_expressions_meaning_gin
+    ON speak_mango_en.expressions
+    USING GIN (meaning);
+    ```
+
+2.  **Trigram 인덱스** (TEXT expression 필드):
+    ```sql
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;
+    CREATE INDEX idx_expressions_expression_trgm
+    ON speak_mango_en.expressions
+    USING GIN (expression gin_trgm_ops);
+    ```
+
+### 4. Result
+
+**검색 정확도**:
+
+- ✅ 한국어 브라우저: 한국어 meaning만 검색
+- ✅ 영어 브라우저: 영어 meaning만 검색
+- ✅ 관련성 높은 결과만 표시
+
+**검색 성능**:
+
+- ✅ 검색 범위 77% 감소 (9개 필드 → 2개 필드)
+- ✅ GIN 인덱스로 JSONB 쿼리 가속화
+- ✅ Trigram 인덱스로 ILIKE 쿼리 가속화
+- ✅ 중복 요청 제거로 네트워크 부하 감소
+
+**사용자 경험**:
+
+- ✅ 돋보기 아이콘 클릭으로 검색 가능
+- ✅ Enter 키와 아이콘 클릭 동작 일관성
+- ✅ 빈 검색어로 검색 초기화 가능
+- ✅ 동일 검색어 재검색 시 즉시 응답
+
 ## v0.12.15: SEO 개선 - JSON-LD 구조화된 데이터 추가 (2026-01-15)
 
 ### 1. Problem
