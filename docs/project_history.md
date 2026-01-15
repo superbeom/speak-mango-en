@@ -2,6 +2,132 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: SEO 개선 - JSON-LD 구조화된 데이터 추가 (Brand Recognition)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `app/layout.tsx`
+- `app/page.tsx`
+- `tsconfig.json`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Google 검색 결과에 "Speak Mango" 대신 "speakmango.com"이 표시되는 이유는?**
+
+- **A.** Google이 브랜드명을 인식하려면 **구조화된 데이터(Structured Data)**가 필요합니다:
+  - **문제**: Organization Schema 부재로 Google이 도메인 주소만 표시
+  - **해결**: JSON-LD 형식의 Organization 및 WebSite 스키마 추가
+  - **효과**: Google이 "Speak Mango"를 브랜드로 인식하여 검색 결과에 브랜드명 표시 가능
+
+**Q. 구조화된 데이터를 어디에 배치해야 하나?**
+
+- **A.** 스키마 타입에 따라 전역 vs 페이지별로 구분:
+  - **전역 (`app/layout.tsx`)**: 모든 페이지에 공통으로 적용되는 스키마
+    - `Organization` - 브랜드 정보 (이름, 로고, 소셜 미디어)
+    - `WebSite` - 기본 웹사이트 정보 (이름, URL, 지원 언어)
+  - **페이지별**: 해당 페이지에만 있는 기능/콘텐츠 스키마
+    - `app/page.tsx`: `WebSite` + `SearchAction` (검색 기능)
+    - `app/expressions/[id]/page.tsx`: `LearningResource` (학습 콘텐츠)
+
+**Q. 왜 WebSite 스키마가 layout.tsx와 page.tsx 둘 다에 있나?**
+
+- **A.** 서로 다른 목적으로 사용:
+  - **layout.tsx**: 기본 웹사이트 정보 (`name`, `url`, `inLanguage`)
+  - **page.tsx**: 검색 기능 추가 (`potentialAction` with `SearchAction`)
+  - Google은 동일한 `@type`의 스키마를 병합하여 처리하므로 문제없음
+
+**Q. inLanguage는 왜 전역에 설정했나?**
+
+- **A.** 다국어 지원은 전체 웹사이트의 속성이므로 `layout.tsx`에 설정:
+  - `inLanguage: SUPPORTED_LANGUAGES` (9개 언어)
+  - Google이 사이트가 다국어를 지원함을 인식
+  - 각 언어별 검색 결과에서 적절하게 표시
+
+**Q. SearchAction은 왜 홈페이지에만 있나?**
+
+- **A.** 검색 기능은 홈페이지에만 존재:
+  - 상세 페이지에는 검색 바가 없음
+  - 스키마는 실제 기능이 있는 페이지에만 배치하는 것이 원칙
+  - Google이 사이트 내 검색 박스를 검색 결과에 표시할 수 있음
+
+### 🎯 구현 내용
+
+**1. Global Schemas (`app/layout.tsx`)**:
+
+```tsx
+// Organization Schema - 브랜드 정보
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "logo": `${BASE_URL}/assets/logo.png`,
+  "sameAs": []  // 향후 소셜 미디어 추가 예정
+}
+
+// WebSite Schema - 기본 정보
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "inLanguage": SUPPORTED_LANGUAGES  // 9개 언어 지원
+}
+```
+
+**2. Homepage Schema (`app/page.tsx`)**:
+
+```tsx
+// WebSite Schema with SearchAction - 검색 기능
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${BASE_URL}/?search={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+}
+```
+
+**3. TypeScript Config (`tsconfig.json`)**:
+
+```json
+{
+  "noUnusedLocals": true,
+  "noUnusedParameters": true
+}
+```
+
+- 사용하지 않는 import 자동 감지 및 경고
+
+### 📊 SEO 개선 효과
+
+**Before**:
+
+- Google 검색 결과: `speakmango.com` (도메인 주소)
+- 브랜드 인식 없음
+
+**After**:
+
+- Google 검색 결과: `Speak Mango` (브랜드명) - 크롤링 후 반영
+- 브랜드 신뢰도 향상
+- Knowledge Graph 표시 가능성
+- 검색 결과에 사이트 내 검색 박스 표시 가능
+
+### 🔍 검증 방법
+
+1. **Rich Results Test**: https://search.google.com/test/rich-results
+   - URL 입력 후 Organization 및 WebSite 스키마 인식 확인
+2. **Google Search Console**:
+   - "URL 검사" → "색인 생성 요청"으로 빠른 크롤링 요청
+3. **실제 검색 결과**:
+   - 며칠 ~ 몇 주 후 Google 검색에서 브랜드명 표시 확인
+
 ## 2026-01-15: i18n 언어팩 일관성 검증 스크립트 추가
 
 ### ✅ 진행 사항

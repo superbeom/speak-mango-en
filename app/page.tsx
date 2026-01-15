@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { getI18n } from "@/i18n/server";
-import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
 import { getExpressions } from "@/lib/expressions";
@@ -59,7 +58,7 @@ export default async function Home({ searchParams }: PageProps) {
 
       {/* Main Content */}
       <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
-        {/* Schema.org Structured Data for SEO */}
+        {/* SearchAction Schema - 홈페이지에만 검색 기능이 있으므로 여기에만 설정 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -68,29 +67,11 @@ export default async function Home({ searchParams }: PageProps) {
               "@type": "WebSite",
               name: SERVICE_NAME,
               url: BASE_URL,
-              inLanguage: SUPPORTED_LANGUAGES,
               potentialAction: {
                 "@type": "SearchAction",
                 target: `${BASE_URL}/?search={search_term_string}`,
                 "query-input": "required name=search_term_string",
               },
-            }),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: SERVICE_NAME,
-              url: BASE_URL,
-              logo: `${BASE_URL}/assets/logo.png`,
-              sameAs: [
-                // 소셜 미디어 프로필 URL (있다면 추가)
-                // "https://twitter.com/speakmango",
-                // "https://facebook.com/speakmango",
-              ],
             }),
           }}
         />

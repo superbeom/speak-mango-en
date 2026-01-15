@@ -6,6 +6,7 @@ import { GA_MEASUREMENT_ID } from "@/analytics";
 import AnalyticsProvider from "@/analytics/AnalyticsProvider";
 import { ExpressionProvider } from "@/context/ExpressionContext";
 import { getI18n } from "@/i18n/server";
+import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { formatMessage } from "@/lib/utils";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -106,6 +107,37 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <head>
+        {/* Schema.org Structured Data for Brand Recognition & SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: SERVICE_NAME,
+              url: BASE_URL,
+              logo: `${BASE_URL}/assets/logo.png`,
+              sameAs: [
+                // 소셜 미디어 프로필 URL (있다면 추가)
+                // "https://twitter.com/speakmango",
+                // "https://facebook.com/speakmango",
+              ],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: SERVICE_NAME,
+              url: BASE_URL,
+              inLanguage: SUPPORTED_LANGUAGES,
+            }),
+          }}
+        />
+
         {/* PWA Essentials for iOS */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

@@ -2,6 +2,200 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.15: SEO 개선 - JSON-LD 구조화된 데이터 추가 (2026-01-15)
+
+### 1. Problem
+
+**Google 검색 결과에 브랜드명 대신 도메인 주소 표시**:
+
+- **Issue**: Google 검색 시 "Speak Mango" 대신 "speakmango.com" 표시
+- **Comparison**: Apple은 "Apple"로 표시되지만, Speak Mango는 도메인 주소만 표시
+- **Root Cause**: 구조화된 데이터(Structured Data) 부재로 Google이 브랜드를 인식하지 못함
+
+### 2. Solution
+
+**JSON-LD 형식의 Schema.org 구조화된 데이터 추가**:
+
+1. **Organization Schema**: 브랜드 정보 (이름, 로고, 소셜 미디어)
+2. **WebSite Schema**: 웹사이트 정보 (이름, URL, 지원 언어)
+3. **SearchAction Schema**: 검색 기능 (홈페이지만)
+
+### 3. Implementation
+
+#### A. Global Schemas (`app/layout.tsx`)
+
+**모든 페이지에 적용되는 전역 스키마**:
+
+```tsx
+// Organization Schema - 브랜드 정보
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "logo": `${BASE_URL}/assets/logo.png`,
+  "sameAs": []  // 향후 소셜 미디어 추가 예정
+}
+
+// WebSite Schema - 기본 정보 + 다국어 지원
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "inLanguage": SUPPORTED_LANGUAGES  // 9개 언어
+}
+```
+
+**Import 추가**:
+
+```tsx
+import { SUPPORTED_LANGUAGES } from "@/i18n";
+```
+
+#### B. Homepage Schema (`app/page.tsx`)
+
+**검색 기능 스키마 (홈페이지만)**:
+
+```tsx
+// WebSite Schema with SearchAction
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Speak Mango",
+  "url": BASE_URL,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${BASE_URL}/?search={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+}
+```
+
+**Why Homepage Only?**
+
+- 검색 바는 홈페이지에만 존재
+- 상세 페이지에는 검색 기능 없음
+- 스키마는 실제 기능이 있는 페이지에만 배치
+
+#### C. TypeScript Config (`tsconfig.json`)
+
+**코드 품질 개선**:
+
+```json
+{
+  "noUnusedLocals": true,
+  "noUnusedParameters": true
+}
+```
+
+- 사용하지 않는 import 자동 감지
+- 사용하지 않는 함수 매개변수 경고
+
+### 4. Schema Organization Strategy
+
+**전역 vs 페이지별 구분**:
+
+| Schema Type                | Location                    | Purpose                  | Scope         |
+| -------------------------- | --------------------------- | ------------------------ | ------------- |
+| `Organization`             | `layout.tsx`                | 브랜드 정보 (이름, 로고) | 전역          |
+| `WebSite` (basic)          | `layout.tsx`                | 사이트 정보 + 다국어     | 전역          |
+| `WebSite` + `SearchAction` | `page.tsx`                  | 검색 기능                | 홈페이지만    |
+| `LearningResource`         | `expressions/[id]/page.tsx` | 학습 콘텐츠              | 상세 페이지만 |
+
+**Why This Structure?**
+
+1. **전역 스키마** (`layout.tsx`):
+
+   - 모든 페이지에 공통으로 적용
+   - 브랜드 정보는 변하지 않음
+   - 다국어 지원은 사이트 전체 속성
+
+2. **페이지별 스키마**:
+   - 실제 기능이 있는 페이지에만 추가
+   - 검색 기능 → 홈페이지
+   - 학습 콘텐츠 → 상세 페이지
+
+### 5. Key Decisions
+
+**Q1. 왜 WebSite 스키마가 layout.tsx와 page.tsx 둘 다에 있나?**
+
+- **A**: 서로 다른 목적:
+  - `layout.tsx`: 기본 정보 (`name`, `url`, `inLanguage`)
+  - `page.tsx`: 검색 기능 (`potentialAction`)
+  - Google은 동일한 `@type`의 스키마를 자동으로 병합
+
+**Q2. inLanguage는 왜 전역에 설정했나?**
+
+- **A**: 다국어 지원은 사이트 전체 속성:
+  - 9개 언어 지원 (`SUPPORTED_LANGUAGES`)
+  - Google이 각 언어별 검색 결과에서 적절하게 표시
+  - 국제 SEO 개선
+
+**Q3. SearchAction은 왜 홈페이지에만?**
+
+- **A**: 검색 기능은 홈페이지에만 존재:
+  - 상세 페이지에는 검색 바 없음
+  - 스키마는 실제 기능만 설명해야 함
+  - Google이 사이트 내 검색 박스를 검색 결과에 표시 가능
+
+### 6. Expected Results
+
+**Before**:
+
+- ❌ Google 검색 결과: `speakmango.com`
+- ❌ 브랜드 인식 없음
+- ❌ 일반 웹사이트로 취급
+
+**After** (Google 재크롤링 후):
+
+- ✅ Google 검색 결과: `Speak Mango`
+- ✅ 브랜드 신뢰도 향상
+- ✅ Knowledge Graph 표시 가능성
+- ✅ 검색 결과에 사이트 내 검색 박스 표시 가능
+
+### 7. Verification Steps
+
+1. **Rich Results Test**: https://search.google.com/test/rich-results
+
+   - URL 입력 후 Organization 및 WebSite 스키마 인식 확인
+
+2. **Google Search Console**:
+
+   - "URL 검사" → "색인 생성 요청"
+   - 빠른 크롤링 요청
+
+3. **Live Search Results**:
+   - 며칠 ~ 몇 주 후 Google 검색에서 확인
+   - "Speak Mango" 또는 "speakmango.com" 검색
+
+### 8. Future Improvements
+
+**Social Media Integration**:
+
+```json
+"sameAs": [
+  "https://twitter.com/speakmango",
+  "https://facebook.com/speakmango",
+  "https://instagram.com/speakmango",
+  "https://linkedin.com/company/speakmango"
+]
+```
+
+**Benefits**:
+
+- Knowledge Graph 표시 가능성 증가
+- 브랜드 신뢰도 향상
+- 소셜 미디어와 메인 사이트 연결
+
+### 9. Result
+
+- ✅ **Organization Schema**: 브랜드 정보 제공
+- ✅ **WebSite Schema**: 사이트 정보 + 다국어 지원
+- ✅ **SearchAction**: 검색 기능 명시
+- ✅ **TypeScript 품질**: 미사용 코드 자동 감지
+- ✅ **SEO 개선**: Google이 "Speak Mango"를 브랜드로 인식 가능
+
 ## v0.12.14: i18n 언어팩 일관성 검증 스크립트 추가 (2026-01-15)
 
 ### 1. Problem
