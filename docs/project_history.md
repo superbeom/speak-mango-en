@@ -2,6 +2,27 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: PWA Meta Tag 업데이트 (Deprecation 해결)
+
+### ✅ 진행 사항
+
+- **File**: `app/layout.tsx`
+  - `apple-mobile-web-app-capable` → `mobile-web-app-capable`로 변경
+  - Deprecated 경고 해결
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 변경했나요?**
+
+- **A.** Chrome DevTools에서 deprecation 경고 발생:
+  - `<meta name="apple-mobile-web-app-capable" content="yes"> is deprecated`
+  - 권장사항: `<meta name="mobile-web-app-capable" content="yes">` 사용
+  - 표준화된 메타 태그로 업데이트하여 향후 호환성 확보
+
+**Q. 기능에 영향이 있나요?**
+
+- **A.** 없습니다. 두 태그 모두 동일한 기능 (Standalone 모드 활성화)을 수행하며, 새로운 표준 태그로 교체한 것입니다.
+
 ## 2026-01-15: Open Graph 이미지 중앙 정렬 개선
 
 ### ✅ 진행 사항

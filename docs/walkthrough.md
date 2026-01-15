@@ -2,6 +2,27 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.9: PWA Meta Tag 업데이트 (2026-01-15)
+
+### 1. Deprecation Fix
+
+- **File**: `app/layout.tsx`
+- **Change**: Meta tag 업데이트
+  - **Before**: `<meta name="apple-mobile-web-app-capable" content="yes" />`
+  - **After**: `<meta name="mobile-web-app-capable" content="yes" />`
+
+### 2. Reason
+
+- Chrome DevTools deprecation 경고 해결
+- 표준화된 메타 태그로 업데이트
+- 향후 브라우저 호환성 확보
+
+### 3. Result
+
+- ✅ **Deprecation 경고 제거**: DevTools에서 경고 사라짐
+- ✅ **표준 준수**: 최신 PWA 표준 메타 태그 사용
+- ✅ **기능 유지**: Standalone 모드 정상 작동
+
 ## v0.12.8: Open Graph 이미지 중앙 정렬 개선 (2026-01-15)
 
 ### 1. Layout Adjustment

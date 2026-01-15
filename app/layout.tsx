@@ -107,7 +107,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <head>
         {/* PWA Essentials for iOS */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={SERVICE_NAME} />
 
