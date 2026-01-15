@@ -128,6 +128,34 @@ function validateItem(item) {
           errors.push(`Content (${lang}).quiz is missing 'question'.`);
         if (!contentObj.quiz.answer)
           errors.push(`Content (${lang}).quiz is missing 'answer'.`);
+
+        // 규칙: quiz에 options 필드가 있으면 안 됨 (DB 구조 위반)
+        if (contentObj.quiz.options) {
+          errors.push(
+            `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`
+          );
+        }
+
+        // 규칙: quiz.question에 선택지 A, B, C가 모두 포함되어야 함
+        if (contentObj.quiz.question) {
+          const questionText = contentObj.quiz.question;
+          const hasOptionA =
+            /\nA\.\s/.test(questionText) || /^A\.\s/.test(questionText);
+          const hasOptionB = /\nB\.\s/.test(questionText);
+          const hasOptionC = /\nC\.\s/.test(questionText);
+
+          if (!hasOptionA || !hasOptionB || !hasOptionC) {
+            const missing = [];
+            if (!hasOptionA) missing.push("A");
+            if (!hasOptionB) missing.push("B");
+            if (!hasOptionC) missing.push("C");
+            errors.push(
+              `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
+                ", "
+              )}. Format: "Question text\\n\\nA. option1\\nB. option2\\nC. option3"`
+            );
+          }
+        }
       }
 
       const fieldsToCheck = [

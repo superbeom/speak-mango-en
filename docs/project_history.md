@@ -2,6 +2,93 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: Quiz Validation 로직 강화 (DB 구조 검증)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `n8n/expressions/code/08_gemini_content_generator_prompt.txt`
+- `n8n/expressions/code/10_validate_content.js`
+- `n8n/expressions/code_v2/04_gemini_master_generator_prompt_v2.txt`
+- `n8n/expressions/code_v2/06_validate_content_v2.js`
+- `verification/verify_db_data.js`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 quiz validation을 강화했나요?**
+
+- **A.** DB에서 잘못된 quiz 구조 발견:
+  - **문제**: `quiz.options` 배열이 추가된 데이터 발견
+  - **DB 구조**: `quiz`는 `{ question: string, answer: string }` 만 허용
+  - **원인**: Gemini가 `question` 필드에 선택지를 넣지 않고 `options` 배열을 별도로 생성
+  - **해결**: Validation 로직 강화 + Gemini 프롬프트 명시
+
+**Q. 어떤 검증 규칙이 추가되었나요?**
+
+- **A.** 두 가지 검증 규칙 추가:
+  1. **`quiz.options` 필드 금지**: DB 구조 위반 시 에러
+  2. **`quiz.question` 내 선택지 필수**: A, B, C 선택지가 모두 포함되어야 함
+
+**Q. Gemini 프롬프트는 어떻게 수정했나요?**
+
+- **A.** Quiz 구조 규칙 명시 (Rule 10 - Strict Formatting & Validation Rules):
+  - **Rule 2**: Database Structure (CRITICAL) - quiz는 `question`과 `answer` 필드만 포함
+  - **Rule 3**: Options in Question Field - 선택지를 `question` 필드 안에 포함
+  - **Rule 4**: Format 예시 제공
+  ```
+  "question": "Question text?\n\nA. option1\nB. option2\nC. option3"
+  ```
+
+### 🎯 구현 내용
+
+**1. Validation 로직 (3개 파일 동일)**:
+
+```javascript
+// quiz.options 필드 금지
+if (contentObj.quiz.options) {
+  errors.push(
+    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`
+  );
+}
+
+// quiz.question 내 선택지 A, B, C 필수
+const hasOptionA = /\nA\.\s/.test(questionText) || /^A\.\s/.test(questionText);
+const hasOptionB = /\nB\.\s/.test(questionText);
+const hasOptionC = /\nC\.\s/.test(questionText);
+
+if (!hasOptionA || !hasOptionB || !hasOptionC) {
+  errors.push(
+    `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
+      ", "
+    )}`
+  );
+}
+```
+
+**2. Gemini 프롬프트 (2개 파일 동일)**:
+
+- Rule 2: **Database Structure (CRITICAL)** 추가
+- Rule 3: **Options in Question Field** 명시
+- Rule 4: **Format** 예시 제공
+
+### 🔄 영향 범위
+
+**Gemini 생성**:
+
+- ✅ 올바른 quiz 구조로 생성하도록 명확히 지시
+- ✅ `options` 필드 생성 방지
+
+**Validation**:
+
+- ✅ 잘못된 구조 즉시 차단
+- ✅ 선택지 누락 감지
+
+**기존 데이터**:
+
+- ⚠️ 기존 DB에 잘못된 구조가 있다면 수동 수정 필요
+- ✅ 향후 생성되는 모든 데이터는 올바른 구조 보장
+
 ## 2026-01-15: Google 검색 결과 로고 표시 (Schema.org Organization)
 
 ### ✅ 진행 사항

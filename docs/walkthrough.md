@@ -2,6 +2,101 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.12: n8n Quiz Validation 강화 (2026-01-15)
+
+### 1. Problem
+
+**DB에서 잘못된 quiz 구조 발견**:
+
+- **Expected**: `quiz: { question: string, answer: string }`
+- **Found**: `quiz: { question: string, answer: string, options: string[] }`
+- Gemini가 `question` 필드에 선택지를 넣지 않고 `options` 배열을 별도로 생성
+
+### 2. Solution
+
+**두 가지 접근**:
+
+1. **Gemini 프롬프트 강화**: DB 구조 명시
+2. **Validation 로직 강화**: 잘못된 구조 차단
+
+### 3. Implementation
+
+#### A. Gemini Prompt Update
+
+**Files**:
+
+- `n8n/expressions/code/08_gemini_content_generator_prompt.txt`
+- `n8n/expressions/code_v2/04_gemini_master_generator_prompt_v2.txt`
+
+**Added Rules** (Rule 10 - Strict Formatting & Validation Rules):
+
+- **Rule 2**: Database Structure (CRITICAL) - quiz는 `question`과 `answer` 필드만 포함, `options` 필드 금지
+- **Rule 3**: Options in Question Field - 선택지를 `question` 필드 안에 포함
+- **Rule 4**: Format 예시 제공
+
+#### B. Validation Logic Update
+
+**Files**:
+
+- `n8n/expressions/code/10_validate_content.js`
+- `n8n/expressions/code_v2/06_validate_content_v2.js`
+- `verification/verify_db_data.js`
+
+**Added Checks**:
+
+1. **`quiz.options` 필드 금지**: DB 구조 위반 시 에러
+2. **`quiz.question` 내 선택지 필수**: A, B, C 선택지가 모두 포함되어야 함
+
+### 4. Code Quality
+
+**Validation Logic**:
+
+```javascript
+// 1. quiz.options 필드 금지
+if (contentObj.quiz.options) {
+  errors.push(
+    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`
+  );
+}
+
+// 2. quiz.question 내 선택지 A, B, C 필수
+const hasOptionA = /\nA\.\s/.test(questionText) || /^A\.\s/.test(questionText);
+const hasOptionB = /\nB\.\s/.test(questionText);
+const hasOptionC = /\nC\.\s/.test(questionText);
+
+if (!hasOptionA || !hasOptionB || !hasOptionC) {
+  const missing = [];
+  if (!hasOptionA) missing.push("A");
+  if (!hasOptionB) missing.push("B");
+  if (!hasOptionC) missing.push("C");
+  errors.push(
+    `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
+      ", "
+    )}`
+  );
+}
+```
+
+### 5. Result
+
+**Gemini 생성**:
+
+- ✅ 올바른 quiz 구조로 생성하도록 명확히 지시
+- ✅ `options` 필드 생성 방지
+
+**Validation**:
+
+- ✅ 잘못된 구조 즉시 차단
+- ✅ 선택지 누락 감지
+- ✅ 명확한 에러 메시지로 디버깅 용이
+
+**Data Quality**:
+
+- ✅ 향후 생성되는 모든 데이터는 올바른 구조 보장
+- ⚠️ 기존 DB에 잘못된 구조가 있다면 수동 수정 필요
+
+---
+
 ## v0.12.11: Google 검색 결과 로고 표시 (2026-01-15)
 
 ### 1. Problem

@@ -352,7 +352,58 @@ LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Le
   6. **Quiz Consistency**: 퀴즈 선택지(Option A, B, C)의 언어가 모두 영어이거나 모두 타겟 언어여야 함(혼용 금지).
 - **Local Verification**: 동일한 로직을 로컬에서 수행할 수 있는 `verification/verify_db_data.js`를 제공하여, `temp.json` 데이터를 워크플로우 실행 없이 빠르게 검증할 수 있습니다.
 
-### 10.9 Single-Shot AI Generation (V2 Optimization)
+### 10.9 Quiz Structure Validation (퀴즈 구조 검증)
+
+**Problem**: DB에서 잘못된 quiz 구조 발견
+
+- **Expected**: `quiz: { question: string, answer: string }`
+- **Found**: `quiz: { question: string, answer: string, options: string[] }`
+- **Issue**: Gemini가 `question` 필드에 선택지를 넣지 않고 `options` 배열을 별도로 생성
+
+**Solution**: 두 가지 접근
+
+1. **Gemini 프롬프트 강화**: DB 구조 명시
+2. **Validation 로직 강화**: 잘못된 구조 차단
+
+**Gemini Prompt Update** (`08_gemini_content_generator_prompt.txt`, `04_gemini_master_generator_prompt_v2.txt`):
+
+```plaintext
+2. **Database Structure (CRITICAL)**: The quiz object MUST contain ONLY two fields: "question" and "answer". DO NOT create an "options" field.
+3. **Options in Question Field**: You MUST include all 3 options (A, B, C) inside the "question" field.
+4. **Format**: "question": "Question text?\n\nA. option1\nB. option2\nC. option3"
+```
+
+**Validation Logic** (`10_validate_content.js`, `06_validate_content_v2.js`, `verify_db_data.js`):
+
+```javascript
+// 1. quiz.options 필드 금지
+if (contentObj.quiz.options) {
+  errors.push(
+    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field.`
+  );
+}
+
+// 2. quiz.question 내 선택지 A, B, C 필수
+const hasOptionA = /\nA\.\s/.test(questionText) || /^A\.\s/.test(questionText);
+const hasOptionB = /\nB\.\s/.test(questionText);
+const hasOptionC = /\nC\.\s/.test(questionText);
+
+if (!hasOptionA || !hasOptionB || !hasOptionC) {
+  errors.push(
+    `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
+      ", "
+    )}`
+  );
+}
+```
+
+**Benefits**:
+
+- ✅ Gemini가 올바른 quiz 구조로 생성하도록 명확히 지시
+- ✅ Validation에서 잘못된 구조 즉시 차단
+- ✅ 선택지 누락 감지 및 명확한 에러 메시지
+
+### 10.10 Single-Shot AI Generation (V2 Optimization)
 
 - **Architecture Shift**: 기존의 **2-Step** (Expression Selection -> Content Generation) 방식을 **Single-Shot** (Master Generator) 방식으로 통합했습니다.
 - **Files**: `n8n/expressions/code_v2/` 하위의 `04_gemini_master_generator_prompt.txt` 및 `05_parse_master_json.js`.
@@ -795,6 +846,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
 ### 15.6 Card Integration with Absolute Positioning (카드 통합)
 
 - **Layout Strategy**: Absolute 포지셔닝으로 독립적 배치
+
   ```tsx
   <Link className="relative block h-full">
     {/* 카드 내용 */}
@@ -804,6 +856,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
     </div>
   </Link>
   ```
+
 - **Design Decision**:
   - **Initial Attempt**: 태그와 함께 flex 레이아웃 → 태그 개수에 따라 위치 변동
   - **Final Solution**: Absolute 포지셔닝 → 항상 우측 하단 고정 위치
