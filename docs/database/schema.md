@@ -31,25 +31,34 @@
 데이터베이스 성능 최적화를 위해 컬럼의 특성에 맞춰 **B-Tree**와 **GIN** 인덱스를 전략적으로 사용합니다.
 
 #### Index Types
+
 - **B-Tree (Balanced Tree)**:
   - **용도**: 정확한 값 일치(`=`)나 범위 검색(`>`, `<`), 정렬(`ORDER BY`)에 사용.
   - **적용**: `id`, `published_at`, `domain`, `category` 등 스칼라 값.
 - **GIN (Generalized Inverted Index)**:
   - **용도**: JSONB 내부의 포함 여부(`@>`)나 배열 요소 검색에 특화.
-  - **적용**: `content`, `dialogue`, `tags` 등 복합 데이터 구조.
+  - **적용**: `content`, `dialogue`, `tags`, `meaning` 등 복합 데이터 구조.
+- **Trigram (GIN with pg_trgm)**:
+  - **용도**: 부분 문자열 검색(`LIKE`, `ILIKE`)을 빠르게 처리. 문자열을 3글자씩 나눈 조각으로 인덱싱.
+  - **적용**: `expression` 필드의 `%검색어%` 패턴 검색.
+  - **특징**: 오타 허용 검색, 유사도 검색, 자동완성에도 활용 가능.
 
 #### Current Indexes
-| Index Name | Type | Target | Description |
-| :--- | :--- | :--- | :--- |
-| `expressions_pkey` | B-Tree | `id` | Primary Key (Unique) |
-| `idx_expressions_published_at` | B-Tree | `published_at DESC` | 최신순 정렬 및 조회 |
-| `idx_expressions_domain` | B-Tree | `domain` | 대분류 필터링 |
-| `idx_expressions_category` | B-Tree | `category` | 소분류 필터링 |
-| `idx_expressions_tags` | GIN | `tags` | 태그 기반 검색 |
-| `idx_expressions_content` | GIN | `content` | 상세 콘텐츠(Jsonb) 내부 검색 |
-| `idx_expressions_dialogue` | GIN | `dialogue` | 대화문(Jsonb) 내부 텍스트/화자 검색 |
+
+| Index Name                        | Type          | Target              | Description                         |
+| :-------------------------------- | :------------ | :------------------ | :---------------------------------- |
+| `expressions_pkey`                | B-Tree        | `id`                | Primary Key (Unique)                |
+| `idx_expressions_published_at`    | B-Tree        | `published_at DESC` | 최신순 정렬 및 조회                 |
+| `idx_expressions_domain`          | B-Tree        | `domain`            | 대분류 필터링                       |
+| `idx_expressions_category`        | B-Tree        | `category`          | 소분류 필터링                       |
+| `idx_expressions_tags`            | GIN           | `tags`              | 태그 기반 검색                      |
+| `idx_expressions_content`         | GIN           | `content`           | 상세 콘텐츠(Jsonb) 내부 검색        |
+| `idx_expressions_dialogue`        | GIN           | `dialogue`          | 대화문(Jsonb) 내부 텍스트/화자 검색 |
+| `idx_expressions_meaning_gin`     | GIN           | `meaning`           | 다국어 뜻(JSONB) 검색 (9개 언어)    |
+| `idx_expressions_expression_trgm` | GIN (Trigram) | `expression`        | 부분 문자열 검색 최적화             |
 
 #### Future Recommendations
+
 - **Full Text Search (FTS)**: 추후 영어 표현(`expression`)이나 의미(`meaning`)에 대한 자연어 검색이 필요해지면 `tsvector` 기반의 GIN 인덱스 추가 고려.
 
 ### Dual-Category System
@@ -62,6 +71,7 @@
 ### JSONB Structures
 
 #### 1. Content (i18n)
+
 `content` 컬럼은 언어 코드를 최상위 키로 갖는 구조입니다. 각 언어별 학습 콘텐츠(상황, 팁, 퀴즈)를 포함합니다.
 
 ```json
@@ -75,6 +85,7 @@
 ```
 
 #### 2. Dialogue (i18n)
+
 `dialogue` 컬럼은 최상위 레벨에 위치하며, 대화의 흐름(순서)을 보장하는 배열 구조입니다. 영어 원문과 오디오는 공통으로 관리하고, 번역만 `translations` 객체에 분리, 저장하여 다국어 확장을 용이하게 합니다. 또한 음성 지원을 위해 `audio_url` 필드를 포함하며, 여기에는 **스토리지 내부 상대 경로**를 저장합니다.
 
 ```json

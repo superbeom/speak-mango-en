@@ -37,12 +37,13 @@ export default async function Home({ searchParams }: PageProps) {
   const cacheKey = serializeFilters(filters);
 
   // 초기 1페이지 데이터 페칭 (limit 12)
+  const { locale, dict } = await getI18n();
   const expressions = await getExpressions({
     ...filters,
     page: 1,
     limit: 12,
+    locale, // 로케일별 검색을 위해 추가
   });
-  const { locale, dict } = await getI18n();
 
   return (
     <div className="min-h-screen bg-layout">

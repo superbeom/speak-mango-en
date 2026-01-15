@@ -2,6 +2,62 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: 검색 기능 개선 (Icon Click, Multilingual, Duplicate Prevention)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `components/SearchBar.tsx`
+- `lib/expressions.ts`
+- `app/page.tsx`
+- `components/ExpressionList.tsx`
+- `docs/database/schema.md`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 검색 아이콘을 클릭해도 검색이 실행되지 않는 이유는?**
+
+- **A**: 검색 아이콘이 장식용으로만 사용되고 있었음
+  - **해결**: 아이콘을 `<button>`으로 변경하고 `onClick` 핸들러 추가
+  - **효과**: 돋보기 아이콘 클릭으로 검색 실행 가능
+
+**Q. 한국어 브라우저에서 영어 검색어를 입력하면 부정확한 결과가 나오는 이유는?**
+
+- **A**: 모든 언어의 meaning 필드를 검색하고 있었음
+
+  - **문제**: 한국어 사용자가 "oke"를 검색하면 영어 meaning에 "oke"가 있는 결과도 표시
+  - **해결**: 현재 로케일의 meaning 필드만 검색하도록 수정
+  - **쿼리 변경**:
+
+    ```typescript
+    // Before: 9개 언어 모두 검색
+    query.or(`expression.ilike.%${term}%,meaning->>en.ilike.%${term}%,...`);
+
+    // After: expression + 현재 로케일만 검색
+    query.or(`expression.ilike.%${term}%,meaning->>${locale}.ilike.%${term}%`);
+    ```
+
+**Q. 동일한 검색어를 여러 번 입력하면 계속 fetch가 발생하는 이유는?**
+
+- **A**: 중복 검색 방지 로직이 없었음
+  - **해결**: `useRef`로 이전 검색어를 추적하고 동일하면 스킵
+  - **효과**: 네트워크 요청 감소 및 성능 향상
+
+**Q. 검색어를 지우고 돋보기 버튼을 누르면 아무 반응이 없는 이유는?**
+
+- **A**: 돋보기 버튼에 `if (value.trim())` 조건이 있었음
+  - **문제**: Enter 키는 빈 검색어 허용, 돋보기 버튼은 차단
+  - **해결**: 돋보기 버튼도 빈 검색어 허용하도록 수정
+  - **효과**: 일관된 UX (검색 초기화 가능)
+
+**Q. 데이터베이스 검색 성능을 어떻게 최적화했나?**
+
+- **A**: GIN 인덱스와 Trigram 인덱스 추가
+  - **GIN 인덱스**: JSONB `meaning` 필드용 (다국어 검색)
+  - **Trigram 인덱스**: TEXT `expression` 필드용 (부분 문자열 검색)
+  - **효과**: ILIKE 쿼리 성능 대폭 향상
+
 ## 2026-01-15: SEO 개선 - JSON-LD 구조화된 데이터 추가 (Brand Recognition)
 
 ### ✅ 진행 사항

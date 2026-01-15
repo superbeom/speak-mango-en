@@ -8,6 +8,7 @@ export interface ExpressionFilters {
   tag?: string;
   page?: number;
   limit?: number;
+  locale?: string; // 검색 시 사용할 언어 (예: 'ko', 'en', 'ja')
 }
 
 /**
@@ -44,7 +45,13 @@ export async function getExpressions(
       query = query.contains("tags", [filters.tag]);
     }
     if (filters?.search) {
-      query = query.ilike("expression", `%${filters.search}%`);
+      const searchTerm = filters.search;
+      const locale = filters.locale || "en"; // 기본값: 영어
+
+      // 로케일별 검색: expression 필드 + 현재 로케일의 meaning 필드만 검색
+      query = query.or(
+        `expression.ilike.%${searchTerm}%,meaning->>${locale}.ilike.%${searchTerm}%`
+      );
     }
 
     // 페이지네이션 처리
