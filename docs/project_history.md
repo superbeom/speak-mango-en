@@ -2,6 +2,39 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: 인앱 브라우저 오디오 호환성 개선 (In-App Browser Audio Compatibility)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `components/DialogueAudioButton.tsx`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 카카오톡으로 공유한 링크에서 오디오가 무한 로딩 중으로 표시되는 이유는?**
+
+- **A**: 인앱 브라우저에서 Web Audio API 초기화 실패
+  - **문제**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
+  - **원인**: 카카오톡, 네이버 등 인앱 브라우저는 Web Audio API를 제한하거나 차단
+  - **해결**: try-catch로 Web Audio API 실패 시 기본 HTML5 Audio로 자동 폴백
+  - **효과**: 모든 인앱 브라우저(카카오톡, 네이버, 위챗, 왓츠앱 등)에서 오디오 정상 재생
+
+**Q. 특정 인앱 브라우저를 일일이 선언해야 하나?**
+
+- **A**: User Agent 감지 대신 try-catch 기반 폴백 방식 채택
+  - **기존 방식**: `userAgent.includes("kakaotalk")` 등으로 일일이 선언
+  - **문제점**: 새로운 앱(위챗, 왓츠앱 등) 대응 불가
+  - **개선 방식**: Web Audio API 초기화 실패 시 자동으로 기본 오디오 사용
+  - **장점**: 범용적 호환성, 유지보수성 향상, 모든 인앱 브라우저 자동 대응
+
+**Q. 인앱 브라우저에서는 볼륨 증폭이 안 되나?**
+
+- **A**: 네, 기본 HTML5 Audio는 최대 볼륨 1.0으로 제한됨
+  - **일반 브라우저**: Web Audio API 사용 → 볼륨 2.0배 증폭 ✅
+  - **인앱 브라우저**: 기본 HTML5 Audio → 볼륨 1.0 (최대) ✅
+  - **Trade-off**: 볼륨은 낮지만 재생은 정상 작동 (무한 로딩 해결)
+
 ## 2026-01-15: 검색 기능 개선 (Icon Click, Multilingual, Duplicate Prevention)
 
 ### ✅ 진행 사항

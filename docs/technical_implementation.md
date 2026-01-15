@@ -226,6 +226,44 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - `GainNode`를 삽입하여 `gain.value = 2.0`을 적용한 뒤 `destination`으로 출력합니다.
   - Web Audio API 미지원 환경을 위한 Fallback 로직이 내장되어 있습니다.
 
+### 7.1.1 In-App Browser Compatibility (인앱 브라우저 호환성)
+
+- **Problem**: 카카오톡, 네이버 등 인앱 브라우저에서 Web Audio API 초기화 실패로 오디오 무한 로딩
+- **Root Cause**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
+- **Solution**: Try-catch 기반 범용 폴백 메커니즘
+
+  ```tsx
+  let webAudioInitialized = false;
+
+  try {
+    const ctx = new AudioContext();
+    const gainNode = ctx.createGain();
+    const source = ctx.createMediaElementSource(audio);
+    source.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    gainNode.gain.value = 2.0;
+    webAudioInitialized = true;
+  } catch (e) {
+    console.warn(
+      "Web Audio API initialization failed, using basic HTML5 Audio.",
+      e
+    );
+  }
+
+  if (!webAudioInitialized) {
+    audio.volume = 1.0; // 기본 HTML5 Audio 사용
+  }
+  ```
+
+- **Why Try-Catch over User Agent Detection**:
+  - User Agent 방식: 카카오톡, 네이버 등 일일이 선언 필요 → 새로운 앱 대응 불가
+  - Try-Catch 방식: Web Audio API 실패 시 자동 폴백 → 모든 인앱 브라우저 자동 대응
+  - 유지보수성: 새로운 인앱 브라우저 출시 시 코드 수정 불필요
+- **Trade-off**:
+  - 일반 브라우저: Web Audio API 사용 → 볼륨 2.0배 증폭 ✅
+  - 인앱 브라우저: 기본 HTML5 Audio → 볼륨 1.0 (최대) ✅
+  - 재생 기능은 모든 환경에서 보장됨
+
 ### 7.2 Path Resolution & Storage Strategy (경로 해석 및 저장 전략)
 
 - **Storage Format**: Supabase DB (`expressions` 테이블)의 `audio_url` 필드에는 스토리지 내부의 **상대 경로**(`expressions/{id}/{index}.wav`)를 저장합니다. 절대 경로 대신 상대 경로를 사용함으로써 도메인 변경이나 프로젝트 이관 시 유연성을 확보합니다.

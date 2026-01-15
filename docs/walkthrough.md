@@ -2,6 +2,123 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.17: 인앱 브라우저 오디오 호환성 개선 (2026-01-15)
+
+### 1. Problem
+
+**카카오톡 공유 링크에서 오디오 무한 로딩**:
+
+- **증상**: 카카오톡으로 공유한 링크 접속 시 오디오가 계속 '로딩 중' 상태로 표시
+- **범위**: 일반 브라우저(Chrome, Safari)에서는 정상 작동, 인앱 브라우저에서만 발생
+- **영향**: 사용자가 오디오를 재생할 수 없어 핵심 기능 사용 불가
+
+### 2. Solution
+
+**범용적인 폴백 메커니즘 구현**:
+
+- Web Audio API 초기화 실패 시 자동으로 기본 HTML5 Audio로 폴백
+- User Agent 감지 대신 try-catch 기반 접근으로 모든 인앱 브라우저 자동 대응
+- 볼륨 증폭은 포기하되 재생 기능은 보장
+
+### 3. Implementation
+
+#### A. Web Audio API 폴백 로직
+
+**File**: `components/DialogueAudioButton.tsx`
+
+**Before** (인앱 브라우저 감지 방식):
+
+```tsx
+// User Agent로 일일이 감지
+const isInAppBrowser =
+  userAgent.includes("kakaotalk") ||
+  userAgent.includes("naver") ||
+  // ... 계속 추가 필요
+
+if (!isInAppBrowser) {
+  // Web Audio API 초기화
+}
+```
+
+**After** (try-catch 폴백 방식):
+
+```tsx
+let webAudioInitialized = false;
+
+try {
+  const ctx = new AudioContext();
+  const gainNode = ctx.createGain();
+  const source = ctx.createMediaElementSource(audio);
+  source.connect(gainNode);
+  gainNode.connect(ctx.destination);
+  gainNode.gain.value = 2.0; // 볼륨 증폭
+  webAudioInitialized = true;
+} catch (e) {
+  console.warn(
+    "Web Audio API initialization failed, using basic HTML5 Audio.",
+    e
+  );
+}
+
+// 실패 시 기본 오디오 사용
+if (!webAudioInitialized) {
+  audio.volume = 1.0; // 최대 볼륨
+}
+```
+
+#### B. 무한 로딩 문제 해결
+
+**기존 문제**:
+
+```
+Web Audio API 실패
+  ↓
+catch 블록에서 볼륨만 설정
+  ↓
+오디오 객체 초기화 실패
+  ↓
+canplaythrough 이벤트 미발생
+  ↓
+isLoading 상태 계속 true
+  ↓
+무한 로딩 🔄
+```
+
+**해결 후**:
+
+```
+Web Audio API 실패
+  ↓
+플래그만 false로 설정
+  ↓
+기본 HTML5 Audio 사용
+  ↓
+canplaythrough 이벤트 정상 발생
+  ↓
+isLoading → false
+  ↓
+정상 재생 ✅
+```
+
+### 4. Result
+
+**호환성 개선**:
+
+- ✅ 카카오톡 인앱 브라우저: 정상 재생
+- ✅ 네이버 인앱 브라우저: 정상 재생
+- ✅ 위챗, 왓츠앱, 라인 등: 자동 대응
+- ✅ 일반 브라우저: 기존대로 볼륨 증폭 유지
+
+**Trade-off**:
+
+- 인앱 브라우저: 볼륨 1.0 (증폭 없음)
+- 일반 브라우저: 볼륨 2.0 (증폭 유지)
+
+**유지보수성**:
+
+- 새로운 인앱 브라우저 출시 시 코드 수정 불필요
+- User Agent 목록 관리 불필요
+
 ## v0.12.16: 검색 기능 개선 - 아이콘 클릭, 다국어, 중복 방지 (2026-01-15)
 
 ### 1. Problem

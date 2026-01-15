@@ -226,7 +226,9 @@ const DialogueAudioButton = forwardRef<
       audio.src = getStorageUrl(audioUrl) || "";
       audioRef.current = audio;
 
-      // Initialize Web Audio API
+      // Web Audio API 초기화 시도 (실패 시 자동으로 기본 오디오로 폴백)
+      let webAudioInitialized = false;
+
       try {
         const AudioContextClass =
           window.AudioContext || window.webkitAudioContext;
@@ -244,14 +246,20 @@ const DialogueAudioButton = forwardRef<
 
           // Set fixed amplified volume
           gainNode.gain.value = FIXED_VOLUME;
+          webAudioInitialized = true;
         }
       } catch (e) {
+        // Web Audio API 실패 (인앱 브라우저, CORS 문제 등)
         console.warn(
-          "Web Audio API not supported or CORS failed, falling back to basic audio.",
+          "Web Audio API initialization failed, using basic HTML5 Audio.",
           e
         );
-        // Fallback volume is clamped to 1.0
-        audio.volume = Math.min(Math.max(FIXED_VOLUME, 0), 1);
+      }
+
+      // Web Audio API 실패 시 기본 HTML5 Audio 사용
+      if (!webAudioInitialized) {
+        audio.volume = 1.0; // 최대 볼륨
+        console.log("Using basic HTML5 Audio (fallback mode)");
       }
 
       const handleEnded = () => {
