@@ -37,15 +37,15 @@ export const ru = {
     playAll: "Воспроизвести все",
     stop: "Стоп",
     share: "Поделиться",
-    shareCopied: "Ссылка скопирована в буфер обмена!",
-    shareFailed: "Ошибка при обмене. Попробуйте еще раз.",
+    shareCopied: "Успешно поделились!",
+    shareFailed: "Ошибка при обмене",
   },
   card: {
     label: "Выражение дня",
     situationQuestion: "Какая ситуация?",
     noDescription: "Описание недоступно.",
     share: "Поделиться",
-    shareCopied: "Ссылка скопирована!",
+    shareCopied: "Успешно поделились!",
     shareFailed: "Ошибка при обмене",
   },
 };

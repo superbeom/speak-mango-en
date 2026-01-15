@@ -39,15 +39,15 @@ export const de = {
     playAll: "Alles abspielen",
     stop: "Stopp",
     share: "Teilen",
-    shareCopied: "Link in die Zwischenablage kopiert!",
-    shareFailed: "Teilen fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    shareCopied: "Erfolgreich geteilt!",
+    shareFailed: "Teilen fehlgeschlagen",
   },
   card: {
     label: "Ausdruck des Tages",
     situationQuestion: "Was ist die Situation?",
     noDescription: "Keine Beschreibung verfügbar.",
     share: "Teilen",
-    shareCopied: "Link kopiert!",
+    shareCopied: "Erfolgreich geteilt!",
     shareFailed: "Teilen fehlgeschlagen",
   },
 };

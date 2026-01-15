@@ -37,15 +37,15 @@ export const zh = {
     playAll: "全部播放",
     stop: "停止",
     share: "分享",
-    shareCopied: "链接已复制到剪贴板！",
-    shareFailed: "分享失败。请重试。",
+    shareCopied: "分享成功！",
+    shareFailed: "分享失败",
   },
   card: {
     label: "今日表达",
     situationQuestion: "是什么情况？",
     noDescription: "暂无描述。",
     share: "分享",
-    shareCopied: "已复制链接！",
+    shareCopied: "分享成功！",
     shareFailed: "分享失败",
   },
 };

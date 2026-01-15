@@ -38,15 +38,15 @@ export const ko = {
     playAll: "전체 듣기",
     stop: "멈춤",
     share: "공유하기",
-    shareCopied: "링크가 클립보드에 복사되었습니다!",
-    shareFailed: "공유에 실패했습니다. 다시 시도해 주세요.",
+    shareCopied: "공유 완료!",
+    shareFailed: "공유 실패",
   },
   card: {
     label: "오늘의 표현",
     situationQuestion: "어떤 상황인가요?",
     noDescription: "설명이 없습니다.",
     share: "공유",
-    shareCopied: "링크 복사됨!",
+    shareCopied: "공유 완료!",
     shareFailed: "공유 실패",
   },
 };

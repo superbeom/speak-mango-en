@@ -2,6 +2,52 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.7: Share 메시지 개선 (i18n) (2026-01-15)
+
+### 1. i18n Message Update
+
+- **Files**: 9개 언어 파일 (`i18n/locales/*.ts`)
+- **Change**: `shareCopied` 메시지 개선
+  - **Before**: "Link copied to clipboard!" / "링크가 클립보드에 복사되었습니다!"
+  - **After**: "Shared successfully!" / "공유 완료!"
+
+### 2. Reason
+
+- ShareButton은 두 가지 방식으로 작동:
+  - **Web Share API** (모바일): 네이티브 공유 다이얼로그
+  - **Clipboard API** (데스크탑): 클립보드 복사
+- 기존 메시지는 데스크탑에만 정확, 모바일에서는 부정확
+- 두 방식 모두에 적합한 일반적인 메시지로 통일
+
+### 3. Result
+
+- ✅ **정확한 사용자 피드백**: 모바일/데스크탑 모두에서 정확한 메시지 표시
+- ✅ **일관된 UX**: 플랫폼 무관하게 동일한 메시지 경험
+- ✅ **9개 언어 지원**: 모든 언어에서 개선된 메시지 제공
+
+## v0.12.6: Google Tag Manager 향후 고려사항 문서화 (2026-01-14)
+
+### 1. Documentation Update
+
+- **File**: `docs/product/future_todos.md`
+  - Marketing & Analytics 섹션 신규 추가
+  - Google Tag Manager (GTM) 도입을 선택적 개선사항으로 문서화
+
+### 2. Key Points (GTM)
+
+- **Current State**: GA4를 `gtag.js`로 직접 연동 중 (타입 안전, 명확)
+- **GTM Adoption Criteria**:
+  - 마케팅 도구 2개 이상 사용
+  - 마케팅 팀 구성 (비개발자 태그 관리)
+  - 빈번한 A/B 테스트
+- **Conclusion**: 현재는 GTM 불필요, 향후 프로젝트 복잡도 증가 시 고려
+
+### 3. Result
+
+- ✅ **명확한 의사결정 프레임워크**: GTM 도입 시점 및 조건 문서화
+- ✅ **조기 최적화 방지**: 현재 단일 도구 환경에서는 직접 연동이 최적
+- ✅ **향후 가이드 제공**: 마케팅 도구 확장 시 참고 자료
+
 ## v0.12.5: 표현 카드 공유 버튼 통합 (2026-01-14)
 
 ### 1. Card Layout Redesign

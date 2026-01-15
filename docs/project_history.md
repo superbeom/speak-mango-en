@@ -2,6 +2,72 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-15: Share 메시지 개선 (i18n)
+
+### ✅ 진행 사항
+
+- **i18n Update**: 9개 언어 파일의 `shareCopied` 메시지 개선
+  - **Before**: "Link copied to clipboard!" / "링크가 클립보드에 복사되었습니다!"
+  - **After**: "Shared successfully!" / "공유 완료!"
+  - **Reason**: Web Share API 사용 시 클립보드가 아닌 네이티브 공유이므로 메시지를 더 일반적으로 변경
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 메시지를 변경했나요?**
+
+- **A.** ShareButton은 두 가지 방식으로 작동합니다:
+
+  1. **Web Share API** (모바일): 네이티브 공유 다이얼로그 → 클립보드 복사가 아님
+  2. **Clipboard API** (데스크탑): 클립보드 복사
+
+  기존 메시지 "Link copied to clipboard!"는 데스크탑에만 정확하고 모바일에서는 부정확했습니다. "Shared successfully!"로 변경하여 두 방식 모두에 적합한 일반적인 메시지로 통일했습니다.
+
+**Q. 어떤 파일들이 수정되었나요?**
+
+- **A.** 9개 언어 파일 모두 수정:
+  - `i18n/locales/en.ts`, `ko.ts`, `ja.ts`, `es.ts`, `fr.ts`, `de.ts`, `ru.ts`, `zh.ts`, `ar.ts`
+  - `detail.shareCopied` 및 `card.shareCopied` 키 모두 업데이트
+
+## 2026-01-14: Google Tag Manager 향후 고려사항 문서화
+
+### ✅ 진행 사항
+
+- **Documentation**: `docs/product/future_todos.md`에 Marketing & Analytics 섹션 추가
+  - Google Tag Manager (GTM) 도입을 선택적 개선사항으로 문서화
+  - 도입 조건, 장단점, 현재 상황 분석 포함
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Google Tag Manager(GTM)가 뭔가요?**
+
+- **A.** GTM은 여러 마케팅/분석 도구의 태그를 코드 수정 없이 관리할 수 있는 Tag Management System입니다. 현재 우리는 GA4를 `gtag.js`로 직접 연동 중입니다.
+
+**Q. 현재 프로젝트에 GTM이 필요한가요?**
+
+- **A.** 아니요, 현재는 불필요합니다:
+  - **이유 1**: GA4 단일 도구만 사용 중 (GTM의 "다중 도구 관리" 장점 없음)
+  - **이유 2**: 개발자가 직접 관리하는 것이 더 명확하고 타입 안전
+  - **이유 3**: GTM 추가 시 불필요한 복잡도 증가
+
+**Q. 언제 GTM을 고려해야 하나요?**
+
+- **A.** 다음 조건 중 하나 이상 충족 시:
+  1. 마케팅 도구 2개 이상 사용 (Facebook Pixel, Google Ads, Hotjar 등)
+  2. 마케팅 팀이 구성되어 비개발자가 태그를 관리해야 할 때
+  3. A/B 테스트를 자주 실행할 때
+
+**Q. GTM의 장단점은?**
+
+- **A.**
+  - **장점**: 코드 수정 없이 태그 관리, 여러 도구 중앙 관리, 버전 관리, 조건부 실행
+  - **단점**: 학습 곡선, 오버엔지니어링, 디버깅 복잡도 증가
+
+### 📝 문서화 내용
+
+- **현재 상태**: GA4를 `gtag.js`로 직접 연동 중
+- **도입 시점**: 마케팅 도구 확장 시 고려
+- **결론**: 현재 방식(직접 연동)이 최적
+
 ## 2026-01-14: 표현 카드 공유 버튼 통합 (Card Share Integration)
 
 ### ✅ 진행 사항

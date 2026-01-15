@@ -38,15 +38,15 @@ export const en = {
     playAll: "Play All",
     stop: "Stop",
     share: "Share",
-    shareCopied: "Link copied to clipboard!",
-    shareFailed: "Failed to share. Please try again.",
+    shareCopied: "Shared successfully!",
+    shareFailed: "Failed to share",
   },
   card: {
     label: "Today's Expression",
     situationQuestion: "What's the situation?",
     noDescription: "No description available.",
     share: "Share",
-    shareCopied: "Link copied!",
+    shareCopied: "Shared successfully!",
     shareFailed: "Failed to share",
   },
 };

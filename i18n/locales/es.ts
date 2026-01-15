@@ -39,15 +39,15 @@ export const es = {
     playAll: "Reproducir todo",
     stop: "Detener",
     share: "Compartir",
-    shareCopied: "¡Enlace copiado al portapapeles!",
-    shareFailed: "Error al compartir. Inténtalo de nuevo.",
+    shareCopied: "¡Compartido con éxito!",
+    shareFailed: "Error al compartir",
   },
   card: {
     label: "Expresión de Hoy",
     situationQuestion: "¿Cuál es la situación?",
     noDescription: "No hay descripción disponible.",
     share: "Compartir",
-    shareCopied: "¡Enlace copiado!",
+    shareCopied: "¡Compartido con éxito!",
     shareFailed: "Error al compartir",
   },
 };
