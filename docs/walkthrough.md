@@ -2,6 +2,21 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.8: Open Graph 이미지 중앙 정렬 개선 (2026-01-15)
+
+### 1. Layout Adjustment
+
+- **File**: `app/opengraph-image.tsx`
+- **Issue**: 로고와 텍스트가 오른쪽으로 치우쳐 보이는 문제
+- **Solution**: CSS transform을 사용한 미세 조정
+  - Container: `transform: translateX(-25px)`
+  - Text: `transform: translateX(-15px)`
+
+### 2. Result
+
+- ✅ **시각적 균형**: 로고와 서비스명이 중앙에 정렬
+- ✅ **소셜 미디어 최적화**: 공유 시 더 나은 썸네일 표시
+
 ## v0.12.7: Share 메시지 개선 (i18n) (2026-01-15)
 
 ### 1. i18n Message Update
