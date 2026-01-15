@@ -108,7 +108,7 @@ body {
 }
 
 @utility dialogue-audio-btn {
-  @apply p-2 rounded-full transition-all focus:outline-none cursor-pointer;
+  @apply p-2 rounded-full transition-all focus:outline-none cursor-pointer relative z-10;
 }
 
 @media (hover: hover) and (pointer: fine) {
