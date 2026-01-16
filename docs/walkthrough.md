@@ -2,6 +2,45 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.23: SEO 설정 구조 리팩토링 (2026-01-16)
+
+### 1. Goal (목표)
+
+- SEO 설정(`suffixes`, `categories`)이 정적 메타데이터(`meta`) 내부에 혼재되어 있는 구조를 개선.
+- 설정의 역할(Metadata vs SEO Strategy)을 명확히 분리.
+
+### 2. Implementation (구현)
+
+- **Locale Structure Change**:
+
+```typescript
+// Before
+export const en = {
+  meta: {
+    seo: { ... },
+    categories: { ... }
+  }
+}
+
+// After
+export const en = {
+  meta: { ... }, // Pure Metadata
+  seo: {         // SEO Strategy Config
+    expressionSuffixes: [...],
+    meaningSuffixes: [...],
+    categories: { ... }
+  }
+}
+```
+
+- **Logic Update (`lib/seo.ts`)**:
+  - `dict.meta.seo` -> `dict.seo`로 참조 경로 변경.
+
+### 3. Result (결과)
+
+- ✅ **Separation of Concerns**: 메타데이터와 SEO 전략 설정 분리.
+- ✅ **Type Safety**: 명확한 구조로 타입 추론 및 유지보수 용이.
+
 ## v0.12.22: 동적 카테고리 키워드 현지화 (2026-01-16)
 
 ### 1. Goal (목표)

@@ -15,7 +15,7 @@ export function generateSeoKeywords(
   // Add category-specific keyword if category is provided
   if (category) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const categories = (dict.meta as any).categories;
+    const categories = (dict as any).seo?.categories;
 
     if (categories) {
       const categoryKey = category.toLowerCase();
@@ -27,7 +27,7 @@ export function generateSeoKeywords(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const seo = (dict.meta as any).seo;
+  const seo = (dict as any).seo;
 
   if (seo) {
     // 1. Expression + Suffix (e.g., "Feel Blue 뜻", "Feel Blue Meaning")

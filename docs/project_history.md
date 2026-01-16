@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: SEO 설정 구조 리팩토링 (SEO Config Refactoring)
+
+- **목표**: SEO 관련 설정(`seo`)을 메타데이터(`meta`)와 분리하여 구조적 명확성 확보 및 유지보수성 향상.
+- **변경**:
+  - `i18n/locales/*.ts`: `meta.seo` 객체와 `categories`를 최상위 `seo` 객체로 이동.
+  - `lib/seo.ts`: 키워드 생성 로직이 `dict.seo`를 참조하도록 수정.
+  - **검증**: 아랍어(`ar.ts`) 등 누락된 카테고리(`emotion`) 복구 및 `{}` 플레이스홀더 포맷 검증 완료.
+
 ## 2026-01-16: 동적 SEO 키워드 지역화 (Localized Dynamic Keywords)
 
 - **목표**: 사용자 언어 설정에 맞는 자연스러운 카테고리 키워드 제공 (예: 'Travel English' vs '여행 영어').

@@ -7,10 +7,10 @@ export const zh = {
     mainTitle: "{serviceName} - 每日英语会话",
     mainDescription: `${SERVICE_NAME} 每天为您精选新鲜的英语表达。每天一句，提升您的商务、旅行和日常会话能力。包含母语发音和细微差别讲解。`,
     keywords: `英语会话, 日常英语, 每日一句, 英语表达, ${SERVICE_NAME}, 英语学习, 学习英语, 学英语`,
-    seo: {
-      expressionSuffixes: ["的意思", "含义", "解释"],
-      meaningSuffixes: ["英文怎么说", "用英语怎么说", "英语表达"],
-    },
+  },
+  seo: {
+    expressionSuffixes: ["的意思", "含义", "解释"],
+    meaningSuffixes: ["英文怎么说", "用英语怎么说", "英语表达"],
     categories: {
       daily: "日常英语",
       business: "商务英语",

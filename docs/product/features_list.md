@@ -118,7 +118,8 @@
 
 ### SEO (검색 엔진 최적화)
 
-- **동적 메타데이터**: 페이지별 콘텐츠에 맞는 Title, Description, Keyword 자동 생성.
+- **동적 메타데이터 (Dynamic Metadata)**: 페이지별 콘텐츠에 맞는 Title, Description, Keyword 자동 생성.
+- **동적 키워드 현지화 (Localized Dynamic Keywords)**: 사용자 언어(`i18n`)와 검색 의도(Intent)에 맞춰 카테고리 키워드를 동적으로 매핑(예: 'Travel' -> '여행 영어')하여 검색 유입 최적화.
 - **Node.js-generated OG Image (OG)**: SNS 공유 시 표현(Expression) 텍스트와 의미가 포함된 고품질 미리보기 카드 제공. (Node.js Runtime)
 - **JSON-LD**: 구글 검색 결과에 학습 자료(LearningResource) 및 조직(Organization) 정보를 리치 스니펫으로 노출.
 - **검색 최적화**: `sitemap.xml` 및 `robots.txt`를 통한 검색 엔진 크롤링 경로 가이드.

@@ -8,10 +8,10 @@ export const ja = {
     mainTitle: "{serviceName} - 毎日の英会話",
     mainDescription: `${SERVICE_NAME}が厳選した新鮮な英語表現を毎日お届けします。1日1フレーズでビジネス、旅行、日常会話のスキルを向上させましょう。ネイティブの発音とニュアンス解説付き。`,
     keywords: `英会話, 日常英語, 1日1フレーズ, 英語表現, ${SERVICE_NAME}, 英語学習, 英語の勉強, 英語を学ぶ`,
-    seo: {
-      expressionSuffixes: ["意味", "使い方"],
-      meaningSuffixes: ["英語で", "英語 表現"],
-    },
+  },
+  seo: {
+    expressionSuffixes: ["意味", "使い方"],
+    meaningSuffixes: ["英語で", "英語 表現"],
     categories: {
       daily: "日常英会話",
       business: "ビジネス英語",

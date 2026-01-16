@@ -63,13 +63,23 @@ Google 등 최신 검색 엔진은 `meta name="keywords"` 태그의 가중치를
   2. **Keyword Density**: 자연스럽게 페이지 본문 내의 핵심 키워드 밀도를 높여 랭킹에 긍정적인 영향을 줍니다.
   3. **Compliance**: 구글의 웹마스터 가이드라인을 100% 준수하는 White Hat 방식입니다.
 
+### 2.4 Localized Category Keywords (동적 키워드 현지화)
+
+단순 번역을 넘어, 검색 의도(Intent)와 사용자 언어 맥락(Context)에 맞는 카테고리 키워드를 매핑합니다.
+
+- **Problem**: 'Business English'라는 키워드는 영어권에서는 유효하지만, 한국어 사용자에게는 '비즈니스 영어'가 더 검색량이 많습니다. 또한 'Travel' 카테고리 페이지에 'Business English' 키워드가 하드코딩되어 있는 것은 부자연스럽습니다.
+- **Strategy**:
+  - `categories` 맵을 언어별로 정의하여 동적으로 매핑합니다.
+  - 예: `travel` -> `여행 영어` (KO), `Travel English` (EN), `旅行英会話` (JA).
+  - 이를 통해 검색 엔진에게 페이지의 **주제 적합성(Topical Relevance)**을 더 강력하게 전달합니다.
+
 ## 3. Technical Implementation (기술 구현)
 
 ### 3.1 Architecture
 
 SEO 로직을 한곳에서 관리하고 재사용하기 위해 유틸리티 함수로 분리했습니다.
 
-- **Configuration**: `i18n/locales/*.ts` (접미사 정의)
+- **Configuration**: `i18n/locales/*.ts` (최상위 `seo` 객체 내 `suffixes`, `categories` 정의)
 - **Logic**: `lib/seo.ts` (키워드 생성 및 분리 로직)
 - **Metadata**: `app/expressions/[id]/page.tsx` (`generateMetadata`)
 - **UI**: `app/expressions/[id]/page.tsx` (하단 `KeywordList`)
