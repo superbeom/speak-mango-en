@@ -667,7 +667,12 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 ### 13.2 Dynamic SEO & Open Graph (동적 SEO)
 
 - **Metadata API**: Next.js 14+의 `generateMetadata` 함수를 활용하여 페이지별로 동적인 `title`과 `description`을 주입합니다.
-- **Structured Data (JSON-LD)**: 단순 메타 태그를 넘어, 구글 검색 엔진이 포맷을 이해할 수 있도록 `script` 태그에 `LearningResource` 스키마를 JSON-LD 포맷으로 삽입했습니다.
+- **Structured Data (JSON-LD) Strategy**:
+  - **Dual Schema Architecture**:
+    - **Global (`app/layout.tsx`)**: `WebSite` (Identity, Keywords) & `Organization`.
+    - **Local (`app/page.tsx`)**: `WebSite` (`SearchAction`) - 홈 화면 전용 검색 기능 명시.
+    - **Detail (`app/expressions/[id]/page.tsx`)**: `LearningResource` - 개별 표현 학습 자료 명시.
+  - **Keyword Injection**: `meta keywords` 태그뿐만 아니라 JSON-LD 스키마 내에도 `keywords` 속성을 주입하여 엔티티 연관성을 강화했습니다.
 - **Node.js-generated OG Image**:
   - `app/expressions/[id]/opengraph-image.tsx`를 구현했습니다.
   - **Runtime Strategy**: 고화질 로고 이미지(`fs.readFileSync`)와 커스텀 폰트 파일 로딩을 위해 기본 `edge` 런타임 대신 **`nodejs` 런타임**을 채택했습니다.
@@ -675,7 +680,20 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - 이를 통해 수천 개의 표현에 대해 정적 이미지를 미리 만들어둘 필요 없이, 강력한 소셜 미디어 미리보기(썸네일)를 제공합니다.
   - 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 제공합니다.
 
-### 13.3 Type-Safe i18n Architecture (타입 안전 i18n)
+### 13.3 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
+
+단순 번역을 넘어, 검색 의도(Search Intent)와 사용자 언어 맥락(Context)에 맞는 키워드를 동적으로 생성하는 전략입니다.
+
+- **Localized Categories**:
+  - 각 언어 파일(`i18n/locales/*.ts`)에 `categories` 맵을 정의하여, 동일한 카테고리라도 언어별로 가장 자연스러운 검색어를 매핑합니다.
+  - 예: `travel` -> `Travel English` (EN), `여행 영어` (KO), `旅行英会話` (JA).
+- **Suffix Patterns**:
+  - `expressionSuffixes`: 표현 자체를 검색할 때 사용되는 접미사 (예: "뜻", "의미", "meaning").
+  - `meaningSuffixes`: 의미를 통해 표현을 찾을 때 사용되는 접미사 (예: "영어로", "in English"). 단순 접미사뿐만 아니라 `{}` 템플릿 패턴(`another way to say {}`)을 지원하여 유연성을 확보했습니다.
+- **Visible Tags (White Hat)**:
+  - 메타 태그(`keywords`)뿐만 아니라, `components/KeywordList.tsx`를 통해 페이지 하단에 실제 텍스트로 키워드를 노출합니다. 이는 _Keyword Stuffing_(숨겨진 텍스트로 키워드 남발)으로 오인받지 않으면서 검색 엔진에 페이지의 관련성을 강력하게 어필하는 **White Hat SEO** 기법입니다.
+
+### 13.4 Type-Safe i18n Architecture (타입 안전 i18n)
 
 - **Total 9 Languages**: EN, KO, JA, ES, FR, DE, RU, ZH, AR 지원.
 - **Inference & Maintenance**:
@@ -690,7 +708,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
 - **Benefit**: 새로운 언어 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 안정적인 확장이 가능합니다.
 
-### 13.4 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
+### 13.5 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
 
 **File**: `verification/verify_i18n_locales.js`
 

@@ -2,6 +2,131 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.24: JSON-LD Schema 최적화 (2026-01-16)
+
+### 1. Goal (목표)
+
+- `meta keywords` 태그 외에, Schema.org 구조화 데이터를 통해 검색 엔진에게 명확한 키워드 컨텍스트 제공.
+- `layout.tsx`와 `page.tsx` 간의 스키마 중복 제거 및 역할 분리.
+
+### 2. Implementation (구현)
+
+- **Schema Injection**:
+
+  - `Dict.meta.keywords` -> `WebSite` Schema (`layout.tsx`)
+  - `generateSeoKeywords(...)` -> `LearningResource` Schema (`page.tsx`)
+
+- **Schema Consolidation**:
+  - `layout.tsx`: `Organization` + `WebSite` (Global Identity & Keywords)
+  - `page.tsx`: `WebSite` (Local `SearchAction` only)
+
+### 3. Result (결과)
+
+- ✅ **Rich Snippets**: 검색 결과에서 더 풍부한 정보 노출 가능성 증대.
+- ✅ **Logical Structure**: 전역 설정과 지역 설정의 명확한 분리.
+
+## v0.12.23: SEO 설정 구조 리팩토링 (2026-01-16)
+
+### 1. Goal (목표)
+
+- SEO 설정(`suffixes`, `categories`)이 정적 메타데이터(`meta`) 내부에 혼재되어 있는 구조를 개선.
+- 설정의 역할(Metadata vs SEO Strategy)을 명확히 분리.
+
+### 2. Implementation (구현)
+
+- **Locale Structure Change**:
+
+```typescript
+// Before
+export const en = {
+  meta: {
+    seo: { ... },
+    categories: { ... }
+  }
+}
+
+// After
+export const en = {
+  meta: { ... }, // Pure Metadata
+  seo: {         // SEO Strategy Config
+    expressionSuffixes: [...],
+    meaningSuffixes: [...],
+    categories: { ... }
+  }
+}
+```
+
+- **Logic Update (`lib/seo.ts`)**:
+  - `dict.meta.seo` -> `dict.seo`로 참조 경로 변경.
+
+### 3. Result (결과)
+
+- ✅ **Separation of Concerns**: 메타데이터와 SEO 전략 설정 분리.
+- ✅ **Type Safety**: 명확한 구조로 타입 추론 및 유지보수 용이.
+
+## v0.12.22: 동적 카테고리 키워드 현지화 (2026-01-16)
+
+### 1. Goal (목표)
+
+- "Travel" 카테고리인 경우 한국어 사용자에게는 "여행 영어", 영어 사용자에게는 "Travel English"와 같이 현지화된 키워드를 제공.
+- 정적인 "Business English" 키워드가 모든 페이지에 중복되는 문제 해결.
+
+### 2. Implementation (구현)
+
+- **Locale Config (`i18n/locales/*.ts`)**:
+
+```typescript
+categories: {
+  daily: "생활 영어",
+  business: "비즈니스 영어",
+  travel: "여행 영어",
+  // ...
+}
+```
+
+- **Dynamic Lookup (`lib/seo.ts`)**:
+
+```typescript
+// Before: 하드코딩된 if-else
+if (category === "slang") ...
+
+// After: Dictionary Lookup
+const localizedCategory = dict.categories[category.toLowerCase()];
+if (localizedCategory) keywords.push(localizedCategory);
+```
+
+### 3. Result (결과)
+
+- ✅ **Relevance**: 콘텐츠와 정확히 일치하는 카테고리 키워드 노출.
+- ✅ **Localization**: 사용자 언어에 맞는 자연스러운 키워드 ("쇼핑 영어" vs "Shopping English").
+- ✅ **Efficiency**: 중복 키워드 제거로 SEO 가중치 분산 방지.
+
+## v0.12.21: 동적 SEO 키워드 최적화 (2026-01-16)
+
+### 1. Goal (목표)
+
+- "Feel Blue 뜻", "우울하다 영어로"와 같이 사용자가 실제로 검색하는 고관여 키워드(Long-tail)를 자동으로 메타데이터에 포함.
+- `meta keywords`의 한계를 넘어 실제 콘텐츠에 키워드를 노출하여 검색 엔진 가시성 확보.
+
+### 2. Implementation (구현)
+
+- **Locale Config (`ko.ts`)**:
+
+```typescript
+seo: {
+  expressionSuffixes: ["뜻", "의미", "해석"],
+  meaningSuffixes: ["영어로", "영어 표현", "영어로 어떻게"]
+}
+```
+
+- **Shared SEO Logic (`lib/seo.ts`)**:
+
+  - `generateSeoKeywords` 유틸리티 함수로 분리하여 메타데이터와 UI에서 재사용.
+
+- **Visible Keywords (`KeywordList.tsx`)**:
+  - `app/expressions/[id]/page.tsx` 하단에 `KeywordList` 컴포넌트 추가.
+  - 관련 키워드를 시각적 태그로 노출 (White Hat SEO).
+
 ## v0.12.20: iOS 잠금 화면 메타데이터 구현 (2026-01-16)
 
 ### 1. Problem (문제)

@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-15
+**최종 수정일**: 2026-01-16
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -100,6 +100,7 @@ speak-mango-en/
 │   ├── analytics/          # Analytics 관련 문서
 │   │   ├── analytics_guide.md        # Analytics 전략 및 이벤트 설계
 │   │   └── implementation_guide.md   # 실전 구현 가이드 (재사용 가능)
+│   ├── seo_strategy.md      # SEO 전략 및 구현 가이드 (Dynamic & Visible Keywords)
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
 │   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
@@ -203,6 +204,14 @@ speak-mango-en/
   3. `i18n/index.ts`의 `dictionaries` 객체에 import 및 매핑 추가.
   4. `i18n/index.ts`의 `LOCALE_DETAILS` 객체에 해당 언어의 상세 정보(label, tag, ogLocale) 추가.
   5. `SUPPORTED_LANGUAGES`는 `Object.values(SupportedLanguage)`를 사용하므로 자동 반영됩니다.
+
+### SEO Strategy
+
+- **핵심 철학**: 사용자 경험을 해치지 않는 **White Hat SEO** 원칙을 준수합니다. (Cloaking 등 편법 금지)
+- **전략 문서**: 새로운 SEO 전략을 도입하거나 변경할 때는 반드시 `docs/seo_strategy.md` 문서를 참조하고, 변경 사항을 해당 문서에 상세히 기록해야 합니다.
+- **구현 원칙**:
+  - **Dynamic Keyword Generation**: `lib/seo.ts`의 유틸리티를 사용하여 메타데이터와 UI 간 키워드 일치성 보장.
+  - **Visible Keywords**: `components/KeywordList.tsx`를 사용하여 키워드를 시각적으로 노출 (Hidden Text 방지).
 
 ### Automation (n8n)
 

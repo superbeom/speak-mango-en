@@ -6,7 +6,19 @@ export const zh = {
     expressionDesc: "{meaning} | 在 {serviceName} 跟随母语人士发音学习。",
     mainTitle: "{serviceName} - 每日英语会话",
     mainDescription: `${SERVICE_NAME} 每天为您精选新鲜的英语表达。每天一句，提升您的商务、旅行和日常会话能力。包含母语发音和细微差别讲解。`,
-    keywords: `英语会话, 商务英语, 日常英语, 每日一句, 英语表达, ${SERVICE_NAME}, 英语学习`,
+    keywords: `英语会话, 日常英语, 每日一句, 英语表达, ${SERVICE_NAME}, 英语学习, 学习英语, 学英语`,
+  },
+  seo: {
+    expressionSuffixes: ["的意思", "含义", "解释"],
+    meaningSuffixes: ["英文怎么说", "用英语怎么说", "英语表达"],
+    categories: {
+      daily: "日常英语",
+      business: "商务英语",
+      travel: "旅游英语",
+      shopping: "购物英语",
+      emotion: "情感表达",
+      slang: "英语俚语",
+    },
   },
   common: {
     back: "返回",

@@ -102,7 +102,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { locale } = await getI18n();
+  const { locale, dict } = await getI18n();
 
   return (
     <html lang={locale}>
@@ -133,6 +133,7 @@ export default async function RootLayout({
               "@type": "WebSite",
               name: SERVICE_NAME,
               url: BASE_URL,
+              keywords: dict.meta.keywords,
               inLanguage: SUPPORTED_LANGUAGES,
             }),
           }}

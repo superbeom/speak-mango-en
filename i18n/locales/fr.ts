@@ -7,7 +7,23 @@ export const fr = {
       "{meaning} | Apprenez avec une prononciation native sur {serviceName}.",
     mainTitle: "{serviceName} - Conversation Anglaise Quotidienne",
     mainDescription: `Des expressions anglaises fraîches sélectionnées à la main par ${SERVICE_NAME} tous les jours. Améliorez vos compétences en conversation professionnelle, de voyage et quotidienne avec une phrase par jour. Inclut la prononciation native et l'explication des nuances.`,
-    keywords: `Conversation anglaise, Anglais des affaires, Anglais quotidien, Une phrase par jour, Expression anglaise, ${SERVICE_NAME}, Étude de l'anglais`,
+    keywords: `Conversation anglaise, Anglais quotidien, Une phrase par jour, Expression anglaise, ${SERVICE_NAME}, Étude de l'anglais, étudier l'anglais, apprentissage de l'anglais, apprendre l'anglais`,
+  },
+  seo: {
+    expressionSuffixes: ["définition", "signification", "sens"],
+    meaningSuffixes: [
+      "en anglais",
+      "comment dire {} en anglais",
+      "traduction en anglais",
+    ],
+    categories: {
+      daily: "Anglais quotidien",
+      business: "Anglais des affaires",
+      travel: "Anglais de voyage",
+      shopping: "Anglais des achats",
+      emotion: "Expressions émotionnelles",
+      slang: "Argot anglais",
+    },
   },
   common: {
     back: "Retour",

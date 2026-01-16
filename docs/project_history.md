@@ -2,6 +2,42 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: SEO Schema & JSON-LD 최적화 (Schema.org Implementation)
+
+- **목표**: 검색 엔진의 엔티티 이해도 향상을 위해 구조화된 데이터(Structured Data) 강화.
+- **변경**:
+  - `app/layout.tsx`: `keywords` 속성을 `WebSite` 스키마에 추가하여 사이트 전체 주제 명시. `app/page.tsx`의 중복 스키마 통합 및 제거.
+  - `app/expressions/[id]/page.tsx`: `LearningResource` 스키마에 `keywords` 속성 추가 (동적 생성된 키워드 주입).
+  - **검증**: 중복된 `WebSite` 스키마 제거로 로직 일관성(`layout`=Global, `page`=Local SearchAction) 확보.
+
+## 2026-01-16: SEO 설정 구조 리팩토링 (SEO Config Refactoring)
+
+- **목표**: SEO 관련 설정(`seo`)을 메타데이터(`meta`)와 분리하여 구조적 명확성 확보 및 유지보수성 향상.
+- **변경**:
+  - `i18n/locales/*.ts`: `meta.seo` 객체와 `categories`를 최상위 `seo` 객체로 이동.
+  - `lib/seo.ts`: 키워드 생성 로직이 `dict.seo`를 참조하도록 수정.
+  - **검증**: 아랍어(`ar.ts`) 등 누락된 카테고리(`emotion`) 복구 및 `{}` 플레이스홀더 포맷 검증 완료.
+
+## 2026-01-16: 동적 SEO 키워드 지역화 (Localized Dynamic Keywords)
+
+- **목표**: 사용자 언어 설정에 맞는 자연스러운 카테고리 키워드 제공 (예: 'Travel English' vs '여행 영어').
+- **구현**:
+  - `i18n/locales/*.ts`: 각 언어 파일에 `categories` 맵 정의 (`daily`, `business`, `travel` 등).
+  - `lib/seo.ts`: 하드코딩된 로직 제거 및 `dict.categories` 기반 동적 룩업 구현.
+  - **제거**: 모든 로케일 파일에서 중복/하드코딩된 정적 키워드("Business English" 등) 일괄 삭제.
+
+## 2026-01-16: 동적 SEO 키워드 생성 (Dynamic Keywords)
+
+- **목표**: 표현 페이지의 검색 엔진 노출 최적화 (Intent Keywords 타겟팅).
+- **구현**:
+  - `i18n/locales/*.ts`: 각 언어별 검색 의도에 맞는 접미사(`expressionSuffixes`, `meaningSuffixes`) 정의.
+  - `en`: "meaning", "how to say" 등.
+  - `ko`: "뜻", "의미", "영어로" 등.
+  - `zh`, `ru`, `fr`, `de`, `ar` 등 주요 언어 추가 지원.
+  - `app/expressions/[id]/page.tsx`: 메타데이터 생성 시 접미사를 조합하여 고관여 키워드 자동 생성 및 주입.
+  - `package.json`: 프로젝트 레벨 `keywords` 필드 추가.
+  - **추가 개선**: `meta` 태그의 한계를 극복하기 위해 `KeywordList` 컴포넌트를 통해 페이지 하단에 시각적 태그(Visible Keys)로 노출.
+
 ## 2026-01-16: iOS 잠금 화면 오디오 메타데이터 구현 (Media Session API)
 
 ### 💬 주요 Q&A 및 의사결정
