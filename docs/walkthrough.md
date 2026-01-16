@@ -2,11 +2,49 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.22: 동적 카테고리 키워드 현지화 (2026-01-16)
+
+### 1. Goal (목표)
+
+- "Travel" 카테고리인 경우 한국어 사용자에게는 "여행 영어", 영어 사용자에게는 "Travel English"와 같이 현지화된 키워드를 제공.
+- 정적인 "Business English" 키워드가 모든 페이지에 중복되는 문제 해결.
+
+### 2. Implementation (구현)
+
+- **Locale Config (`i18n/locales/*.ts`)**:
+
+```typescript
+categories: {
+  daily: "생활 영어",
+  business: "비즈니스 영어",
+  travel: "여행 영어",
+  // ...
+}
+```
+
+- **Dynamic Lookup (`lib/seo.ts`)**:
+
+```typescript
+// Before: 하드코딩된 if-else
+if (category === "slang") ...
+
+// After: Dictionary Lookup
+const localizedCategory = dict.categories[category.toLowerCase()];
+if (localizedCategory) keywords.push(localizedCategory);
+```
+
+### 3. Result (결과)
+
+- ✅ **Relevance**: 콘텐츠와 정확히 일치하는 카테고리 키워드 노출.
+- ✅ **Localization**: 사용자 언어에 맞는 자연스러운 키워드 ("쇼핑 영어" vs "Shopping English").
+- ✅ **Efficiency**: 중복 키워드 제거로 SEO 가중치 분산 방지.
+
 ## v0.12.21: 동적 SEO 키워드 최적화 (2026-01-16)
 
 ### 1. Goal (목표)
 
 - "Feel Blue 뜻", "우울하다 영어로"와 같이 사용자가 실제로 검색하는 고관여 키워드(Long-tail)를 자동으로 메타데이터에 포함.
+- `meta keywords`의 한계를 넘어 실제 콘텐츠에 키워드를 노출하여 검색 엔진 가시성 확보.
 
 ### 2. Implementation (구현)
 
@@ -19,15 +57,13 @@ seo: {
 }
 ```
 
-- **Page Metadata (`page.tsx`)**:
+- **Shared SEO Logic (`lib/seo.ts`)**:
 
-```typescript
-if (seo.expressionSuffixes) {
-  seo.expressionSuffixes.forEach((suffix) =>
-    keywords.push(`${expression} ${suffix}`)
-  );
-}
-```
+  - `generateSeoKeywords` 유틸리티 함수로 분리하여 메타데이터와 UI에서 재사용.
+
+- **Visible Keywords (`KeywordList.tsx`)**:
+  - `app/expressions/[id]/page.tsx` 하단에 `KeywordList` 컴포넌트 추가.
+  - 관련 키워드를 시각적 태그로 노출 (White Hat SEO).
 
 ## v0.12.20: iOS 잠금 화면 메타데이터 구현 (2026-01-16)
 

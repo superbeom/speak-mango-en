@@ -73,6 +73,9 @@
   - [x] 다국어 검색 지원 (로케일별 meaning 필드 검색)
   - [x] 중복 검색 방지 (useRef로 이전 검색어 추적)
   - [x] 데이터베이스 인덱스 최적화 (GIN, Trigram)
+- [x] **SEO**: 동적 카테고리 키워드 현지화 (Localized Dynamic Keywords)
+  - [x] 언어별 `categories` 맵 정의 및 하드코딩 키워드 제거
+  - [x] `lib/seo` 동적 룩업 로직 구현
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

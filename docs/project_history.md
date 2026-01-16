@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: 동적 SEO 키워드 지역화 (Localized Dynamic Keywords)
+
+- **목표**: 사용자 언어 설정에 맞는 자연스러운 카테고리 키워드 제공 (예: 'Travel English' vs '여행 영어').
+- **구현**:
+  - `i18n/locales/*.ts`: 각 언어 파일에 `categories` 맵 정의 (`daily`, `business`, `travel` 등).
+  - `lib/seo.ts`: 하드코딩된 로직 제거 및 `dict.categories` 기반 동적 룩업 구현.
+  - **제거**: 모든 로케일 파일에서 중복/하드코딩된 정적 키워드("Business English" 등) 일괄 삭제.
+
 ## 2026-01-16: 동적 SEO 키워드 생성 (Dynamic Keywords)
 
 - **목표**: 표현 페이지의 검색 엔진 노출 최적화 (Intent Keywords 타겟팅).
@@ -12,6 +20,7 @@
   - `zh`, `ru`, `fr`, `de`, `ar` 등 주요 언어 추가 지원.
   - `app/expressions/[id]/page.tsx`: 메타데이터 생성 시 접미사를 조합하여 고관여 키워드 자동 생성 및 주입.
   - `package.json`: 프로젝트 레벨 `keywords` 필드 추가.
+  - **추가 개선**: `meta` 태그의 한계를 극복하기 위해 `KeywordList` 컴포넌트를 통해 페이지 하단에 시각적 태그(Visible Keys)로 노출.
 
 ## 2026-01-16: iOS 잠금 화면 오디오 메타데이터 구현 (Media Session API)
 

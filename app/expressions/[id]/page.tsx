@@ -8,6 +8,7 @@ import {
 } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { getI18n } from "@/i18n/server";
+import { generateSeoKeywords } from "@/lib/seo";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
@@ -19,6 +20,7 @@ import RelatedExpressions from "@/components/RelatedExpressions";
 import BackButton from "@/components/BackButton";
 import DialogueSection from "@/components/DialogueSection";
 import ShareButton from "@/components/ShareButton";
+import KeywordList from "@/components/KeywordList";
 
 interface PageProps {
   params: Promise<{
@@ -41,8 +43,9 @@ export async function generateMetadata({
   }
 
   const { locale, fullLocale, dict } = await getI18n();
-  const contentLocale = getContentLocale(expression.meaning, locale);
-  const primaryMeaning = expression.meaning[contentLocale] || "";
+  const primaryMeaning =
+    expression.meaning[getContentLocale(expression.meaning, locale)] ||
+    expression.meaning[SupportedLanguage.EN];
 
   const title = formatMessage(dict.meta.expressionTitle, {
     expression: expression.expression,
@@ -56,26 +59,12 @@ export async function generateMetadata({
   });
 
   // SEO Keyword Generation
-  const keywords = dict.meta.keywords.split(", ");
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const seo = (dict.meta as any).seo;
-
-  if (seo) {
-    // 1. Expression + Suffix (e.g., "Feel Blue Meaning")
-    if (seo.expressionSuffixes && Array.isArray(seo.expressionSuffixes)) {
-      seo.expressionSuffixes.forEach((suffix: string) => {
-        keywords.push(`${expression.expression} ${suffix}`);
-      });
-    }
-
-    // 2. Meaning + Suffix (e.g., "우울하다 영어로")
-    if (seo.meaningSuffixes && Array.isArray(seo.meaningSuffixes)) {
-      seo.meaningSuffixes.forEach((suffix: string) => {
-        keywords.push(`${primaryMeaning} ${suffix}`);
-      });
-    }
-  }
+  const keywords = generateSeoKeywords(
+    dict,
+    expression.expression,
+    primaryMeaning,
+    expression.category
+  );
 
   return {
     title,
@@ -280,6 +269,15 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
               shareFailedLabel={dict.detail.shareFailed}
             />
           </div>
+
+          <KeywordList
+            keywords={generateSeoKeywords(
+              dict,
+              expression.expression,
+              meaning,
+              expression.category
+            )}
+          />
         </article>
 
         {/* Related Expressions Section */}

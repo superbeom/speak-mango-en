@@ -376,15 +376,6 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
     - `play`, `pause`, `stop` 핸들러를 등록하여 잠금 화면에서도 제어가 가능하도록 연결합니다.
   - **Context Strategy**: `togglePlay` 함수를 `useEffect` 의존성으로 안전하게 사용하거나, `useRef`를 통해 최신 핸들러를 참조하도록 하여 순환 참조 문제를 방지합니다.
 
-### 7.9 Dynamic SEO Keywords (동적 SEO 키워드)
-
-검색 의도(Search Intent)가 명확한 키워드를 자동으로 생성하여 유입을 늘리기 위한 전략입니다.
-
-- **Config**: `i18n/locales/*.ts` 파일의 `seo` 객체에 언어별 패턴을 정의합니다.
-  - `expressionSuffixes`: 표현 중심 검색어 (예: "Feel Blue 뜻", "Feel Blue meaning")
-  - `meaningSuffixes`: 의미 중심 검색어 (예: "우울하다 영어로", "Sad in English")
-- **Generation**: `generateMetadata` 함수에서 기본 `keywords`에 위 패턴으로 생성된 조합형 키워드들을 추가합니다.
-
 ### 7.7 Lazy Initialization Strategy (지연 초기화 전략)
 
 모바일 환경 호환성과 iOS Safari 버그를 동시에 해결하기 위해 **Hybrid Loading** 전략을 사용합니다.
@@ -684,7 +675,20 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - 이를 통해 수천 개의 표현에 대해 정적 이미지를 미리 만들어둘 필요 없이, 강력한 소셜 미디어 미리보기(썸네일)를 제공합니다.
   - 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 제공합니다.
 
-### 13.3 Type-Safe i18n Architecture (타입 안전 i18n)
+### 13.3 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
+
+단순 번역을 넘어, 검색 의도(Search Intent)와 사용자 언어 맥락(Context)에 맞는 키워드를 동적으로 생성하는 전략입니다.
+
+- **Localized Categories**:
+  - 각 언어 파일(`i18n/locales/*.ts`)에 `categories` 맵을 정의하여, 동일한 카테고리라도 언어별로 가장 자연스러운 검색어를 매핑합니다.
+  - 예: `travel` -> `Travel English` (EN), `여행 영어` (KO), `旅行英会話` (JA).
+- **Suffix Patterns**:
+  - `expressionSuffixes`: 표현 자체를 검색할 때 사용되는 접미사 (예: "뜻", "의미", "meaning").
+  - `meaningSuffixes`: 의미를 통해 표현을 찾을 때 사용되는 접미사 (예: "영어로", "in English"). 단순 접미사뿐만 아니라 `{}` 템플릿 패턴(`another way to say {}`)을 지원하여 유연성을 확보했습니다.
+- **Visible Tags (White Hat)**:
+  - 메타 태그(`keywords`)뿐만 아니라, `components/KeywordList.tsx`를 통해 페이지 하단에 실제 텍스트로 키워드를 노출합니다. 이는 _Keyword Stuffing_(숨겨진 텍스트로 키워드 남발)으로 오인받지 않으면서 검색 엔진에 페이지의 관련성을 강력하게 어필하는 **White Hat SEO** 기법입니다.
+
+### 13.4 Type-Safe i18n Architecture (타입 안전 i18n)
 
 - **Total 9 Languages**: EN, KO, JA, ES, FR, DE, RU, ZH, AR 지원.
 - **Inference & Maintenance**:
@@ -699,7 +703,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
 - **Benefit**: 새로운 언어 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 안정적인 확장이 가능합니다.
 
-### 13.4 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
+### 13.5 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
 
 **File**: `verification/verify_i18n_locales.js`
 

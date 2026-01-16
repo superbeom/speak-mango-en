@@ -7,10 +7,22 @@ export const de = {
       "{meaning} | Lernen Sie mit muttersprachlicher Aussprache auf {serviceName}.",
     mainTitle: "{serviceName} - Tägliche englische Konversation",
     mainDescription: `Frische englische Ausdrücke, die täglich von ${SERVICE_NAME} handverlesen werden. Verbessern Sie Ihre Geschäfts-, Reise- und Alltagskonversationsfähigkeiten mit einem Satz pro Tag. Inklusive muttersprachlicher Aussprache und Erklärung der Nuancen.`,
-    keywords: `Englische Konversation, Geschäftsenglisch, Alltagsenglisch, Ein Satz pro Tag, Englischer Ausdruck, ${SERVICE_NAME}, Englisch lernen, Englischstudium, Englischunterricht`,
+    keywords: `Englische Konversation, Alltagsenglisch, Ein Satz pro Tag, Englischer Ausdruck, ${SERVICE_NAME}, Englisch lernen, Englischstudium, Englischunterricht`,
     seo: {
       expressionSuffixes: ["Bedeutung", "Definition", "Erklärung"],
-      meaningSuffixes: ["auf Englisch", "wie sagt man auf Englisch", "Englische Übersetzung"],
+      meaningSuffixes: [
+        "auf Englisch",
+        "wie sagt man {} auf Englisch",
+        "Englische Übersetzung",
+      ],
+    },
+    categories: {
+      daily: "Alltagsenglisch",
+      business: "Geschäftsenglisch",
+      travel: "Reiseenglisch",
+      shopping: "Einkaufsenglisch",
+      emotion: "Gefühlsausdrücke",
+      slang: "Umgangssprache",
     },
   },
   common: {

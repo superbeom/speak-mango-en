@@ -7,10 +7,22 @@ export const es = {
       "{meaning} | Aprende con pronunciación nativa en {serviceName}.",
     mainTitle: "{serviceName} - Coversación en Inglés Diaria",
     mainDescription: `Expresiones en inglés frescas seleccionadas por ${SERVICE_NAME} cada día. Mejora tus habilidades de conversación para negocios, viajes y la vida diaria con una frase al día. Incluye pronunciación nativa y explicación de matices.`,
-    keywords: `Conversación en inglés, Inglés de negocios, Inglés diario, Una frase al día, Expresión en inglés, ${SERVICE_NAME}, Estudio de inglés, estudiar inglés, aprendizaje de inglés, aprender inglés`,
+    keywords: `Conversación en inglés, Inglés diario, Una frase al día, Expresión en inglés, ${SERVICE_NAME}, Estudio de inglés, estudiar inglés, aprendizaje de inglés, aprender inglés`,
     seo: {
-      expressionSuffixes: ["significado"],
-      meaningSuffixes: ["en inglés"],
+      expressionSuffixes: ["significado", "definición", "explicación"],
+      meaningSuffixes: [
+        "en inglés",
+        "cómo se dice {} en inglés",
+        "traducción al inglés",
+      ],
+    },
+    categories: {
+      daily: "Inglés diario",
+      business: "Inglés de negocios",
+      travel: "Inglés de viajes",
+      shopping: "Inglés de compras",
+      emotion: "Expresiones emocionales",
+      slang: "Argot inglés",
     },
   },
   common: {

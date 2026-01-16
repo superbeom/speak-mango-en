@@ -7,10 +7,22 @@ export const en = {
       "{meaning} | Learn with native pronunciation on {serviceName}.",
     mainTitle: "{serviceName} - Daily English Conversation",
     mainDescription: `Fresh English expressions hand-picked by ${SERVICE_NAME} every day. Improve your business, travel, and daily conversation skills with one sentence a day. Includes native pronunciation and nuance explanation.`,
-    keywords: `English conversation, Business English, Daily English, One sentence a day, English expression, ${SERVICE_NAME}, English study, study English, English learning, learn English`,
+    keywords: `English conversation, Daily English, One sentence a day, English expression, ${SERVICE_NAME}, study English, English learning, learn English`,
     seo: {
       expressionSuffixes: ["meaning", "definition", "example"],
-      meaningSuffixes: ["in English", "how to say"],
+      meaningSuffixes: [
+        "synonym",
+        "another way to say {}",
+        "alternatives to {}",
+      ],
+    },
+    categories: {
+      daily: "Daily English",
+      business: "Business English",
+      travel: "Travel English",
+      shopping: "Shopping English",
+      emotion: "Emotional Expressions",
+      slang: "English Slang",
     },
   },
   common: {

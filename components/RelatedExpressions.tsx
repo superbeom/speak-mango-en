@@ -131,7 +131,7 @@ export default function RelatedExpressions({
   // 모바일 뷰: 세로 리스트
   if (isMobile) {
     return (
-      <section className="mt-12 pt-12 border-t border-main">
+      <section className="mt-12 pt-12">
         <h2 className="mb-6 text-xl font-bold text-main">{title}</h2>
         <div className="grid grid-cols-1 gap-4">
           {expressions.map((item) => (
@@ -146,7 +146,7 @@ export default function RelatedExpressions({
 
   // 데스크탑 뷰: 가로 자동 스크롤 (Marquee)
   return (
-    <section className="mt-16 pt-16 border-t border-main">
+    <section className="mt-16 pt-16">
       <h2 className="mb-4 px-4 text-2xl font-bold text-main">{title}</h2>
 
       <div
