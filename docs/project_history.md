@@ -2,6 +2,98 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: iOS 잠금 화면 오디오 메타데이터 구현 (Media Session API)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. iOS 잠금 화면에서 오디오 재생 시 Vercel 로고가 표시되고, 제목 정보가 누락되는 이유는?**
+
+- **A**: iOS 잠금 화면에서 오디오 재생 시 Vercel 로고가 표시되고, 제목 정보가 누락됨 (기본 파비콘 사용 추정).
+- **해결**: `DialogueAudioButton`에 `Media Session API`를 구현하여 제목, 아티스트(Speak Mango), 앨범 아트(앱 아이콘)를 명시적으로 설정.
+- **상세**:
+  - `togglePlay` 및 `useEffect`를 통해 오디오 재생 시 `navigator.mediaSession.metadata` 업데이트.
+  - `play`, `pause` 등의 액션 핸들러 연결.
+
+## 2026-01-16: iOS Safari 오디오 로딩 문제 해결 - Lazy Loading 리버트 (iOS Audio Fix)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `components/DialogueAudioButton.tsx`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Safari에서 오디오가 로딩되지 않고 멈추는(Deadlock) 현상이 왜 발생했나?**
+
+- **A**: iOS Safari의 Web Audio API 구현에는 특이한 버그가 있습니다. `MediaElementSource`를 연결할 때 오디오 엘리먼트가 `readyState: 0`(정보 없음) 상태이면 로딩 프로세스 자체가 차단될 수 있습니다. 최근 적용한 "Lazy Loading" 최적화(`audio.load()` 제거) 때문에 이 조건에 걸려버린 것입니다.
+
+**Q. 어떻게 해결했나?**
+
+- **A**: **하이브리드 접근법**을 사용했습니다.
+  1.  **Safari 해결**: `useEffect`에 `audio.load()`를 복구하여, 페이지 로드 시 메타데이터를 미리 확보하도록 했습니다. (Deadlock 방지)
+  2.  **인앱 브라우저 유지**: Web Audio API 초기화(`AudioContext` 생성)는 여전히 **"사용자 클릭 시점"**으로 유지했습니다. (Autoplay 차단 방지)
+  - 결과적으로 *"파일 준비는 미리 해두되, 엔진 시동은 클릭할 때 건다"*는 방식으로 두 환경 모두 호환되도록 했습니다.
+
+## 2026-01-16: 오디오 재생 최적화 - Lazy Loading 및 iOS 대응 (Audio Optimization)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `components/DialogueAudioButton.tsx`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. `audio.load()`를 `useEffect`에서 제거한 이유는?**
+
+- **A**: `preload="metadata"`을 설정했더라도 `audio.load()`를 즉시 호출하면 브라우저가 리소스를 바로 다운로드하기 시작합니다. 이는 모바일 데이터 낭비이며, 특히 iOS Safari에서 "사용자 의도 없는 대량의 미디어 요청"으로 간주되어 차단(Pending)될 위험이 있어 제거했습니다.
+
+**Q. Web Audio API 초기화 시점을 왜 변경했나?**
+
+- **A**: 기존에는 데이터 로드 시점(`loadeddata`)에 초기화했으나, iOS 인앱 브라우저에서는 사용자 제스처 없이 `AudioContext`를 조작하는 것이 엄격히 제한됩니다. 따라서 사용자가 재생 버튼을 클릭하는 순간(`togglePlay`)으로 초기화 시점을 미루어(Lazy Init), 확실한 사용자 제스처 컨텍스트 안에서 실행되도록 변경했습니다.
+
+**Q. `togglePlay`가 자주 재생성되는 문제를 어떻게 해결했나?**
+
+- **A**: `useCallback`의 의존성 배열에 `isPlaying` 등 상태값이 포함되면 렌더링마다 함수가 새로 만들어집니다. 이를 해결하기 위해 `useRef`(`latestValues`)를 도입하여 최신 상태를 참조하도록 변경하고, 함수 자체는 불변(Stable)하게 유지하여 성능을 최적화했습니다.
+
+## 2026-01-15: 인앱 브라우저 오디오 호환성 개선 (In-App Browser Audio Compatibility)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `components/DialogueAudioButton.tsx`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 카카오톡으로 공유한 링크에서 오디오가 무한 로딩 중으로 표시되는 이유는?**
+
+- **A**: 인앱 브라우저에서 Web Audio API 초기화 실패 및 AudioContext suspended 상태 (Android vs iOS 차이)
+  - **문제 1**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
+  - **문제 2 (Android)**: 첫 페이지 로드 시 AudioContext가 `suspended` 상태로 시작하여 사용자 인터랙션 전까지 작동 안 함
+  - **문제 3 (iOS)**: iOS Safari는 더 엄격하여 오디오 로딩 전 `createMediaElementSource()` 호출 시 `loadeddata` 이벤트 자체가 발생하지 않음
+  - **원인**: 카카오톡, 네이버 등 인앱 브라우저는 Web Audio API를 제한하거나 차단, autoplay 정책으로 AudioContext 자동 활성화 차단
+  - **해결 1**: try-catch로 Web Audio API 실패 시 기본 HTML5 Audio로 자동 폴백
+  - **해결 2 (Android)**: AudioContext 생성 시 즉시 `resume()` 호출 시도 (Android에서 작동)
+  - **해결 3 (iOS)**: Web Audio API 초기화를 `loadeddata` 이벤트 후로 지연 + 사용자 클릭 시점(`togglePlay`)에서 `resume()` 호출
+  - **효과**: 모든 인앱 브라우저(카카오톡, 네이버, 위챗, 왓츠앱 등)에서 Android/iOS 모두 첫 페이지 로드부터 오디오 정상 재생
+
+**Q. 특정 인앱 브라우저를 일일이 선언해야 하나?**
+
+- **A**: User Agent 감지 대신 try-catch 기반 폴백 방식 채택
+  - **기존 방식**: `userAgent.includes("kakaotalk")` 등으로 일일이 선언
+  - **문제점**: 새로운 앱(위챗, 왓츠앱 등) 대응 불가
+  - **개선 방식**: Web Audio API 초기화 실패 시 자동으로 기본 오디오 사용
+  - **장점**: 범용적 호환성, 유지보수성 향상, 모든 인앱 브라우저 자동 대응
+
+**Q. 인앱 브라우저에서는 볼륨 증폭이 안 되나?**
+
+- **A**: 네, 기본 HTML5 Audio는 최대 볼륨 1.0으로 제한됨
+  - **일반 브라우저**: Web Audio API 사용 → 볼륨 2.0배 증폭 ✅
+  - **인앱 브라우저**: 기본 HTML5 Audio → 볼륨 1.0 (최대) ✅
+  - **Trade-off**: 볼륨은 낮지만 재생은 정상 작동 (무한 로딩 해결)
+
 ## 2026-01-15: 검색 기능 개선 (Icon Click, Multilingual, Duplicate Prevention)
 
 ### ✅ 진행 사항

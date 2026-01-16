@@ -24,7 +24,6 @@ interface DialogueItemProps {
   isActive: boolean;
   isMobile: boolean;
   // Analytics props
-  isAutoPlaying?: boolean; // Play All 모드 여부
   expressionId?: string;
   audioIndex?: number;
 }
@@ -44,7 +43,6 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
       onReady,
       isActive,
       isMobile,
-      isAutoPlaying = false,
       expressionId,
       audioIndex,
     },
@@ -107,7 +105,6 @@ const DialogueItem = forwardRef<DialogueAudioButtonHandle, DialogueItemProps>(
             }
             variant={variant}
             onReady={onReady}
-            isAutoPlaying={isAutoPlaying}
             expressionId={expressionId}
             audioIndex={audioIndex}
             playType="individual"

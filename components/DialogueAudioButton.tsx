@@ -41,7 +41,6 @@ interface DialogueAudioButtonProps {
   onStop?: () => void;
   onReady?: () => void;
   // Analytics props
-  isAutoPlaying?: boolean; // True when part of sequential "Play All"
   expressionId?: string;
   audioIndex?: number;
   playType?: "individual" | "sequential";
@@ -95,7 +94,6 @@ const DialogueAudioButton = forwardRef<
       onPlay,
       onStop,
       onReady,
-      isAutoPlaying = false,
       expressionId,
       audioIndex,
       playType = "individual",
@@ -119,33 +117,115 @@ const DialogueAudioButton = forwardRef<
       onReadyRef.current = onReady;
     }, [onEnded, onReady]);
 
+    // Latest Ref pattern to keep togglePlay stable and avoid stale closures
+    const latestValues = useRef({
+      isPlaying,
+      isPaused,
+      stopBehavior,
+      onStop,
+      onPlayAttempt,
+      expressionId,
+      audioIndex,
+      playType,
+      onPlay,
+    });
+
+    // Update the ref on every render with the latest state and props
+    useEffect(() => {
+      latestValues.current = {
+        isPlaying,
+        isPaused,
+        stopBehavior,
+        onStop,
+        onPlayAttempt,
+        expressionId,
+        audioIndex,
+        playType,
+        onPlay,
+      };
+    }); // No dependency array: runs on every render
+
+    // Web Audio API initialization function (Lazy Init)
+    const initializeWebAudio = useCallback(() => {
+      try {
+        const AudioContextClass =
+          window.AudioContext || window.webkitAudioContext;
+
+        if (AudioContextClass && audioRef.current && !audioContextRef.current) {
+          const ctx = new AudioContextClass();
+
+          // Android: Try to resume immediately
+          if (ctx.state === "suspended") {
+            ctx.resume().catch(() => {
+              // Silently fail on iOS, will be resumed on user gesture
+            });
+          }
+
+          const gainNode = ctx.createGain();
+
+          // Connect: Source -> Gain -> Destination
+          const source = ctx.createMediaElementSource(audioRef.current);
+          source.connect(gainNode);
+          gainNode.connect(ctx.destination);
+
+          audioContextRef.current = ctx;
+
+          // Set fixed amplified volume
+          gainNode.gain.value = FIXED_VOLUME;
+        }
+      } catch {
+        // Web Audio API failed, fallback to basic HTML5 Audio
+        if (audioRef.current) {
+          audioRef.current.volume = 1.0;
+        }
+      }
+    }, []);
+
     const togglePlay = useCallback(
       async (forcePlay = false, isSequential = false) => {
         if (!audioRef.current) return;
 
-        // Resume AudioContext if suspended (browser policy)
-        if (audioContextRef.current?.state === "suspended") {
-          await audioContextRef.current.resume();
+        const current = latestValues.current;
+
+        // Initialize Web Audio API here (Lazy Initialization on Click)
+        // This ensures we are within a User Gesture context for iOS In-App Browsers
+        if (!audioContextRef.current) {
+          initializeWebAudio();
         }
 
-        if (isPlaying && !forcePlay) {
+        // 만약 파일 로딩이 안된 상태라면 load() 강제 호출
+        if (audioRef.current.readyState < 2) {
+          audioRef.current.load();
+        }
+
+        // Resume AudioContext if suspended (browser policy)
+        // iOS Safari requires this to be called within a user gesture
+        if (audioContextRef.current?.state === "suspended") {
+          try {
+            await audioContextRef.current.resume();
+          } catch (e) {
+            console.warn("AudioContext resume failed:", e);
+          }
+        }
+
+        if (current.isPlaying && !forcePlay) {
           audioRef.current.pause();
-          if (stopBehavior === "reset") {
+          if (current.stopBehavior === "reset") {
             audioRef.current.currentTime = 0; // Reset to start
             setIsPaused(false);
           } else {
             setIsPaused(true);
           }
           setIsPlaying(false);
-          onStop?.();
+          current.onStop?.();
         } else {
           // Check if this is a resume (from paused state)
-          const isResume = isPaused;
+          const isResume = current.isPaused;
           setIsPaused(false);
 
           // Feature Gating: Check permissions if callback provided
-          if (onPlayAttempt) {
-            const canPlay = await onPlayAttempt();
+          if (current.onPlayAttempt) {
+            const canPlay = await current.onPlayAttempt();
             if (!canPlay) return;
           }
 
@@ -169,34 +249,24 @@ const DialogueAudioButton = forwardRef<
             // When auto-playing, DialogueSection already tracked the sequential play
             if (
               !shouldSkipTracking &&
-              expressionId !== undefined &&
-              audioIndex !== undefined
+              current.expressionId !== undefined &&
+              current.audioIndex !== undefined
             ) {
               trackAudioPlay({
-                expressionId,
-                audioIndex,
-                playType,
+                expressionId: current.expressionId,
+                audioIndex: current.audioIndex,
+                playType: current.playType,
               });
             }
 
-            onPlay?.();
+            current.onPlay?.();
           } catch (error) {
             console.error("Playback failed:", error);
             setIsPlaying(false);
           }
         }
       },
-      [
-        isPlaying,
-        stopBehavior,
-        onStop,
-        onPlayAttempt,
-        isAutoPlaying,
-        expressionId,
-        audioIndex,
-        playType,
-        onPlay,
-      ]
+      [initializeWebAudio]
     );
 
     useImperativeHandle(
@@ -214,65 +284,53 @@ const DialogueAudioButton = forwardRef<
           }
         },
       }),
-      [togglePlay] // togglePlay가 변경될 때마다 ref 업데이트
+      [togglePlay] // togglePlay가 stable해졌으므로 ref 객체도 안정적으로 유지됨
     );
 
     useEffect(() => {
       if (!audioUrl) return;
 
       // Initialize Audio Element
-      const audio = new Audio();
+      const audio = new Audio(getStorageUrl(audioUrl) || "");
       audio.crossOrigin = "anonymous"; // Essential for Web Audio API with external sources
-      audio.src = getStorageUrl(audioUrl) || "";
+      audio.preload = "metadata";
       audioRef.current = audio;
 
-      // Initialize Web Audio API
-      try {
-        const AudioContextClass =
-          window.AudioContext || window.webkitAudioContext;
-
-        if (AudioContextClass) {
-          const ctx = new AudioContextClass();
-          const gainNode = ctx.createGain();
-
-          // Connect: Source -> Gain -> Destination
-          const source = ctx.createMediaElementSource(audio);
-          source.connect(gainNode);
-          gainNode.connect(ctx.destination);
-
-          audioContextRef.current = ctx;
-
-          // Set fixed amplified volume
-          gainNode.gain.value = FIXED_VOLUME;
-        }
-      } catch (e) {
-        console.warn(
-          "Web Audio API not supported or CORS failed, falling back to basic audio.",
-          e
-        );
-        // Fallback volume is clamped to 1.0
-        audio.volume = Math.min(Math.max(FIXED_VOLUME, 0), 1);
-      }
-
+      // Event handlers
       const handleEnded = () => {
         setIsPlaying(false);
         setIsPaused(false);
 
         // Track audio complete event
-        if (expressionId !== undefined && audioIndex !== undefined) {
+        const current = latestValues.current;
+        if (
+          current.expressionId !== undefined &&
+          current.audioIndex !== undefined
+        ) {
           trackAudioComplete({
-            expressionId,
-            audioIndex,
+            expressionId: current.expressionId,
+            audioIndex: current.audioIndex,
           });
         }
 
         onEndedRef.current?.();
       };
+
       const handleCanPlayThrough = () => {
         setIsLoading(false);
         onReadyRef.current?.();
       };
-      const handleLoadStart = () => setIsLoading(true);
+
+      // iOS Safari fallback: loadeddata fires even when AudioContext is suspended
+      const handleLoadedData = () => {
+        setIsLoading(false);
+        onReadyRef.current?.();
+      };
+
+      const handleLoadStart = () => {
+        setIsLoading(true);
+      };
+
       const handleError = (e: Event) => {
         setIsLoading(false);
         setIsPlaying(false);
@@ -303,15 +361,20 @@ const DialogueAudioButton = forwardRef<
 
       audio.addEventListener("ended", handleEnded);
       audio.addEventListener("canplaythrough", handleCanPlayThrough);
+      audio.addEventListener("loadeddata", handleLoadedData); // iOS Safari fallback
       audio.addEventListener("loadstart", handleLoadStart);
       audio.addEventListener("error", handleError);
 
       window.addEventListener(AUDIO_PLAYBACK_START, handleGlobalStop);
 
+      // Initialize loading immediately to prevent Safari Web Audio deadlock
+      audio.load();
+
       return () => {
         audio.pause();
         audio.removeEventListener("ended", handleEnded);
         audio.removeEventListener("canplaythrough", handleCanPlayThrough);
+        audio.removeEventListener("loadeddata", handleLoadedData);
         audio.removeEventListener("loadstart", handleLoadStart);
         audio.removeEventListener("error", handleError);
         window.removeEventListener(AUDIO_PLAYBACK_START, handleGlobalStop);
@@ -324,6 +387,40 @@ const DialogueAudioButton = forwardRef<
         audioContextRef.current = null;
       };
     }, [audioUrl]);
+
+    // Handle Media Session API
+    useEffect(() => {
+      // Only update Media Session if this component is playing
+      // This allows the lock screen to control the currently active audio
+      if (isPlaying && "mediaSession" in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: "Dialogue Audio",
+          artist: "Speak Mango",
+          artwork: [
+            {
+              src: "/assets/icon-192x192.png",
+              sizes: "192x192",
+              type: "image/png",
+            },
+            {
+              src: "/assets/icon-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+            },
+          ],
+        });
+
+        navigator.mediaSession.setActionHandler("play", () => {
+          togglePlay(true);
+        });
+        navigator.mediaSession.setActionHandler("pause", () => {
+          togglePlay();
+        });
+        navigator.mediaSession.setActionHandler("stop", () => {
+          togglePlay();
+        });
+      }
+    }, [isPlaying, togglePlay]);
 
     if (!audioUrl) return null;
 

@@ -2,6 +2,393 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.20: iOS 잠금 화면 메타데이터 구현 (2026-01-16)
+
+### 1. Problem (문제)
+
+- 아이폰 잠금 화면에서 오디오 재생 시, 앱 아이콘 대신 Vercel 로고(기본 파비콘)가 표시됨.
+
+### 2. Solution (해결)
+
+- `DialogueAudioButton.tsx`에 `Media Session API`를 도입하여 OS 레벨의 미디어 제어 UI에 명시적인 메타데이터를 제공.
+- `DialogueItem`에서 텍스트 정보를 props로 전달받아 제목으로 설정.
+
+### 3. Implementation (구현)
+
+```typescript
+// components/DialogueAudioButton.tsx
+
+useEffect(() => {
+  if (isPlaying && "mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: "Dialogue Audio",
+      artist: "Speak Mango",
+      artwork: [
+        {
+          src: "/assets/icon-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
+      ],
+    });
+    // ... setActionHandler ...
+  }
+}, [isPlaying, togglePlay]);
+```
+
+## v0.12.19: iOS Safari 오디오 로딩 픽스 (2026-01-16)
+
+### 1. Problem
+
+**iOS Safari Regression (Deadlock)**:
+
+- 이전 버전(v0.12.18)의 "Lazy Loading"(`audio.load()` 제거)이 Safari의 Web Audio API 버그를 트리거함.
+- `MediaElementSource`가 연결된 상태에서 오디오 엘리먼트가 초기화되지 않으면(`readyState: 0`), Safari는 로딩을 진행하지 않고 멈춰버림(Infinite Loading).
+
+### 2. Solution
+
+**Hybrid Loading (Revert Lazy Loading + Keep Lazy Init)**:
+
+1.  **Revert Resource Loading**: `useEffect` 내 `audio.load()` 복구.
+    - 페이지 로드 시 메타데이터를 즉시 로드하여 Safari의 Deadlock 조건을 회피.
+2.  **Keep Lazy Init**: `AudioContext` 초기화는 여전히 `togglePlay`(클릭) 시점에 수행.
+    - 카카오톡 등 인앱 브라우저의 Autoplay 정책 우회 유지.
+
+### 3. Implementation
+
+```tsx
+// components/DialogueAudioButton.tsx
+
+useEffect(() => {
+  const audio = new Audio(getStorageUrl(audioUrl));
+  audio.preload = "metadata";
+  audioRef.current = audio;
+
+  // Safari fix: Web Audio 연결 전 리소스 초기화 필수
+  audio.load();
+}, [audioUrl]);
+```
+
+### 4. Result
+
+- ✅ **Safari**: 무한 로딩 해결, 정상 재생.
+- ✅ **In-App Browsers**: 여전히 정상 재생 (Lazy Init 덕분).
+
+## v0.12.18: 오디오 재생 최적화 - Lazy Loading 및 안정성 강화 (2026-01-16)
+
+### 1. Problem
+
+**iOS 호환성 및 리소스 효율성 문제**:
+
+- `preload="metadata"` 설정에도 불구하고 컴포넌트 마운트 시 `audio.load()`가 호출되어 즉시 네트워크 요청 발생.
+- 데이터 로드 이벤트 핸들러에서 Web Audio API를 초기화하려다 iOS의 Autoplay 정책에 걸려 실패 가능성 존재.
+- `useCallback` 의존성 배열에 상태값이 포함되어 불필요한 함수 재생성 및 리렌더링 발생.
+
+### 2. Solution
+
+**True Lazy Loading & Stable Handler**:
+
+1. **Lazy Resource Loading**: `useEffect`에서 `audio.load()` 제거. 재생 버튼 클릭 시에만 로딩 시작.
+2. **Lazy API Initialization**: Web Audio API 초기화를 `togglePlay` 내부(사용자 클릭 시점)로 이동.
+3. **Latest Ref Pattern**: `useRef`를 사용하여 상태값을 조회함으로써 `togglePlay` 함수를 안정화(Stable)함.
+
+### 3. Implementation
+
+#### A. Resource Loading 최적화
+
+```tsx
+useEffect(() => {
+  const audio = new Audio(getStorageUrl(audioUrl));
+  audio.preload = "metadata"; // 메타데이터만 미리 로드
+  audioRef.current = audio;
+  // audio.load() 삭제: 사용자가 누르기 전까지 요청 금지
+}, [audioUrl]);
+```
+
+#### B. Lazy Initialization (User Gesture)
+
+```tsx
+const togglePlay = useCallback(async () => {
+  // 클릭 시점에 초기화 (iOS 정책 준수)
+  if (!audioContextRef.current) {
+    initializeWebAudio();
+  }
+
+  // 로딩 상태 피드백
+  if (audioRef.current.readyState < 2) {
+    setIsLoading(true);
+  }
+
+  await audioRef.current.play(); // 이때 브라우저가 로딩 시작
+}, []);
+```
+
+#### C. Performance Optimization
+
+```tsx
+// 최신 상태를 Ref에 저장
+const latestValues = useRef({ isPlaying, isPaused, ... });
+
+useEffect(() => {
+  latestValues.current = { isPlaying, isPaused, ... };
+});
+
+// 의존성 없는 Stable Handler
+const togglePlay = useCallback(async () => {
+  const current = latestValues.current; // Ref에서 최신 값 조회
+  // ...
+}, []); // 의존성 배열 비움
+```
+
+### 4. Result
+
+- ✅ **iOS 호환성**: 인앱 브라우저 및 Safari에서 완벽한 재생 보장.
+- ✅ **데이터 절약**: 사용자가 듣지 않는 오디오는 다운로드하지 않음.
+- ✅ **성능 향상**: 불필요한 리렌더링 및 함수 재생성 제거.
+
+## v0.12.17: 인앱 브라우저 오디오 호환성 개선 (2026-01-15)
+
+### 1. Problem
+
+**카카오톡 공유 링크에서 오디오 무한 로딩 (Android vs iOS 차이)**:
+
+- **증상 1**: 카카오톡으로 공유한 링크 접속 시 오디오가 계속 '로딩 중' 상태로 표시
+- **증상 2 (Android)**: 첫 페이지에서는 안 되지만, 다른 표현 클릭 후 뒤로가기하면 정상 작동
+- **증상 3 (iOS)**: Android 해결책 적용 후에도 iOS에서는 여전히 무한 로딩 표시
+- **증상 4 (iOS 디버깅)**: `loadstart` 이벤트는 발생하지만 `loadeddata` 이벤트가 발생하지 않음
+- **범위**: 일반 브라우저(Chrome, Safari)에서는 정상 작동, 인앱 브라우저에서만 발생
+- **영향**: 사용자가 첫 접속 시 오디오를 재생할 수 없어 핵심 기능 사용 불가
+
+### 2. Solution
+
+**범용적인 폴백 메커니즘 + AudioContext 활성화 + iOS Safari 대응 (Web Audio API 지연 초기화)**:
+
+- Web Audio API 초기화 실패 시 자동으로 기본 HTML5 Audio로 폴백
+- User Agent 감지 대신 try-catch 기반 접근으로 모든 인앱 브라우저 자동 대응
+- **Android**: AudioContext 생성 시 즉시 `resume()` 호출 시도
+- **iOS Safari**: Web Audio API 초기화를 `loadeddata` 이벤트 후로 지연 + 사용자 클릭 시점에서 `resume()` 호출
+- 볼륨 증폭은 포기하되 재생 기능은 보장
+
+### 3. Implementation
+
+#### A. Web Audio API 폴백 로직
+
+**File**: `components/DialogueAudioButton.tsx`
+
+**Before** (인앱 브라우저 감지 방식):
+
+```tsx
+// User Agent로 일일이 감지
+const isInAppBrowser =
+  userAgent.includes("kakaotalk") ||
+  userAgent.includes("naver") ||
+  // ... 계속 추가 필요
+
+if (!isInAppBrowser) {
+  // Web Audio API 초기화
+}
+```
+
+**After** (try-catch 폴백 방식):
+
+```tsx
+let webAudioInitialized = false;
+
+try {
+  const ctx = new AudioContext();
+
+  // 인앱 브라우저 autoplay 정책 대응: AudioContext를 즉시 resume
+  if (ctx.state === "suspended") {
+    ctx.resume().catch((e) => {
+      console.warn("AudioContext resume failed:", e);
+    });
+  }
+
+  const gainNode = ctx.createGain();
+  const source = ctx.createMediaElementSource(audio);
+  source.connect(gainNode);
+  gainNode.connect(ctx.destination);
+  gainNode.gain.value = 2.0; // 볼륨 증폭
+  webAudioInitialized = true;
+} catch (e) {
+  console.warn(
+    "Web Audio API initialization failed, using basic HTML5 Audio.",
+    e
+  );
+}
+
+// 실패 시 기본 오디오 사용
+if (!webAudioInitialized) {
+  audio.volume = 1.0; // 최대 볼륨
+}
+```
+
+#### B. AudioContext 활성화 로직
+
+**첫 페이지 로딩 문제**:
+
+```
+카카오톡 링크 클릭 (첫 접속)
+  ↓
+AudioContext 생성 (suspended 상태)
+  ↓
+사용자 인터랙션 없음
+  ↓
+createMediaElementSource() 실패 가능
+  ↓
+무한 로딩 🔄
+```
+
+**해결 방법**:
+
+```tsx
+const ctx = new AudioContext();
+
+// 즉시 resume 호출
+if (ctx.state === "suspended") {
+  ctx.resume().catch((e) => {
+    console.warn("AudioContext resume failed:", e);
+  });
+}
+```
+
+**해결 후**:
+
+```
+카카오톡 링크 클릭 (첫 접속)
+  ↓
+AudioContext 생성 (suspended)
+  ↓
+즉시 resume() 호출
+  ↓
+suspended → running 전환
+  ↓
+정상 작동 ✅
+```
+
+#### C. iOS Safari 대응 (Web Audio API 지연 초기화)
+
+**iOS Safari의 추가 제약**:
+
+- `AudioContext.resume()`도 **사용자 제스처 내에서만** 작동
+- **오디오 로딩 전** `createMediaElementSource()` 호출 시 `loadeddata` 이벤트가 발생하지 않음
+- 무한 로딩 표시 → 사용자가 클릭하지 않음 → 악순환
+
+**해결 1: Web Audio API 초기화 지연**:
+
+```tsx
+// Before: 즉시 Web Audio API 초기화 (iOS에서 loadeddata 차단)
+const audio = new Audio(url);
+createMediaElementSource(audio); // ❌ 너무 빨라!
+
+// After: loadeddata 후 Web Audio API 초기화
+const audio = new Audio(url);
+
+const handleLoadedData = () => {
+  setIsLoading(false);
+
+  // Initialize Web Audio API AFTER audio is loaded
+  if (!audioContextRef.current) {
+    initializeWebAudio(); // ✅ 로딩 후 초기화!
+  }
+};
+
+const initializeWebAudio = () => {
+  const ctx = new AudioContext();
+  const source = ctx.createMediaElementSource(audioRef.current);
+  // ... Web Audio API 설정
+};
+```
+
+**해결 2: 사용자 클릭 시 AudioContext 활성화**:
+
+```tsx
+const togglePlay = useCallback(async () => {
+  // iOS Safari requires this to be called within a user gesture
+  if (audioContextRef.current?.state === "suspended") {
+    try {
+      await audioContextRef.current.resume();
+    } catch (e) {
+      // Silently fail on iOS, will be resumed on user gesture
+    }
+  }
+  // ... 오디오 재생
+}, []);
+```
+
+**동작 흐름**:
+
+```
+iOS Safari 첫 접속
+  ↓
+오디오 파일 로딩 시작
+  ↓
+loadeddata 이벤트 발생 ✅
+  ↓
+로딩 스피너 사라짐 ✅
+  ↓
+Web Audio API 초기화 (AudioContext suspended)
+  ↓
+사용자가 재생 버튼 클릭
+  ↓
+AudioContext.resume() 호출 (사용자 제스처 내)
+  ↓
+정상 재생 ✅
+```
+
+#### D. 무한 로딩 문제 해결
+
+**기존 문제**:
+
+```
+Web Audio API 실패
+  ↓
+catch 블록에서 볼륨만 설정
+  ↓
+오디오 객체 초기화 실패
+  ↓
+canplaythrough 이벤트 미발생
+  ↓
+isLoading 상태 계속 true
+  ↓
+무한 로딩 🔄
+```
+
+**해결 후**:
+
+```
+Web Audio API 실패
+  ↓
+플래그만 false로 설정
+  ↓
+기본 HTML5 Audio 사용
+  ↓
+canplaythrough 이벤트 정상 발생
+  ↓
+isLoading → false
+  ↓
+정상 재생 ✅
+```
+
+### 4. Result
+
+**호환성 개선**:
+
+- ✅ 카카오톡 인앱 브라우저: 정상 재생
+- ✅ 네이버 인앱 브라우저: 정상 재생
+- ✅ 위챗, 왓츠앱, 라인 등: 자동 대응
+- ✅ 일반 브라우저: 기존대로 볼륨 증폭 유지
+
+**Trade-off**:
+
+- 인앱 브라우저: 볼륨 1.0 (증폭 없음)
+- 일반 브라우저: 볼륨 2.0 (증폭 유지)
+
+**유지보수성**:
+
+- 새로운 인앱 브라우저 출시 시 코드 수정 불필요
+- User Agent 목록 관리 불필요
+
 ## v0.12.16: 검색 기능 개선 - 아이콘 클릭, 다국어, 중복 방지 (2026-01-15)
 
 ### 1. Problem
@@ -446,13 +833,13 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
   ```
 ````
 
-````
-
 **After**:
+
 ```markdown
 ### 8단계: Gemini Content Generator
+
 - **Prompt**: `n8n/expressions/code/08_gemini_content_generator_prompt.txt`의 내용을 사용합니다.
-````
+```
 
 ### 4. Key Learnings
 

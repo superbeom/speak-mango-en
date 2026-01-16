@@ -375,7 +375,6 @@ export default function DialogueSection({
                 onReady={() => handleAudioReady(idx)}
                 isActive={isAutoPlaying && playingIndex === idx}
                 isMobile={!!isMobile}
-                isAutoPlaying={isAutoPlaying}
                 expressionId={expressionId}
                 audioIndex={idx}
               />
