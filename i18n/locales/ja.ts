@@ -7,7 +7,11 @@ export const ja = {
       "{meaning} | {serviceName}でネイティブの発音と一緒に学びましょう。",
     mainTitle: "{serviceName} - 毎日の英会話",
     mainDescription: `${SERVICE_NAME}が厳選した新鮮な英語表現を毎日お届けします。1日1フレーズでビジネス、旅行、日常会話のスキルを向上させましょう。ネイティブの発音とニュアンス解説付き。`,
-    keywords: `英会話, ビジネス英語, 日常英語, 1日1フレーズ, 英語表現, ${SERVICE_NAME}, 英語学習`,
+    keywords: `英会話, ビジネス英語, 日常英語, 1日1フレーズ, 英語表現, ${SERVICE_NAME}, 英語学習, 英語の勉強, 英語を学ぶ`,
+    seo: {
+      expressionSuffixes: ["意味", "使い方"],
+      meaningSuffixes: ["英語で", "英語 表現"],
+    },
   },
   common: {
     back: "戻る",

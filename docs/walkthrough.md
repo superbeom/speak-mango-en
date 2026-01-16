@@ -2,6 +2,33 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.21: 동적 SEO 키워드 최적화 (2026-01-16)
+
+### 1. Goal (목표)
+
+- "Feel Blue 뜻", "우울하다 영어로"와 같이 사용자가 실제로 검색하는 고관여 키워드(Long-tail)를 자동으로 메타데이터에 포함.
+
+### 2. Implementation (구현)
+
+- **Locale Config (`ko.ts`)**:
+
+```typescript
+seo: {
+  expressionSuffixes: ["뜻", "의미", "해석"],
+  meaningSuffixes: ["영어로", "영어 표현", "영어로 어떻게"]
+}
+```
+
+- **Page Metadata (`page.tsx`)**:
+
+```typescript
+if (seo.expressionSuffixes) {
+  seo.expressionSuffixes.forEach((suffix) =>
+    keywords.push(`${expression} ${suffix}`)
+  );
+}
+```
+
 ## v0.12.20: iOS 잠금 화면 메타데이터 구현 (2026-01-16)
 
 ### 1. Problem (문제)

@@ -55,9 +55,32 @@ export async function generateMetadata({
     serviceName: SERVICE_NAME,
   });
 
+  // SEO Keyword Generation
+  const keywords = dict.meta.keywords.split(", ");
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const seo = (dict.meta as any).seo;
+
+  if (seo) {
+    // 1. Expression + Suffix (e.g., "Feel Blue Meaning")
+    if (seo.expressionSuffixes && Array.isArray(seo.expressionSuffixes)) {
+      seo.expressionSuffixes.forEach((suffix: string) => {
+        keywords.push(`${expression.expression} ${suffix}`);
+      });
+    }
+
+    // 2. Meaning + Suffix (e.g., "우울하다 영어로")
+    if (seo.meaningSuffixes && Array.isArray(seo.meaningSuffixes)) {
+      seo.meaningSuffixes.forEach((suffix: string) => {
+        keywords.push(`${primaryMeaning} ${suffix}`);
+      });
+    }
+  }
+
   return {
     title,
     description,
+    keywords,
     openGraph: {
       title,
       description,

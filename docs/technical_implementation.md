@@ -376,6 +376,15 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
     - `play`, `pause`, `stop` 핸들러를 등록하여 잠금 화면에서도 제어가 가능하도록 연결합니다.
   - **Context Strategy**: `togglePlay` 함수를 `useEffect` 의존성으로 안전하게 사용하거나, `useRef`를 통해 최신 핸들러를 참조하도록 하여 순환 참조 문제를 방지합니다.
 
+### 7.9 Dynamic SEO Keywords (동적 SEO 키워드)
+
+검색 의도(Search Intent)가 명확한 키워드를 자동으로 생성하여 유입을 늘리기 위한 전략입니다.
+
+- **Config**: `i18n/locales/*.ts` 파일의 `seo` 객체에 언어별 패턴을 정의합니다.
+  - `expressionSuffixes`: 표현 중심 검색어 (예: "Feel Blue 뜻", "Feel Blue meaning")
+  - `meaningSuffixes`: 의미 중심 검색어 (예: "우울하다 영어로", "Sad in English")
+- **Generation**: `generateMetadata` 함수에서 기본 `keywords`에 위 패턴으로 생성된 조합형 키워드들을 추가합니다.
+
 ### 7.7 Lazy Initialization Strategy (지연 초기화 전략)
 
 모바일 환경 호환성과 iOS Safari 버그를 동시에 해결하기 위해 **Hybrid Loading** 전략을 사용합니다.

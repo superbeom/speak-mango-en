@@ -7,7 +7,11 @@ export const ko = {
       "{meaning} | {serviceName}에서 원어민 발음과 함께 배워보세요.",
     mainTitle: "{serviceName} - 하루 한 문장 영어 회화",
     mainDescription: `${SERVICE_NAME}가 매일 엄선한 신선한 영어 표현. 하루 한 문장으로 비즈니스, 여행, 일상 회화 실력을 키워보세요. 원어민 발음과 생생한 뉘앙스 해설까지.`,
-    keywords: `영어 회화, 비즈니스 영어, 생활 영어, 하루 한 문장, 영어 표현, ${SERVICE_NAME}, 스픽 망고, 영어 공부`,
+    keywords: `영어 회화, 비즈니스 영어, 생활 영어, 하루 한 문장, 영어 표현, ${SERVICE_NAME}, 스픽 망고, 영어 공부, 영어 학습, 영어 배우기`,
+    seo: {
+      expressionSuffixes: ["뜻", "의미", "해석"],
+      meaningSuffixes: ["영어로", "영어 표현", "영어로 어떻게", "영어 말하기"],
+    },
   },
   common: {
     back: "뒤로가기",

@@ -2,6 +2,17 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: 동적 SEO 키워드 생성 (Dynamic Keywords)
+
+- **목표**: 표현 페이지의 검색 엔진 노출 최적화 (Intent Keywords 타겟팅).
+- **구현**:
+  - `i18n/locales/*.ts`: 각 언어별 검색 의도에 맞는 접미사(`expressionSuffixes`, `meaningSuffixes`) 정의.
+  - `en`: "meaning", "how to say" 등.
+  - `ko`: "뜻", "의미", "영어로" 등.
+  - `zh`, `ru`, `fr`, `de`, `ar` 등 주요 언어 추가 지원.
+  - `app/expressions/[id]/page.tsx`: 메타데이터 생성 시 접미사를 조합하여 고관여 키워드 자동 생성 및 주입.
+  - `package.json`: 프로젝트 레벨 `keywords` 필드 추가.
+
 ## 2026-01-16: iOS 잠금 화면 오디오 메타데이터 구현 (Media Session API)
 
 ### 💬 주요 Q&A 및 의사결정
