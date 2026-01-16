@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: iOS 잠금 화면 오디오 메타데이터 구현 (Media Session API)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. iOS 잠금 화면에서 오디오 재생 시 Vercel 로고가 표시되고, 제목 정보가 누락되는 이유는?**
+
+- **A**: iOS 잠금 화면에서 오디오 재생 시 Vercel 로고가 표시되고, 제목 정보가 누락됨 (기본 파비콘 사용 추정).
+- **해결**: `DialogueAudioButton`에 `Media Session API`를 구현하여 제목, 아티스트(Speak Mango), 앨범 아트(앱 아이콘)를 명시적으로 설정.
+- **상세**:
+  - `togglePlay` 및 `useEffect`를 통해 오디오 재생 시 `navigator.mediaSession.metadata` 업데이트.
+  - `play`, `pause` 등의 액션 핸들러 연결.
+
 ## 2026-01-16: iOS Safari 오디오 로딩 문제 해결 - Lazy Loading 리버트 (iOS Audio Fix)
 
 ### ✅ 진행 사항

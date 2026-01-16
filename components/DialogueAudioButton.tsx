@@ -388,6 +388,40 @@ const DialogueAudioButton = forwardRef<
       };
     }, [audioUrl]);
 
+    // Handle Media Session API
+    useEffect(() => {
+      // Only update Media Session if this component is playing
+      // This allows the lock screen to control the currently active audio
+      if (isPlaying && "mediaSession" in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: "Dialogue Audio",
+          artist: "Speak Mango",
+          artwork: [
+            {
+              src: "/assets/icon-192x192.png",
+              sizes: "192x192",
+              type: "image/png",
+            },
+            {
+              src: "/assets/icon-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+            },
+          ],
+        });
+
+        navigator.mediaSession.setActionHandler("play", () => {
+          togglePlay(true);
+        });
+        navigator.mediaSession.setActionHandler("pause", () => {
+          togglePlay();
+        });
+        navigator.mediaSession.setActionHandler("stop", () => {
+          togglePlay();
+        });
+      }
+    }, [isPlaying, togglePlay]);
+
     if (!audioUrl) return null;
 
     return (

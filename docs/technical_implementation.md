@@ -362,6 +362,20 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - 이를 통해 부모의 상태 변화(예: 다른 오디오가 준비됨)가 자식의 오디오 재로딩을 유발하지 않도록 격리(Isolation)합니다.
 - **Loading Sync**: 모든 오디오 인스턴스가 `onReady` 신호를 보낼 때까지 'Play All' 버튼을 비활성화하여, 끊김 없는 연속 재생을 보장합니다.
 
+### 7.8 Media Session API Integration (잠금 화면 제어)
+
+iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 올바른 메타데이터를 표시하기 위해 `Media Session API`를 사용합니다.
+
+- **Implementation**:
+  - `DialogueAudioButton` 컴포넌트 내에서 `isPlaying` 상태가 `true`가 될 때 `useEffect`를 통해 메타데이터를 설정합니다.
+  - **Metadata**:
+    - `title`: "Dialogue Audio"
+    - `artist`: "Speak Mango"
+    - `artwork`: `/assets/icon-512x512.png` 등 고화질 아이콘
+  - **Action Handlers**:
+    - `play`, `pause`, `stop` 핸들러를 등록하여 잠금 화면에서도 제어가 가능하도록 연결합니다.
+  - **Context Strategy**: `togglePlay` 함수를 `useEffect` 의존성으로 안전하게 사용하거나, `useRef`를 통해 최신 핸들러를 참조하도록 하여 순환 참조 문제를 방지합니다.
+
 ### 7.7 Lazy Initialization Strategy (지연 초기화 전략)
 
 모바일 환경 호환성과 iOS Safari 버그를 동시에 해결하기 위해 **Hybrid Loading** 전략을 사용합니다.

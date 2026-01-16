@@ -2,6 +2,40 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.20: iOS 잠금 화면 메타데이터 구현 (2026-01-16)
+
+### 1. Problem (문제)
+
+- 아이폰 잠금 화면에서 오디오 재생 시, 앱 아이콘 대신 Vercel 로고(기본 파비콘)가 표시됨.
+
+### 2. Solution (해결)
+
+- `DialogueAudioButton.tsx`에 `Media Session API`를 도입하여 OS 레벨의 미디어 제어 UI에 명시적인 메타데이터를 제공.
+- `DialogueItem`에서 텍스트 정보를 props로 전달받아 제목으로 설정.
+
+### 3. Implementation (구현)
+
+```typescript
+// components/DialogueAudioButton.tsx
+
+useEffect(() => {
+  if (isPlaying && "mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: "Dialogue Audio",
+      artist: "Speak Mango",
+      artwork: [
+        {
+          src: "/assets/icon-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
+      ],
+    });
+    // ... setActionHandler ...
+  }
+}, [isPlaying, togglePlay]);
+```
+
 ## v0.12.19: iOS Safari 오디오 로딩 픽스 (2026-01-16)
 
 ### 1. Problem
