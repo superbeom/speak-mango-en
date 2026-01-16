@@ -367,6 +367,9 @@ const DialogueAudioButton = forwardRef<
 
       window.addEventListener(AUDIO_PLAYBACK_START, handleGlobalStop);
 
+      // Initialize loading immediately to prevent Safari Web Audio deadlock
+      audio.load();
+
       return () => {
         audio.pause();
         audio.removeEventListener("ended", handleEnded);
