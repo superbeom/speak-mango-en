@@ -2,6 +2,44 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.19: iOS Safari 오디오 로딩 픽스 (2026-01-16)
+
+### 1. Problem
+
+**iOS Safari Regression (Deadlock)**:
+
+- 이전 버전(v0.12.18)의 "Lazy Loading"(`audio.load()` 제거)이 Safari의 Web Audio API 버그를 트리거함.
+- `MediaElementSource`가 연결된 상태에서 오디오 엘리먼트가 초기화되지 않으면(`readyState: 0`), Safari는 로딩을 진행하지 않고 멈춰버림(Infinite Loading).
+
+### 2. Solution
+
+**Hybrid Loading (Revert Lazy Loading + Keep Lazy Init)**:
+
+1.  **Revert Resource Loading**: `useEffect` 내 `audio.load()` 복구.
+    - 페이지 로드 시 메타데이터를 즉시 로드하여 Safari의 Deadlock 조건을 회피.
+2.  **Keep Lazy Init**: `AudioContext` 초기화는 여전히 `togglePlay`(클릭) 시점에 수행.
+    - 카카오톡 등 인앱 브라우저의 Autoplay 정책 우회 유지.
+
+### 3. Implementation
+
+```tsx
+// components/DialogueAudioButton.tsx
+
+useEffect(() => {
+  const audio = new Audio(getStorageUrl(audioUrl));
+  audio.preload = "metadata";
+  audioRef.current = audio;
+
+  // Safari fix: Web Audio 연결 전 리소스 초기화 필수
+  audio.load();
+}, [audioUrl]);
+```
+
+### 4. Result
+
+- ✅ **Safari**: 무한 로딩 해결, 정상 재생.
+- ✅ **In-App Browsers**: 여전히 정상 재생 (Lazy Init 덕분).
+
 ## v0.12.18: 오디오 재생 최적화 - Lazy Loading 및 안정성 강화 (2026-01-16)
 
 ### 1. Problem

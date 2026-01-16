@@ -362,13 +362,14 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - 이를 통해 부모의 상태 변화(예: 다른 오디오가 준비됨)가 자식의 오디오 재로딩을 유발하지 않도록 격리(Isolation)합니다.
 - **Loading Sync**: 모든 오디오 인스턴스가 `onReady` 신호를 보낼 때까지 'Play All' 버튼을 비활성화하여, 끊김 없는 연속 재생을 보장합니다.
 
-### 7.7 Lazy Loading & Initialization Strategy (지연 로딩 전략)
+### 7.7 Lazy Initialization Strategy (지연 초기화 전략)
 
-모바일 환경에서의 데이터 절약과 iOS의 엄격한 미디어 정책을 준수하기 위해 'True Lazy Loading'을 구현했습니다.
+모바일 환경 호환성과 iOS Safari 버그를 동시에 해결하기 위해 **Hybrid Loading** 전략을 사용합니다.
 
-- **Resource**: `audio.preload = "metadata"`을 설정하고, 컴포넌트 마운트 시 `audio.load()`를 호출하지 않습니다. 브라우저는 사용자가 `play()`를 호출하는 순간 네트워크 요청을 시작합니다.
-- **API Context**: `Web Audio API` (`AudioContext`) 초기화 로직을 데이터 로드 시점이 아닌, 사용자의 **클릭 이벤트 핸들러(`togglePlay`)** 내부로 이동시켰습니다. 이는 iOS Safari 등에서 사용자 제스처(User Gesture) 없이 오디오 컨텍스트를 생성/조작할 때 발생하는 제약을 완벽하게 우회합니다.
-- **Visual Feedback**: 리소스가 로드되지 않은 상태에서 재생 시도 시, `readyState`를 체크하여 리소스를 로드합니다.
+- **Resource**: `audio.preload = "metadata"`와 함께 컴포넌트 마운트 시 `audio.load()`를 명시적으로 호출합니다.
+  - **Why?**: iOS Safari에서 Web Audio API(`MediaElementSource`)를 사용할 때, 오디오가 로드되지 않은 상태(`readyState: 0`)에서 연결하면 로딩 자체가 멈추는 Deadlock 버그가 있습니다. 이를 방지하기 위해 최소한의 메타데이터는 미리 확보해야 합니다.
+- **API Context**: `Web Audio API` (`AudioContext`) 초기화는 **사용자의 클릭 이벤트 핸들러(`togglePlay`)** 내부에서 수행(Lazy Init)합니다.
+  - **Why?**: 카카오톡 등 인앱 브라우저는 사용자 제스처 없이 오디오 컨텍스트를 만들거나 Resume하는 것을 차단합니다. 클릭 시점에 초기화함으로써 이 제약을 우회합니다.
 
 ### 7.8 Stable Event Handler Pattern (안정적 핸들러 패턴)
 

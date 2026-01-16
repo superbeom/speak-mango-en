@@ -2,6 +2,27 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: iOS Safari 오디오 로딩 문제 해결 - Lazy Loading 리버트 (iOS Audio Fix)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `components/DialogueAudioButton.tsx`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. Safari에서 오디오가 로딩되지 않고 멈추는(Deadlock) 현상이 왜 발생했나?**
+
+- **A**: iOS Safari의 Web Audio API 구현에는 특이한 버그가 있습니다. `MediaElementSource`를 연결할 때 오디오 엘리먼트가 `readyState: 0`(정보 없음) 상태이면 로딩 프로세스 자체가 차단될 수 있습니다. 최근 적용한 "Lazy Loading" 최적화(`audio.load()` 제거) 때문에 이 조건에 걸려버린 것입니다.
+
+**Q. 어떻게 해결했나?**
+
+- **A**: **하이브리드 접근법**을 사용했습니다.
+  1.  **Safari 해결**: `useEffect`에 `audio.load()`를 복구하여, 페이지 로드 시 메타데이터를 미리 확보하도록 했습니다. (Deadlock 방지)
+  2.  **인앱 브라우저 유지**: Web Audio API 초기화(`AudioContext` 생성)는 여전히 **"사용자 클릭 시점"**으로 유지했습니다. (Autoplay 차단 방지)
+  - 결과적으로 *"파일 준비는 미리 해두되, 엔진 시동은 클릭할 때 건다"*는 방식으로 두 환경 모두 호환되도록 했습니다.
+
 ## 2026-01-16: 오디오 재생 최적화 - Lazy Loading 및 iOS 대응 (Audio Optimization)
 
 ### ✅ 진행 사항
