@@ -667,7 +667,12 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 ### 13.2 Dynamic SEO & Open Graph (동적 SEO)
 
 - **Metadata API**: Next.js 14+의 `generateMetadata` 함수를 활용하여 페이지별로 동적인 `title`과 `description`을 주입합니다.
-- **Structured Data (JSON-LD)**: 단순 메타 태그를 넘어, 구글 검색 엔진이 포맷을 이해할 수 있도록 `script` 태그에 `LearningResource` 스키마를 JSON-LD 포맷으로 삽입했습니다.
+- **Structured Data (JSON-LD) Strategy**:
+  - **Dual Schema Architecture**:
+    - **Global (`app/layout.tsx`)**: `WebSite` (Identity, Keywords) & `Organization`.
+    - **Local (`app/page.tsx`)**: `WebSite` (`SearchAction`) - 홈 화면 전용 검색 기능 명시.
+    - **Detail (`app/expressions/[id]/page.tsx`)**: `LearningResource` - 개별 표현 학습 자료 명시.
+  - **Keyword Injection**: `meta keywords` 태그뿐만 아니라 JSON-LD 스키마 내에도 `keywords` 속성을 주입하여 엔티티 연관성을 강화했습니다.
 - **Node.js-generated OG Image**:
   - `app/expressions/[id]/opengraph-image.tsx`를 구현했습니다.
   - **Runtime Strategy**: 고화질 로고 이미지(`fs.readFileSync`)와 커스텀 폰트 파일 로딩을 위해 기본 `edge` 런타임 대신 **`nodejs` 런타임**을 채택했습니다.

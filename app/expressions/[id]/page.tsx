@@ -118,6 +118,14 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
     expression.category
   );
 
+  // SEO Keywords for Schema & UI
+  const seoKeywords = generateSeoKeywords(
+    dict,
+    expression.expression,
+    meaning,
+    expression.category
+  );
+
   return (
     <div className="min-h-screen bg-layout pb-20">
       {/* Track expression view */}
@@ -142,6 +150,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 "@context": "https://schema.org",
                 "@type": "LearningResource",
                 name: expression.expression,
+                keywords: seoKeywords.join(", "),
                 description: formatMessage(dict.meta.expressionDesc, {
                   expression: expression.expression,
                   meaning: meaning,
@@ -270,14 +279,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             />
           </div>
 
-          <KeywordList
-            keywords={generateSeoKeywords(
-              dict,
-              expression.expression,
-              meaning,
-              expression.category
-            )}
-          />
+          <KeywordList keywords={seoKeywords} />
         </article>
 
         {/* Related Expressions Section */}

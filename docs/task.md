@@ -76,6 +76,9 @@
 - [x] **SEO**: 동적 카테고리 키워드 현지화 (Localized Dynamic Keywords)
   - [x] 언어별 `categories` 맵 정의 및 하드코딩 키워드 제거
   - [x] `lib/seo` 동적 룩업 로직 구현
+- [x] **SEO**: JSON-LD 구조화된 데이터(Schema.org) 최적화
+  - [x] `app/layout.tsx`: `keywords` 추가
+  - [x] `app/expressions/[id]`: `LearningResource` 스키마에 `keywords` 주입
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

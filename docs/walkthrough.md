@@ -2,6 +2,29 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.24: JSON-LD Schema 최적화 (2026-01-16)
+
+### 1. Goal (목표)
+
+- `meta keywords` 태그 외에, Schema.org 구조화 데이터를 통해 검색 엔진에게 명확한 키워드 컨텍스트 제공.
+- `layout.tsx`와 `page.tsx` 간의 스키마 중복 제거 및 역할 분리.
+
+### 2. Implementation (구현)
+
+- **Schema Injection**:
+
+  - `Dict.meta.keywords` -> `WebSite` Schema (`layout.tsx`)
+  - `generateSeoKeywords(...)` -> `LearningResource` Schema (`page.tsx`)
+
+- **Schema Consolidation**:
+  - `layout.tsx`: `Organization` + `WebSite` (Global Identity & Keywords)
+  - `page.tsx`: `WebSite` (Local `SearchAction` only)
+
+### 3. Result (결과)
+
+- ✅ **Rich Snippets**: 검색 결과에서 더 풍부한 정보 노출 가능성 증대.
+- ✅ **Logical Structure**: 전역 설정과 지역 설정의 명확한 분리.
+
 ## v0.12.23: SEO 설정 구조 리팩토링 (2026-01-16)
 
 ### 1. Goal (목표)

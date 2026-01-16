@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: SEO Schema & JSON-LD 최적화 (Schema.org Implementation)
+
+- **목표**: 검색 엔진의 엔티티 이해도 향상을 위해 구조화된 데이터(Structured Data) 강화.
+- **변경**:
+  - `app/layout.tsx`: `keywords` 속성을 `WebSite` 스키마에 추가하여 사이트 전체 주제 명시. `app/page.tsx`의 중복 스키마 통합 및 제거.
+  - `app/expressions/[id]/page.tsx`: `LearningResource` 스키마에 `keywords` 속성 추가 (동적 생성된 키워드 주입).
+  - **검증**: 중복된 `WebSite` 스키마 제거로 로직 일관성(`layout`=Global, `page`=Local SearchAction) 확보.
+
 ## 2026-01-16: SEO 설정 구조 리팩토링 (SEO Config Refactoring)
 
 - **목표**: SEO 관련 설정(`seo`)을 메타데이터(`meta`)와 분리하여 구조적 명확성 확보 및 유지보수성 향상.
