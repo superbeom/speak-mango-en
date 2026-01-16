@@ -362,6 +362,23 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - 이를 통해 부모의 상태 변화(예: 다른 오디오가 준비됨)가 자식의 오디오 재로딩을 유발하지 않도록 격리(Isolation)합니다.
 - **Loading Sync**: 모든 오디오 인스턴스가 `onReady` 신호를 보낼 때까지 'Play All' 버튼을 비활성화하여, 끊김 없는 연속 재생을 보장합니다.
 
+### 7.7 Lazy Loading & Initialization Strategy (지연 로딩 전략)
+
+모바일 환경에서의 데이터 절약과 iOS의 엄격한 미디어 정책을 준수하기 위해 'True Lazy Loading'을 구현했습니다.
+
+- **Resource**: `audio.preload = "metadata"`을 설정하고, 컴포넌트 마운트 시 `audio.load()`를 호출하지 않습니다. 브라우저는 사용자가 `play()`를 호출하는 순간 네트워크 요청을 시작합니다.
+- **API Context**: `Web Audio API` (`AudioContext`) 초기화 로직을 데이터 로드 시점이 아닌, 사용자의 **클릭 이벤트 핸들러(`togglePlay`)** 내부로 이동시켰습니다. 이는 iOS Safari 등에서 사용자 제스처(User Gesture) 없이 오디오 컨텍스트를 생성/조작할 때 발생하는 제약을 완벽하게 우회합니다.
+- **Visual Feedback**: 리소스가 로드되지 않은 상태에서 재생 시도 시, `readyState`를 체크하여 리소스를 로드합니다.
+
+### 7.8 Stable Event Handler Pattern (안정적 핸들러 패턴)
+
+- **Problem**: `togglePlay`가 `isPlaying`, `isPaused` 등 빈번하게 변하는 상태에 의존하고 있어, 상태 변화 시마다 함수가 재생성되고 하위 컴포넌트나 Ref가 갱신되는 비효율 발생.
+- **Solution**: **Latest Ref Pattern** 도입.
+  - `latestValues`라는 `useRef`에 모든 상태와 Props를 담아 매 렌더링마다 동기화합니다.
+  - `togglePlay`는 의존성 배열이 빈(`[]`) 상태로 생성되어, 컴포넌트 생명주기 동안 단 한 번만 생성됩니다.
+  - 함수 내부에서는 `latestValues.current`를 통해 항상 최신의 상태값에 접근합니다.
+- **Effect**: 불필요한 클로저 생성 방지 및 렌더링 성능 최적화.
+
 ## 8. Skeleton Loading Implementation (스켈레톤 구현 상세)
 
 - **Strategy**: `docs/project_context.md`의 규칙에 따라 데이터 의존성이 있는 컴포넌트와 한 쌍으로 구현됩니다.

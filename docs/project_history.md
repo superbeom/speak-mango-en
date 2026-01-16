@@ -2,6 +2,28 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-16: 오디오 재생 최적화 - Lazy Loading 및 iOS 대응 (Audio Optimization)
+
+### ✅ 진행 사항
+
+**Modified Files**:
+
+- `components/DialogueAudioButton.tsx`
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. `audio.load()`를 `useEffect`에서 제거한 이유는?**
+
+- **A**: `preload="metadata"`을 설정했더라도 `audio.load()`를 즉시 호출하면 브라우저가 리소스를 바로 다운로드하기 시작합니다. 이는 모바일 데이터 낭비이며, 특히 iOS Safari에서 "사용자 의도 없는 대량의 미디어 요청"으로 간주되어 차단(Pending)될 위험이 있어 제거했습니다.
+
+**Q. Web Audio API 초기화 시점을 왜 변경했나?**
+
+- **A**: 기존에는 데이터 로드 시점(`loadeddata`)에 초기화했으나, iOS 인앱 브라우저에서는 사용자 제스처 없이 `AudioContext`를 조작하는 것이 엄격히 제한됩니다. 따라서 사용자가 재생 버튼을 클릭하는 순간(`togglePlay`)으로 초기화 시점을 미루어(Lazy Init), 확실한 사용자 제스처 컨텍스트 안에서 실행되도록 변경했습니다.
+
+**Q. `togglePlay`가 자주 재생성되는 문제를 어떻게 해결했나?**
+
+- **A**: `useCallback`의 의존성 배열에 `isPlaying` 등 상태값이 포함되면 렌더링마다 함수가 새로 만들어집니다. 이를 해결하기 위해 `useRef`(`latestValues`)를 도입하여 최신 상태를 참조하도록 변경하고, 함수 자체는 불변(Stable)하게 유지하여 성능을 최적화했습니다.
+
 ## 2026-01-15: 인앱 브라우저 오디오 호환성 개선 (In-App Browser Audio Compatibility)
 
 ### ✅ 진행 사항

@@ -41,7 +41,6 @@ interface DialogueAudioButtonProps {
   onStop?: () => void;
   onReady?: () => void;
   // Analytics props
-  isAutoPlaying?: boolean; // True when part of sequential "Play All"
   expressionId?: string;
   audioIndex?: number;
   playType?: "individual" | "sequential";
@@ -95,7 +94,6 @@ const DialogueAudioButton = forwardRef<
       onPlay,
       onStop,
       onReady,
-      isAutoPlaying = false,
       expressionId,
       audioIndex,
       playType = "individual",
@@ -119,9 +117,86 @@ const DialogueAudioButton = forwardRef<
       onReadyRef.current = onReady;
     }, [onEnded, onReady]);
 
+    // Latest Ref pattern to keep togglePlay stable and avoid stale closures
+    const latestValues = useRef({
+      isPlaying,
+      isPaused,
+      stopBehavior,
+      onStop,
+      onPlayAttempt,
+      expressionId,
+      audioIndex,
+      playType,
+      onPlay,
+    });
+
+    // Update the ref on every render with the latest state and props
+    useEffect(() => {
+      latestValues.current = {
+        isPlaying,
+        isPaused,
+        stopBehavior,
+        onStop,
+        onPlayAttempt,
+        expressionId,
+        audioIndex,
+        playType,
+        onPlay,
+      };
+    }); // No dependency array: runs on every render
+
+    // Web Audio API initialization function (Lazy Init)
+    const initializeWebAudio = useCallback(() => {
+      try {
+        const AudioContextClass =
+          window.AudioContext || window.webkitAudioContext;
+
+        if (AudioContextClass && audioRef.current && !audioContextRef.current) {
+          const ctx = new AudioContextClass();
+
+          // Android: Try to resume immediately
+          if (ctx.state === "suspended") {
+            ctx.resume().catch(() => {
+              // Silently fail on iOS, will be resumed on user gesture
+            });
+          }
+
+          const gainNode = ctx.createGain();
+
+          // Connect: Source -> Gain -> Destination
+          const source = ctx.createMediaElementSource(audioRef.current);
+          source.connect(gainNode);
+          gainNode.connect(ctx.destination);
+
+          audioContextRef.current = ctx;
+
+          // Set fixed amplified volume
+          gainNode.gain.value = FIXED_VOLUME;
+        }
+      } catch {
+        // Web Audio API failed, fallback to basic HTML5 Audio
+        if (audioRef.current) {
+          audioRef.current.volume = 1.0;
+        }
+      }
+    }, []);
+
     const togglePlay = useCallback(
       async (forcePlay = false, isSequential = false) => {
         if (!audioRef.current) return;
+
+        const current = latestValues.current;
+
+        // Initialize Web Audio API here (Lazy Initialization on Click)
+        // This ensures we are within a User Gesture context for iOS In-App Browsers
+        if (!audioContextRef.current) {
+          initializeWebAudio();
+        }
+
+        // 만약 파일 로딩이 안된 상태라면 load() 강제 호출
+        if (audioRef.current.readyState < 2) {
+          audioRef.current.load();
+        }
 
         // Resume AudioContext if suspended (browser policy)
         // iOS Safari requires this to be called within a user gesture
@@ -133,24 +208,24 @@ const DialogueAudioButton = forwardRef<
           }
         }
 
-        if (isPlaying && !forcePlay) {
+        if (current.isPlaying && !forcePlay) {
           audioRef.current.pause();
-          if (stopBehavior === "reset") {
+          if (current.stopBehavior === "reset") {
             audioRef.current.currentTime = 0; // Reset to start
             setIsPaused(false);
           } else {
             setIsPaused(true);
           }
           setIsPlaying(false);
-          onStop?.();
+          current.onStop?.();
         } else {
           // Check if this is a resume (from paused state)
-          const isResume = isPaused;
+          const isResume = current.isPaused;
           setIsPaused(false);
 
           // Feature Gating: Check permissions if callback provided
-          if (onPlayAttempt) {
-            const canPlay = await onPlayAttempt();
+          if (current.onPlayAttempt) {
+            const canPlay = await current.onPlayAttempt();
             if (!canPlay) return;
           }
 
@@ -174,34 +249,24 @@ const DialogueAudioButton = forwardRef<
             // When auto-playing, DialogueSection already tracked the sequential play
             if (
               !shouldSkipTracking &&
-              expressionId !== undefined &&
-              audioIndex !== undefined
+              current.expressionId !== undefined &&
+              current.audioIndex !== undefined
             ) {
               trackAudioPlay({
-                expressionId,
-                audioIndex,
-                playType,
+                expressionId: current.expressionId,
+                audioIndex: current.audioIndex,
+                playType: current.playType,
               });
             }
 
-            onPlay?.();
+            current.onPlay?.();
           } catch (error) {
             console.error("Playback failed:", error);
             setIsPlaying(false);
           }
         }
       },
-      [
-        isPlaying,
-        stopBehavior,
-        onStop,
-        onPlayAttempt,
-        isAutoPlaying,
-        expressionId,
-        audioIndex,
-        playType,
-        onPlay,
-      ]
+      [initializeWebAudio]
     );
 
     useImperativeHandle(
@@ -219,7 +284,7 @@ const DialogueAudioButton = forwardRef<
           }
         },
       }),
-      [togglePlay] // togglePlay가 변경될 때마다 ref 업데이트
+      [togglePlay] // togglePlay가 stable해졌으므로 ref 객체도 안정적으로 유지됨
     );
 
     useEffect(() => {
@@ -228,7 +293,7 @@ const DialogueAudioButton = forwardRef<
       // Initialize Audio Element
       const audio = new Audio(getStorageUrl(audioUrl) || "");
       audio.crossOrigin = "anonymous"; // Essential for Web Audio API with external sources
-      audio.preload = "auto";
+      audio.preload = "metadata";
       audioRef.current = audio;
 
       // Event handlers
@@ -237,10 +302,14 @@ const DialogueAudioButton = forwardRef<
         setIsPaused(false);
 
         // Track audio complete event
-        if (expressionId !== undefined && audioIndex !== undefined) {
+        const current = latestValues.current;
+        if (
+          current.expressionId !== undefined &&
+          current.audioIndex !== undefined
+        ) {
           trackAudioComplete({
-            expressionId,
-            audioIndex,
+            expressionId: current.expressionId,
+            audioIndex: current.audioIndex,
           });
         }
 
@@ -256,11 +325,6 @@ const DialogueAudioButton = forwardRef<
       const handleLoadedData = () => {
         setIsLoading(false);
         onReadyRef.current?.();
-
-        // Initialize Web Audio API AFTER audio is loaded (iOS Safari fix)
-        if (!audioContextRef.current) {
-          initializeWebAudio();
-        }
       };
 
       const handleLoadStart = () => {
@@ -282,43 +346,6 @@ const DialogueAudioButton = forwardRef<
         });
 
         onReadyRef.current?.();
-      };
-
-      // Web Audio API initialization function (called after audio loads)
-      const initializeWebAudio = () => {
-        try {
-          const AudioContextClass =
-            window.AudioContext || window.webkitAudioContext;
-
-          if (AudioContextClass && audioRef.current) {
-            const ctx = new AudioContextClass();
-
-            // Android: Try to resume immediately (works on Android, ignored on iOS)
-            // iOS Safari: Requires user gesture, handled in togglePlay() instead
-            if (ctx.state === "suspended") {
-              ctx.resume().catch(() => {
-                // Silently fail on iOS, will be resumed on user gesture
-              });
-            }
-
-            const gainNode = ctx.createGain();
-
-            // Connect: Source -> Gain -> Destination
-            const source = ctx.createMediaElementSource(audioRef.current);
-            source.connect(gainNode);
-            gainNode.connect(ctx.destination);
-
-            audioContextRef.current = ctx;
-
-            // Set fixed amplified volume
-            gainNode.gain.value = FIXED_VOLUME;
-          }
-        } catch (e) {
-          // Web Audio API failed, fallback to basic HTML5 Audio
-          if (audioRef.current) {
-            audioRef.current.volume = 1.0;
-          }
-        }
       };
 
       // Listen for custom event to stop other audios

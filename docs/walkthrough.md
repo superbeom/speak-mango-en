@@ -2,6 +2,78 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.18: 오디오 재생 최적화 - Lazy Loading 및 안정성 강화 (2026-01-16)
+
+### 1. Problem
+
+**iOS 호환성 및 리소스 효율성 문제**:
+
+- `preload="metadata"` 설정에도 불구하고 컴포넌트 마운트 시 `audio.load()`가 호출되어 즉시 네트워크 요청 발생.
+- 데이터 로드 이벤트 핸들러에서 Web Audio API를 초기화하려다 iOS의 Autoplay 정책에 걸려 실패 가능성 존재.
+- `useCallback` 의존성 배열에 상태값이 포함되어 불필요한 함수 재생성 및 리렌더링 발생.
+
+### 2. Solution
+
+**True Lazy Loading & Stable Handler**:
+
+1. **Lazy Resource Loading**: `useEffect`에서 `audio.load()` 제거. 재생 버튼 클릭 시에만 로딩 시작.
+2. **Lazy API Initialization**: Web Audio API 초기화를 `togglePlay` 내부(사용자 클릭 시점)로 이동.
+3. **Latest Ref Pattern**: `useRef`를 사용하여 상태값을 조회함으로써 `togglePlay` 함수를 안정화(Stable)함.
+
+### 3. Implementation
+
+#### A. Resource Loading 최적화
+
+```tsx
+useEffect(() => {
+  const audio = new Audio(getStorageUrl(audioUrl));
+  audio.preload = "metadata"; // 메타데이터만 미리 로드
+  audioRef.current = audio;
+  // audio.load() 삭제: 사용자가 누르기 전까지 요청 금지
+}, [audioUrl]);
+```
+
+#### B. Lazy Initialization (User Gesture)
+
+```tsx
+const togglePlay = useCallback(async () => {
+  // 클릭 시점에 초기화 (iOS 정책 준수)
+  if (!audioContextRef.current) {
+    initializeWebAudio();
+  }
+
+  // 로딩 상태 피드백
+  if (audioRef.current.readyState < 2) {
+    setIsLoading(true);
+  }
+
+  await audioRef.current.play(); // 이때 브라우저가 로딩 시작
+}, []);
+```
+
+#### C. Performance Optimization
+
+```tsx
+// 최신 상태를 Ref에 저장
+const latestValues = useRef({ isPlaying, isPaused, ... });
+
+useEffect(() => {
+  latestValues.current = { isPlaying, isPaused, ... };
+});
+
+// 의존성 없는 Stable Handler
+const togglePlay = useCallback(async () => {
+  const current = latestValues.current; // Ref에서 최신 값 조회
+  // ...
+}, []); // 의존성 배열 비움
+```
+
+### 4. Result
+
+- ✅ **iOS 호환성**: 인앱 브라우저 및 Safari에서 완벽한 재생 보장.
+- ✅ **데이터 절약**: 사용자가 듣지 않는 오디오는 다운로드하지 않음.
+- ✅ **성능 향상**: 불필요한 리렌더링 및 함수 재생성 제거.
+
 ## v0.12.17: 인앱 브라우저 오디오 호환성 개선 (2026-01-15)
 
 ### 1. Problem
@@ -689,13 +761,13 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
   ```
 ````
 
-````
-
 **After**:
+
 ```markdown
 ### 8단계: Gemini Content Generator
+
 - **Prompt**: `n8n/expressions/code/08_gemini_content_generator_prompt.txt`의 내용을 사용합니다.
-````
+```
 
 ### 4. Key Learnings
 
