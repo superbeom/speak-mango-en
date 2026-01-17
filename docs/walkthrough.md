@@ -2,6 +2,25 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.28: Database Integrity Reinforcement (2026-01-17)
+
+### 1. Goal (목표)
+
+- 데이터베이스 레벨에서 `expression` 컬럼의 중복을 원천적으로 차단하여 데이터 무결성을 보장합니다.
+
+### 2. Implementation (구현)
+
+- **Unique Constraint**:
+  - `speak_mango_en.expressions` 테이블의 `expression` 컬럼에 `UNIQUE` 제약 조건을 추가했습니다.
+  - 이제 동일한 영어 표현이 입력되려 할 경우 DB 레벨에서 에러를 반환합니다.
+- **Migration Script (`014_add_unique_constraint_to_expression.sql`)**:
+  - `ALTER TABLE ... ADD CONSTRAINT unique_expression UNIQUE (expression);` 구문을 사용하여 제약 조건을 적용했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Data Integrity**: 중복 데이터 발생 가능성이 완전히 제거되었습니다.
+- ✅ **Performance**: Unique 인덱스 생성으로 인해 정확한 일치 검색 성능이 향상될 수 있습니다.
+
 ## v0.12.27: n8n V3 Specific Expression Workflow (2026-01-17)
 
 ### 1. Goal (목표)
