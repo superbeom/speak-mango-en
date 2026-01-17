@@ -220,13 +220,13 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 ### 7.1 Web Audio API & Volume Amplification (볼륨 증폭)
 
 - **Problem**: 일부 TTS 생성 음성이 모바일 기기에서 작게 들리는 문제.
-- **Solution**: 표준 `HTMLAudioElement` 대신 `Web Audio API`의 `GainNode`를 사용하여 볼륨을 2배(`2.0`)로 증폭하여 출력합니다.
-- **Implementation**:
+- **Objective**: 표준 `HTMLAudioElement` 대신 `Web Audio API`의 `GainNode`를 사용하여 볼륨을 2배(`2.0`)로 증폭하여 출력합니다.
+- **Architecture**:
   - `AudioContext`를 생성하고 `createMediaElementSource`로 오디오를 연결합니다.
   - `GainNode`를 삽입하여 `gain.value = 2.0`을 적용한 뒤 `destination`으로 출력합니다.
-  - Web Audio API 미지원 환경을 위한 Fallback 로직이 내장되어 있습니다.
+  - **Singleton Pattern Update**: 기존의 개별 Context 생성 방식에서 **전역 싱글턴 `AudioContext`**를 공유하는 방식으로 변경하여 iOS 연속 재생 문제를 해결했습니다. (상세 내용은 7.8 참조)
 
-### 7.1.1 In-App Browser Compatibility (인앱 브라우저 호환성)
+### 7.1.1 In-App Browser & iOS Compatibility (인앱 브라우저 호환성)
 
 - **Problem**: 카카오톡, 네이버 등 인앱 브라우저에서 Web Audio API 초기화 실패 및 첫 페이지 로딩 문제 > 오디오 무한 로딩
 - **Root Cause 1**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
@@ -385,7 +385,17 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
 - **API Context**: `Web Audio API` (`AudioContext`) 초기화는 **사용자의 클릭 이벤트 핸들러(`togglePlay`)** 내부에서 수행(Lazy Init)합니다.
   - **Why?**: 카카오톡 등 인앱 브라우저는 사용자 제스처 없이 오디오 컨텍스트를 만들거나 Resume하는 것을 차단합니다. 클릭 시점에 초기화함으로써 이 제약을 우회합니다.
 
-### 7.8 Stable Event Handler Pattern (안정적 핸들러 패턴)
+### 7.8 Singleton Architecture for Sequential Playback (싱글턴 아키텍처)
+
+- **Problem (iOS Sequential Playback Failure)**: 아이폰에서 '전체 듣기' 실행 시, 첫 번째 곡은 재생되지만 두 번째 곡부터는 "사용자 제스처 없음"으로 간주되어 `AudioContext` 생성이 차단되고 재생이 멈추는 현상 발생.
+- **Solution**: **Singleton Pattern** 도입.
+  - 앱 전역에서 **단 하나의 `AudioContext`**만 생성하고 재사용합니다.
+  - 첫 번째 터치 시점에 Context가 생성(또는 Resume)되면, 이후에는 사용자 개입 없이도 활성 상태가 유지되어 연속 재생이 가능해집니다.
+- **Implementation**:
+  - `context/AudioContext.tsx`: 전역 Context Provider 구축.
+  - `useAudio`: 싱글턴 인스턴스에 접근하는 훅 제공.
+
+### 7.9 Stable Event Handler Pattern (안정적 핸들러 패턴)
 
 - **Problem**: `togglePlay`가 `isPlaying`, `isPaused` 등 빈번하게 변하는 상태에 의존하고 있어, 상태 변화 시마다 함수가 재생성되고 하위 컴포넌트나 Ref가 갱신되는 비효율 발생.
 - **Solution**: **Latest Ref Pattern** 도입.

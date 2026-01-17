@@ -2,6 +2,42 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.25: Audio Context 리팩토링 (2026-01-17)
+
+### 1. Problem (문제)
+
+- **iOS Sequential Playback Failure**: 아이폰에서 '전체 듣기' 실행 시, 첫 번째 곡만 재생되고 두 번째 곡부터는 진행되지 않음.
+- **Cause**: iOS Safari는 사용자 제스처(터치) 없는 `AudioContext` 생성을 차단함. 기존 로직은 매 곡마다 새로운 Context를 생성했기 때문에, 자동으로 넘어가는 두 번째 곡부터는 막힘.
+
+### 2. Solution (해결)
+
+- **Singleton AudioContext**: 앱 전체에서 **단 하나의 AudioContext**만 생성하여 공유하는 방식으로 변경.
+- **React Context Migration**: 기존 `lib/audio.ts` 유틸리티를 `context/AudioContext.tsx` 리액트 컨텍스트로 승격.
+
+### 3. Implementation (구현)
+
+- **Global Provider (`context/AudioContext.tsx`)**:
+
+  - `AudioContext` 인스턴스를 `useRef`로 관리하며 싱글턴 패턴 보장.
+  - `getAudio()` 함수 제공: 이미 생성된 Context가 있다면 재사용.
+  - 한국어 주석으로 내부 로직 상세 설명.
+
+- **Hook Consumption (`components/DialogueAudioButton.tsx`)**:
+  ```tsx
+  const { getAudio } = useAudio();
+  // ...
+  const initializeWebAudio = useCallback(() => {
+    const ctx = getAudio(); // 공유된 Context 가져오기
+    // ...
+  }, []);
+  ```
+
+### 4. Result (결과)
+
+- ✅ **iOS Compatibility**: '전체 듣기' 시 끊김 없이 다음 곡 재생 성공.
+- ✅ **Architecture**: 오디오 로직이 React Lifecycle 내에서 안전하게 관리됨.
+- ✅ **Performance**: 불필요한 AudioContext 생성 오버헤드 제거.
+
 ## v0.12.24: JSON-LD Schema 최적화 (2026-01-16)
 
 ### 1. Goal (목표)
