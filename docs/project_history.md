@@ -2,6 +2,16 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-17: n8n V3: 특정 표현 기반 콘텐츠 생성 (Specific Expression Generation)
+
+- **Goal**: 랜덤 생성이 아닌, 사용자가 지정한 특정 표현(Specific Expression)에 대해 AI가 자동으로 카테고리를 분류하고 콘텐츠를 생성하는 V3 워크플로우 구축.
+- **Actions**:
+  - **New Files**:
+    - `n8n/expressions/code_v3/02_pick_expression_v3.js`: 특정 표현 목록을 반환하는 노드.
+    - `n8n/expressions/code_v3/03_gemini_specific_expression_generator_prompt_v3.txt`: 표현을 입력받아 자동 분류(Auto-Classification) 및 콘텐츠를 생성하는 V3 프롬프트.
+    - `docs/n8n/expressions/optimization_steps_v3.md`: V3 워크플로우 아키텍처 및 가이드 문서 작성.
+- **Outcome**: 원하는 표현을 정확히 핀포인트하여 DB에 추가하는 기능 확보. AI의 자동 분류 능력 활용.
+
 ### 2026-01-17: n8n 워크플로우 데이터 정제 및 검증 강화 (n8n Workflow Data Cleanup & Validation Update)
 
 - **Goal**: Gemini가 생성하는 `meaning` 필드에 대해 엄격한 문장 부호 규칙(끝 마침표 금지, 세미콜론 금지)을 강제합니다.

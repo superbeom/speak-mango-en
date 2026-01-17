@@ -2,6 +2,32 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.27: n8n V3 Specific Expression Workflow (2026-01-17)
+
+### 1. Goal (목표)
+
+- 랜덤 생성이 아닌, **특정 표현(Specific Expression)**을 지정하여 콘텐츠를 생성하는 새로운 워크플로우(V3) 도입.
+- 사용자가 카테고리를 일일이 지정하지 않아도 AI가 문맥을 파악하여 **자동 분류(Auto-Classification)**하도록 개선.
+
+### 2. Implementation (구현)
+
+- **Pick Expression Node (`02_pick_expression_v3.js`)**:
+  - `expression` 만을 포함하는 JSON 객체 반환 (`{ expression: "Let's get real" }`).
+  - 외부 소스(DB, 파일 등)와 연동하기 쉬운 구조.
+
+- **Specific Generator Prompt (`03_gemini_specific_expression_generator_prompt_v3.txt`)**:
+  - **Classify Step**: 입력된 표현을 분석하여 6가지 카테고리 중 최적의 것을 선택하도록 지시.
+  - **Inject**: 선택된 도메인/카테고리 정보를 JSON 결과에 포함.
+  - 나머지 콘텐츠 생성 로직(Meaning, Dialogue, Quiz)은 V2와 동일한 품질 기준 유지.
+
+- **Documentation (`optimization_steps_v3.md`)**:
+  - V3 아키텍처 및 단계별 설정 가이드 작성.
+
+### 3. Result (결과)
+
+- ✅ **Targeting**: 원하는 표현을 정확히 DB에 추가 가능.
+- ✅ **Automation**: 카테고리 태깅 업무 자동화.
+
 ## v0.12.26: n8n 데이터 정제 및 검증 강화 (2026-01-17)
 
 ### 1. Problem (문제)
@@ -18,7 +44,6 @@
 ### 3. Implementation (구현)
 
 - **New n8n Node (`Cleanup Meaning`)**:
-
   - `n8n/expressions/code_v2/06_cleanup_meaning.js` 작성.
   - 로직:
     - 문장 끝 및 **중간**의 모든 마침표(.) 제거 (말줄임표 `...`는 정규식으로 보존).
@@ -49,7 +74,6 @@
 ### 3. Implementation (구현)
 
 - **Global Provider (`context/AudioContext.tsx`)**:
-
   - `AudioContext` 인스턴스를 `useRef`로 관리하며 싱글턴 패턴 보장.
   - `getAudio()` 함수 제공: 이미 생성된 Context가 있다면 재사용.
   - 한국어 주석으로 내부 로직 상세 설명.
@@ -80,7 +104,6 @@
 ### 2. Implementation (구현)
 
 - **Schema Injection**:
-
   - `Dict.meta.keywords` -> `WebSite` Schema (`layout.tsx`)
   - `generateSeoKeywords(...)` -> `LearningResource` Schema (`page.tsx`)
 
@@ -188,7 +211,6 @@ seo: {
 ```
 
 - **Shared SEO Logic (`lib/seo.ts`)**:
-
   - `generateSeoKeywords` 유틸리티 함수로 분리하여 메타데이터와 UI에서 재사용.
 
 - **Visible Keywords (`KeywordList.tsx`)**:
@@ -815,7 +837,6 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
 **Why This Structure?**
 
 1. **전역 스키마** (`layout.tsx`):
-
    - 모든 페이지에 공통으로 적용
    - 브랜드 정보는 변하지 않음
    - 다국어 지원은 사이트 전체 속성
@@ -866,11 +887,9 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
 ### 7. Verification Steps
 
 1. **Rich Results Test**: https://search.google.com/test/rich-results
-
    - URL 입력 후 Organization 및 WebSite 스키마 인식 확인
 
 2. **Google Search Console**:
-
    - "URL 검사" → "색인 생성 요청"
    - 빠른 크롤링 요청
 
