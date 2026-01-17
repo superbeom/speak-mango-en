@@ -2,6 +2,38 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.26: n8n 데이터 정제 및 검증 강화 (2026-01-17)
+
+### 1. Problem (문제)
+
+- **Unwanted Punctuation**: Gemini가 프롬프트 지침을 무시하고 `meaning` 필드 문장 끝에 마침표(.)를 붙이거나, 의미 구분을 위해 세미콜론(;)을 사용하여 데이터 일관성을 저해.
+- **Strict Validation Failure**: 기존 검증 로직은 이러한 포맷 오류를 즉시 에러로 처리하여, 간단한 수정으로 해결 가능한 데이터도 폐기되는 비효율 발생.
+
+### 2. Solution (해결)
+
+- **2-Step Validation Pipeline**:
+  1.  **Cleanup (정제)**: 검증 전에 자동으로 문장 부호를 수정하는 단계 추가.
+  2.  **Verify (검증)**: 정제 후에도 규칙을 위반하는 경우에만 에러 처리.
+
+### 3. Implementation (구현)
+
+- **New n8n Node (`Cleanup Meaning`)**:
+
+  - `n8n/expressions/code_v2/06_cleanup_meaning.js` 작성.
+  - 로직:
+    - 문장 끝 및 **중간**의 모든 마침표(.) 제거 (말줄임표 `...`는 정규식으로 보존).
+    - 세미콜론(;)을 프로젝트 표준 구분자 `·`로 일괄 치환.
+
+- **Enhanced Validation (`Validate Content`)**:
+  - `verification/verify_db_data.js` 및 n8n 검증 스크립트 업데이트.
+  - `Target Language`뿐만 아니라 `English(en)`의 meaning 필드도 검증 대상에 포함.
+  - 마침표나 세미콜론이 발견되면 즉시 에러(`Must not contain...`) 처리하여 엄격한 품질 기준 유지.
+
+### 4. Result (결과)
+
+- ✅ **Data Quality**: 문장 부호 오류가 0%로 감소하고 일관된 포맷 유지.
+- ✅ **Efficiency**: 단순 포맷팅 오류로 인한 재생성 비용 절감.
+
 ## v0.12.25: Audio Context 리팩토링 (2026-01-17)
 
 ### 1. Problem (문제)

@@ -66,6 +66,7 @@
 - [x] **Automation**: Prompt Refinement (Forbid Mixed English in Dialogue Translations)
 - [x] **i18n**: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
 - [x] **Automation**: 대화 턴수 검증(2~4 turns) 규칙 도입 및 `10_validate_content.js` 반영
+- [x] **Automation**: 데이터 정제(Cleanup Meaning) 및 엄격한 문장 부호 검증 도입 (`n8n` & `verify_db_data.js`)
 - [x] **Automation**: 대화 생성 규칙 정교화 (Role Gender & American Names)
 - [x] **SEO**: JSON-LD 구조화된 데이터 추가 (Organization, WebSite, SearchAction)
 - [x] **UI/UX**: 검색 기능 개선 (Icon Click, Multilingual, Duplicate Prevention)

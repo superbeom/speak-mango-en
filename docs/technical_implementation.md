@@ -588,6 +588,35 @@ if (!hasOptionA || !hasOptionB || !hasOptionC) {
   - **Latency Reduction**: LLM 호출 횟수를 1회로 줄여 전체 파이프라인의 레이턴시를 약 40~50% 단축했습니다.
 - **Fail-Fast Verification**: `Validate Content` 단계를 DB 조회(`Check Duplicate`)보다 앞단에 배치하여, 파싱 실패나 규격 미달 데이터를 조기에 필터링하고 불필요한 DB/Storage 요청을 방지했습니다.
 
+### 10.11 Meaning Field Cleanup & Strict Punctuation Validation (데이터 정제 및 엄격한 문장 부호 검증)
+
+- **Problem**: Gemini가 'meaning' 필드 생성 시, 프롬프트 지침에도 불구하고 문장 끝에 마침표(.)를 붙이거나 다중 의미를 구분할 때 세미콜론(;)을 사용하는 경우가 빈번함. 기존 검증 로직은 이를 에러로 처리하여 재시도 비용 발생.
+- **Solution (2-Phase Strategy)**:
+
+  1.  **Phase 1: Auto-Cleanup (데이터 정제)**
+      - **Node**: `Cleanup Meaning` (n8n V2 Step 6, V1 Step 10)
+      - **Logic**: 검증 단계 진입 전에 문제 소지가 있는 문장 부호를 자동으로 정리합니다.
+        - **마침표 제거**: 문장 끝뿐만 아니라 **중간에 포함된 마침표**도 모두 제거합니다 (단, 말줄임표 `...`는 보존).
+        - **세미콜론 치환**: 세미콜론(;)을 프로젝트 표준 구분자인 `·`(가운뎃점)으로 변경하고 주변 공백을 정규화합니다.
+      - **Code**: `n8n/expressions/code_v2/06_cleanup_meaning.js`
+
+  ```javascript
+  // 마침표(.) 제거 (문장 중간 포함, ...은 제외)
+  const tempEllipsis = "___ELLIPSIS___";
+  text = text.replace(/\.\.\./g, tempEllipsis); // ... 보호
+  text = text.replace(/\./g, ""); // 모든 마침표 제거
+  text = text.replace(new RegExp(tempEllipsis, "g"), "..."); // ... 복원
+
+  // 세미콜론(;)을 ' · '로 변경
+  text = text.replace(/;/g, " · ");
+  ```
+
+  2.  **Phase 2: Strict Validation (엄격한 검증)**
+      - **Node**: `Validate Content`
+      - **Logic**: 정제 후에도 남아있는 문장 부호나 잘못된 형식을 에러로 처리하여 DB 오염을 방지합니다.
+      - **Rule**: `meaning` 필드에 마침표(.)나 세미콜론(;)이 하나라도 포함되어 있으면 **즉시 에러**로 간주합니다.
+      - **Implementation**: `text.replace(/\.\.\./g, "").includes(".")` 로 말줄임표를 제외한 모든 마침표를 검출.
+
 ## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
 
 Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수성이 높은 디자인 시스템을 구축했습니다.

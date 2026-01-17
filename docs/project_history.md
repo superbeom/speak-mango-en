@@ -2,6 +2,16 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-17: n8n 워크플로우 데이터 정제 및 검증 강화 (n8n Workflow Data Cleanup & Validation Update)
+
+- **Goal**: Gemini가 생성하는 `meaning` 필드에 대해 엄격한 문장 부호 규칙(끝 마침표 금지, 세미콜론 금지)을 강제합니다.
+- **Actions**:
+  - **n8n V1 & V2**: `Cleanup Meaning` Code 노드 추가 (V1: 10단계, V2: 6단계). 문장 끝 마침표 자동 제거 및 세미콜론을 가운뎃점(`·`)으로 치환.
+  - **Verification Script**: `verify_db_data.js` 및 n8n 검증 스크립트를 업데이트하여 `meaning` 필드 내 _모든_ 마침표(말줄임표 제외)와 세미콜론을 에러로 처리.
+  - **Refactoring**: 새로운 정제 단계 추가에 맞춰 `n8n/expressions/code` 및 `n8n/expressions/code_v2`의 스크립트 파일명을 변경하고 순서를 재조정.
+  - **Documentation**: 새로운 워크플로우 구조와 코드를 반영하여 `optimization_steps.md` 및 `optimization_steps_v2.md` 문서 업데이트.
+- **Outcome**: 검증 전 단계에서 일반적인 문장 부호 오류를 자동으로 수정하여 데이터 품질을 향상시키고, 수동 개입 및 데이터 거부율을 감소시켰습니다.
+
 ## 2026-01-17: Audio Context 리팩토링 및 iOS 전체 재생 픽스 (Audio Context Refactoring)
 
 ### ✅ 진행 사항
