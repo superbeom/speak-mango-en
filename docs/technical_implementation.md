@@ -220,13 +220,13 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 ### 7.1 Web Audio API & Volume Amplification (볼륨 증폭)
 
 - **Problem**: 일부 TTS 생성 음성이 모바일 기기에서 작게 들리는 문제.
-- **Solution**: 표준 `HTMLAudioElement` 대신 `Web Audio API`의 `GainNode`를 사용하여 볼륨을 2배(`2.0`)로 증폭하여 출력합니다.
-- **Implementation**:
+- **Objective**: 표준 `HTMLAudioElement` 대신 `Web Audio API`의 `GainNode`를 사용하여 볼륨을 2배(`2.0`)로 증폭하여 출력합니다.
+- **Architecture**:
   - `AudioContext`를 생성하고 `createMediaElementSource`로 오디오를 연결합니다.
   - `GainNode`를 삽입하여 `gain.value = 2.0`을 적용한 뒤 `destination`으로 출력합니다.
-  - Web Audio API 미지원 환경을 위한 Fallback 로직이 내장되어 있습니다.
+  - **Singleton Pattern Update**: 기존의 개별 Context 생성 방식에서 **전역 싱글턴 `AudioContext`**를 공유하는 방식으로 변경하여 iOS 연속 재생 문제를 해결했습니다. (상세 내용은 7.8 참조)
 
-### 7.1.1 In-App Browser Compatibility (인앱 브라우저 호환성)
+### 7.1.1 In-App Browser & iOS Compatibility (인앱 브라우저 호환성)
 
 - **Problem**: 카카오톡, 네이버 등 인앱 브라우저에서 Web Audio API 초기화 실패 및 첫 페이지 로딩 문제 > 오디오 무한 로딩
 - **Root Cause 1**: `createMediaElementSource()` 실패 시 오디오 객체가 제대로 초기화되지 않아 `canplaythrough` 이벤트 미발생
@@ -385,7 +385,17 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
 - **API Context**: `Web Audio API` (`AudioContext`) 초기화는 **사용자의 클릭 이벤트 핸들러(`togglePlay`)** 내부에서 수행(Lazy Init)합니다.
   - **Why?**: 카카오톡 등 인앱 브라우저는 사용자 제스처 없이 오디오 컨텍스트를 만들거나 Resume하는 것을 차단합니다. 클릭 시점에 초기화함으로써 이 제약을 우회합니다.
 
-### 7.8 Stable Event Handler Pattern (안정적 핸들러 패턴)
+### 7.8 Singleton Architecture for Sequential Playback (싱글턴 아키텍처)
+
+- **Problem (iOS Sequential Playback Failure)**: 아이폰에서 '전체 듣기' 실행 시, 첫 번째 곡은 재생되지만 두 번째 곡부터는 "사용자 제스처 없음"으로 간주되어 `AudioContext` 생성이 차단되고 재생이 멈추는 현상 발생.
+- **Solution**: **Singleton Pattern** 도입.
+  - 앱 전역에서 **단 하나의 `AudioContext`**만 생성하고 재사용합니다.
+  - 첫 번째 터치 시점에 Context가 생성(또는 Resume)되면, 이후에는 사용자 개입 없이도 활성 상태가 유지되어 연속 재생이 가능해집니다.
+- **Implementation**:
+  - `context/AudioContext.tsx`: 전역 Context Provider 구축.
+  - `useAudio`: 싱글턴 인스턴스에 접근하는 훅 제공.
+
+### 7.9 Stable Event Handler Pattern (안정적 핸들러 패턴)
 
 - **Problem**: `togglePlay`가 `isPlaying`, `isPaused` 등 빈번하게 변하는 상태에 의존하고 있어, 상태 변화 시마다 함수가 재생성되고 하위 컴포넌트나 Ref가 갱신되는 비효율 발생.
 - **Solution**: **Latest Ref Pattern** 도입.
@@ -577,6 +587,35 @@ if (!hasOptionA || !hasOptionB || !hasOptionC) {
   - **Integrated Context**: 단일 프롬프트 내에서 '표현 선정'과 '다국어 콘텐츠 생성'을 동시에 수행하여, AI가 선정한 표현의 의도와 뉘앙스가 예문 및 설명에 일관되게 반영되도록 합니다.
   - **Latency Reduction**: LLM 호출 횟수를 1회로 줄여 전체 파이프라인의 레이턴시를 약 40~50% 단축했습니다.
 - **Fail-Fast Verification**: `Validate Content` 단계를 DB 조회(`Check Duplicate`)보다 앞단에 배치하여, 파싱 실패나 규격 미달 데이터를 조기에 필터링하고 불필요한 DB/Storage 요청을 방지했습니다.
+
+### 10.11 Meaning Field Cleanup & Strict Punctuation Validation (데이터 정제 및 엄격한 문장 부호 검증)
+
+- **Problem**: Gemini가 'meaning' 필드 생성 시, 프롬프트 지침에도 불구하고 문장 끝에 마침표(.)를 붙이거나 다중 의미를 구분할 때 세미콜론(;)을 사용하는 경우가 빈번함. 기존 검증 로직은 이를 에러로 처리하여 재시도 비용 발생.
+- **Solution (2-Phase Strategy)**:
+
+  1.  **Phase 1: Auto-Cleanup (데이터 정제)**
+      - **Node**: `Cleanup Meaning` (n8n V2 Step 6, V1 Step 10)
+      - **Logic**: 검증 단계 진입 전에 문제 소지가 있는 문장 부호를 자동으로 정리합니다.
+        - **마침표 제거**: 문장 끝뿐만 아니라 **중간에 포함된 마침표**도 모두 제거합니다 (단, 말줄임표 `...`는 보존).
+        - **세미콜론 치환**: 세미콜론(;)을 프로젝트 표준 구분자인 `·`(가운뎃점)으로 변경하고 주변 공백을 정규화합니다.
+      - **Code**: `n8n/expressions/code_v2/06_cleanup_meaning.js`
+
+  ```javascript
+  // 마침표(.) 제거 (문장 중간 포함, ...은 제외)
+  const tempEllipsis = "___ELLIPSIS___";
+  text = text.replace(/\.\.\./g, tempEllipsis); // ... 보호
+  text = text.replace(/\./g, ""); // 모든 마침표 제거
+  text = text.replace(new RegExp(tempEllipsis, "g"), "..."); // ... 복원
+
+  // 세미콜론(;)을 ' · '로 변경
+  text = text.replace(/;/g, " · ");
+  ```
+
+  2.  **Phase 2: Strict Validation (엄격한 검증)**
+      - **Node**: `Validate Content`
+      - **Logic**: 정제 후에도 남아있는 문장 부호나 잘못된 형식을 에러로 처리하여 DB 오염을 방지합니다.
+      - **Rule**: `meaning` 필드에 마침표(.)나 세미콜론(;)이 하나라도 포함되어 있으면 **즉시 에러**로 간주합니다.
+      - **Implementation**: `text.replace(/\.\.\./g, "").includes(".")` 로 말줄임표를 제외한 모든 마침표를 검출.
 
 ## 11. Design System & Global Styling (디자인 시스템 및 전역 스타일링)
 

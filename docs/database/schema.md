@@ -20,7 +20,7 @@
 | `published_at` | TIMESTAMPTZ |     | `now()`             | 표현이 게시된 일시 (정렬 기준)           |
 | `domain`       | TEXT        |     | 'conversation'      | 대분류 (예: conversation, test, voca)    |
 | `category`     | TEXT        |     | 'daily'             | 소분류 (예: business, travel, shopping)  |
-| `expression`   | TEXT        |     | -                   | 영어 표현 (예: "Break a leg")            |
+| `expression`   | TEXT        | UK  | -                   | 영어 표현 (예: "Break a leg")            |
 | `meaning`      | JSONB       |     | -                   | 다국어 뜻 (예: `{"ko": "..."}`)          |
 | `content`      | JSONB       |     | `'{}'::jsonb`       | 다국어 상세 콘텐츠 (예: `{"ko": {...}}`) |
 | `dialogue`     | JSONB       |     | `'[]'::jsonb`       | 다국어 대화문 및 오디오 (예: `[{...}]`)  |
@@ -56,6 +56,7 @@
 | `idx_expressions_dialogue`        | GIN           | `dialogue`          | 대화문(Jsonb) 내부 텍스트/화자 검색 |
 | `idx_expressions_meaning_gin`     | GIN           | `meaning`           | 다국어 뜻(JSONB) 검색 (9개 언어)    |
 | `idx_expressions_expression_trgm` | GIN (Trigram) | `expression`        | 부분 문자열 검색 최적화             |
+| `unique_expression`               | B-Tree        | `expression`        | 표현 중복 방지 (Unique Constraint)  |
 
 #### Future Recommendations
 

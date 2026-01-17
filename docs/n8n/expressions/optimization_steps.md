@@ -13,13 +13,14 @@
 7.  **If New** (중복 여부 판단)
 8.  **Gemini Content Generator** (상세 콘텐츠 생성 - Role A/B 포함)
 9.  **Parse Content JSON** (Gemini 응답을 순수 JSON 객체로 변환)
-10. **Validate Content (Code)** (Gemini 응답 데이터 무결성 검증)
-11. **Generate ID (Code)** (저장 경로용 UUID 미리 생성)
-12. **Prepare TTS Requests (Code)** (대화문 분리 및 목소리 할당)
-13. **Groq Orpheus TTS (HTTP)** (음성 합성 호출)
-14. **Upload to Storage (Supabase)** (오디오 파일 업로드)
-15. **Aggregate TTS Results (Code)** (오디오 경로를 데이터에 병합)
-16. **Supabase Insert** (데이터 저장)
+10. **Cleanup Meaning (Code)** (Meaning 필드 문장 부호 정리: 마침표, 세미콜론)
+11. **Validate Content (Code)** (Gemini 응답 데이터 무결성 검증)
+12. **Generate ID (Code)** (저장 경로용 UUID 미리 생성)
+13. **Prepare TTS Requests (Code)** (대화문 분리 및 목소리 할당)
+14. **Groq Orpheus TTS (HTTP)** (음성 합성 호출)
+15. **Upload to Storage (Supabase)** (오디오 파일 업로드)
+16. **Aggregate TTS Results (Code)** (오디오 경로를 데이터에 병합)
+17. **Supabase Insert** (데이터 저장)
 
 ---
 
@@ -168,30 +169,36 @@ Gemini가 JSON을 문자열(`text`)로 반환할 경우를 대비하여 **Code**
 - **Name**: `Parse Content JSON`
 - **Code**: `n8n/expressions/code/09_parse_content_json.js`의 내용을 사용합니다.
 
-### 10단계: Validate Content (Code)
+### 10단계: Cleanup Meaning (데이터 정제)
+
+Gemini가 생성한 Meaning 필드의 문장 부호를 규칙에 맞게 정리하는 **Code** 노드입니다. 검증 단계 전에 실행되어 사소한 포맷 에러를 자동 수정합니다.
+
+- **Code**: `n8n/expressions/code_v2/10_cleanup_meaning.js`의 내용을 사용합니다.
+
+### 11단계: Validate Content (Code)
 
 Gemini가 생성한 콘텐츠가 모든 엄격한 규칙(언어 혼용 금지, 태그 규칙, 퀴즈 포맷 등)을 준수하는지 검증하는 마지막 관문입니다. 위반 사항 발생 시 워크플로우를 즉시 중단합니다.
 
 - **Name**: `Validate Content`
 - **Code**: `n8n/expressions/code/10_validate_content.js`의 내용을 사용합니다.
 
-### 11단계: Generate ID (Code)
+### 12단계: Generate ID (Code)
 
 저장 경로 및 DB ID로 사용할 UUID를 여기서 생성해야 데이터가 덮어씌워지지 않습니다.
 
 - **Name**: `Generate ID`
 - **Code**: `n8n/expressions/code/11_generate_id.js`의 내용을 사용합니다.
 
-### 12단계: Prepare TTS Requests
+### 13단계: Prepare TTS Requests
 
 대화문을 개별 오디오 요청으로 분리합니다.
 
 - **Name**: `Prepare TTS Requests`
 - **Code**: `n8n/expressions/code/12_prepare_tts_requests.js`의 내용을 사용합니다.
 
-### 13단계: Groq Orpheus TTS (HTTP Request)
+### 14단계: Groq Orpheus TTS (HTTP Request)
 
-11단계에서 분리된 각 대화 문장을 실제 오디오 파일(WAV)로 변환하는 단계입니다.
+13단계에서 분리된 각 대화 문장을 실제 오디오 파일(WAV)로 변환하는 단계입니다.
 
 - **Name**: `Groq Orpheus TTS`
 - **Method**: `POST`
@@ -209,7 +216,7 @@ Gemini가 생성한 콘텐츠가 모든 엄격한 규칙(언어 혼용 금지, �
 
 > **⚠️ 중요 (400 Bad Request 에러 발생 시)**: `canopylabs/orpheus-v1-english` 모델을 처음 사용하는 경우, 반드시 **[Groq Console](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english)**에 접속하여 해당 모델의 이용 약관(Terms)을 **승인(Accept)**해야 합니다. 승인하지 않으면 API 호출 시 에러가 발생합니다.
 
-### 14단계: Upload to Storage (Supabase REST API)
+### 15단계: Upload to Storage (Supabase REST API)
 
 공식 Supabase 노드는 파일 업로드를 지원하지 않으므로, **HTTP Request** 노드를 사용하여 직접 업로드합니다.
 
@@ -225,11 +232,11 @@ Gemini가 생성한 콘텐츠가 모든 엄격한 규칙(언어 혼용 금지, �
   - `Value`: `Bearer <YOUR_SERVICE_ROLE_KEY>`
 - **Send Body**: `Binary`
   - `Body Content Type`: `n8n Binary File`
-  - `Input Data Field Name`: `data` (12단계 Groq TTS 노드에서 받은 바이너리 필드명)
+  - `Input Data Field Name`: `data` (14단계 Groq TTS 노드에서 받은 바이너리 필드명)
 - **Options**: `Response`
   - **Response Format**: `JSON`
 
-### 15단계: Aggregate TTS Results (Code)
+### 16단계: Aggregate TTS Results (Code)
 
 업로드된 오디오 파일들의 경로(`storage_path`)를 원본 데이터 구조의 각 대화문(`dialogue`) 항목에 다시 주입하고, 하나로 합칩니다.
 
@@ -237,7 +244,7 @@ Gemini가 생성한 콘텐츠가 모든 엄격한 규칙(언어 혼용 금지, �
 - **Code**: `n8n/expressions/code/15_aggregate_tts_results.js`의 내용을 사용합니다.
 - **역할**: 분산된 여러 아이템을 다시 1개의 아이템으로 병합하여 최종 저장을 준비합니다.
 
-### 16단계: Supabase Insert 설정
+### 17단계: Supabase Insert 설정
 
 `Parse JSON` 노드 뒤에 **Supabase** 노드를 연결하여 최종 데이터를 저장합니다.
 

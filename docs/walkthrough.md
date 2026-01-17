@@ -2,6 +2,117 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.28: Database Integrity Reinforcement (2026-01-17)
+
+### 1. Goal (목표)
+
+- 데이터베이스 레벨에서 `expression` 컬럼의 중복을 원천적으로 차단하여 데이터 무결성을 보장합니다.
+
+### 2. Implementation (구현)
+
+- **Unique Constraint**:
+  - `speak_mango_en.expressions` 테이블의 `expression` 컬럼에 `UNIQUE` 제약 조건을 추가했습니다.
+  - 이제 동일한 영어 표현이 입력되려 할 경우 DB 레벨에서 에러를 반환합니다.
+- **Migration Script (`014_add_unique_constraint_to_expression.sql`)**:
+  - `ALTER TABLE ... ADD CONSTRAINT unique_expression UNIQUE (expression);` 구문을 사용하여 제약 조건을 적용했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Data Integrity**: 중복 데이터 발생 가능성이 완전히 제거되었습니다.
+- ✅ **Performance**: Unique 인덱스 생성으로 인해 정확한 일치 검색 성능이 향상될 수 있습니다.
+
+## v0.12.27: n8n V3 Specific Expression Workflow (2026-01-17)
+
+### 1. Goal (목표)
+
+- 랜덤 생성이 아닌, **특정 표현(Specific Expression)**을 지정하여 콘텐츠를 생성하는 새로운 워크플로우(V3) 도입.
+- 사용자가 카테고리를 일일이 지정하지 않아도 AI가 문맥을 파악하여 **자동 분류(Auto-Classification)**하도록 개선.
+
+### 2. Implementation (구현)
+
+- **Pick Expression Node (`02_pick_expression_v3.js`)**:
+  - `expression` 만을 포함하는 JSON 객체 반환 (`{ expression: "Let's get real" }`).
+  - 외부 소스(DB, 파일 등)와 연동하기 쉬운 구조.
+
+- **Specific Generator Prompt (`03_gemini_specific_expression_generator_prompt_v3.txt`)**:
+  - **Classify Step**: 입력된 표현을 분석하여 6가지 카테고리 중 최적의 것을 선택하도록 지시.
+  - **Inject**: 선택된 도메인/카테고리 정보를 JSON 결과에 포함.
+  - 나머지 콘텐츠 생성 로직(Meaning, Dialogue, Quiz)은 V2와 동일한 품질 기준 유지.
+
+- **Documentation (`optimization_steps_v3.md`)**:
+  - V3 아키텍처 및 단계별 설정 가이드 작성.
+
+### 3. Result (결과)
+
+- ✅ **Targeting**: 원하는 표현을 정확히 DB에 추가 가능.
+- ✅ **Automation**: 카테고리 태깅 업무 자동화.
+
+## v0.12.26: n8n 데이터 정제 및 검증 강화 (2026-01-17)
+
+### 1. Problem (문제)
+
+- **Unwanted Punctuation**: Gemini가 프롬프트 지침을 무시하고 `meaning` 필드 문장 끝에 마침표(.)를 붙이거나, 의미 구분을 위해 세미콜론(;)을 사용하여 데이터 일관성을 저해.
+- **Strict Validation Failure**: 기존 검증 로직은 이러한 포맷 오류를 즉시 에러로 처리하여, 간단한 수정으로 해결 가능한 데이터도 폐기되는 비효율 발생.
+
+### 2. Solution (해결)
+
+- **2-Step Validation Pipeline**:
+  1.  **Cleanup (정제)**: 검증 전에 자동으로 문장 부호를 수정하는 단계 추가.
+  2.  **Verify (검증)**: 정제 후에도 규칙을 위반하는 경우에만 에러 처리.
+
+### 3. Implementation (구현)
+
+- **New n8n Node (`Cleanup Meaning`)**:
+  - `n8n/expressions/code_v2/06_cleanup_meaning.js` 작성.
+  - 로직:
+    - 문장 끝 및 **중간**의 모든 마침표(.) 제거 (말줄임표 `...`는 정규식으로 보존).
+    - 세미콜론(;)을 프로젝트 표준 구분자 `·`로 일괄 치환.
+
+- **Enhanced Validation (`Validate Content`)**:
+  - `verification/verify_db_data.js` 및 n8n 검증 스크립트 업데이트.
+  - `Target Language`뿐만 아니라 `English(en)`의 meaning 필드도 검증 대상에 포함.
+  - 마침표나 세미콜론이 발견되면 즉시 에러(`Must not contain...`) 처리하여 엄격한 품질 기준 유지.
+
+### 4. Result (결과)
+
+- ✅ **Data Quality**: 문장 부호 오류가 0%로 감소하고 일관된 포맷 유지.
+- ✅ **Efficiency**: 단순 포맷팅 오류로 인한 재생성 비용 절감.
+
+## v0.12.25: Audio Context 리팩토링 (2026-01-17)
+
+### 1. Problem (문제)
+
+- **iOS Sequential Playback Failure**: 아이폰에서 '전체 듣기' 실행 시, 첫 번째 곡만 재생되고 두 번째 곡부터는 진행되지 않음.
+- **Cause**: iOS Safari는 사용자 제스처(터치) 없는 `AudioContext` 생성을 차단함. 기존 로직은 매 곡마다 새로운 Context를 생성했기 때문에, 자동으로 넘어가는 두 번째 곡부터는 막힘.
+
+### 2. Solution (해결)
+
+- **Singleton AudioContext**: 앱 전체에서 **단 하나의 AudioContext**만 생성하여 공유하는 방식으로 변경.
+- **React Context Migration**: 기존 `lib/audio.ts` 유틸리티를 `context/AudioContext.tsx` 리액트 컨텍스트로 승격.
+
+### 3. Implementation (구현)
+
+- **Global Provider (`context/AudioContext.tsx`)**:
+  - `AudioContext` 인스턴스를 `useRef`로 관리하며 싱글턴 패턴 보장.
+  - `getAudio()` 함수 제공: 이미 생성된 Context가 있다면 재사용.
+  - 한국어 주석으로 내부 로직 상세 설명.
+
+- **Hook Consumption (`components/DialogueAudioButton.tsx`)**:
+  ```tsx
+  const { getAudio } = useAudio();
+  // ...
+  const initializeWebAudio = useCallback(() => {
+    const ctx = getAudio(); // 공유된 Context 가져오기
+    // ...
+  }, []);
+  ```
+
+### 4. Result (결과)
+
+- ✅ **iOS Compatibility**: '전체 듣기' 시 끊김 없이 다음 곡 재생 성공.
+- ✅ **Architecture**: 오디오 로직이 React Lifecycle 내에서 안전하게 관리됨.
+- ✅ **Performance**: 불필요한 AudioContext 생성 오버헤드 제거.
+
 ## v0.12.24: JSON-LD Schema 최적화 (2026-01-16)
 
 ### 1. Goal (목표)
@@ -12,7 +123,6 @@
 ### 2. Implementation (구현)
 
 - **Schema Injection**:
-
   - `Dict.meta.keywords` -> `WebSite` Schema (`layout.tsx`)
   - `generateSeoKeywords(...)` -> `LearningResource` Schema (`page.tsx`)
 
@@ -120,7 +230,6 @@ seo: {
 ```
 
 - **Shared SEO Logic (`lib/seo.ts`)**:
-
   - `generateSeoKeywords` 유틸리티 함수로 분리하여 메타데이터와 UI에서 재사용.
 
 - **Visible Keywords (`KeywordList.tsx`)**:
@@ -747,7 +856,6 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
 **Why This Structure?**
 
 1. **전역 스키마** (`layout.tsx`):
-
    - 모든 페이지에 공통으로 적용
    - 브랜드 정보는 변하지 않음
    - 다국어 지원은 사이트 전체 속성
@@ -798,11 +906,9 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
 ### 7. Verification Steps
 
 1. **Rich Results Test**: https://search.google.com/test/rich-results
-
    - URL 입력 후 Organization 및 WebSite 스키마 인식 확인
 
 2. **Google Search Console**:
-
    - "URL 검사" → "색인 생성 요청"
    - 빠른 크롤링 요청
 

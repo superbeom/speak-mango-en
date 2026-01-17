@@ -81,7 +81,9 @@ function validateItem(item) {
 
   // 3. 의미: 대상 언어만 허용 (영어 제외)
   if (item.meaning) {
-    TARGET_LANGS.forEach((lang) => {
+    // 규칙: English("en")도 검증 대상에 포함 (마침표 규칙 적용을 위해)
+    const meaningLangs = [...TARGET_LANGS, "en"];
+    meaningLangs.forEach((lang) => {
       const text = item.meaning[lang];
       if (!text) {
         errors.push(`Missing meaning for language: ${lang}`);
@@ -101,9 +103,13 @@ function validateItem(item) {
         checkEnglishInclusion(text, `Meaning (${lang})`, errors);
       }
 
-      // 규칙: 문장 부호 (물음표 검증은 제외 > 언어별 물음표가 다름, 마침표 금지만 검증)
-      if (text.trim().endsWith(".") && !text.trim().endsWith("...")) {
-        errors.push(`Meaning (${lang}) must not end with a period (.).`);
+      // 규칙: 문장 부호 (마침표 금지 - 문장 중간 포함)
+      // ... (말줄임표)는 허용하되, 그 외의 .은 모두 에러 처리
+      if (text.replace(/\.\.\./g, "").includes(".")) {
+        errors.push(`Meaning (${lang}) must not contain a period (.).`);
+      }
+      if (text.includes(";")) {
+        errors.push(`Meaning (${lang}) must not contain a semicolon (;).`);
       }
     });
   }

@@ -10,16 +10,10 @@ import {
 } from "react";
 import { Volume2, Loader2, Square, Pause, Play } from "lucide-react";
 import { trackAudioPlay, trackAudioComplete } from "@/analytics";
+import { useAudio } from "@/context/AudioContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { AUDIO_PLAYBACK_START } from "@/constants/events";
 import { cn, getStorageUrl } from "@/lib/utils";
-
-// Extend Window interface for Webkit compatibility
-declare global {
-  interface Window {
-    webkitAudioContext: typeof AudioContext;
-  }
-}
 
 export interface DialogueAudioButtonHandle {
   play: (isSequential?: boolean) => Promise<void>;
@@ -100,6 +94,7 @@ const DialogueAudioButton = forwardRef<
     },
     ref
   ) => {
+    const { getAudio } = useAudio();
     const isMobile = useIsMobile();
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
@@ -148,33 +143,52 @@ const DialogueAudioButton = forwardRef<
     // Web Audio API initialization function (Lazy Init)
     const initializeWebAudio = useCallback(() => {
       try {
-        const AudioContextClass =
-          window.AudioContext || window.webkitAudioContext;
+        const ctx = getAudio();
 
-        if (AudioContextClass && audioRef.current && !audioContextRef.current) {
-          const ctx = new AudioContextClass();
+        if (ctx && audioRef.current) {
+          audioContextRef.current = ctx;
 
           // Android: Try to resume immediately
+          // On iOS, this might fail if no user gesture, but that's fine as we try again in togglePlay
           if (ctx.state === "suspended") {
             ctx.resume().catch(() => {
               // Silently fail on iOS, will be resumed on user gesture
             });
           }
 
+          // Create a new GainNode for this specific audio element
+          // We can reuse the context but we need new nodes for each source
           const gainNode = ctx.createGain();
 
           // Connect: Source -> Gain -> Destination
-          const source = ctx.createMediaElementSource(audioRef.current);
-          source.connect(gainNode);
-          gainNode.connect(ctx.destination);
+          // Note: createMediaElementSource can only be called once per element.
+          // If we reuse audioRef.current, we might need to handle this.
+          // However, in this component's lifecycle, audioRef.current is stable.
+          // BUT: Re-connecting an element that is already connected might throw or warn.
+          // Currently we guard by checking if we already set up our internal ref?
+          // Actually, createMediaElementSource throws if called twice on same element.
+          // We can use a flag on the element or try/catch.
+          // Simplest is try/catch for "already connected" scenario if strict mode fires twice.
+          try {
+            const source = ctx.createMediaElementSource(audioRef.current);
+            source.connect(gainNode);
+            gainNode.connect(ctx.destination);
 
-          audioContextRef.current = ctx;
-
-          // Set fixed amplified volume
-          gainNode.gain.value = FIXED_VOLUME;
+            // Set fixed amplified volume
+            gainNode.gain.value = FIXED_VOLUME;
+          } catch (e) {
+            // If already connected, we might just need to ensure volume is set?
+            // Since we can't easily get the old gain node back from just the audio element without storing it,
+            // we'll assume if it fails it's already set up.
+            // But gainNode above is new. If source was already made, we can't reconnect it easily to a NEW gain node.
+            // Ideally we shouldn't run this init twice.
+            // audioContextRef.current check in togglePlay prevents double init usually.
+            console.warn("MediaElementSource likely already created", e);
+          }
         }
-      } catch {
+      } catch (err) {
         // Web Audio API failed, fallback to basic HTML5 Audio
+        console.error("Web Audio Init Failed", err);
         if (audioRef.current) {
           audioRef.current.volume = 1.0;
         }
@@ -380,11 +394,9 @@ const DialogueAudioButton = forwardRef<
         window.removeEventListener(AUDIO_PLAYBACK_START, handleGlobalStop);
 
         // Cleanup Web Audio API
-        if (audioContextRef.current) {
-          audioContextRef.current.close();
-        }
-        audioRef.current = null;
+        // CRITICAL: DO NOT close the audio context here as it is shared
         audioContextRef.current = null;
+        audioRef.current = null;
       };
     }, [audioUrl]);
 

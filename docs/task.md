@@ -28,6 +28,7 @@
 ## Phase 4: Optimization & Polish (최적화 및 고도화)
 
 - [x] **Automation**: AI 기반 생성 및 중복 방지 워크플로우 설계 완료 (`docs/n8n/expressions/optimization_steps.md`)
+- [x] **Automation**: V3 특정 표현 생성 및 자동 분류 워크플로우 설계 (`docs/n8n/expressions/optimization_steps_v3.md`)
 - [x] **i18n**: 다국어 지원 인프라 및 중앙 집중식 문자열 관리 구현
 - [x] **Category**: 2단계 분류 체계(`domain`, `category`) 도입 및 DB 스키마 확장
 - [x] **UI/UX**: 태그 및 카테고리별 필터링 기능 구현
@@ -66,6 +67,7 @@
 - [x] **Automation**: Prompt Refinement (Forbid Mixed English in Dialogue Translations)
 - [x] **i18n**: 하드코딩된 언어 문자열 제거 및 상수화 (Hardcoded String Refactoring)
 - [x] **Automation**: 대화 턴수 검증(2~4 turns) 규칙 도입 및 `10_validate_content.js` 반영
+- [x] **Automation**: 데이터 정제(Cleanup Meaning) 및 엄격한 문장 부호 검증 도입 (`n8n` & `verify_db_data.js`)
 - [x] **Automation**: 대화 생성 규칙 정교화 (Role Gender & American Names)
 - [x] **SEO**: JSON-LD 구조화된 데이터 추가 (Organization, WebSite, SearchAction)
 - [x] **UI/UX**: 검색 기능 개선 (Icon Click, Multilingual, Duplicate Prevention)

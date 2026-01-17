@@ -2,6 +2,78 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-17: Database Schema Update (Unique Constraint)
+
+- **Goal**: `expression` 컬럼의 중복 데이터 입력을 DB 수준에서 원천 차단하여 데이터 무결성 보장.
+- **Actions**:
+  - **Schema Change**: `speak_mango_en.expressions` 테이블의 `expression` 컬럼에 `UNIQUE` 제약 조건 추가.
+  - **Migration**: `database/014_add_unique_constraint_to_expression.sql` 마이그레이션 파일 생성.
+  - **Documentation**: `docs/database/schema.md`에 Unique Key(UK) 및 인덱스 정보 반영.
+- **Outcome**: 애플리케이션 레벨의 중복 체크 외에 DB 레벨의 안전장치가 추가되어 중복 데이터 발생 가능성 0%.
+
+### 2026-01-17: n8n V3: 특정 표현 기반 콘텐츠 생성 (Specific Expression Generation)
+
+- **Goal**: 랜덤 생성이 아닌, 사용자가 지정한 특정 표현(Specific Expression)에 대해 AI가 자동으로 카테고리를 분류하고 콘텐츠를 생성하는 V3 워크플로우 구축.
+- **Actions**:
+  - **New Files**:
+    - `n8n/expressions/code_v3/02_pick_expression_v3.js`: 특정 표현 목록을 반환하는 노드.
+    - `n8n/expressions/code_v3/03_gemini_specific_expression_generator_prompt_v3.txt`: 표현을 입력받아 자동 분류(Auto-Classification) 및 콘텐츠를 생성하는 V3 프롬프트.
+    - `docs/n8n/expressions/optimization_steps_v3.md`: V3 워크플로우 아키텍처 및 가이드 문서 작성.
+- **Outcome**: 원하는 표현을 정확히 핀포인트하여 DB에 추가하는 기능 확보. AI의 자동 분류 능력 활용.
+
+### 2026-01-17: n8n 워크플로우 데이터 정제 및 검증 강화 (n8n Workflow Data Cleanup & Validation Update)
+
+- **Goal**: Gemini가 생성하는 `meaning` 필드에 대해 엄격한 문장 부호 규칙(끝 마침표 금지, 세미콜론 금지)을 강제합니다.
+- **Actions**:
+  - **n8n V1 & V2**: `Cleanup Meaning` Code 노드 추가 (V1: 10단계, V2: 6단계). 문장 끝 마침표 자동 제거 및 세미콜론을 가운뎃점(`·`)으로 치환.
+  - **Verification Script**: `verify_db_data.js` 및 n8n 검증 스크립트를 업데이트하여 `meaning` 필드 내 _모든_ 마침표(말줄임표 제외)와 세미콜론을 에러로 처리.
+  - **Refactoring**: 새로운 정제 단계 추가에 맞춰 `n8n/expressions/code` 및 `n8n/expressions/code_v2`의 스크립트 파일명을 변경하고 순서를 재조정.
+  - **Documentation**: 새로운 워크플로우 구조와 코드를 반영하여 `optimization_steps.md` 및 `optimization_steps_v2.md` 문서 업데이트.
+- **Outcome**: 검증 전 단계에서 일반적인 문장 부호 오류를 자동으로 수정하여 데이터 품질을 향상시키고, 수동 개입 및 데이터 거부율을 감소시켰습니다.
+
+## 2026-01-17: Audio Context 리팩토링 및 iOS 전체 재생 픽스 (Audio Context Refactoring)
+
+### ✅ 진행 사항
+
+**New Files**:
+
+- `context/AudioContext.tsx`: Singleton AudioContext 관리 (한국어 주석 포함)
+
+**Modified Files**:
+
+- `app/layout.tsx`: `AudioProvider` 적용
+- `components/DialogueAudioButton.tsx`: `useAudio` 훅 적용 및 로컬 Context 제거
+- `lib/audio.ts`: 삭제 (Context로 이관)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 아이폰에서 '전체 듣기' 시 다음 곡으로 넘어가지 않았던 이유는?**
+
+- **A**: iOS(Safari/WebKit)의 **Autoplay Policy** 때문입니다.
+  - 아이폰은 배터리/데이터 절약을 위해 **"사용자의 직접적인 터치 없이는 새로운 AudioContext를 생성/재개할 수 없다"**는 강력한 제약이 있습니다.
+  - 기존 로직은 곡이 바뀔 때마다 **새로운 AudioContext**를 생성했습니다.
+  - 첫 곡은 터치로 시작했으니 재생되지만, 두 번째 곡부터는 코드(자동)로 넘어가므로 "사용자 제스처 없음"으로 간주되어 OS가 AudioContext 생성을 차단(Suspend)했습니다.
+
+**Q. 어떻게 해결했나? (Singleton Pattern)**
+
+- **A**: **"오디오 문을 딱 하나만 열어두고 계속 쓰기"** 전략을 사용했습니다.
+  - **Before**: 곡마다 `new AudioContext()` (매번 문을 새로 열려다 차단됨)
+  - **After**: 앱 실행 시(정확히는 첫 터치 시) **단 하나의 공용 `AudioContext`**를 만들고, 모든 오디오가 이 파이프라인을 공유합니다.
+  - 한 번 열린(Resumed) Context는 이후 사용자 제스처 없이도 계속 사용할 수 있어, '전체 듣기'가 끊기지 않고 이어집니다.
+
+**Q. 왜 `lib/audio.ts` 대신 React Context(`AudioContext.tsx`)를 선택했나?**
+
+- **A**: React의 **Lifecycle**과 **Global State** 관리 패턴을 따르기 위함입니다.
+  - `ExpressionContext`나 `AnalyticsProvider`처럼, 전역 상태는 Provider로 감싸는 것이 일관성이 있습니다.
+  - `useAudio`, `getAudio` 훅을 통해 컴포넌트 어디서든 쉽게 접근할 수 있습니다.
+  - 내부 주석을 모두 한국어로 작성하여 유지보수 편의성을 높였습니다.
+
+**Q. `createMediaElementSource` 관련 `try/catch`는 왜 필요한가?**
+
+- **A**: **React Strict Mode**의 이중 렌더링 방어 기제입니다.
+  - `createMediaElementSource`는 한 오디오 태그당 **딱 한 번만** 호출할 수 있습니다 (두 번 연결 시 에러).
+  - 컴포넌트 마운트나 리렌더링 시 이미 연결된 오디오에 대해 재연결을 시도하면 앱이 죽을 수 있으므로, `try/catch`로 "이미 연결됨" 에러를 무시하도록 처리했습니다.
+
 ## 2026-01-16: SEO Schema & JSON-LD 최적화 (Schema.org Implementation)
 
 - **목표**: 검색 엔진의 엔티티 이해도 향상을 위해 구조화된 데이터(Structured Data) 강화.
@@ -153,7 +225,6 @@
 **Q. 한국어 브라우저에서 영어 검색어를 입력하면 부정확한 결과가 나오는 이유는?**
 
 - **A**: 모든 언어의 meaning 필드를 검색하고 있었음
-
   - **문제**: 한국어 사용자가 "oke"를 검색하면 영어 meaning에 "oke"가 있는 결과도 표시
   - **해결**: 현재 로케일의 meaning 필드만 검색하도록 수정
   - **쿼리 변경**:
@@ -684,7 +755,6 @@ export async function generateMetadata(): Promise<Metadata> {
 **Q. 왜 메시지를 변경했나요?**
 
 - **A.** ShareButton은 두 가지 방식으로 작동합니다:
-
   1. **Web Share API** (모바일): 네이티브 공유 다이얼로그 → 클립보드 복사가 아님
   2. **Clipboard API** (데스크탑): 클립보드 복사
 
@@ -823,7 +893,6 @@ const handleShare = async (e: React.MouseEvent) => {
 **브라우저 테스트**:
 
 1. **메인 페이지 카드**:
-
    - 공유 버튼이 우측 하단에 고정 위치로 표시
    - 공유 버튼 클릭 시 페이지 이동 없이 공유 기능만 실행 ✅
    - Toast 알림 정상 표시 ✅
@@ -980,14 +1049,12 @@ export const TOAST_TYPE = {
 **개발 환경 콘솔 로그 확인:**
 
 1. **모바일 (Web Share API)**:
-
    - Share 버튼 클릭 → 네이티브 공유 다이얼로그 표시
    - Instagram, Twitter, KakaoTalk 등 설치된 앱으로 공유 가능
    - `[Analytics] Event: share_click { expression_id: "...", share_method: "native", share_platform: "native" }`
    - `[Analytics] Event: share_complete { expression_id: "...", share_platform: "native" }`
 
 2. **데스크탑 (Clipboard)**:
-
    - Share 버튼 클릭 → URL 클립보드 복사
    - Toast 알림: "Link copied!"
    - `[Analytics] Event: share_click { expression_id: "...", share_method: "copy_link", share_platform: "clipboard" }`
@@ -1162,18 +1229,15 @@ yarn dev
 브라우저 콘솔에서 다음 시나리오 테스트:
 
 1. **전체 듣기**: 상세 페이지에서 "Play All" 버튼 클릭
-
    - `[Analytics] Event: audio_play { expression_id: "...", audio_index: 0, play_type: "sequential" }` (1회만)
    - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 0 }`
    - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 1 }`
 
 2. **개별 듣기**: 대화 버블의 오디오 버튼 클릭
-
    - `[Analytics] Event: audio_play { expression_id: "...", audio_index: 0, play_type: "individual" }`
    - `[Analytics] Event: audio_complete { expression_id: "...", audio_index: 0 }`
 
 3. **일시정지 후 재개**: 재생 중 버튼 클릭 → 다시 클릭
-
    - 재개 시 `audio_play` 이벤트 발생하지 않음 ✅
 
 4. **관련 표현 클릭**: 상세 페이지 하단의 관련 표현 카드 클릭
@@ -1584,7 +1648,6 @@ lib/analytics/
 ### ✅ 진행 사항
 
 - **Dynamic OG Image Redesign (Expression Detail)**:
-
   - **Visual Upgrade**: 메인 OG 이미지의 디자인 언어(White BG, Gradient Text, Logo Header)를 상세 페이지(`app/expressions/[id]/opengraph-image.tsx`)에도 적용.
   - **Runtime Switch**: 고화질 로고(`logo.png`) 및 폰트 파일(`inter-*.ttf`) 직접 로딩을 위해 `edge`에서 `nodejs` 런타임으로 변경.
   - **Typography**: `Inter` 폰트(Bold 700, Black 900, Medium 500)를 사용하여 가독성 및 브랜드 일관성 강화.
