@@ -2,6 +2,47 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.30: Marketing Studio & Image Automation (2026-01-18)
+
+### 1. Goal (목표)
+
+- SNS 마케팅을 위한 고화질 표현 카드 이미지를 손쉽게 생성하고, 이를 대량으로 자동화하는 시스템 구축.
+- 콘텐츠 길이에 상관없이 브랜드 로고와 디자인 일관성을 유지.
+
+### 2. Implementation (구현)
+
+- **Marketing Studio (`app/(admin)/studio/[id]`)**:
+  - **Route**: `/studio/[id]` (Basic Auth 보호).
+  - **Features**: 고화질(Retina) 캡처, 다양한 배경(Brand, Gradient) 및 비율(1:1, 9:16) 지원.
+  - **Layout**: `flex-col` 기반의 유동적 레이아웃으로 콘텐츠 길이에 따라 로고 위치 자동 조정.
+  - **Static Mode**: `ExpressionCard`에 `isStatic` prop을 추가하여 애니메이션 없이 깔끔한 렌더링 지원.
+
+- **Automation Script (`scripts/generate_studio_images.py`)**:
+  - **Language Support**: `--lang` 옵션을 통해 특정 언어(예: `ko`)로 번역된 카드 이미지 생성 가능.
+  - **Environment Flexibility**: `STUDIO_APP_URL` 환경 변수를 지원하여 로컬(`localhost`)뿐만 아니라 원격/스테이징 서버에서도 캡처 가능.
+  - **Proxy Middleware**: `proxy.ts`에서 `lang` 쿼리 파라미터를 감지하여 강제로 로케일을 전환해주는 기능 활용.
+
+### 3. Result (결과)
+
+- ✅ **Productivity**: 수동 캡처 없이 수천 개의 고화질 마케팅 에셋을 단 몇 분 만에 생성.
+- ✅ **Localization**: 전 세계 사용자를 위한 다국어 마케팅 이미지 확보.
+- ✅ **Consistency**: 모든 이미지에서 브랜드 가이드라인(여백, 로고 위치)을 준수.
+
+## v0.12.29: 서버 환경 변수 최적화 (2026-01-18)
+
+### 1. Goal (목표)
+
+- 하드코딩된 로컬 호스트 주소(`http://localhost:3000`)를 제거하고 환경 변수를 통해 유연성을 확보.
+
+### 2. Implementation (구현)
+
+- **Script Update**: `generate_studio_images.py`에서 `STUDIO_APP_URL` 환경 변수를 우선적으로 사용하도록 변경.
+- **Default Fallback**: 환경 변수가 없을 경우 안전하게 `http://localhost:3000`을 사용.
+
+### 3. Result (결과)
+
+- ✅ **Flexibility**: CI/CD 파이프라인이나 다른 포트에서 실행 중인 서버에서도 스크립트 실행 가능.
+
 ## v0.12.28: Database Integrity Reinforcement (2026-01-17)
 
 ### 1. Goal (목표)
@@ -447,7 +488,7 @@ try {
 } catch (e) {
   console.warn(
     "Web Audio API initialization failed, using basic HTML5 Audio.",
-    e
+    e,
   );
 }
 
@@ -706,7 +747,7 @@ const executeSearch = useCallback(
     previousSearchRef.current = searchValue;
     onSearch(searchValue);
   },
-  [onSearch]
+  [onSearch],
 );
 ```
 
@@ -1132,7 +1173,7 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
 // 1. quiz.options 필드 금지
 if (contentObj.quiz.options) {
   errors.push(
-    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`
+    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`,
   );
 }
 
@@ -1148,8 +1189,8 @@ if (!hasOptionA || !hasOptionB || !hasOptionC) {
   if (!hasOptionC) missing.push("C");
   errors.push(
     `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
-      ", "
-    )}`
+      ", ",
+    )}`,
   );
 }
 ```

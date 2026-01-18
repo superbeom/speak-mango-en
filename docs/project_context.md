@@ -70,6 +70,8 @@ speak-mango-en/
 │   └── expressions/     # 영어 표현(Expressions) 생성 워크플로우
 │       ├── code/        # 각 노드의 JavaScript 코드 파일 (단계별 분리)
 │       └── expressions_workflow_template.json # 워크플로우 템플릿
+├── scripts/             # 유틸리티 및 자동화 스크립트 (Python)
+│   └── generate_studio_images.py # 스튜디오 이미지 일괄 생성 스크립트
 ├── types/               # TypeScript 타입 정의
 │   ├── database.ts      # Supabase Generated Types
 │   └── toast.ts         # Toast 알림 타입 및 상수
@@ -79,9 +81,13 @@ speak-mango-en/
 ├── docs/                # 프로젝트 문서의 중앙 저장소 (Docs as Code)
 │   ├── n8n/                 # n8n 자동화 관련 가이드
 │   │   └── expressions/     # 영어 표현 워크플로우 문서
-│   │       ├── optimization_steps.md # AI 기반 생성 가이드
-│   │       ├── workflow_guide.md     # n8n 자동화 설정 가이드
-│   │       └── user_guide.md         # 서비스 및 n8n 워크플로우 운영자 가이드
+│   │       ├── optimization_steps_v2.md # V2 (Single-Shot) AI 생성 가이드
+│   │       ├── optimization_steps_v3.md # V3 (Specific) AI 생성 가이드
+│   │       ├── optimization_steps.md    # (Legacy) V1 AI 생성 가이드
+│   │       ├── workflow_guide.md        # n8n 자동화 설정 가이드
+│   │       └── user_guide.md            # 서비스 및 n8n 워크플로우 운영자 가이드
+│   ├── marketing/           # 마케팅 가이드 및 리소스
+│   │   └── studio_guide.md       # 마케팅 스튜디오 및 자동화 스크립트 사용 가이드
 │   ├── monetization/        # 수익화 전략 문서
 │   │   ├── brainstorming.md      # 수익화 브레인스토밍 및 Q&A (원본)
 │   │   ├── ideas.md              # 수익화 및 성장 전략 아이디어 요약

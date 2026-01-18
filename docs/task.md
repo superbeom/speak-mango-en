@@ -81,6 +81,7 @@
 - [x] **SEO**: JSON-LD 구조화된 데이터(Schema.org) 최적화
   - [x] `app/layout.tsx`: `keywords` 추가
   - [x] `app/expressions/[id]`: `LearningResource` 스키마에 `keywords` 주입
+- [x] **UI/UX**: 마케팅 스튜디오 구현 및 이미지 자동화 (`/studio/[id]`, `generate_studio_images.py`)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

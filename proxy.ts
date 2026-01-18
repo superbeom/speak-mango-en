@@ -1,12 +1,52 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import {
-  defaultLocale as DEFAULT_LOCALE,
-  isSupportedLocale,
-} from "@/i18n";
+import { defaultLocale as DEFAULT_LOCALE, isSupportedLocale } from "@/i18n";
+import { ROUTES } from "@/lib/routes";
 
 export function proxy(request: NextRequest) {
-  // 1. 쿼리 파라미터에서 언어 확인 (SEO/공유 링크용)
+  const url = request.nextUrl;
+
+  // 1. /studio 경로 보안 설정 (Basic Auth)
+  if (url.pathname.startsWith(ROUTES.STUDIO)) {
+    const basicAuth = request.headers.get("authorization");
+
+    if (basicAuth) {
+      try {
+        const authValue = basicAuth.split(" ")[1];
+        const [user, pwd] = atob(authValue).split(":");
+
+        if (
+          user === process.env.ADMIN_USER &&
+          pwd === process.env.ADMIN_PASSWORD
+        ) {
+          // 인증 성공 시 다음 단계로 진행 (언어 감지 로직으로)
+        } else {
+          return new NextResponse("Invalid credentials", {
+            status: 401,
+            headers: {
+              "WWW-Authenticate": 'Basic realm="Speak Mango Admin"',
+            },
+          });
+        }
+      } catch {
+        return new NextResponse("Authentication failed", {
+          status: 401,
+          headers: {
+            "WWW-Authenticate": 'Basic realm="Speak Mango Admin"',
+          },
+        });
+      }
+    } else {
+      return new NextResponse("Authentication required", {
+        status: 401,
+        headers: {
+          "WWW-Authenticate": 'Basic realm="Speak Mango Admin"',
+        },
+      });
+    }
+  }
+
+  // 2. 쿼리 파라미터에서 언어 확인 (SEO/공유 링크용)
   const queryLang = request.nextUrl.searchParams.get("lang");
   let detectedLocale = DEFAULT_LOCALE;
 
