@@ -180,7 +180,7 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   ```typescript
   const locale = filters.locale || "en";
   query = query.or(
-    `expression.ilike.%${searchTerm}%,meaning->>${locale}.ilike.%${searchTerm}%`
+    `expression.ilike.%${searchTerm}%,meaning->>${locale}.ilike.%${searchTerm}%`,
   );
   ```
 - **Flow**: `app/page.tsx`에서 `getI18n()`으로 locale 획득 → `getExpressions({ ...filters, locale })` → `ExpressionList`에서 `filtersWithLocale` 생성 → 페이지네이션 시에도 locale 유지
@@ -198,7 +198,7 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
       previousSearchRef.current = searchValue;
       onSearch(searchValue);
     },
-    [onSearch]
+    [onSearch],
   );
   ```
 - **Why useRef**: `useState`는 리렌더링 발생, `useRef`는 값 변경 시 리렌더링 없음 (효율적)
@@ -471,7 +471,7 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
 ### 10.2 Strict JSON Parsing
 
 - **Problem**: LLM이 JSON 응답에 마크다운 코드 블록(``json ... `)을 포함하여 파싱 에러 발생.
-- **Solution**: n8n 워크플로우 내에서 정규식(` replace(/```json|```/g, '') `)을 사용하여 순수 JSON 문자열만 추출한 뒤 파싱하는 로직을 추가했습니다.
+- **Solution**: n8n 워크플로우 내에서 정규식(`replace(/```json|```/g, '')`)을 사용하여 순수 JSON 문자열만 추출한 뒤 파싱하는 로직을 추가했습니다.
 
 ### 10.3 Structured Prompt Engineering
 
@@ -555,7 +555,7 @@ LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Le
 // 1. quiz.options 필드 금지
 if (contentObj.quiz.options) {
   errors.push(
-    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field.`
+    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field.`,
   );
 }
 
@@ -567,8 +567,8 @@ const hasOptionC = /\nC\.\s/.test(questionText);
 if (!hasOptionA || !hasOptionB || !hasOptionC) {
   errors.push(
     `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
-      ", "
-    )}`
+      ", ",
+    )}`,
   );
 }
 ```
@@ -592,7 +592,6 @@ if (!hasOptionA || !hasOptionB || !hasOptionC) {
 
 - **Problem**: Gemini가 'meaning' 필드 생성 시, 프롬프트 지침에도 불구하고 문장 끝에 마침표(.)를 붙이거나 다중 의미를 구분할 때 세미콜론(;)을 사용하는 경우가 빈번함. 기존 검증 로직은 이를 에러로 처리하여 재시도 비용 발생.
 - **Solution (2-Phase Strategy)**:
-
   1.  **Phase 1: Auto-Cleanup (데이터 정제)**
       - **Node**: `Cleanup Meaning` (n8n V2 Step 6, V1 Step 10)
       - **Logic**: 검증 단계 진입 전에 문제 소지가 있는 문장 부호를 자동으로 정리합니다.
@@ -653,7 +652,6 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 학습 모드의 복잡한 상호작용을 체계적으로 관리하기 위해 3가지 상태를 가진 State Machine을 도입했습니다.
 
 - **State Definition**:
-
   - **`blind` (Default)**: 리스닝 집중 모드. 모든 영어/해석 텍스트가 블러 처리됨. '해석 전체 보기' 버튼은 Soft Disabled 상태가 됨.
   - **`partial`**: 부분 확인 모드. 사용자가 안 들리는 특정 영어 문장만 클릭하여 일부만 드러낸 상태. **이 상태에서는 해석을 클릭하여 개별적으로 확인하는 것도 허용됩니다.**
   - **`exposed`**: 학습 모드 해제 상태. 모든 텍스트가 제약 없이 사용자 설정(해석 숨김 여부 등)에 따라 표시됨.
@@ -895,7 +893,6 @@ function validateLocaleFile(lang, filePath) {
 1. **EXCLUDED_KEYS 제거**: 초기에는 `expressionTitle`, `expressionDesc` 필드를 검증에서 제외했으나, 템플릿 변수를 허용 목록으로 관리하면서 불필요해져 제거했습니다.
 
 2. **언어별 특성 반영**:
-
    - 일본어는 한자 사용이 필수이므로 `allowedScripts`에 포함
    - 라틴 계열 언어는 영어 알파벳을 사용하므로 영어 누출 검사 제외
 
@@ -956,12 +953,12 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
         (
           command: "config",
           targetId: string,
-          config?: Record<string, any>
+          config?: Record<string, any>,
         ): void;
         (
           command: "event",
           eventName: string,
-          params?: Record<string, any>
+          params?: Record<string, any>,
         ): void;
       };
       dataLayer?: any[];
@@ -1216,7 +1213,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   ```typescript
   export function getShareUrl(
     expressionId: string,
-    utmParams?: Record<string, string>
+    utmParams?: Record<string, string>,
   ): string {
     const url = `${BASE_URL}/expressions/${expressionId}`;
     if (!utmParams) return url;
@@ -1283,3 +1280,47 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - `detail.shareCopied`: "Link copied!" / "링크 복사됨!" 등
   - `detail.shareFailed`: "Failed to share" / "공유 실패" 등
   - `card.share`, `card.shareCopied`, `card.shareFailed`: 카드용 동일 텍스트
+
+## 16. Marketing Asset Generation System (Marketing Studio)
+
+SNS 마케팅을 위한 고화질 에셋을 생성하고 대량 자동화하기 위한 기술적 구현 상세입니다.
+
+### 16.1 Client-Side Image Rendering (`html-to-image`)
+
+- **Objective**: 브라우저에 렌더링된 DOM 요소를 고화질 이미지(PNG)로 변환합니다.
+- **Library**: `html-to-image`를 사용하여 SVG ForeignObject 기반의 캔버스 렌더링을 수행합니다.
+- **High Resolution (Retina Support)**: 캡처 시 `pixelRatio: 2` 옵션을 적용하여 모바일 및 고해상도 디스플레이에서도 선명한 결과물을 얻습니다.
+- **Download Handling**: 생성된 데이터 URL을 `file-saver`를 통해 사용자 로컬 기기에 즉시 저장합니다.
+
+### 16.2 Automation with Playwright (자동화 스크립트)
+
+- **Language**: Python
+- **Engine**: Playwright (Headless Chromium)
+- **Mechanism**:
+  1. `sitemap.xml`을 파싱하여 전체 표현 ID 리스트를 확보합니다.
+  2. `asyncio.Semaphore`를 사용하여 브라우저 컨텍스트를 병렬(`CONCURRENCY=3`)로 실행하여 속도를 최적화합니다.
+  3. 특정 요소(`#studio-capture-area`)가 화면에 나타날 때까지 대기(`wait_for_selector`)한 후 해당 영역만 스크린샷을 찍습니다.
+- **Quality Assurance**: 폰트 및 이미지 로딩 지연으로 인한 깨짐 방지를 위해 캡처 전 `1000ms`의 지연 시간을 강제합니다.
+
+### 16.3 Localized Asset Generation (다국어 이미지 생성)
+
+- **Query Param Strategy**: 실제 사용자 URL 구조를 깨뜨리지 않으면서 스크립트가 특정 언어를 강제할 수 있도록 `?lang=[code]` 쿼리 파라미터를 활용합니다.
+- **Middleware Integration**: `proxy.ts` 미들웨어가 해당 파라미터를 감지하여 `x-locale` 헤더를 설정함으로써 서버 컴포넌트가 해당 언어의 딕셔너리를 로드하도록 유도합니다.
+- **Directory Sharding**: 생성된 이미지는 `studio_images/[lang]/` 폴더로 자동 분류되어 저장됩니다.
+
+### 16.4 Layout Adaptability for Long Content (유동적 레이아웃)
+
+- **Problem**: 내용이 길어질 경우 `absolute`로 배치된 브랜딩 로고가 텍스트와 겹치는 현상 발생.
+- **Solution**: **Flexbox Flow**로 전환.
+  - `StudioClient`의 캡처 영역을 `flex flex-col justify-between`으로 구성했습니다.
+  - 상단에 카드 본체(`flex-1`), 하단에 로고 영역을 배치하여 내용이 많아지면 로고가 자연스럽게 아래로 밀리도록 설계했습니다.
+  - 이 과정에서 `aspect-ratio`를 유지하면서도 콘텐츠 오버플로우를 안전하게 처리합니다.
+
+### 16.5 Static Capture Mode (정적 캡처 모드)
+
+- **Prop**: `ExpressionCard`에 `isStatic` 옵션을 도입했습니다.
+- **Implementation**:
+  - 모든 Framer Motion 애니메이션을 비활성화합니다.
+  - 호버 효과 및 클릭 상호작용을 제거합니다.
+  - 레이아웃을 `h-auto`로 고정하여 캡처 도구(`html-to-image`)가 실제 콘텐츠 높이를 정확히 계산할 수 있도록 돕습니다.
+- **Benefit**: 캡처 시점에 애니메이션 중간 단계가 찍히거나 레이아웃이 어긋나는 문제를 원천 차단합니다.

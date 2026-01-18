@@ -18,6 +18,7 @@ import ShareButton from "@/components/ShareButton";
 interface ExpressionCardProps {
   item: Expression;
   locale: string;
+  isStatic?: boolean;
 }
 
 const itemVariants = {
@@ -32,10 +33,14 @@ const itemVariants = {
   },
 };
 
-export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
+export default function ExpressionCard({
+  item,
+  locale,
+  isStatic = false,
+}: ExpressionCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const enableHover = useEnableHover();
+  const enableHover = useEnableHover() && !isStatic;
   const dict = getDictionary(locale);
 
   const content = item.content[locale] || item.content[SupportedLanguage.EN];
@@ -44,10 +49,11 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
   // UI Config 통합 가져오기
   const { domain, category } = getExpressionUIConfig(
     item.domain,
-    item.category
+    item.category,
   );
 
   const handleTagClick = (e: React.MouseEvent, tag: string) => {
+    if (isStatic) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -58,11 +64,12 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
         tag: tag,
         // 태그 클릭 시 일반 검색어는 혼동을 줄 수 있으므로 제거
         search: undefined,
-      })
+      }),
     );
   };
 
   const handleCategoryClick = (e: React.MouseEvent) => {
+    if (isStatic) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -72,9 +79,77 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
         category: item.category,
         tag: searchParams.get("tag") || undefined,
         search: searchParams.get("search") || undefined,
-      })
+      }),
     );
   };
+
+  const CardContent = (
+    <div
+      className={cn(
+        "group overflow-hidden rounded-3xl border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",
+        isStatic ? "h-auto pb-24" : "h-full",
+        enableHover &&
+          "hover:border-blue-200/50 hover:shadow-xl dark:hover:border-blue-500/30 dark:hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]",
+      )}
+    >
+      <div className="mb-5">
+        <div className="mb-4 flex items-center justify-between">
+          {/* Domain Tag */}
+          <span
+            className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${domain.styles}`}
+          >
+            <domain.icon className="w-3.5 h-3.5 mr-2 transition-transform duration-300 group-hover:scale-110" />
+            {domain.label}
+          </span>
+          {/* Category Label with Icon */}
+          <CategoryLabel
+            label={item.category}
+            icon={category.icon}
+            textStyles={category.textStyles}
+            onClick={handleCategoryClick}
+          />
+        </div>
+        <h3
+          className={cn(
+            "text-2xl font-bold text-main leading-tight transition-colors",
+            enableHover &&
+              "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+          )}
+        >
+          {item.expression}
+        </h3>
+        <p className="mt-2 text-lg font-medium text-secondary">{meaning}</p>
+      </div>
+
+      <div className="space-y-3 border-t border-subtle pt-5">
+        <div>
+          <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
+            {dict.card.situationQuestion}
+          </p>
+          <p className="text-body leading-relaxed line-clamp-2 text-sm">
+            {content?.situation || dict.card.noDescription}
+          </p>
+        </div>
+      </div>
+
+      {item.tags && item.tags.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {item.tags.map((tag) => (
+            <Tag
+              key={tag}
+              label={tag}
+              source="card"
+              onClick={(e) => handleTagClick(e, tag)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  if (isStatic) {
+    return <div className="w-full relative block">{CardContent}</div>;
+  }
 
   return (
     <motion.div
@@ -113,66 +188,7 @@ export default function ExpressionCard({ item, locale }: ExpressionCardProps) {
           }
         }}
       >
-        <div
-          className={cn(
-            "group h-full overflow-hidden rounded-3xl border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",
-            enableHover &&
-              "hover:border-blue-200/50 hover:shadow-xl dark:hover:border-blue-500/30 dark:hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]"
-          )}
-        >
-          <div className="mb-5">
-            <div className="mb-4 flex items-center justify-between">
-              {/* Domain Tag */}
-              <span
-                className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${domain.styles}`}
-              >
-                <domain.icon className="w-3.5 h-3.5 mr-2 transition-transform duration-300 group-hover:scale-110" />
-                {domain.label}
-              </span>
-              {/* Category Label with Icon */}
-              <CategoryLabel
-                label={item.category}
-                icon={category.icon}
-                textStyles={category.textStyles}
-                onClick={handleCategoryClick}
-              />
-            </div>
-            <h3
-              className={cn(
-                "text-2xl font-bold text-main leading-tight transition-colors",
-                enableHover &&
-                  "group-hover:text-blue-600 dark:group-hover:text-blue-400"
-              )}
-            >
-              {item.expression}
-            </h3>
-            <p className="mt-2 text-lg font-medium text-secondary">{meaning}</p>
-          </div>
-
-          <div className="space-y-3 border-t border-subtle pt-5">
-            <div>
-              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
-                {dict.card.situationQuestion}
-              </p>
-              <p className="text-body leading-relaxed line-clamp-2 text-sm">
-                {content?.situation || dict.card.noDescription}
-              </p>
-            </div>
-          </div>
-
-          {item.tags && item.tags.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              {item.tags.map((tag) => (
-                <Tag
-                  key={tag}
-                  label={tag}
-                  source="card"
-                  onClick={(e) => handleTagClick(e, tag)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {CardContent}
 
         {/* Share Button */}
         <div className="absolute bottom-5 right-5">

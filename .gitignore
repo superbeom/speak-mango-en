@@ -56,3 +56,9 @@ public/worker-*.js.map
 public/swe-worker-*.js
 public/fallback-*.js
 public/precache-*.js
+
+# python
+venv/
+__pycache__/
+*.py[cod]
+studio_images/

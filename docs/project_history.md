@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-17: Marketing Studio & Image Automation (Marketing Asset Generation)
+
+- **Goal**: SNS 마케팅을 위한 고화질 표현 카드 이미지를 손쉽게 생성하고, 이를 대량으로 자동화하는 시스템 구축.
+- **Actions**:
+  - **Feature Implementation**: `/studio/[id]` 경로에 마케팅 스튜디오 페이지 구현.
+    - `html-to-image`와 `file-saver`를 활용한 클라이언트 측 이미지 생성 및 다운로드.
+    - 다양한 배경(Brand, Gradient, Solid) 및 비율(1:1, 9:16) 옵션 제공.
+    - `ExpressionCard` 컴포넌트에 `isStatic` 모드를 추가하여 애니메이션 없이 정적 렌더링 지원.
+  - **Automation Script**: `scripts/generate_studio_images.py` 파이썬 스크립트 작성.
+    - `sitemap.xml`을 파싱하여 모든 표현 ID 추출.
+    - `playwright`를 사용하여 병렬로 스튜디오 페이지에 접속하고 스크린샷 캡처.
+  - **Environment Setup**: 파이썬 가상 환경(`venv`) 구성 및 필수 라이브러리(`requests`, `playwright`) 설치.
+  - **Documentation**: `docs/marketing/studio_guide.md` 가이드 문서 작성 및 컨텍스트 업데이트.
+- **Outcome**: 마케팅용 고화질 에셋 생산성을 획기적으로 높이고, 수동 캡처 작업의 번거로움을 제거함.
+
 ### 2026-01-17: Database Schema Update (Unique Constraint)
 
 - **Goal**: `expression` 컬럼의 중복 데이터 입력을 DB 수준에서 원천 차단하여 데이터 무결성 보장.
