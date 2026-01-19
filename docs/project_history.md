@@ -2,6 +2,15 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-19: Agent Skills Integration & Codebase Audit
+
+- **Goal**: Vercel의 전문적인 React/Next.js 지침을 에이전트에게 장착하고, 이를 기반으로 전체 코드베이스의 성능 및 디자인 품질을 감사(Audit).
+- **Actions**:
+  - **Skill Installation**: `npx add-skill vercel-labs/agent-skills`를 통해 `vercel-react-best-practices` 및 `web-design-guidelines` 설치.
+  - **Documentation**: 에이전트 스킬 활용을 위한 가이드 문서(`docs/agent_skills_guide.md`) 작성.
+  - **Git Configuration**: 공급자별 스킬 설정 폴더(`.gemini`, `.claude`, `.opencode`)를 `.gitignore`에 추가하여 레포지토리 정리.
+- **Outcome**: 에이전트의 개발 역량을 상향 평준화하고, 정량화된 감사 보고서를 통해 성능 최적화 로드맵 확보.
+
 ### 2026-01-17: Marketing Studio & Image Automation (Marketing Asset Generation)
 
 - **Goal**: SNS 마케팅을 위한 고화질 표현 카드 이미지를 손쉽게 생성하고, 이를 대량으로 자동화하는 시스템 구축.
@@ -532,7 +541,7 @@
 // quiz.options 필드 금지
 if (contentObj.quiz.options) {
   errors.push(
-    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`
+    `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`,
   );
 }
 
@@ -544,8 +553,8 @@ const hasOptionC = /\nC\.\s/.test(questionText);
 if (!hasOptionA || !hasOptionB || !hasOptionC) {
   errors.push(
     `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
-      ", "
-    )}`
+      ", ",
+    )}`,
   );
 }
 ```

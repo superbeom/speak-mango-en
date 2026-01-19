@@ -4,6 +4,10 @@
 
 ## Improvements
 
+- [ ] **Data Fetching Parallelization**: `app/page.tsx`에서 `getI18n()`과 `getExpressions()`를 `Promise.all`로 병렬화하여 서버 사이드 Waterfall 현상 제거 (Vercel React Best Practices 준수).
+- [ ] **Dialogue Rendering Optimization**: `DialogueSection.tsx`에서 인라인 함수 생성을 방지하고 `React.memo` 및 `useCallback`을 적용하여 불필요한 리렌더링 최적화.
+- [ ] **Scroll Event Throttling**: `FilterBar.tsx`의 스크롤 이벤트 리스너에 쓰로틀링(Throttling) 또는 `requestAnimationFrame` 적용하여 성능 부하 감소.
+- [ ] **Search Performance (FTS)**: `lib/expressions.ts`의 `ILIKE` 쿼리를 Supabase의 **Full Text Search (tsvector)**로 전환하여 대량 데이터 검색 성능 확보.
 - [ ] **Mobile Interaction**: 모바일 환경에서의 카드 리스트 뷰 최적화 (스와이프 제스처, 긴 탭 인터랙션 등).
 
 - [ ] **Category Expansion**: 현재 비활성화된 대분류(`domain`) 필터 활성화 및 데이터 연동.
@@ -27,6 +31,7 @@
 
 ## Technical Debt
 
+- [ ] **Logic Bug Fix**: `hooks/usePaginatedList.ts`의 `finally` 블록 내 불필요한 `setLoading(true)` 호출 제거.
 - [ ] **Type Safety**: Supabase Generated Types 자동 업데이트 스크립트 추가.
 - [ ] **n8n Production Config**: 실제 서비스 배포 시 `N8N_HOST` 및 `WEBHOOK_URL`을 실제 도메인 주소로 변경 필요.
 - [ ] **Security (RLS)**: 프로덕션 배포 전 `speak_mango_en` 스키마의 RLS를 활성화하고, `service_role` 전용 정책 설정 필요 (현재는 개발 편의를 위해 비활성화 상태).

@@ -2,6 +2,28 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.31: Agent Skills Integration & Codebase Audit (2026-01-19)
+
+### 1. Goal (목표)
+
+- AI 에이전트에게 Vercel의 전문적인 개발 지식(Skills)을 주입하여 코드 품질을 상향 평준화.
+
+### 2. Implementation (구현)
+
+- **Agent Skills Setup**:
+  - `npx add-skill vercel-labs/agent-skills`를 실행하여 두 가지 핵심 스킬 설치.
+  - **Vercel React Best Practices**: 45개 성능 최적화 규칙 (Waterfall 방지, 번들 최적화 등).
+  - **Web Design Guidelines**: 접근성 및 UI/UX 표준 가이드라인.
+  - 관련 설정 파일들을 `.agent/skills/`에 저장하고 가이드 문서(`docs/agent_skills_guide.md`) 작성.
+
+- **Git Configuration**:
+  - `.gitignore`에 에이전트 공급자별 설정 폴더(`.gemini`, `.claude` 등)를 추가하여 레포지토리 정리.
+
+### 3. Result (결과)
+
+- ✅ **Intelligence**: 에이전트가 Vercel 엔지니어링 팀의 노하우를 참고하여 코딩하도록 업그레이드.
+- ✅ **Visibility**: 현재 프로젝트의 기술적 부채와 최적화 포인트를 명확히 파악.
+
 ## v0.12.30: Marketing Studio & Image Automation (2026-01-18)
 
 ### 1. Goal (목표)

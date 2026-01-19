@@ -42,8 +42,9 @@
 - [x] **UI/UX**: 원어민 대화 듣기(Audio Playback) 기능 구현 및 동기화 로직 적용
 - [x] **UI/UX**: 대화 전체 듣기(Sequential Playback) 및 하이라이트 기능 구현
 - [x] **Automation**: n8n 코드 및 프롬프트 모듈화 (개별 파일 분리 및 구조 최적화)
-- [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 최적화
+- [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 및 스킬 가이드 최적화
 - [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n/expressions/user_guide.md`) 작성
+- [x] **Audit**: Vercel React Best Practices 기반 코드베이스 전체 감사 (`audit_report.html`)
 - [x] **Automation**: n8n 워크플로우 성능(중복 체크) 및 콘텐츠 품질(대화 턴수, 통화 표기) 고도화
 - [x] **UI/UX**: 스켈레톤 로딩 (Skeleton Loading) 도입
 - [x] **UI/UX**: 리스트 탐색 경험 개선 ('더 보기' 버튼 및 레이아웃 안정화)
