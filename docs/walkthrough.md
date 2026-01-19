@@ -2,6 +2,41 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.32: Performance Optimization (2026-01-19)
+
+### 1. Goal (목표)
+
+- 감사 보고서에서 식별된 주요 성능 병목 현상(Waterfall Data Fetching, Client-side Re-rendering)을 해결하여 사용자 경험을 개선합니다.
+
+### 2. Implementation (구현)
+
+#### A. Server-Side Waterfall Removal (`app/page.tsx`)
+
+- **Problem**: `getI18n()` 호출이 완료된 후에야 `getExpressions()`가 실행되는 직렬(Serial) 구조로 인해 TTFB가 지연됨.
+- **Solution**: 의존성이 없는 비동기 작업을 `Promise.all`로 병렬화.
+  - 헤더에서 로케일을 먼저 추출(`getLocale`)한 후, 딕셔너리 로딩과 DB 쿼리를 동시에 실행.
+  ```typescript
+  const locale = await getLocale(); // Fast header read
+  const [{ dict }, expressions] = await Promise.all([
+    getI18n(), // Dictionary load
+    getExpressions({ ...filters, locale }), // DB Query
+  ]);
+  ```
+
+#### B. Client-Side Rendering Optimization (`components/DialogueSection.tsx`)
+
+- **Problem**: 오디오 재생 시 `playingIndex` 상태가 변경될 때마다 부모 컴포넌트(`DialogueSection`)와 모든 자식 컴포넌트(`DialogueItem`)가 리렌더링됨.
+- **Solution**:
+  1.  **React.memo Application**: `DialogueItem`을 메모이제이션하여 Props 변경이 없는 경우 리렌더링 방지.
+  2.  **Stable Callbacks**: 부모에서 자식으로 전달되는 함수들(`onPlay`, `onEnded`, `onToggleReveal`)을 `useCallback`으로 감싸고, 인라인 함수 정의를 제거.
+      - **Index Prop Injection**: `DialogueItem`에 `index` prop을 명시적으로 전달하여, 콜백 함수가 인덱스를 직접 참조하지 않고 인자로 받도록 구조 변경 (함수 재생성 방지).
+  3.  **Optimization Logic**: `handleEnglishClick` 내부의 중복 `setState` 호출 제거 및 조건문 로직 단순화.
+
+### 3. Result (결과)
+
+- ✅ **TTFB Improvement**: 병렬 데이터 페칭으로 초기 로딩 속도 향상.
+- ✅ **Rendering Efficiency**: 오디오 재생 중 불필요한 리렌더링이 제거되어 저사양 기기에서의 반응성 개선.
+
 ## v0.12.31: Agent Skills Integration & Codebase Audit (2026-01-19)
 
 ### 1. Goal (목표)

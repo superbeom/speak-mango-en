@@ -2,6 +2,17 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-19: Performance Optimization (Waterfall & Client-Side)
+
+- **Goal**: 감사 보고서에서 식별된 핵심 성능 병목 개선.
+- **Actions**:
+  - **Waterfall Fix**: `app/page.tsx`에서 `getI18n`과 `getExpressions`가 직렬로 호출되던 문제를 `Promise.all`로 병렬화하여 TTFB 개선.
+  - **Client-Side Optimization**: `components/DialogueSection.tsx` 및 `DialogueItem.tsx` 최적화.
+    - `React.memo` 적용 및 `index` prop 추가.
+    - `useCallback`으로 핸들러 안정화하여 불필요한 리렌더링 제거.
+    - `handleEnglishClick` 로직 단순화로 중복 상태 업데이트 제거.
+- **Outcome**: 초기 로딩 속도 향상 및 대화 재생 시 UI 반응성 개선.
+
 ### 2026-01-19: Agent Skills Integration & Codebase Audit
 
 - **Goal**: Vercel의 전문적인 React/Next.js 지침을 에이전트에게 장착하고, 이를 기반으로 전체 코드베이스의 성능 및 디자인 품질을 감사(Audit).

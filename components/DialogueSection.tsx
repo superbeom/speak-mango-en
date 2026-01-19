@@ -48,13 +48,13 @@ function LearningToggle({
         isDisabled
           ? "opacity-50 cursor-not-allowed bg-zinc-50 border-zinc-100 text-disabled dark:bg-zinc-800/50 dark:border-zinc-800"
           : isSoftDisabled
-          ? "bg-zinc-50 border-zinc-200 text-disabled dark:bg-zinc-800/50 dark:border-zinc-700"
-          : isActive
-          ? "bg-highlight border-highlight text-highlight"
-          : cn(
-              "bg-white border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500",
-              !isMobile && "hover:text-zinc-600 dark:hover:text-zinc-300"
-            )
+            ? "bg-zinc-50 border-zinc-200 text-disabled dark:bg-zinc-800/50 dark:border-zinc-700"
+            : isActive
+              ? "bg-highlight border-highlight text-highlight"
+              : cn(
+                  "bg-white border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500",
+                  !isMobile && "hover:text-zinc-600 dark:hover:text-zinc-300",
+                ),
       )}
       title={title}
     >
@@ -79,10 +79,10 @@ export default function DialogueSection({
 
   // Learning Mode States: 'blind' (default) | 'partial' (one clicked) | 'exposed' (all shown)
   const [viewMode, setViewMode] = useState<"blind" | "partial" | "exposed">(
-    "blind"
+    "blind",
   );
   const [revealedIndices, setRevealedIndices] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
   const [savedRevealedIndices, setSavedRevealedIndices] =
     useState<Set<number> | null>(null);
@@ -128,38 +128,44 @@ export default function DialogueSection({
     }
   };
 
-  const handleManualToggle = (index: number) => {
-    // Disable translation click interaction only in strict blind mode
-    // (Partial blind mode allows clicking translations)
-    if (viewMode === "blind") return;
+  const handleManualToggle = useCallback(
+    (index: number) => {
+      // Disable translation click interaction only in strict blind mode
+      // (Partial blind mode allows clicking translations)
+      if (viewMode === "blind") return;
 
-    setRevealedIndices((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
+      setRevealedIndices((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(index)) {
+          newSet.delete(index);
+        } else {
+          newSet.add(index);
+        }
+        return newSet;
+      });
+    },
+    [viewMode],
+  );
+
+  const handleEnglishClick = useCallback(
+    (index: number) => {
+      if (viewMode === "exposed") return;
+
+      // Calculate new set immediately to check size
+      const newEnglishSet = new Set(revealedEnglishIndices);
+      newEnglishSet.add(index);
+      setRevealedEnglishIndices(newEnglishSet);
+
+      // If all English is now revealed, perform "Auto-Exit Blind Mode"
+      if (newEnglishSet.size === dialogue.length) {
+        setViewMode("exposed");
+        setSavedRevealedIndices(null); // Discard saved state (user manually overrode context)
+      } else if (viewMode === "blind") {
+        setViewMode("partial");
       }
-      return newSet;
-    });
-  };
-
-  const handleEnglishClick = (index: number) => {
-    if (viewMode === "exposed") return;
-
-    // Calculate new set immediately to check size
-    const newEnglishSet = new Set(revealedEnglishIndices);
-    newEnglishSet.add(index);
-    setRevealedEnglishIndices(newEnglishSet);
-
-    // If all English is now revealed, perform "Auto-Exit Blind Mode"
-    if (newEnglishSet.size === dialogue.length) {
-      setViewMode("exposed");
-      setSavedRevealedIndices(null); // Discard saved state (user manually overrode context)
-    } else if (viewMode === "blind") {
-      setViewMode("partial");
-    }
-  };
+    },
+    [viewMode, revealedEnglishIndices, dialogue.length],
+  );
 
   // State to track ready status of each audio
   const [readyIndices, setReadyIndices] = useState<Set<number>>(new Set());
@@ -199,33 +205,43 @@ export default function DialogueSection({
     }
   };
 
-  const handleLineEnded = (index: number) => {
-    // Only proceed if we are in auto-play mode and this was the expected line
-    if (isAutoPlaying && index === playingIndex) {
-      const nextIndex = index + 1;
-      if (nextIndex < dialogue.length) {
-        setPlayingIndex(nextIndex);
-        // Add a small delay for natural conversation flow
-        setTimeout(() => {
-          // Pass true to indicate this is sequential playback
-          buttonRefs.current[nextIndex]?.play(true);
-        }, 500);
-      } else {
-        // Finished
-        setIsAutoPlaying(false);
-        setPlayingIndex(null);
+  const handleLineEnded = useCallback(
+    (index: number) => {
+      // Only proceed if we are in auto-play mode and this was the expected line
+      // We need to access the LATEST isAutoPlaying and playingIndex.
+      // Since specific simple values like booleans might be stale in closures if not dep'd correctly,
+      // and this function is passed to child, it will change whenever playingIndex changes.
+      // This reduces usefulness of memo for the ACTIVE item, but helps others.
+      if (isAutoPlaying && index === playingIndex) {
+        const nextIndex = index + 1;
+        if (nextIndex < dialogue.length) {
+          setPlayingIndex(nextIndex);
+          // Add a small delay for natural conversation flow
+          setTimeout(() => {
+            // Pass true to indicate this is sequential playback
+            buttonRefs.current[nextIndex]?.play(true);
+          }, 500);
+        } else {
+          // Finished
+          setIsAutoPlaying(false);
+          setPlayingIndex(null);
+        }
       }
-    }
-  };
+    },
+    [isAutoPlaying, playingIndex, dialogue.length],
+  );
 
-  const handleManualPlay = (index: number) => {
-    // If user manually clicks a button, we update the tracking index
-    // but we might want to stop "Auto Play" sequence if they jump around.
-    if (isAutoPlaying && playingIndex !== index) {
-      setIsAutoPlaying(false);
-    }
-    setPlayingIndex(index);
-  };
+  const handleManualPlay = useCallback(
+    (index: number) => {
+      // If user manually clicks a button, we update the tracking index
+      // but we might want to stop "Auto Play" sequence if they jump around.
+      if (isAutoPlaying && playingIndex !== index) {
+        setIsAutoPlaying(false);
+      }
+      setPlayingIndex(index);
+    },
+    [isAutoPlaying, playingIndex],
+  );
 
   return (
     <div>
@@ -243,15 +259,15 @@ export default function DialogueSection({
               !isAllReady
                 ? "bg-zinc-100 border-zinc-200 text-zinc-400 cursor-not-allowed dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500"
                 : isAutoPlaying
-                ? cn(
-                    "bg-highlight border-highlight text-highlight",
-                    !isMobile && "hover-bg-highlight hover-text-highlight"
-                  )
-                : cn(
-                    "bg-white border-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400",
-                    !isMobile &&
-                      "hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
-                  )
+                  ? cn(
+                      "bg-highlight border-highlight text-highlight",
+                      !isMobile && "hover-bg-highlight hover-text-highlight",
+                    )
+                  : cn(
+                      "bg-white border-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400",
+                      !isMobile &&
+                        "hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200",
+                    ),
             )}
           >
             {isAutoPlaying ? (
@@ -359,6 +375,7 @@ export default function DialogueSection({
                   buttonRefs.current[idx] = el;
                 }}
                 item={resolvedItem}
+                index={idx}
                 isEnglishBlurred={
                   viewMode === "blind" ||
                   (viewMode === "partial" && !revealedEnglishIndices.has(idx))
@@ -367,12 +384,12 @@ export default function DialogueSection({
                   viewMode === "blind" || !revealedIndices.has(idx)
                 }
                 canClickTranslation={viewMode !== "blind"}
-                onToggleReveal={() => handleManualToggle(idx)}
-                onEnglishClick={() => handleEnglishClick(idx)}
+                onToggleReveal={handleManualToggle}
+                onEnglishClick={handleEnglishClick}
                 variant={idx % 2 === 0 ? "default" : "blue"}
-                onPlay={() => handleManualPlay(idx)}
-                onEnded={() => handleLineEnded(idx)}
-                onReady={() => handleAudioReady(idx)}
+                onPlay={handleManualPlay}
+                onEnded={handleLineEnded}
+                onReady={handleAudioReady}
                 isActive={isAutoPlaying && playingIndex === idx}
                 isMobile={!!isMobile}
                 expressionId={expressionId}

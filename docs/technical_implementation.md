@@ -676,6 +676,25 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 - **Partial Reveal**: 영어 문장 클릭 시 `revealedEnglishIndices`에 추가하고 즉시 노출합니다.
 - **Auto Sync**: `revealedEnglishIndices`의 크기가 전체 대화 길이와 같아지면 즉시 `viewMode`를 `exposed`로 전환하고, `savedRevealedIndices`를 파기(Discard)하여 현재 상태를 새로운 Context로 확정합니다.
 
+
+## 14. Performance Optimization Techniques (성능 최적화 기법)
+
+### 14.1 Server-Side Waterfall Removal (서버 측 워터폴 제거)
+
+- **Problem**: `app/page.tsx`에서 `getI18n()`(헤더 파싱 + 딕셔너리 로딩) 완료 후 `getExpressions()`(DB 조회)가 실행되는 직렬 구조로 인해 TTFB(Time to First Byte) 지연.
+- **Solution**: 의존성이 없는 비동기 작업을 `Promise.all`로 병렬 처리.
+  - `getLocale()`을 먼저 호출하여 필요한 로케일 정보를 확보.
+  - `getI18n()`과 `getExpressions()`를 동시에 실행하여 전체 응답 시간을 단축.
+
+### 14.2 React Component Rendering Optimization (리렌더링 최적화)
+
+- **Target**: `DialogueSection` 및 `DialogueItem` (오디오 재생 시 빈번한 상태 변경 발생)
+- **Problem**: 오디오 재생 인덱스(`playingIndex`)가 변경될 때마다 섹션 내의 모든 대화 아이템이 리렌더링됨.
+- **Solution**:
+  - **Memoization**: `DialogueItem`을 `React.memo`로 감싸 Props 변경이 없는 경우 리렌더링 방지.
+  - **Stable Callbacks**: `DialogueSection`의 이벤트 핸들러(`onPlay`, `onEnded` 등)를 `useCallback`으로 감싸고, `index`를 인자로 받는 형태로 리팩토링하여 함수 참조 안정성 확보.
+  - **State Logic Refactor**: `handleEnglishClick` 내부의 중복된 상태 업데이트 로직을 제거하고, 순수 함수 형태로 개선하여 사이드 이펙트 최소화.
+
 ## 13. Service Essentials Implementation (시스템 필수 요소 구현)
 
 서비스 품질을 결정짓는 3대 요소(PWA, SEO, i18n)에 대한 기술적 구현 상세입니다.
