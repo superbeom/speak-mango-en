@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-16
+**최종 수정일**: 2026-01-19
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -44,6 +44,8 @@ graph TD
 ```
 speak-mango-en/
 ├── .agent/              # 에이전트 워크플로우 및 설정
+│   ├── skills/          # Vercel 에이전트 스킬 (성능 최적화, 디자인 가이드)
+│   └── workflows/       # 자동화 워크플로우
 ├── app/                 # Next.js App Router Pages
 │   ├── page.tsx         # 메인 페이지 (표현 리스트)
 │   ├── layout.tsx       # 레이아웃
@@ -112,7 +114,8 @@ speak-mango-en/
 │   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
-│   └── agent_workflows.md   # AI 에이전트 워크플로우 가이드
+│   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
+│   └── agent_skills_guide.md # AI 에이전트 스킬 가이드 (Vercel Best Practices)
 └── ...설정 파일들
 ```
 
