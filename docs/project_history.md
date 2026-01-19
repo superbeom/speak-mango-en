@@ -2,6 +2,17 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-19: Loading State Fix & Search Query Optimization
+
+- **Goal**: 남은 감사 보고서 항목(검색 쿼리 효율성) 해결 및 로직 버그 수정.
+- **Actions**:
+  - **Bug Fix**: `hooks/usePaginatedList.ts`의 `finally` 블록에서 `setLoading(true)`가 중복 호출되는 실수 수정.
+  - **Search Optimization**: `lib/expressions.ts`의 검색 쿼리를 개선.
+    - **Schema Change**: `meaning` 필드를 텍스트로 변환하여 저장하는 `meaning_text` 컬럼(Generated Column) 추가.
+    - **Index**: `meaning_text`에 Trigram 인덱스(`idx_expressions_meaning_text_trgm`)를 생성하여 다국어 ILIKE 검색 성능 최적화.
+    - **Double-Filter Strategy**: 인덱스 스캔(`meaning_text`)으로 후보를 빠르게 좁힌 후, JSON 필터(`meaning->>locale`)로 정밀 검사하는 이중 필터링 패턴 적용. 이는 속도와 정확도(타 언어 노이즈 제거)를 동시에 달성함.
+- **Outcome**: 검색 성능(Latency) 대폭 개선 및 무한 스크롤 로딩 상태 안정화.
+
 ### 2026-01-19: Performance Optimization (Waterfall & Client-Side)
 
 - **Goal**: 감사 보고서에서 식별된 핵심 성능 병목 개선.

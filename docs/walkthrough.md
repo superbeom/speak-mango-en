@@ -32,10 +32,22 @@
       - **Index Prop Injection**: `DialogueItem`에 `index` prop을 명시적으로 전달하여, 콜백 함수가 인덱스를 직접 참조하지 않고 인자로 받도록 구조 변경 (함수 재생성 방지).
   3.  **Optimization Logic**: `handleEnglishClick` 내부의 중복 `setState` 호출 제거 및 조건문 로직 단순화.
 
+#### C. Database Search Optimization (`lib/expressions.ts`)
+
+- **Problem**: 9개 언어의 `meaning` 필드를 JSON 연산자(`->>`)로 조회하는 방식은 인덱스를 타지 못해 Full Table Scan을 유발함.
+- **Solution**:
+  1.  **Generated Column**: `meaning` JSONB 데이터를 단일 문자열로 변환하여 저장하는 `meaning_text` 컬럼 추가.
+  2.  **Trigram Index**: `pg_trgm` 확장 모듈을 활용하여 `meaning_text`에 GIN 인덱스 생성.
+  3.  **Double-Filter Strategy**:
+      - **Phase 1 (Index Scan)**: `meaning_text`로 후보군을 고속 검색 (Trigram Index 활용).
+      - **Phase 2 (Recheck)**: `meaning->>locale`로 현재 언어 일치 여부를 정밀 검사 (Table Filter).
+      - `and(meaning_text.ilike... , meaning->>locale.ilike...)` 구문을 사용하여 **인덱스의 속도**와 **로케일 필터링의 정확성(노이즈 제거)**을 모두 확보.
+
 ### 3. Result (결과)
 
 - ✅ **TTFB Improvement**: 병렬 데이터 페칭으로 초기 로딩 속도 향상.
 - ✅ **Rendering Efficiency**: 오디오 재생 중 불필요한 리렌더링이 제거되어 저사양 기기에서의 반응성 개선.
+- ✅ **Query Performance**: 검색 쿼리 성능을 최적화하면서도 정확한 로케일 결과를 제공 (Cross-language Noise 제거).
 
 ## v0.12.31: Agent Skills Integration & Codebase Audit (2026-01-19)
 
