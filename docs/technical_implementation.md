@@ -528,11 +528,20 @@ LLM이 번역 결과에 영어 원문을 포함하는 "언어 누출(Language Le
 - **Rules**:
   1. **Structure Check**: 필수 필드(`expression`, `meaning`, `content`, `tags`, `dialogue`) 존재 여부 확인.
   2. **Tag Rules**: 소문자 영어만 허용, `#` 금지, 타겟 언어 문자 포함 금지.
-  3. **No Mixed Language**: 번역 필드(`meaning`, `dialogue.translations`)에 영어 알파벳 소문자가 포함되어 있는지 검사하여 "언어 누출"을 방지.
-     - **Exception**: 고유명사(대문자로 시작)나 허용 목록(`allowedlist`: iPhone, eBay 등)에 있는 단어는 통과.
+  3. **No Mixed Language & Allowed Lists**: 번역 필드(`meaning`, `dialogue.translations`)에 영어 알파벳 소문자가 포함되어 있는지 검사하여 "언어 누출"을 방지.
+     - **Exception Logic**:
+       - `ALLOWED_NAMES`: 인명 (Sarah, Emily 등)
+       - `ALLOWED_ENGLISH_TERMS`: 기술 용어/브랜드 (iPhone, eBay, SNS 등)
+       - 위 리스트에 포함되는 단어는 위음성(False Positive) 방지를 위해 허용합니다.
   4. **Markdown Prevention**: 대화 번역문에 마크다운 문법(`**bold**`)이 포함되지 않도록 강제.
   5. **Dialogue Length**: 대화가 너무 짧거나 길어지지 않도록 **2~4턴**의 길이를 강제.
-  6. **Quiz Consistency**: 퀴즈 선택지(Option A, B, C)의 언어가 모두 영어이거나 모두 타겟 언어여야 함(혼용 금지).
+  6. **Quiz Consistency (Strict)**:
+     - **Pattern 1**: 질문에 영어가 없으면 -> 선택지는 무조건 **영어**.
+     - **Pattern 2/3**: 질문에 영어가 있으면 -> 선택지는 무조건 **타겟 언어**.
+     - **No Hybrid**: 타겟 언어 선택지에 영어가 섞여 있는 경우(Hybrid)도 허용하지 않는 엄격한 규칙 적용.
+  7. **Strict Punctuation**:
+     - `meaning` 필드에 마침표(.)나 세미콜론(;) 포함 금지.
+     - CJK 언어의 경우 고리점(`。`) 포함 금지 (`ideographic_full_stop` 정규식 사용).
 - **Local Verification**: 동일한 로직을 로컬에서 수행할 수 있는 `verification/verify_db_data.js`를 제공하여, `temp.json` 데이터를 워크플로우 실행 없이 빠르게 검증할 수 있습니다.
 
 ### 10.9 Quiz Structure Validation (퀴즈 구조 검증)

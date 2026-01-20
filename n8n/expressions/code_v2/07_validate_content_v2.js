@@ -26,6 +26,8 @@ const REGEX = {
   english_letters: /[a-zA-Z]/,
   // 마크다운 검사 (굵게/이탤릭 마커: **, *) - 쌍으로 사용되거나 시작/끝 확인
   markdown_emphasis: /(\*\*|__|\*|_)/,
+  // CJK 마침표 (고리점)
+  ideographic_full_stop: /。/,
 };
 
 const TARGET_LANGS = ["ko", "ja", "es", "fr", "de", "ru", "zh", "ar"];
@@ -39,6 +41,8 @@ const ALLOWED_ENGLISH_TERMS = [
   "iOS",
   "macOS",
 ];
+
+const ALLOWED_NAMES = ["Sarah", "Emily", "Mike", "David", "SNS"];
 
 function validateItem(item) {
   let errors = [];
@@ -94,7 +98,7 @@ function validateItem(item) {
         errors.push(`Meaning (${lang}) contains Mixed Foreign Script.`);
       if (lang === "ja" && REGEX.hangul.test(text))
         errors.push(
-          `Meaning (${lang}) contains Mixed Foreign Script (Hangul).`
+          `Meaning (${lang}) contains Mixed Foreign Script (Hangul).`,
         );
 
       // 규칙: 언어 혼용 금지 (영어 누출 검사)
@@ -109,6 +113,12 @@ function validateItem(item) {
       }
       if (text.includes(";")) {
         errors.push(`Meaning (${lang}) must not contain a semicolon (;).`);
+      }
+      // 규칙: CJK 마침표(。) 금지
+      if (REGEX.ideographic_full_stop.test(text)) {
+        errors.push(
+          `Meaning (${lang}) must not contain an ideographic full stop (。).`,
+        );
       }
     });
   }
@@ -137,7 +147,7 @@ function validateItem(item) {
         // 규칙: quiz에 options 필드가 있으면 안 됨 (DB 구조 위반)
         if (contentObj.quiz.options) {
           errors.push(
-            `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`
+            `Content (${lang}).quiz must NOT have 'options' field. Options should be in 'question' field as "A. ...", "B. ...", "C. ...".`,
           );
         }
 
@@ -156,8 +166,8 @@ function validateItem(item) {
             if (!hasOptionC) missing.push("C");
             errors.push(
               `Content (${lang}).quiz.question must contain all options (A, B, C). Missing: ${missing.join(
-                ", "
-              )}. Format: "Question text\\n\\nA. option1\\nB. option2\\nC. option3"`
+                ", ",
+              )}. Format: "Question text\\n\\nA. option1\\nB. option2\\nC. option3"`,
             );
           }
         }
@@ -189,7 +199,7 @@ function validateItem(item) {
       if (contentObj.quiz && contentObj.quiz.answer) {
         if (!["A", "B", "C"].includes(contentObj.quiz.answer)) {
           errors.push(
-            `Quiz Answer (${lang}) must be 'A', 'B', or 'C'. Found: ${contentObj.quiz.answer}`
+            `Quiz Answer (${lang}) must be 'A', 'B', or 'C'. Found: ${contentObj.quiz.answer}`,
           );
         }
       }
@@ -225,8 +235,59 @@ function validateItem(item) {
             // 3개 모두 타겟 언어이거나(3), 모두 영어(0)여야 함.
             if (cnt !== 0 && cnt !== 3) {
               errors.push(
-                `Quiz Options (${lang}) must be consistent (All English OR All Target). Mixed scripts found.`
+                `Quiz Options (${lang}) must be consistent (All English OR All Target). Mixed scripts found.`,
               );
+            }
+
+            // Quiz Logic:
+            // 1. If Question contains English (Pattern 2/3) -> Options must be Target Language.
+            // 2. If Question does NOT contain English (Pattern 1) -> Options must be English.
+
+            // Extract ONLY the question text (exclude options)
+            // Strategy: Take all lines BEFORE the first line that starts with "A."
+            let questionBody = "";
+            let foundOption = false;
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed.startsWith("A.")) {
+                foundOption = true;
+                break;
+              }
+              if (!foundOption) {
+                questionBody += line + " ";
+              }
+            }
+
+            // Check English presence in the *Question Body* only
+            // Exclude allowed names and terms to prevent false positives (Pattern 1 being mistaken for Pattern 2/3)
+            let checkBody = questionBody;
+
+            // Remove allowed names
+            ALLOWED_NAMES.forEach((name) => {
+              checkBody = checkBody.replace(new RegExp(name, "gi"), "");
+            });
+
+            // Remove allowed English terms
+            ALLOWED_ENGLISH_TERMS.forEach((term) => {
+              checkBody = checkBody.replace(new RegExp(term, "gi"), "");
+            });
+
+            const englishInQuestion = /[a-zA-Z]{2,}/.test(checkBody);
+
+            if (englishInQuestion) {
+              // Pattern 2/3: Question has English -> Options MUST be Target (cnt === 3)
+              if (cnt !== 3) {
+                errors.push(
+                  `Quiz Pattern Mismatch (${lang}): Question contains English (Pattern 2/3), so Options must be in Target Language. Found English Options.`,
+                );
+              }
+            } else {
+              // Pattern 1: Question has NO English -> Options MUST be English (cnt === 0)
+              if (cnt !== 0) {
+                errors.push(
+                  `Quiz Pattern Mismatch (${lang}): Question has NO English (Pattern 1), so Options must be in English. Found Target Language Options.`,
+                );
+              }
             }
           }
         }
@@ -239,7 +300,7 @@ function validateItem(item) {
     // 규칙: 대화는 2~4턴 사이여야 함 (프롬프트는 2~3턴 권장하나, 4턴도 허용)
     if (item.dialogue.length < 2 || item.dialogue.length > 4) {
       errors.push(
-        `Dialogue length must be between 2 and 4. Found: ${item.dialogue.length}`
+        `Dialogue length must be between 2 and 4. Found: ${item.dialogue.length}`,
       );
     }
 
@@ -258,7 +319,7 @@ function validateItem(item) {
           // 규칙: 순수 텍스트만 허용 (마크다운 금지)
           if (text.includes("**") || text.includes("__")) {
             errors.push(
-              `Dialogue[${idx}].translations.${lang} contains Markdown Bold (**): "${text}"`
+              `Dialogue[${idx}].translations.${lang} contains Markdown Bold (**): "${text}"`,
             );
           }
 
@@ -267,7 +328,7 @@ function validateItem(item) {
             checkEnglishInclusion(
               text,
               `Dialogue[${idx}].translations.${lang}`,
-              errors
+              errors,
             );
           } else {
             // 라틴 계열 (es, fr, de): 전체 표현이 누출되었는지 확인
@@ -279,7 +340,7 @@ function validateItem(item) {
               // 휴리스틱: 표현이 4글자보다 긴 경우에만 플래그 처리. 짧은 단어는 우연일 수 있음.
               if (item.expression.length > 4) {
                 errors.push(
-                  `Dialogue[${idx}].translations.${lang} contains English expression leakage: "${item.expression}"`
+                  `Dialogue[${idx}].translations.${lang} contains English expression leakage: "${item.expression}"`,
                 );
               }
             }
@@ -288,11 +349,11 @@ function validateItem(item) {
           // 규칙: 대상 언어 혼용 금지
           if (lang === "ko" && (REGEX.kana.test(text) || REGEX.han.test(text)))
             errors.push(
-              `Dialogue[${idx}].translations.${lang} contains foreign script.`
+              `Dialogue[${idx}].translations.${lang} contains foreign script.`,
             );
           if (lang === "ja" && REGEX.hangul.test(text))
             errors.push(
-              `Dialogue[${idx}].translations.${lang} contains Hangul.`
+              `Dialogue[${idx}].translations.${lang} contains Hangul.`,
             );
         });
       }
@@ -318,14 +379,14 @@ function validateItem(item) {
             // Role A(여성)가 여성 이름으로 상대를 부르는 경우
             if (dItem.role === "A" && femaleNames.includes(addressedName)) {
               errors.push(
-                `Dialogue[${idx}]: Role A (Female) is addressing someone as '${addressedName}' (female name). Should use male names (Mike/David).`
+                `Dialogue[${idx}]: Role A (Female) is addressing someone as '${addressedName}' (female name). Should use male names (Mike/David).`,
               );
             }
 
             // Role B(남성)가 남성 이름으로 상대를 부르는 경우
             if (dItem.role === "B" && maleNames.includes(addressedName)) {
               errors.push(
-                `Dialogue[${idx}]: Role B (Male) is addressing someone as '${addressedName}' (male name). Should use female names (Sarah/Emily).`
+                `Dialogue[${idx}]: Role B (Male) is addressing someone as '${addressedName}' (male name). Should use female names (Sarah/Emily).`,
               );
             }
           }
@@ -356,7 +417,7 @@ function checkEnglishInclusion(text, context, errors) {
     // 1. 허용 목록에 있으면 통과 (대소문자 무시)
     if (
       ALLOWED_ENGLISH_TERMS.some(
-        (term) => term.toLowerCase() === word.toLowerCase()
+        (term) => term.toLowerCase() === word.toLowerCase(),
       )
     )
       return false;
@@ -372,7 +433,7 @@ function checkEnglishInclusion(text, context, errors) {
 
   if (invalidWords.length > 0) {
     errors.push(
-      `${context} contains English leakage: ${invalidWords.join(", ")}`
+      `${context} contains English leakage: ${invalidWords.join(", ")}`,
     );
   }
 }
@@ -415,7 +476,7 @@ if (allViolations.length > 0) {
     .join("\n");
 
   console.log(
-    `❌ Strict Validation Failed for ${allViolations.length} items:\n${errorMsg}. Passing to 'If Error' node.`
+    `❌ Strict Validation Failed for ${allViolations.length} items:\n${errorMsg}. Passing to 'If Error' node.`,
   );
 }
 

@@ -2,6 +2,31 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.33: Verification Logic Refinement & Sync (2026-01-20)
+
+### 1. Goal (목표)
+
+- 로컬 검증 스크립트(`verify_db_data.js`)와 n8n 워크플로우 검증 스크립트(`11_validate_content.js`, `07_validate_content_v2.js`) 간의 로직 파편화를 해결하고, 더 엄격하고 정확한 퀴즈 패턴 검증을 적용합니다.
+
+### 2. Implementation (구현)
+
+- **Strict Quiz Pattern Logic**:
+  - **Pattern 1**: 질문에 영어가 2글자 이상 없으면 -> 선택지는 반드시 **영어**여야 합니다. (예외 없음)
+  - **Pattern 2/3**: 질문에 영어가 2글자 이상 있으면 -> 선택지는 반드시 **타겟 언어**여야 합니다.
+
+- **Regex Synchronization**:
+  - `ideographic_full_stop` (`/。/`) 정규식이 n8n 스크립트에서 누락되어 있던 문제를 발견하고 추가했습니다.
+  - 이제 `includes("。")` 대신 `REGEX.ideographic_full_stop.test(text)`를 사용하여 일관되게 CJK 마침표를 검출합니다.
+
+- **Allowed Lists Strategy**:
+  - `ALLOWED_NAMES` (예: Sarah, Mike)와 `ALLOWED_ENGLISH_TERMS` (예: iOS, eBay) 리스트를 도입했습니다.
+  - 이를 통해 질문(Question) 내에 이러한 고유명사가 포함되어 있어도 "영어 문장"으로 오판(Pattern 2/3)하지 않도록 예외 처리하여, Pattern 1(질문에 영어 없음 -> 선택지는 영어) 검증의 정확도를 높였습니다.
+
+### 3. Result (결과)
+
+- ✅ **Consistency**: 로컬에서 `node verification/verify_db_data.js`를 돌렸을 때와 n8n 실서버 검증 결과가 100% 일치하게 되었습니다.
+- ✅ **Accuracy**: 모호한 퀴즈 패턴을 허용하지 않음으로써 사용자에게 혼란을 줄 수 있는 저품질 퀴즈 생성을 방지합니다.
+
 ## v0.12.32: Performance Optimization (2026-01-19)
 
 ### 1. Goal (목표)
