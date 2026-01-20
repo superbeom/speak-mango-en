@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter } from "lucide-react";
 import { trackFilterApply } from "@/analytics";
@@ -30,27 +30,45 @@ export default function FilterBar({ locale }: FilterBarProps) {
   const isStuck = useScroll(80);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const checkScroll = () => {
+  // rAF ID를 저장할 ref (메모리 누수 방지 및 취소용)
+  const rafRef = useRef<number | null>(null);
+
+  const checkScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
 
-    const { scrollLeft, scrollWidth, clientWidth } = el;
-    setShowLeftFade(scrollLeft > 0);
-    setShowRightFade(scrollLeft < scrollWidth - clientWidth - 1); // -1 for tolerance
-  };
+    // 이전 프레임의 작업이 아직 실행되지 않았다면 취소 (최신 상태 보장)
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    // 다음 페인트 프레임에 실행 예약
+    rafRef.current = requestAnimationFrame(() => {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setShowLeftFade(scrollLeft > 0);
+      setShowRightFade(scrollLeft < scrollWidth - clientWidth - 1); // -1 for tolerance
+      rafRef.current = null; // 실행 완료 후 초기화
+    });
+  }, []);
 
   useEffect(() => {
-    checkScroll();
+    checkScroll(); // 초기 로드 시 체크
     window.addEventListener("resize", checkScroll);
-    return () => window.removeEventListener("resize", checkScroll);
-  }, []);
+
+    return () => {
+      window.removeEventListener("resize", checkScroll);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [checkScroll]);
 
   // 선택된 카테고리가 변경될 때 자동으로 스크롤하여 화면 중앙에 위치시킴
   useEffect(() => {
     if (!scrollContainerRef.current) return;
 
     const activeBtn = scrollContainerRef.current.querySelector(
-      `button[data-category="${currentCategory}"]`
+      `button[data-category="${currentCategory}"]`,
     ) as HTMLElement;
 
     if (activeBtn) {
@@ -74,12 +92,17 @@ export default function FilterBar({ locale }: FilterBarProps) {
       search: currentSearch,
       tag: currentTag,
       ...Object.fromEntries(
-        Object.entries(updates).map(([k, v]) => [k, v === null ? undefined : v])
+        Object.entries(updates).map(([k, v]) => [
+          k,
+          v === null ? undefined : v,
+        ]),
       ),
     };
 
     router.push(
-      getHomeWithFilters(newFilters as Parameters<typeof getHomeWithFilters>[0])
+      getHomeWithFilters(
+        newFilters as Parameters<typeof getHomeWithFilters>[0],
+      ),
     );
   };
 
@@ -111,7 +134,7 @@ export default function FilterBar({ locale }: FilterBarProps) {
     <div
       className={cn(
         "sticky top-(--header-height) z-40 space-y-4 pt-2 pb-4 mb-8 bg-layout-transparent backdrop-blur-xl -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 transition-all duration-200",
-        isStuck ? "border-layout" : "border-none-layout"
+        isStuck ? "border-layout" : "border-none-layout",
       )}
     >
       {/* Search Bar */}

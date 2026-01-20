@@ -715,6 +715,14 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
       - **2차 (Recheck)**: 압축된 소수의 결과에 대해 `meaning->>locale ILIKE %term%`을 실행하여 정확한 언어 매칭 검증.
       - PostgreSQL 옵티마이저는 인덱스 조건(1차)을 먼저 실행하므로, 느린 JSON 연산(2차)의 오버헤드는 무시할 수 수준이 됨.
 
+### 14.4 Scroll Event Optimization (스크롤 이벤트 최적화)
+
+- **Problem**: `FilterBar`의 스크롤/리사이즈 이벤트 핸들러가 메인 스레드에서 빈번하게 실행되어 레이아웃 스래싱(Layout Thrashing) 및 UI 버벅임 유발 가능성.
+- **Solution**:
+  - **requestAnimationFrame (rAF)**: `RelatedExpressions`의 무한 스크롤(3.1) 및 스크롤 복원(9.3)에 사용된 것과 동일한 패턴을 적용하여, 브라우저 페인팅 주기에 맞춰 이벤트를 최적화(Throttling)했습니다.
+  - **Auto-Cleanup**: `useRef`를 통해 rAF ID를 관리하고, 컴포넌트 언마운트 시 `cancelAnimationFrame`을 호출하여 메모리 누수를 방지합니다.
+  - **Referential Stability**: 핸들러 함수를 `useCallback`으로 감싸고 `useEffect` 의존성 배열에 명시하여, 리렌더링 시 불필요한 이벤트 리스너 재등록을 방지합니다.
+
 ## 13. Service Essentials Implementation (시스템 필수 요소 구현)
 
 서비스 품질을 결정짓는 3대 요소(PWA, SEO, i18n)에 대한 기술적 구현 상세입니다.

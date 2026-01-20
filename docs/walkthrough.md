@@ -43,11 +43,20 @@
       - **Phase 2 (Recheck)**: `meaning->>locale`로 현재 언어 일치 여부를 정밀 검사 (Table Filter).
       - `and(meaning_text.ilike... , meaning->>locale.ilike...)` 구문을 사용하여 **인덱스의 속도**와 **로케일 필터링의 정확성(노이즈 제거)**을 모두 확보.
 
+#### D. Scroll Event Optimization (`components/FilterBar.tsx`)
+
+- **Problem**: 스크롤 및 리사이즈 이벤트가 빈번하게 발생하여 메인 스레드 점유율 증가.
+- **Solution**:
+  1.  **requestAnimationFrame**: 브라우저 렌더링 주기에 맞춰 이벤트 핸들링 주파수 조절.
+  2.  **useCallback Refinement**: `checkScroll` 함수를 메모이제이션하고 `useEffect` 의존성에 포함하여 리렌더링 시 불필요한 리스너 재생성 방지.
+  3.  **Auto-Cleanup**: `useRef`로 rAF ID를 추적하여 언마운트 시 안전하게 취소.
+
 ### 3. Result (결과)
 
 - ✅ **TTFB Improvement**: 병렬 데이터 페칭으로 초기 로딩 속도 향상.
 - ✅ **Rendering Efficiency**: 오디오 재생 중 불필요한 리렌더링이 제거되어 저사양 기기에서의 반응성 개선.
 - ✅ **Query Performance**: 검색 쿼리 성능을 최적화하면서도 정확한 로케일 결과를 제공 (Cross-language Noise 제거).
+- ✅ **Scroll Smoothness**: `FilterBar` 스크롤 이벤트에 `rAF` 및 `useCallback`을 적용하여 메인 스레드 부하를 줄이고 리스너 안정성 확보.
 
 ## v0.12.31: Agent Skills Integration & Codebase Audit (2026-01-19)
 
