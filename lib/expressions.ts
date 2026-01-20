@@ -27,7 +27,7 @@ export interface ExpressionFilters {
  * @returns Expression 객체 배열을 담은 Promise를 반환합니다. 에러 발생 시 빈 배열을 반환합니다.
  */
 export async function getExpressions(
-  filters?: ExpressionFilters
+  filters?: ExpressionFilters,
 ): Promise<Expression[]> {
   try {
     const supabase = await createServerSupabase();
@@ -48,9 +48,15 @@ export async function getExpressions(
       const searchTerm = filters.search;
       const locale = filters.locale || "en"; // 기본값: 영어
 
-      // 로케일별 검색: expression 필드 + 현재 로케일의 meaning 필드만 검색
+      /**
+       * 로케일별 검색: expression 필드 + 현재 로케일의 meaning 필드만 검색
+       * 로케일별 검색 최적화 (Double-Filter Pattern):
+       * 1. meaning_text.ilike: Trigram 인덱스를 사용하여 후보군을 빠르게 압축 (Candidate Generation).
+       * 2. meaning->>locale.ilike: 실제 데이터에서 해당 언어의 값만 정확하게 필터링 (Recheck).
+       * 이 조합은 인덱스의 속도와 로케일 필터링의 정확성을 모두 확보함.
+       */
       query = query.or(
-        `expression.ilike.%${searchTerm}%,meaning->>${locale}.ilike.%${searchTerm}%`
+        `expression.ilike.%${searchTerm}%,and(meaning_text.ilike.%${searchTerm}%,meaning->>${locale}.ilike.%${searchTerm}%)`,
       );
     }
 
@@ -83,7 +89,7 @@ export async function getExpressions(
  * @returns 해당 ID를 가진 Expression 객체 또는 찾을 수 없거나 에러 발생 시 null을 반환합니다.
  */
 export async function getExpressionById(
-  id: string
+  id: string,
 ): Promise<Expression | null> {
   try {
     const supabase = await createServerSupabase();
@@ -119,7 +125,7 @@ export async function getExpressionById(
 export async function getRelatedExpressions(
   currentId: string,
   category: string,
-  limit = 4
+  limit = 4,
 ): Promise<Expression[]> {
   try {
     const supabase = await createServerSupabase();
@@ -134,7 +140,7 @@ export async function getRelatedExpressions(
     if (error) {
       console.warn(
         "Supabase fetch error for related expressions:",
-        error.message
+        error.message,
       );
       return [];
     }

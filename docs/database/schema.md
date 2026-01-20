@@ -13,18 +13,19 @@
 
 영어 표현과 예문을 저장하는 핵심 테이블입니다.
 
-| Column Name    | Type        | Key | Default             | Description                              |
-| -------------- | ----------- | --- | ------------------- | ---------------------------------------- |
-| `id`           | UUID        | PK  | `gen_random_uuid()` | 표현 고유 식별자                         |
-| `created_at`   | TIMESTAMPTZ |     | `now()`             | 데이터 생성 일시                         |
-| `published_at` | TIMESTAMPTZ |     | `now()`             | 표현이 게시된 일시 (정렬 기준)           |
-| `domain`       | TEXT        |     | 'conversation'      | 대분류 (예: conversation, test, voca)    |
-| `category`     | TEXT        |     | 'daily'             | 소분류 (예: business, travel, shopping)  |
-| `expression`   | TEXT        | UK  | -                   | 영어 표현 (예: "Break a leg")            |
-| `meaning`      | JSONB       |     | -                   | 다국어 뜻 (예: `{"ko": "..."}`)          |
-| `content`      | JSONB       |     | `'{}'::jsonb`       | 다국어 상세 콘텐츠 (예: `{"ko": {...}}`) |
-| `dialogue`     | JSONB       |     | `'[]'::jsonb`       | 다국어 대화문 및 오디오 (예: `[{...}]`)  |
-| `tags`         | TEXT[]      |     | `NULL`              | 태그 배열 (예: business, daily)          |
+| Column Name    | Type        | Key | Default              | Description                                 |
+| -------------- | ----------- | --- | -------------------- | ------------------------------------------- |
+| `id`           | UUID        | PK  | `gen_random_uuid()`  | 표현 고유 식별자                            |
+| `created_at`   | TIMESTAMPTZ |     | `now()`              | 데이터 생성 일시                            |
+| `published_at` | TIMESTAMPTZ |     | `now()`              | 표현이 게시된 일시 (정렬 기준)              |
+| `domain`       | TEXT        |     | 'conversation'       | 대분류 (예: conversation, test, voca)       |
+| `category`     | TEXT        |     | 'daily'              | 소분류 (예: business, travel, shopping)     |
+| `expression`   | TEXT        | UK  | -                    | 영어 표현 (예: "Break a leg")               |
+| `meaning`      | JSONB       |     | -                    | 다국어 뜻 (예: `{"ko": "..."}`)             |
+| `content`      | JSONB       |     | `'{}'::jsonb`        | 다국어 상세 콘텐츠 (예: `{"ko": {...}}`)    |
+| `dialogue`     | JSONB       |     | `'[]'::jsonb`        | 다국어 대화문 및 오디오 (예: `[{...}]`)     |
+| `tags`         | TEXT[]      |     | `NULL`               | 태그 배열 (예: business, daily)             |
+| `meaning_text` | TEXT        |     | `GENERATED(meaning)` | 검색 최적화를 위한 meaning의 TEXT 변환 컬럼 |
 
 ### Index Strategy & Configuration
 
@@ -45,18 +46,19 @@
 
 #### Current Indexes
 
-| Index Name                        | Type          | Target              | Description                         |
-| :-------------------------------- | :------------ | :------------------ | :---------------------------------- |
-| `expressions_pkey`                | B-Tree        | `id`                | Primary Key (Unique)                |
-| `idx_expressions_published_at`    | B-Tree        | `published_at DESC` | 최신순 정렬 및 조회                 |
-| `idx_expressions_domain`          | B-Tree        | `domain`            | 대분류 필터링                       |
-| `idx_expressions_category`        | B-Tree        | `category`          | 소분류 필터링                       |
-| `idx_expressions_tags`            | GIN           | `tags`              | 태그 기반 검색                      |
-| `idx_expressions_content`         | GIN           | `content`           | 상세 콘텐츠(Jsonb) 내부 검색        |
-| `idx_expressions_dialogue`        | GIN           | `dialogue`          | 대화문(Jsonb) 내부 텍스트/화자 검색 |
-| `idx_expressions_meaning_gin`     | GIN           | `meaning`           | 다국어 뜻(JSONB) 검색 (9개 언어)    |
-| `idx_expressions_expression_trgm` | GIN (Trigram) | `expression`        | 부분 문자열 검색 최적화             |
-| `unique_expression`               | B-Tree        | `expression`        | 표현 중복 방지 (Unique Constraint)  |
+| Index Name                          | Type          | Target              | Description                         |
+| :---------------------------------- | :------------ | :------------------ | :---------------------------------- |
+| `expressions_pkey`                  | B-Tree        | `id`                | Primary Key (Unique)                |
+| `idx_expressions_published_at`      | B-Tree        | `published_at DESC` | 최신순 정렬 및 조회                 |
+| `idx_expressions_domain`            | B-Tree        | `domain`            | 대분류 필터링                       |
+| `idx_expressions_category`          | B-Tree        | `category`          | 소분류 필터링                       |
+| `idx_expressions_tags`              | GIN           | `tags`              | 태그 기반 검색                      |
+| `idx_expressions_content`           | GIN           | `content`           | 상세 콘텐츠(Jsonb) 내부 검색        |
+| `idx_expressions_dialogue`          | GIN           | `dialogue`          | 대화문(Jsonb) 내부 텍스트/화자 검색 |
+| `idx_expressions_meaning_gin`       | GIN           | `meaning`           | 다국어 뜻(JSONB) 검색 (9개 언어)    |
+| `idx_expressions_expression_trgm`   | GIN (Trigram) | `expression`        | 부분 문자열 검색 최적화             |
+| `idx_expressions_meaning_text_trgm` | GIN (Trigram) | `meaning_text`      | 뜻(Meaning) 전체 텍스트 검색 최적화 |
+| `unique_expression`                 | B-Tree        | `expression`        | 표현 중복 방지 (Unique Constraint)  |
 
 #### Future Recommendations
 

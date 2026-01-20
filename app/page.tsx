@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { getI18n } from "@/i18n/server";
+import { getI18n, getLocale } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
 import { getExpressions } from "@/lib/expressions";
@@ -37,13 +37,16 @@ export default async function Home({ searchParams }: PageProps) {
   const cacheKey = serializeFilters(filters);
 
   // 초기 1페이지 데이터 페칭 (limit 12)
-  const { locale, dict } = await getI18n();
-  const expressions = await getExpressions({
-    ...filters,
-    page: 1,
-    limit: 12,
-    locale, // 로케일별 검색을 위해 추가
-  });
+  const locale = await getLocale();
+  const [{ dict }, expressions] = await Promise.all([
+    getI18n(),
+    getExpressions({
+      ...filters,
+      page: 1,
+      limit: 12,
+      locale, // 로케일별 검색을 위해 추가
+    }),
+  ]);
 
   return (
     <div className="min-h-screen bg-layout">

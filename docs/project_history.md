@@ -2,6 +2,29 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-19: Loading State Fix & Search Query Optimization
+
+- **Goal**: 남은 감사 보고서 항목(검색 쿼리 효율성) 해결 및 로직 버그 수정.
+- **Actions**:
+  - **Bug Fix**: `hooks/usePaginatedList.ts`의 `finally` 블록에서 `setLoading(true)`가 중복 호출되는 실수 수정.
+  - **Search Optimization**: `lib/expressions.ts`의 검색 쿼리를 개선.
+    - **Schema Change**: `meaning` 필드를 텍스트로 변환하여 저장하는 `meaning_text` 컬럼(Generated Column) 추가.
+    - **Index**: `meaning_text`에 Trigram 인덱스(`idx_expressions_meaning_text_trgm`)를 생성하여 다국어 ILIKE 검색 성능 최적화.
+    - **Double-Filter Strategy**: 인덱스 스캔(`meaning_text`)으로 후보를 빠르게 좁힌 후, JSON 필터(`meaning->>locale`)로 정밀 검사하는 이중 필터링 패턴 적용. 이는 속도와 정확도(타 언어 노이즈 제거)를 동시에 달성함.
+  - **Scroll Optimization**: `components/FilterBar.tsx`에 `requestAnimationFrame` 및 `useCallback`을 적용하여 스크롤 성능 최적화 (60FPS 보장 및 핸들러 참조 안정성 확보).
+- **Outcome**: 검색 성능(Latency) 대폭 개선, 무한 스크롤 로딩 상태 안정화, UI 스크롤 부드러움 향상.
+
+### 2026-01-19: Performance Optimization (Waterfall & Client-Side)
+
+- **Goal**: 감사 보고서에서 식별된 핵심 성능 병목 개선.
+- **Actions**:
+  - **Waterfall Fix**: `app/page.tsx`에서 `getI18n`과 `getExpressions`가 직렬로 호출되던 문제를 `Promise.all`로 병렬화하여 TTFB 개선.
+  - **Client-Side Optimization**: `components/DialogueSection.tsx` 및 `DialogueItem.tsx` 최적화.
+    - `React.memo` 적용 및 `index` prop 추가.
+    - `useCallback`으로 핸들러 안정화하여 불필요한 리렌더링 제거.
+    - `handleEnglishClick` 로직 단순화로 중복 상태 업데이트 제거.
+- **Outcome**: 초기 로딩 속도 향상 및 대화 재생 시 UI 반응성 개선.
+
 ### 2026-01-19: Agent Skills Integration & Codebase Audit
 
 - **Goal**: Vercel의 전문적인 React/Next.js 지침을 에이전트에게 장착하고, 이를 기반으로 전체 코드베이스의 성능 및 디자인 품질을 감사(Audit).

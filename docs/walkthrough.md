@@ -2,6 +2,62 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.32: Performance Optimization (2026-01-19)
+
+### 1. Goal (목표)
+
+- 감사 보고서에서 식별된 주요 성능 병목 현상(Waterfall Data Fetching, Client-side Re-rendering)을 해결하여 사용자 경험을 개선합니다.
+
+### 2. Implementation (구현)
+
+#### A. Server-Side Waterfall Removal (`app/page.tsx`)
+
+- **Problem**: `getI18n()` 호출이 완료된 후에야 `getExpressions()`가 실행되는 직렬(Serial) 구조로 인해 TTFB가 지연됨.
+- **Solution**: 의존성이 없는 비동기 작업을 `Promise.all`로 병렬화.
+  - 헤더에서 로케일을 먼저 추출(`getLocale`)한 후, 딕셔너리 로딩과 DB 쿼리를 동시에 실행.
+  ```typescript
+  const locale = await getLocale(); // Fast header read
+  const [{ dict }, expressions] = await Promise.all([
+    getI18n(), // Dictionary load
+    getExpressions({ ...filters, locale }), // DB Query
+  ]);
+  ```
+
+#### B. Client-Side Rendering Optimization (`components/DialogueSection.tsx`)
+
+- **Problem**: 오디오 재생 시 `playingIndex` 상태가 변경될 때마다 부모 컴포넌트(`DialogueSection`)와 모든 자식 컴포넌트(`DialogueItem`)가 리렌더링됨.
+- **Solution**:
+  1.  **React.memo Application**: `DialogueItem`을 메모이제이션하여 Props 변경이 없는 경우 리렌더링 방지.
+  2.  **Stable Callbacks**: 부모에서 자식으로 전달되는 함수들(`onPlay`, `onEnded`, `onToggleReveal`)을 `useCallback`으로 감싸고, 인라인 함수 정의를 제거.
+      - **Index Prop Injection**: `DialogueItem`에 `index` prop을 명시적으로 전달하여, 콜백 함수가 인덱스를 직접 참조하지 않고 인자로 받도록 구조 변경 (함수 재생성 방지).
+  3.  **Optimization Logic**: `handleEnglishClick` 내부의 중복 `setState` 호출 제거 및 조건문 로직 단순화.
+
+#### C. Database Search Optimization (`lib/expressions.ts`)
+
+- **Problem**: 9개 언어의 `meaning` 필드를 JSON 연산자(`->>`)로 조회하는 방식은 인덱스를 타지 못해 Full Table Scan을 유발함.
+- **Solution**:
+  1.  **Generated Column**: `meaning` JSONB 데이터를 단일 문자열로 변환하여 저장하는 `meaning_text` 컬럼 추가.
+  2.  **Trigram Index**: `pg_trgm` 확장 모듈을 활용하여 `meaning_text`에 GIN 인덱스 생성.
+  3.  **Double-Filter Strategy**:
+      - **Phase 1 (Index Scan)**: `meaning_text`로 후보군을 고속 검색 (Trigram Index 활용).
+      - **Phase 2 (Recheck)**: `meaning->>locale`로 현재 언어 일치 여부를 정밀 검사 (Table Filter).
+      - `and(meaning_text.ilike... , meaning->>locale.ilike...)` 구문을 사용하여 **인덱스의 속도**와 **로케일 필터링의 정확성(노이즈 제거)**을 모두 확보.
+
+#### D. Scroll Event Optimization (`components/FilterBar.tsx`)
+
+- **Problem**: 스크롤 및 리사이즈 이벤트가 빈번하게 발생하여 메인 스레드 점유율 증가.
+- **Solution**:
+  1.  **requestAnimationFrame**: 브라우저 렌더링 주기에 맞춰 이벤트 핸들링 주파수 조절.
+  2.  **useCallback Refinement**: `checkScroll` 함수를 메모이제이션하고 `useEffect` 의존성에 포함하여 리렌더링 시 불필요한 리스너 재생성 방지.
+  3.  **Auto-Cleanup**: `useRef`로 rAF ID를 추적하여 언마운트 시 안전하게 취소.
+
+### 3. Result (결과)
+
+- ✅ **TTFB Improvement**: 병렬 데이터 페칭으로 초기 로딩 속도 향상.
+- ✅ **Rendering Efficiency**: 오디오 재생 중 불필요한 리렌더링이 제거되어 저사양 기기에서의 반응성 개선.
+- ✅ **Query Performance**: 검색 쿼리 성능을 최적화하면서도 정확한 로케일 결과를 제공 (Cross-language Noise 제거).
+- ✅ **Scroll Smoothness**: `FilterBar` 스크롤 이벤트에 `rAF` 및 `useCallback`을 적용하여 메인 스레드 부하를 줄이고 리스너 안정성 확보.
+
 ## v0.12.31: Agent Skills Integration & Codebase Audit (2026-01-19)
 
 ### 1. Goal (목표)
