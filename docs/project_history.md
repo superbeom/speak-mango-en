@@ -2,6 +2,15 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-20: Verification Logic Refinement & Sync
+
+- **Goal**: 검증 로직의 위음성(False Positives) 제거 및 로컬 CLI(`verify_db_data.js`)와 n8n 워크플로우 스크립트 간의 로직 불일치 해결.
+- **Actions**:
+  - **Strict Pattern 1 Enforcement**: "질문에 영어가 없으면 선택지는 무조건 영어여야 한다"는 엄격한 규칙(Strict Pattern 1)을 모든 스크립트에 적용.
+  - **Punctuation Check**: `verify_db_data.js`에만 존재하던 `ideographic_full_stop` (/。/) 정규식 검사를 `n8n/expressions/code/11_validate_content.js` 및 `n8n/expressions/code_v2/07_validate_content_v2.js`에 동기화하여 검증 기준 통일.
+  - **Allowed Lists**: `ALLOWED_NAMES`와 `ALLOWED_ENGLISH_TERMS`를 추가하여 고유명사로 인한 오탐지 방지.
+- **Outcome**: 검증 로직의 신뢰성 확보 및 유지보수 포인트 단일화 (Verification Script = n8n Script).
+
 ### 2026-01-19: Loading State Fix & Search Query Optimization
 
 - **Goal**: 남은 감사 보고서 항목(검색 쿼리 효율성) 해결 및 로직 버그 수정.
