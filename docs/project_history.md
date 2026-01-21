@@ -10,6 +10,7 @@
     - **Server-Side Rendering (`lib/expressions.ts`)**: `React.cache()`를 사용하여 동일 요청 내 중복 DB 쿼리 제거 (Request Deduplication).
     - **Client-Side Rendering (`components/ExpressionCard.tsx`)**: `React.memo` 적용 및 `className` prop 추가로 리렌더링 방어.
     - **Layout Rendering (`globals.css`)**: `content-visibility: auto` 유틸리티 추가 및 `ExpressionList`에 적용하여 대량의 리스트 렌더링 성능 최적화.
+    - **Skeleton Optimization (`components/ui/Skeletons.tsx`)**: `SkeletonExpressionList` 컴포넌트 분리 및 모든 스켈레톤에 `React.memo`를 적용하여 로딩 중 불필요한 리렌더링 방지.
   - **Documentation**:
     - `docs/project_context.md`: "성능 최적화(Performance Optimization)" 코딩 컨벤션 섹션 추가.
     - `docs/technical_implementation.md`: Request Deduplication 기술 구현 상세 추가.

@@ -5,7 +5,7 @@ import { usePaginatedList } from "@/hooks/usePaginatedList";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { serializeFilters } from "@/lib/utils";
 import { ExpressionFilters } from "@/lib/expressions";
-import { SkeletonCard } from "./ui/Skeletons";
+import { SkeletonExpressionList } from "./ui/Skeletons";
 import AnimatedList from "./AnimatedList";
 import ExpressionCard from "./ExpressionCard";
 import LoadMoreButton from "./LoadMoreButton";
@@ -53,13 +53,7 @@ export default function ExpressionList({
         </AnimatedList>
 
         {/* 로딩 중일 때 스켈레톤 카드 3개 표시 */}
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
-            {[1, 2, 3].map((i) => (
-              <SkeletonCard key={`skeleton-${i}`} />
-            ))}
-          </div>
-        )}
+        {loading && <SkeletonExpressionList />}
       </div>
 
       {hasMore && !loading && (

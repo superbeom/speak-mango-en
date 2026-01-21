@@ -29,6 +29,13 @@
   - `content-visibility: auto` 속성을 적용한 `@utility content-visibility-auto` 클래스 생성.
   - 화면 밖(Off-screen)에 있는 요소의 렌더링(페인팅 및 히트 테스팅)을 브라우저가 생략하도록 하여 초기 로딩 및 스크롤 성능 개선.
 
+#### D. Skeleton Optimization (`components/ui/Skeletons.tsx`)
+
+- **Problem**: 로딩 상태에서 부모 컴포넌트가 리렌더링될 때 스켈레톤 컴포넌트까지 불필요하게 리렌더링되는 문제.
+- **Solution**:
+  - `ExpressionList.tsx`의 인라인 스켈레톤을 `SkeletonExpressionList` 컴포넌트로 분리.
+  - `SkeletonCard`, `SkeletonNavbar` 등 모든 스켈레톤 컴포넌트에 `React.memo`를 적용하여 정적 UI의 리렌더링 비용 제거.
+
 ### 3. Result (결과)
 
 - ✅ **Optimization**: 런타임 성능 향상.
