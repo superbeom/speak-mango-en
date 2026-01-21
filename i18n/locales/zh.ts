@@ -61,6 +61,8 @@ export const zh = {
     shareFailed: "分享失败",
   },
   quiz: {
+    metaTitle: `随机测验挑战 - ${SERVICE_NAME}`,
+    metaDescription: "通过随机英语表达测试你的英语水平！",
     completeTitle: "测验完成！🎉",
     score: "得分：",
     reviewTitle: "复习",

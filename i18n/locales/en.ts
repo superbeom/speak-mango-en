@@ -62,6 +62,8 @@ export const en = {
     shareFailed: "Failed to share",
   },
   quiz: {
+    metaTitle: `Random Quiz Challenge - ${SERVICE_NAME}`,
+    metaDescription: "Test your skills with random English expressions!",
     completeTitle: "Quiz Complete! 🎉",
     score: "Score:",
     reviewTitle: "Review",

@@ -159,7 +159,8 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 
 - **File**: `lib/routes.ts`
 - **Implementation**:
-  - 앱 내의 모든 URL 경로를 `ROUTES` 상수로 관리합니다.
+  - 앱 내의 모든 URL 경로를 `ROUTES` 상수로 관리합니다. (Relative Paths)
+  - `CANONICAL_URLS` 객체를 통해 SEO 및 공유에 필수적인 **절대 경로(Canonical URL)** 생성을 중앙화합니다.
   - 필터 조합(Category, Tag, Search)을 기반으로 적절한 홈 경로를 생성하는 `getHomeWithFilters()` 헬퍼 함수를 포함합니다.
 - **Benefit**: 하드코딩된 경로 문자열을 제거하여 링크 구조 변경 시 한 곳에서만 수정하면 되므로 유지보수성과 타입 안정성이 크게 향상됩니다.
 

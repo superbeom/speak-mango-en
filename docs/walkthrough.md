@@ -2,6 +2,41 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.37: SEO Finalization & Route Centralization (2026-01-21)
+
+### 1. Goal (목표)
+
+- 산재된 URL 생성 로직을 중앙화하여 SEO에 필수적인 Canonical URL의 일관성을 보장하고, 누락된 다국어 메타데이터를 보완하여 SEO 구현을 완성합니다.
+
+### 2. Implementation (구현)
+
+#### A. Centralized Canonical URLs (`lib/routes.ts`)
+
+- **Problem**: `app/quiz/page.tsx`와 `app/expressions/[id]/page.tsx` 등 여러 곳에서 `${BASE_URL}/...` 형태의 문자열 조합이 반복되어, 도메인 변경이나 경로 구조 변경 시 오류 발생 가능성이 높았습니다.
+- **Solution**: `CANONICAL_URLS` 객체를 도입하여 절대 경로 생성 로직을 캡슐화했습니다.
+  ```typescript
+  export const CANONICAL_URLS = {
+    QUIZ: () => `${BASE_URL}${ROUTES.QUIZ}`,
+    EXPRESSION_DETAIL: (id: string) =>
+      `${BASE_URL}${ROUTES.EXPRESSION_DETAIL(id)}`,
+  };
+  ```
+- **Application**: JSON-LD(Schema.org) 및 OpenGraph 메타데이터 생성 시 이 헬퍼를 사용하여 단일 진실 공급원(Single Source of Truth)을 확립했습니다.
+
+#### B. Quiz Page SEO (`app/quiz/page.tsx`)
+
+- **I18n Metadata**: 기존의 하드코딩된 영어 제목 대신, 8개 국어 `i18n` 딕셔너리(`metaTitle`, `metaDescription`)를 연동하여 각 언어 사용자에게 맞는 검색 결과를 제공합니다.
+- **Sitemap**: `app/sitemap.ts`에 `/quiz` 경로를 추가하여 검색 엔진 크롤링을 허용했습니다.
+
+#### C. Twitter Card Optimization (`app/layout.tsx`)
+
+- **Explicit Image**: `twitter` 메타데이터에 `images` 속성을 명시적으로 추가하여, 일부 플랫폼에서 OpenGraph 이미지를 제대로 불러오지 못하는 문제를 방지했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Maintainability**: URL 관리 포인트가 `lib/routes.ts` 하나로 통합됨.
+- ✅ **Completeness**: Rich Result Test 및 소셜 미디어 공유 미리보기가 모든 페이지에서 완벽하게 작동.
+
 ## v0.12.36: Additional Performance Optimization & Documentation (2026-01-21)
 
 ### 1. Goal (목표)

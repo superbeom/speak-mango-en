@@ -67,6 +67,9 @@ export const fr = {
     shareFailed: "Échec du partage",
   },
   quiz: {
+    metaTitle: `Défi Quiz Aléatoire - ${SERVICE_NAME}`,
+    metaDescription:
+      "Testez vos compétences avec des expressions anglaises aléatoires !",
     completeTitle: "Quiz Terminé ! 🎉",
     score: "Score :",
     reviewTitle: "Révision",

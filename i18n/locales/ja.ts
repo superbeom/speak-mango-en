@@ -62,6 +62,8 @@ export const ja = {
     shareFailed: "共有に失敗しました",
   },
   quiz: {
+    metaTitle: `ランダムクイズチャレンジ - ${SERVICE_NAME}`,
+    metaDescription: "ランダムな英語表現で実力をテストしてみましょう！",
     completeTitle: "クイズ完了！🎉",
     score: "スコア:",
     reviewTitle: "復習",

@@ -71,6 +71,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       creator: "@speakmango",
+      images: [`${BASE_URL}/opengraph-image`],
     },
     robots: {
       index: true,

@@ -67,6 +67,9 @@ export const de = {
     shareFailed: "Teilen fehlgeschlagen",
   },
   quiz: {
+    metaTitle: `Zufalls-Quiz-Challenge - ${SERVICE_NAME}`,
+    metaDescription:
+      "Teste deine Fähigkeiten mit zufälligen englischen Ausdrücken!",
     completeTitle: "Quiz Beendet! 🎉",
     score: "Punktzahl:",
     reviewTitle: "Überprüfung",

@@ -2,6 +2,22 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-21: SEO Finalization & Route Refactoring (SEO & Routing)
+
+- **Goal**: SEO 심층 리뷰에서 식별된 메타데이터 누락 및 비효율적인 URL 관리 방식을 개선하여 검색 엔진 최적화 완성도를 100%로 끌어올림.
+- **Actions**:
+  - **Metadata Refinement**:
+    - `app/quiz/page.tsx`: 다국어(`i18n`) 메타데이터(Title, Description) 적용 및 하드코딩 제거.
+    - `app/layout.tsx`: Twitter Card용 `images` 속성 명시 (OpenGraph와의 호환성 확보).
+    - `app/sitemap.ts`: 누락되었던 `/quiz` 경로 추가.
+  - **Route Centralization (`lib/routes.ts`)**:
+    - **CANONICAL_URLS Object**: SEO에 필수적인 Canonical URL(절대 경로) 생성 로직을 `CANONICAL_URLS` 객체로 중앙화.
+    - `app/expressions/[id]/page.tsx` 및 `app/quiz/page.tsx`의 하드코딩된 URL 문자열(`template literal`)을 모두 상수/함수 호출로 대체하여 유지보수성 및 일관성 확보.
+  - **Open Graph Optimization**:
+    - `locale` 속성 중복 제거 (`layout.tsx`에서 상속).
+    - 페이지별 명시적인 `url`, `title`, `description` 설정으로 공유 시 프리뷰 정확도 향상.
+- **Outcome**: SEO 메타데이터의 기술적 무결성 확보 및 라우팅 로직의 코드 중복 제거.
+
 ### 2026-01-21: Documentation Refinement & Additional Performance Optimization
 
 - **Goal**: 추가적인 성능 최적화 적용 및 프로젝트 문서(컨벤션) 현행화.
