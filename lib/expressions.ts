@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { Expression } from "@/types/database";
 
@@ -26,7 +27,7 @@ export interface ExpressionFilters {
  *   - limit: 페이지당 항목 수 (기본값: 12).
  * @returns Expression 객체 배열을 담은 Promise를 반환합니다. 에러 발생 시 빈 배열을 반환합니다.
  */
-export async function getExpressions(
+export const getExpressions = cache(async function getExpressions(
   filters?: ExpressionFilters,
 ): Promise<Expression[]> {
   try {
@@ -80,7 +81,7 @@ export async function getExpressions(
     console.warn("Failed to fetch expressions (check env vars):", error);
     return [];
   }
-}
+});
 
 /**
  * ID를 사용하여 단일 표현을 가져옵니다.
@@ -88,7 +89,7 @@ export async function getExpressions(
  * @param id - 가져올 표현의 고유 ID입니다.
  * @returns 해당 ID를 가진 Expression 객체 또는 찾을 수 없거나 에러 발생 시 null을 반환합니다.
  */
-export async function getExpressionById(
+export const getExpressionById = cache(async function getExpressionById(
   id: string,
 ): Promise<Expression | null> {
   try {
@@ -109,7 +110,7 @@ export async function getExpressionById(
     console.warn(`Failed to fetch expression ${id}:`, error);
     return null;
   }
-}
+});
 
 /**
  * 동일한 카테고리 내의 관련 표현들을 가져옵니다.
@@ -122,7 +123,7 @@ export async function getExpressionById(
  * @param limit - 반환할 최대 관련 표현 수 (기본값: 4).
  * @returns 관련 Expression 객체 배열을 반환합니다.
  */
-export async function getRelatedExpressions(
+export const getRelatedExpressions = cache(async function getRelatedExpressions(
   currentId: string,
   category: string,
   limit = 4,
@@ -150,7 +151,7 @@ export async function getRelatedExpressions(
     console.warn("Failed to fetch related expressions:", error);
     return [];
   }
-}
+});
 
 /**
  * 모든 표현의 ID를 최신순으로 가져옵니다.
@@ -159,25 +160,27 @@ export async function getRelatedExpressions(
  *
  * @returns 표현 ID 문자열 배열을 반환합니다.
  */
-export async function getAllExpressionIds(): Promise<string[]> {
-  try {
-    const supabase = await createServerSupabase();
-    const { data, error } = await supabase
-      .from("expressions")
-      .select("id")
-      .order("published_at", { ascending: false });
+export const getAllExpressionIds = cache(
+  async function getAllExpressionIds(): Promise<string[]> {
+    try {
+      const supabase = await createServerSupabase();
+      const { data, error } = await supabase
+        .from("expressions")
+        .select("id")
+        .order("published_at", { ascending: false });
 
-    if (error) {
-      console.warn("Failed to fetch all IDs for sitemap:", error.message);
+      if (error) {
+        console.warn("Failed to fetch all IDs for sitemap:", error.message);
+        return [];
+      }
+
+      return (data || []).map((item) => item.id);
+    } catch (error) {
+      console.warn("Failed to fetch all IDs for sitemap:", error);
       return [];
     }
-
-    return (data || []).map((item) => item.id);
-  } catch (error) {
-    console.warn("Failed to fetch all IDs for sitemap:", error);
-    return [];
-  }
-}
+  },
+);
 
 /**
  * 무작위 표현을 지정된 개수만큼 가져옵니다.
@@ -191,7 +194,9 @@ export async function getAllExpressionIds(): Promise<string[]> {
  * @param limit - 가져올 무작위 표현의 개수 (기본값: 10).
  * @returns 무작위로 선정된 Expression 객체 배열.
  */
-export async function getRandomExpressions(limit = 10): Promise<Expression[]> {
+export const getRandomExpressions = cache(async function getRandomExpressions(
+  limit = 10,
+): Promise<Expression[]> {
   try {
     const supabase = await createServerSupabase();
 
@@ -210,4 +215,4 @@ export async function getRandomExpressions(limit = 10): Promise<Expression[]> {
     console.warn("Failed to fetch random expressions:", error);
     return [];
   }
-}
+});

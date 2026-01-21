@@ -22,7 +22,7 @@ export default function CategoryLabel({
   const baseStyles = cn(
     "group flex items-center gap-1.5 text-xs font-black uppercase tracking-wider transition-colors z-10 cursor-pointer",
     textStyles,
-    className
+    className,
   );
 
   const content = (

@@ -35,7 +35,7 @@ export default function ScrollToTop() {
             "transition-colors duration-200",
             // 모바일이 아닌 경우에만 호버 스타일 적용
             enableHover &&
-              "hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white"
+              "hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white",
           )}
           aria-label="Scroll to top"
         >

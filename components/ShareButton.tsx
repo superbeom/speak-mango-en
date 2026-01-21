@@ -139,7 +139,7 @@ export default function ShareButton({
                 "bg-blue-500 text-white",
                 "hover:bg-blue-600 active:scale-95",
                 "shadow-sm hover:shadow-md",
-              ]
+              ],
         )}
         aria-label={shareLabel}
       >

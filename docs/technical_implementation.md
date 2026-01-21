@@ -743,6 +743,17 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **Constant Complexity**: 데이터가 100건이든 10만 건이든 클라이언트가 받는 부하는 동일합니다.
   - **Memory Efficiency**: Node.js 런타임의 메모리 스파이크를 방지합니다.
 
+### 14.6 Request Deduplication (Server-Side Caching)
+
+- **Problem**: Next.js App Router 아키텍처에서 `Page` 컴포넌트와 `generateMetadata` 함수가 동일한 데이터를 필요로 할 때, 별도의 조치를 취하지 않으면 동일한 DB 쿼리가 한 요청(Request) 내에서 중복 실행되는 비효율이 발생합니다.
+- **Solution**:
+  - `lib/expressions.ts`의 모든 DB 조회 함수를 React의 `cache` 함수로 래핑했습니다.
+  - 이 메모이제이션은 **서버 요청 수명 주기(Per-request)** 동안만 유효하므로, 데이터의 최신성을 해치지 않으면서 중복 부하만 제거합니다.
+- **Implementation**:
+  ```typescript
+  export const getExpressions = cache(async (...) => { ... });
+  ```
+
 ## 13. Service Essentials Implementation (시스템 필수 요소 구현)
 
 서비스 품질을 결정짓는 3대 요소(PWA, SEO, i18n)에 대한 기술적 구현 상세입니다.

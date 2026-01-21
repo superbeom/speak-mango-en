@@ -2,6 +2,38 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.36: Additional Performance Optimization & Documentation (2026-01-21)
+
+### 1. Goal (목표)
+
+- 번들 사이즈 감소, 서버 요청 중복 제거, 클라이언트 렌더링 최적화 등 추가적인 성능 개선 사항을 적용하고, 이를 문서화하여 향후 개발 가이드라인으로 삼습니다.
+
+### 2. Implementation (구현)
+
+#### A. Request Deduplication (`lib/expressions.ts`)
+
+- **Problem**: 한 페이지 렌더링 과정에서 `getExpressions` 등의 DB 조회 함수가 여러 컴포넌트(메타데이터, 페이지 본문 등)에서 중복 호출될 경우 불필요한 DB 부하 발생.
+- **Solution**: `React.cache()`로 DB 조회 함수들을 래핑하여, **동일한 요청(Request) 수명 주기 내**에서는 결과값을 메모리에 캐싱하고 재사용하도록 구현. (Per-request Memoization).
+
+#### B. Client-Side Rendering Protection (`components/ExpressionCard.tsx`)
+
+- **Problem**: 리스트 렌더링 시 부모 컴포넌트의 상태 변화로 인해 수많은 자식 카드 컴포넌트가 불필요하게 리렌더링됨.
+- **Solution**:
+  - `React.memo`를 적용하여 Props가 변경되지 않은 카드의 리렌더링을 방지.
+  - `displayName`을 명시하여 React DevTools 하이드레이션 매칭 디버깅 용이성 확보.
+
+#### C. Layout Rendering Optimization (`app/globals.css`)
+
+- **Problem**: 수천 개의 `ExpressionCard`가 있는 긴 리스트(Long List) 렌더링 시 브라우저의 레이아웃 계산 비용 증가.
+- **Solution**:
+  - `content-visibility: auto` 속성을 적용한 `@utility content-visibility-auto` 클래스 생성.
+  - 화면 밖(Off-screen)에 있는 요소의 렌더링(페인팅 및 히트 테스팅)을 브라우저가 생략하도록 하여 초기 로딩 및 스크롤 성능 개선.
+
+### 3. Result (결과)
+
+- ✅ **Optimization**: 런타임 성능 향상.
+- ✅ **Standardization**: `project_context.md`에 성능 최적화 표준 가이드라인 수립.
+
 ## v0.12.35: Code Audit & Performance Optimization (2026-01-21)
 
 ### 1. Goal (목표)
@@ -37,7 +69,9 @@
 
 - ✅ **Latency**: 퀴즈 페이지 초기 로딩 속도 단축 (병렬 처리).
 - ✅ **Scalability**: 표현 데이터가 수만 건으로 늘어나도 퀴즈 생성 성능이 일정하게 유지됨 (RPC).
-- ✅ **Documentation**: `database` 폴더 구조를 `migrations`와 `functions`로 분리하여 관리 체계 개선.
+- ✅ **Documentation**:
+  - `database` 폴더 구조를 `migrations`와 `functions`로 분리하여 관리 체계 개선.
+  - `project_context.md`에 성능 최적화 가이드라인(Server-side Caching, Client-side Memoization 등)을 명문화하여 향후 개발 기준 수립.
 
 ## v0.12.34: Random Quiz Feature (2026-01-20)
 

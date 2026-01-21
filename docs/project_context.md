@@ -198,6 +198,10 @@ speak-mango-en/
   - **Reusability**: Toast 컴포넌트는 독립적으로 설계되어 어떤 컴포넌트에서든 재사용 가능.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
+- **성능 최적화 (Performance Optimization)**:
+  - **Server-Side Caching**: DB 조회 함수는 `React.cache`로 래핑하여 동일 요청 내 중복 쿼리를 제거합니다 (Request Deduplication).
+  - **Client-Side Memoization**: 리스트 아이템 등 빈번한 리렌더링이 예상되는 컴포넌트는 `React.memo`를 적용합니다.
+  - **Layout Optimization**: 긴 리스트에는 `content-visibility: auto`를 적용하여 렌더링 성능을 개선합니다.
 
 ### Database
 

@@ -42,7 +42,7 @@ export default function SearchBar({
         });
       }
     },
-    [onSearch]
+    [onSearch],
   );
 
   // Enter 키로 검색

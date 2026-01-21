@@ -2,6 +2,19 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-21: Documentation Refinement & Additional Performance Optimization
+
+- **Goal**: 추가적인 성능 최적화 적용 및 프로젝트 문서(컨벤션) 현행화.
+- **Actions**:
+  - **Performance Optimization**:
+    - **Server-Side Rendering (`lib/expressions.ts`)**: `React.cache()`를 사용하여 동일 요청 내 중복 DB 쿼리 제거 (Request Deduplication).
+    - **Client-Side Rendering (`components/ExpressionCard.tsx`)**: `React.memo` 적용 및 `className` prop 추가로 리렌더링 방어.
+    - **Layout Rendering (`globals.css`)**: `content-visibility: auto` 유틸리티 추가 및 `ExpressionList`에 적용하여 대량의 리스트 렌더링 성능 최적화.
+  - **Documentation**:
+    - `docs/project_context.md`: "성능 최적화(Performance Optimization)" 코딩 컨벤션 섹션 추가.
+    - `docs/technical_implementation.md`: Request Deduplication 기술 구현 상세 추가.
+- **Outcome**: 렌더링 및 네트워크 효율성 추가 확보, 성능 최적화 가이드라인 명문화.
+
 ### 2026-01-21: Code Audit & Performance Optimization
 
 - **Goal**: Vercel React Best Practices 기반으로 코드베이스를 감사(Audit)하고, 식별된 성능 병목 및 확장성 문제를 해결.
@@ -14,6 +27,8 @@
   - **Documentation Refinement**:
     - `docs/database/schema.md`: 폴더 구조 변경(`migrations/`, `functions/`) 반영 및 RPC 섹션 위치 조정.
     - `docs/features/random_quiz_architecture.md`: RPC 구현 상세 업데이트.
+    - `docs/project_context.md`: 코딩 컨벤션에 "성능 최적화(Performance Optimization)" 섹션 추가 (React.memo, React.cache 가이드).
+    - `docs/technical_implementation.md`: Request Deduplication 구현 상세 추가.
 - **Outcome**: 감사 보고서의 모든 Critical/Medium 이슈 해결 완료. 데이터베이스 함수 관리 체계 수립.
 
 ### 2026-01-20: Random Quiz Feature Implementation

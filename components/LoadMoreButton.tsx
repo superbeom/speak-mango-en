@@ -26,13 +26,13 @@ export default function LoadMoreButton({
           "bg-surface border-main text-main",
           "dark:shadow-none",
           // 모바일 최적화: 마우스 호버 시에만 효과 적용
-          enableHover && "hover:shadow-md hover:text-secondary"
+          enableHover && "hover:shadow-md hover:text-secondary",
         )}
       >
         <Plus
           className={cn(
             "w-5 h-5 transition-transform",
-            enableHover && "group-hover:rotate-90"
+            enableHover && "group-hover:rotate-90",
           )}
           strokeWidth={2.5}
         />

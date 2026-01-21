@@ -43,7 +43,12 @@ export default function ExpressionList({
       <div className="space-y-6">
         <AnimatedList>
           {items.map((item) => (
-            <ExpressionCard key={item.id} item={item} locale={locale} />
+            <ExpressionCard
+              key={item.id}
+              item={item}
+              locale={locale}
+              className="content-visibility-auto"
+            />
           ))}
         </AnimatedList>
 
