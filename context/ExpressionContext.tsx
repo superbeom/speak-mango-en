@@ -8,15 +8,14 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { Expression } from "@/types/database";
 
 /**
  * 필터 조합별로 저장될 리스트의 상태 구조입니다.
+ * SWR 도입으로 데이터(items)는 SWR 캐시가 관리하므로,
+ * 여기서는 복원을 위한 메타데이터(페이지 수, 스크롤 위치)만 관리합니다.
  */
 export interface ExpressionState {
-  items: Expression[];
-  page: number;
-  hasMore: boolean;
+  size: number; // SWRInfinite의 페이지 수 (몇 페이지까지 로드했는지)
   scrollPosition: number;
 }
 
@@ -25,11 +24,8 @@ interface ExpressionContextType {
   cache: Record<string, ExpressionState>;
   // 특정 필터 키의 상태를 전체 업데이트
   setCache: (key: string, state: ExpressionState) => void;
-  // 스크롤 위치를 제외한 데이터(리스트, 페이지 등)만 부분 업데이트
-  updateCacheData: (
-    key: string,
-    data: Omit<ExpressionState, "scrollPosition">
-  ) => void;
+  // 스크롤 위치를 제외한 데이터(페이지 수)만 부분 업데이트
+  updateCacheData: (key: string, data: { size: number }) => void;
   // 특정 필터 키의 스크롤 위치만 최신화
   updateScrollPosition: (key: string, position: number) => void;
   // 저장된 캐시 조회
@@ -37,7 +33,7 @@ interface ExpressionContextType {
 }
 
 const ExpressionContext = createContext<ExpressionContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function ExpressionProvider({ children }: { children: ReactNode }) {
@@ -55,43 +51,33 @@ export function ExpressionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * 스크롤 위치는 그대로 둔 채, 리스트 아이템과 페이지 정보만 업데이트합니다.
-   * '더 보기' 버튼 클릭 시 유용합니다.
+   * 스크롤 위치는 그대로 둔 채, 로드된 페이지 수(size)만 업데이트합니다.
+   * '더 보기' 버튼 클릭 시 호출됩니다.
    */
-  const updateCacheData = useCallback(
-    (key: string, data: Omit<ExpressionState, "scrollPosition">) => {
-      setCacheState((prev) => {
-        const currentState = prev[key];
-        const currentScroll = currentState ? currentState.scrollPosition : 0;
+  const updateCacheData = useCallback((key: string, data: { size: number }) => {
+    setCacheState((prev) => {
+      const currentState = prev[key];
+      const currentScroll = currentState ? currentState.scrollPosition : 0;
 
-        // 최적화: 실제로 데이터가 변경된 경우에만 새로운 객체 생성
-        if (
-          currentState &&
-          currentState.items === data.items &&
-          currentState.page === data.page &&
-          currentState.hasMore === data.hasMore
-        ) {
-          return prev;
-        }
+      // 최적화: 변경이 없으면 업데이트 건너뜀
+      if (currentState && currentState.size === data.size) {
+        return prev;
+      }
 
-        return {
-          ...prev,
-          [key]: {
-            items: data.items,
-            page: data.page,
-            hasMore: data.hasMore,
-            scrollPosition: currentScroll,
-          },
-        };
-      });
-    },
-    []
-  );
+      return {
+        ...prev,
+        [key]: {
+          size: data.size,
+          scrollPosition: currentScroll,
+        },
+      };
+    });
+  }, []);
 
   /**
    * 스크롤 위치만 따로 저장합니다.
    * 실시간 스크롤 리스너에서 호출되며, 리스트 데이터 유실을 방지하기 위해
-   * 상태가 없을 경우 기본 뼈대를 먼저 생성합니다.
+   * 상태가 없을 경우 기본값(1페이지)으로 초기화합니다.
    */
   const updateScrollPosition = useCallback((key: string, position: number) => {
     setCacheState((prev) => {
@@ -101,9 +87,7 @@ export function ExpressionProvider({ children }: { children: ReactNode }) {
         return {
           ...prev,
           [key]: {
-            items: [],
-            page: 1,
-            hasMore: true,
+            size: 1, // 기본값: 1페이지
             scrollPosition: position,
           },
         };
@@ -128,7 +112,7 @@ export function ExpressionProvider({ children }: { children: ReactNode }) {
     (key: string) => {
       return cache[key];
     },
-    [cache]
+    [cache],
   );
 
   /**
@@ -143,7 +127,7 @@ export function ExpressionProvider({ children }: { children: ReactNode }) {
       updateScrollPosition,
       getCache,
     }),
-    [cache, setCache, updateCacheData, updateScrollPosition, getCache]
+    [cache, setCache, updateCacheData, updateScrollPosition, getCache],
   );
 
   return (
@@ -157,7 +141,7 @@ export function useExpressionStore() {
   const context = useContext(ExpressionContext);
   if (!context) {
     throw new Error(
-      "useExpressionStore must be used within an ExpressionProvider"
+      "useExpressionStore must be used within an ExpressionProvider",
     );
   }
   return context;

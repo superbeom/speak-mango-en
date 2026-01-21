@@ -36,10 +36,18 @@
   - `ExpressionList.tsx`의 인라인 스켈레톤을 `SkeletonExpressionList` 컴포넌트로 분리.
   - `SkeletonCard`, `SkeletonNavbar` 등 모든 스켈레톤 컴포넌트에 `React.memo`를 적용하여 정적 UI의 리렌더링 비용 제거.
 
+#### E. Data Fetching Strategy (`hooks/usePaginatedList.ts`)
+
+- **Problem**: 기존 `usePaginatedList`는 `useState`, `useEffect`로 상태를 수동 관리하며, `ExpressionContext`에 리스트 전체(`items`)를 저장하여 메모리 비효율 발생.
+- **Solution**:
+  - `useSWRInfinite` 도입하여 데이터 페칭, 캐싱, 페이지네이션 상태 관리 자동화.
+  - `ExpressionContext`는 `size`(페이지 수)와 `scrollPosition`만 관리하도록 경량화하여, 뒤로가기 시 복원 로직 단순화.
+
 ### 3. Result (결과)
 
 - ✅ **Optimization**: 런타임 성능 향상.
 - ✅ **Standardization**: `project_context.md`에 성능 최적화 표준 가이드라인 수립.
+- ✅ **Modernization**: `useSWR` 도입으로 데이터 페칭 로직의 유지보수성 및 확장성(실시간 갱신 등) 확보.
 
 ## v0.12.35: Code Audit & Performance Optimization (2026-01-21)
 

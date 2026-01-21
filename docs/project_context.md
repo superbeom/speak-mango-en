@@ -113,7 +113,9 @@ speak-mango-en/
 │   ├── seo_strategy.md      # SEO 전략 및 구현 가이드 (Dynamic & Visible Keywords)
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
-│   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
+│   ├── technical_implementation/    # 주요 기능의 기술적 구현 상세
+│   │   ├── index.md                 # 구현 개요 및 알고리즘
+│   │   └── use_swr_strategy.md      # Client-Side Data Fetching (useSWR) 전략
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
 │   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
@@ -202,6 +204,7 @@ speak-mango-en/
   - **Server-Side Caching**: DB 조회 함수는 `React.cache`로 래핑하여 동일 요청 내 중복 쿼리를 제거합니다 (Request Deduplication).
   - **Client-Side Memoization**: 리스트 아이템 등 빈번한 리렌더링이 예상되는 컴포넌트는 `React.memo`를 적용합니다.
   - **Layout Optimization**: 긴 리스트에는 `content-visibility: auto`를 적용하여 렌더링 성능을 개선합니다.
+  - **Data Fetching Strategy**: `docs/technical_implementation/use_swr_strategy.md` (useSWR 활용 가이드)
 
 ### Database
 

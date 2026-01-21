@@ -11,10 +11,12 @@
     - **Client-Side Rendering (`components/ExpressionCard.tsx`)**: `React.memo` 적용 및 `className` prop 추가로 리렌더링 방어.
     - **Layout Rendering (`globals.css`)**: `content-visibility: auto` 유틸리티 추가 및 `ExpressionList`에 적용하여 대량의 리스트 렌더링 성능 최적화.
     - **Skeleton Optimization (`components/ui/Skeletons.tsx`)**: `SkeletonExpressionList` 컴포넌트 분리 및 모든 스켈레톤에 `React.memo`를 적용하여 로딩 중 불필요한 리렌더링 방지.
+    - **Data Fetching (`hooks/usePaginatedList.ts`, `ExpressionContext.tsx`)**: `useSWRInfinite`를 도입하여 무한 스크롤 로직을 단순화하고, 전역 상태(Context)에서 무거운 데이터를 제거(경량화)하여 메모리 효율성 및 UX 개선.
   - **Documentation**:
     - `docs/project_context.md`: "성능 최적화(Performance Optimization)" 코딩 컨벤션 섹션 추가.
-    - `docs/technical_implementation.md`: Request Deduplication 기술 구현 상세 추가.
-- **Outcome**: 렌더링 및 네트워크 효율성 추가 확보, 성능 최적화 가이드라인 명문화.
+    - `docs/technical_implementation/index.md`: Request Deduplication 기술 구현 상세 추가.
+    - `docs/technical_implementation/use_swr_strategy.md`: SWR 전략 문서 생성 및 구현 완료 표시.
+- **Outcome**: 렌더링 및 네트워크 효율성 추가 확보, 성능 최적화 가이드라인 명문화, 데이터 페칭 전략 현대화.
 
 ### 2026-01-21: Code Audit & Performance Optimization
 

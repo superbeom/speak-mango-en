@@ -754,6 +754,14 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   export const getExpressions = cache(async (...) => { ... });
   ```
 
+### 14.7 Data Fetching Strategy (SWR Adoption)
+
+- **Goal**: 클라이언트 사이드 데이터 페칭의 상태 관리 복잡성을 줄이고, UX(빠른 네비게이션, 자동 갱신)를 개선합니다.
+- **Implementation**:
+  - `docs/technical_implementation/use_swr_strategy.md`에 정의된 전략에 따라 `hooks/usePaginatedList.ts`를 `useSWRInfinite` 기반으로 리팩토링했습니다.
+  - 전역 상태(`ExpressionContext`)에서 무거운 데이터(`items`)를 제거하고, 오직 '페이지 수(`size`)'와 '스크롤 위치'만 관리하도록 경량화하여 메모리 사용량을 최적화했습니다.
+- **Reference**: 자세한 내용은 [useSWR 전략 문서](./use_swr_strategy.md)를 참조하십시오.
+
 ## 13. Service Essentials Implementation (시스템 필수 요소 구현)
 
 서비스 품질을 결정짓는 3대 요소(PWA, SEO, i18n)에 대한 기술적 구현 상세입니다.
