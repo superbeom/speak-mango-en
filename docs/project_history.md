@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-21: Category Caching & SWR Synchronization Fix
+
+- **Problem**: 카테고리 필터 변경 시, 서버에서는 최신 데이터를 내려주지만 클라이언트(SWR)가 기존 캐시를 우선하여 오래된 목록이 표시되는 현상 발생. 또한 `hooks/usePaginatedList.ts`의 키 생성 로직과 Fetcher 간 타입 불일치로 인해 필터링이 무시되는 문제 확인.
+- **Solution**:
+  - **Performance Optimization**: `filters` 객체의 참조 문제 해결(Safe Serialization)만으로도 카테고리 필터링이 정상 작동함을 확인. 하루 1회 업데이트되는 콘텐츠 특성을 고려하여, 불필요한 API 호출(Daily Transcation)을 절약하기 위해 `revalidateFirstPage: false`로 설정.
+  - **Safe Serialization**: `filters` 객체의 참조 불안정성을 해결하기 위해 `getKey`에서 `JSON.stringify`를 사용하고, `fetcher` 내부에서 이를 `JSON.parse`하여 복원하는 로직을 타입 단언(`as ExpressionFilters`)과 함께 구현.
+- **Outcome**: 초기 진입 시 불필요한 API 요청을 0으로 만들어 서버 비용을 절감하면서도, 필터링 기능의 정확성은 완벽하게 확보.
+
 ### 2026-01-21: SEO Finalization & Route Refactoring (SEO & Routing)
 
 - **Goal**: SEO 심층 리뷰에서 식별된 메타데이터 누락 및 비효율적인 URL 관리 방식을 개선하여 검색 엔진 최적화 완성도를 100%로 끌어올림.

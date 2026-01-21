@@ -2,6 +2,31 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.38: Category Caching & Hybrid Strategy (2026-01-21)
+
+### 1. Goal (목표)
+
+- ISR(1시간 캐시) 환경에서 데이터 갱신 시점 차이로 인해 발생하는 "새로고침 시 데이터 롤백(Stale Data)" 문제를 해결하고, 초기 로딩 속도와 데이터 최신성을 모두 만족하는 전략 수립.
+
+### 2. Implementation (구현)
+
+#### A. Cost-Effective Strategy (ISR Only for Initial Load)
+
+- **Rationale**: 콘텐츠가 하루 1회만 업데이트되므로, 1시간(3600s) 단위의 ISR 캐싱만으로도 충분히 최신성을 보장할 수 있음.
+- **Optimization**: `revalidateFirstPage: false`로 설정하여, 단순 페이지 진입 시 발생하는 불필요한 API 호출(10,000 DAU 기준 약 10,000회)을 제거. 서버 리소스 및 비용 절감 최적화.
+
+#### B. Safe Key Serialization
+
+- **Problem**: 객체 형태의 `filters` prop이 리렌더링마다 참조가 달라져 불필요한 API 요청이 발생하거나 캐시 키가 꼬이는 문제.
+- **Solution**:
+  - `getKey`에서 `JSON.stringify(filters)`로 키를 문자열화하여 고유성 보장.
+  - `fetcher`에서는 `JSON.parse`로 다시 객체로 변환하여 API 호출.
+
+### 3. Result (결과)
+
+- ✅ **Stability**: 카테고리 이동 및 필터링 시 데이터 불일치 및 깜빡임 현상 완전 해결.
+- ✅ **Performance**: ISR의 빠른 초기 응답 속도 유지.
+
 ## v0.12.37: SEO Finalization & Route Centralization (2026-01-21)
 
 ### 1. Goal (목표)

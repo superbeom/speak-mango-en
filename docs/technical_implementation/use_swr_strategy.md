@@ -102,7 +102,10 @@ export function useExpressionInfinite() {
 }
 ```
 
-> **구현 완료 (2026-01-21)**: `hooks/usePaginatedList.ts` 리팩토링 및 `ExpressionContext` 최적화(items 제거)를 통해 적용 완료되었습니다. 필터 키 직렬화(`JSON.stringify`)를 통해 안정성을 확보했습니다.
+> **구현 완료 (2026-01-21)**: `hooks/usePaginatedList.ts` 리팩토링 및 `ExpressionContext` 최적화(items 제거)를 통해 적용 완료되었습니다.
+>
+> - **Serialization**: 필터 키 직렬화(`JSON.stringify`)를 통해 객체 참조 변경에 따른 불필요한 요청을 방지했습니다. Fetcher 함수 내부에서 `JSON.parse`와 `as ExpressionFilters` 캐스팅을 사용하여 타입 안정성을 확보했습니다.
+> - **Revalidation**: 콘텐츠 업데이트 빈도(Daily)를 고려하여 `revalidateFirstPage: false`로 설정했습니다. 이는 초기 진입 시 불필요한 백그라운드 요청을 방지하여 트래픽 비용을 절감합니다. (필터 변경 시에는 키가 바뀌므로 정상적으로 데이터를 가져옵니다.)
 
 ### 🔜 추후 적용 후보
 

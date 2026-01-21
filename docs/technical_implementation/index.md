@@ -760,6 +760,8 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 - **Goal**: 클라이언트 사이드 데이터 페칭의 상태 관리 복잡성을 줄이고, UX(빠른 네비게이션, 자동 갱신)를 개선합니다.
 - **Implementation**:
   - `docs/technical_implementation/use_swr_strategy.md`에 정의된 전략에 따라 `hooks/usePaginatedList.ts`를 `useSWRInfinite` 기반으로 리팩토링했습니다.
+  - **Key Serialization**: 객체 키(`filters`)의 참조 불안정성 문제를 해결하기 위해 `JSON.stringify`로 직렬화하여 키를 생성하고, Fetcher 내부에서 `JSON.parse`로 복원하는 패턴을 적용했습니다.
+  - **Optimized Fetching Strategy**: `app/page.tsx`는 ISR(`revalidate = 3600`)을 사용하여 초기 HTML 로딩을 처리합니다. 콘텐츠 업데이트 빈도(1일 1회)를 고려하여 `hooks/usePaginatedList.ts`에서 `revalidateFirstPage: false`를 설정, 초기 진입 시 중복 API 호출을 차단하여 성능을 최적화했습니다.
   - 전역 상태(`ExpressionContext`)에서 무거운 데이터(`items`)를 제거하고, 오직 '페이지 수(`size`)'와 '스크롤 위치'만 관리하도록 경량화하여 메모리 사용량을 최적화했습니다.
 - **Reference**: 자세한 내용은 [useSWR 전략 문서](./use_swr_strategy.md)를 참조하십시오.
 

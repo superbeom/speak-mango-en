@@ -38,11 +38,12 @@ export function usePaginatedList({
   };
 
   // 2. Data Fetcher
-  const fetcher = async ([_, currentFilters, page]: [
+  const fetcher = async ([_, serializedFilters, page]: [
     string,
-    ExpressionFilters,
+    string,
     number,
   ]) => {
+    const currentFilters = JSON.parse(serializedFilters) as ExpressionFilters;
     return await fetchMoreExpressions(currentFilters, page);
   };
 
