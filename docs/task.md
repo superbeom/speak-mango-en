@@ -86,6 +86,10 @@
   - [x] `app/layout.tsx`: `keywords` 추가
   - [x] `app/expressions/[id]`: `LearningResource` 스키마에 `keywords` 주입
 - [x] **UI/UX**: 마케팅 스튜디오 구현 및 이미지 자동화 (`/studio/[id]`, `generate_studio_images.py`)
+- [x] **Feature**: 랜덤 퀴즈 게임 구현 (`/quiz`)
+  - [x] **Architecture**: 랜덤 표현 추출 로직 (`getRandomExpressions`) 및 퀴즈 파싱 (`lib/quiz.ts`)
+  - [x] **UI**: 퀴즈 게임 인터페이스 (`QuizGame.tsx`) 및 결과 화면
+  - [x] **Analytics**: 퀴즈 정답/오답 및 완료 이벤트 추적
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

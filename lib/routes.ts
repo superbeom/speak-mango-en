@@ -6,6 +6,7 @@ export const ROUTES = {
   HOME: "/",
   EXPRESSION_DETAIL: (id: string) => `/expressions/${id}`,
   STUDIO: "/studio",
+  QUIZ: "/quiz",
 } as const;
 
 /**

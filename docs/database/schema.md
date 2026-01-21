@@ -1,7 +1,7 @@
 # Database Schema Documentation
 
 이 문서는 프로젝트에서 사용하는 데이터베이스 스키마와 테이블의 상세 명세를 관리합니다.
-모든 SQL 변경 사항은 `database/` 폴더의 마이그레이션 파일뿐만 아니라, 이 문서에도 반영되어야 합니다.
+모든 SQL 변경 사항은 `database/migrations` 및 `database/functions` 폴더의 SQL 파일뿐만 아니라, 이 문서에도 반영되어야 합니다.
 
 ## Schema: `speak_mango_en`
 
@@ -63,6 +63,29 @@
 #### Future Recommendations
 
 - **Full Text Search (FTS)**: 추후 영어 표현(`expression`)이나 의미(`meaning`)에 대한 자연어 검색이 필요해지면 `tsvector` 기반의 GIN 인덱스 추가 고려.
+
+### Database Functions (RPC)
+
+서버 사이드 로직 수행 및 성능 최적화를 위해 Stored Procedure (RPC)를 사용합니다.
+
+#### 1. `get_random_expressions`
+
+- **Description**: `expressions` 테이블에서 무작위로 지정된 개수만큼의 행을 효율적으로 반환합니다.
+- **Usage**: Random Quiz 기능에서 사용됩니다. 클라이언트에서 전체 ID를 조회하는 비효율을 방지합니다.
+- **Parameters**:
+  - `limit_cnt` (int): 반환할 행의 최대 개수.
+- **Returns**: `setof speak_mango_en.expressions`
+- **SQL Definition**:
+  ```sql
+  create or replace function speak_mango_en.get_random_expressions(limit_cnt int)
+  returns setof speak_mango_en.expressions
+  language sql
+  as $$
+    select * from speak_mango_en.expressions
+    order by random()
+    limit limit_cnt;
+  $$;
+  ```
 
 ### Dual-Category System
 

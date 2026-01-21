@@ -178,3 +178,36 @@ export async function getAllExpressionIds(): Promise<string[]> {
     return [];
   }
 }
+
+/**
+ * 무작위 표현을 지정된 개수만큼 가져옵니다.
+ *
+ * 퀴즈 기능을 위해 사용됩니다.
+ * 구현 방식:
+ * 1. 전체 ID 목록을 가져옵니다.
+ * 2. 요청된 개수만큼 무작위로 ID를 추출합니다.
+ * 3. 추출된 ID들에 대한 상세 정보를 한 번에 조회합니다.
+ *
+ * @param limit - 가져올 무작위 표현의 개수 (기본값: 10).
+ * @returns 무작위로 선정된 Expression 객체 배열.
+ */
+export async function getRandomExpressions(limit = 10): Promise<Expression[]> {
+  try {
+    const supabase = await createServerSupabase();
+
+    // Use RPC for efficient random selection
+    const { data, error } = await supabase.rpc("get_random_expressions", {
+      limit_cnt: limit,
+    });
+
+    if (error) {
+      console.warn("Supabase RPC error for random expressions:", error.message);
+      return [];
+    }
+
+    return (data as Expression[]) || [];
+  } catch (error) {
+    console.warn("Failed to fetch random expressions:", error);
+    return [];
+  }
+}

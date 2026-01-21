@@ -20,7 +20,6 @@
 - [ ] **i18n Client Transition**: 추후 북마크, 사용자 설정 등 **클라이언트 상호작용이 많아지면** 현재의 Server Helper 방식에서 `Client Context` 기반 라이브러리(`next-intl` 등)로 전환 고려.
 - [ ] **Shared Schema Implementation**: 사용자 가입, 프로필 통합 등 공유 데이터 관리가 필요한 시점에 `speak_mango_shared` 스키마를 생성하고 `auth.users`와 연동된 통합 시스템 구축.
 - [ ] **Feature Gating (Audio Support)**: 음성 지원(TTS) 기능을 사용자 티어(`free`/`pro`)에 따라 차별화하여 제공.
-
   - [ ] **UI Logic**: 무료 사용자가 '원어민 대화 듣기' 버튼 클릭 시 유료 기능 안내 모달(Payment Prompt) 팝업 및 결제 페이지 유도.
   - [ ] **Security (RLS)**: Supabase Storage 정책을 강화하여 유료 사용자만 오디오 파일 다운로드/접근이 가능하도록 보안 고도화.
     - **실행 지침**: 버킷 권한을 `Public`에서 **`Private`**으로 전환하고, `storage.objects` 테이블에 RLS 정책을 추가하여 `profiles.tier`가 'pro'인 사용자만 `SELECT` 가능하도록 제한.
@@ -37,6 +36,27 @@
 - [ ] **Security (RLS)**: 프로덕션 배포 전 `speak_mango_en` 스키마의 RLS를 활성화하고, `service_role` 전용 정책 설정 필요 (현재는 개발 편의를 위해 비활성화 상태).
 - [ ] **Security (n8n)**: Supabase Credential의 'Allowed HTTP Request Domains'를 'All'에서 'Specific Domains'로 변경하여 보안 강화.
 - [ ] **i18n Content Strategy**: DB의 `meaning` 및 `content` JSONB 컬럼에 `ja`, `es` 등 추가 언어 데이터 생성 워크플로우(n8n) 고도화.
+
+## User System & Learning (사용자 시스템 및 학습)
+
+### 사용자 등록 및 학습 상태 추적
+
+- **User Registration**: 이메일/소셜 로그인을 통한 회원가입/로그인 기능 구현 (Supabase Auth).
+- **Learning Status**:
+  - 각 표현 상세 페이지에 '학습 완료(Mark as Learned)' 버튼 추가.
+  - '저장(Save/Bookmark)' 버튼 추가하여 관심 표현 보관.
+- **Data Structure**:
+  - `user_progress` 테이블: `user_id`, `expression_id`, `status` ('learned', 'saved'), `last_reviewed_at`.
+- **My Page**:
+  - '학습 완료한 표현': 내가 마스터한 표현 목록 및 통계.
+  - '저장한 표현': 다시 보고 싶은 표현 모음집.
+
+### 학습 기반 퀴즈 (Learning-based Quiz)
+
+- **Review Mode**:
+  - 랜덤 퀴즈가 아닌, 사용자가 '학습 완료'한 표현들만을 대상으로 퀴즈 출제.
+  - 망각 곡선을 고려한 복습 알림 및 퀴즈 생성 (추후 고도화).
+- **Access**: `/quiz` 페이지에서 "랜덤 퀴즈"와 "복습 퀴즈(나의 단어장)" 모드 선택 가능하도록 확장.
 
 ---
 

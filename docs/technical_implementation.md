@@ -696,7 +696,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 ### 14.1 Server-Side Waterfall Removal (서버 측 워터폴 제거)
 
-- **Problem**: `app/page.tsx`에서 `getI18n()`(헤더 파싱 + 딕셔너리 로딩) 완료 후 `getExpressions()`(DB 조회)가 실행되는 직렬 구조로 인해 TTFB(Time to First Byte) 지연.
+- **Problem**: `app/page.tsx` 및 `app/quiz/page.tsx`에서 `getI18n()`(헤더 파싱 + 딕셔너리 로딩) 완료 후 DB 조회 함수(`getExpressions`, `getRandomExpressions`)가 실행되는 직렬 구조로 인해 TTFB(Time to First Byte) 지연.
 - **Solution**: 의존성이 없는 비동기 작업을 `Promise.all`로 병렬 처리.
   - `getLocale()`을 먼저 호출하여 필요한 로케일 정보를 확보.
   - `getI18n()`과 `getExpressions()`를 동시에 실행하여 전체 응답 시간을 단축.
@@ -731,6 +731,17 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **requestAnimationFrame (rAF)**: `RelatedExpressions`의 무한 스크롤(3.1) 및 스크롤 복원(9.3)에 사용된 것과 동일한 패턴을 적용하여, 브라우저 페인팅 주기에 맞춰 이벤트를 최적화(Throttling)했습니다.
   - **Auto-Cleanup**: `useRef`를 통해 rAF ID를 관리하고, 컴포넌트 언마운트 시 `cancelAnimationFrame`을 호출하여 메모리 누수를 방지합니다.
   - **Referential Stability**: 핸들러 함수를 `useCallback`으로 감싸고 `useEffect` 의존성 배열에 명시하여, 리렌더링 시 불필요한 이벤트 리스너 재등록을 방지합니다.
+
+### 14.5 Database Random Sampling (RPC 기반 랜덤 샘플링)
+
+- **Problem**:
+  - 클라이언트(Node.js)에서 `SELECT id FROM expressions`로 전체 ID를 가져온 후 `JavaScript`로 셔플링하여 N개를 뽑는 방식은 테이블 크기가 커질수록 메모리 사용량과 네트워크 대역폭을 과도하게 점유합니다(O(N)).
+- **Solution (Database-Side Processing)**:
+  - PostgreSQL의 `ORDER BY random() LIMIT N` 기능을 캡슐화한 RPC 함수(`speak_mango_en.get_random_expressions`)를 도입했습니다.
+  - 데이터 셔플링과 추출을 DB 엔진 내부에서 수행하고, 최종 결과인 N개의 행만 네트워크로 전송합니다.
+- **Benefit**:
+  - **Constant Complexity**: 데이터가 100건이든 10만 건이든 클라이언트가 받는 부하는 동일합니다.
+  - **Memory Efficiency**: Node.js 런타임의 메모리 스파이크를 방지합니다.
 
 ## 13. Service Essentials Implementation (시스템 필수 요소 구현)
 

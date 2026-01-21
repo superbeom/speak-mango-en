@@ -35,7 +35,7 @@ export const isAnalyticsEnabled = (): boolean => {
 export const initAnalytics = (): void => {
   if (!isAnalyticsEnabled()) {
     console.log(
-      "[Analytics] Disabled in development or missing GA_MEASUREMENT_ID"
+      "[Analytics] Disabled in development or missing GA_MEASUREMENT_ID",
     );
     return;
   }
@@ -63,7 +63,7 @@ export const initAnalytics = (): void => {
 export const trackPageView = (
   path: string,
   title?: string,
-  lang?: string
+  lang?: string,
 ): void => {
   if (!isAnalyticsEnabled()) {
     console.log("[Analytics] Page view:", { path, title, lang });
@@ -84,7 +84,7 @@ export const trackPageView = (
  */
 export const trackEvent = (
   eventName: string,
-  properties?: Record<string, any>
+  properties?: Record<string, any>,
 ): void => {
   if (!isAnalyticsEnabled()) {
     console.log("[Analytics] Event:", eventName, properties);
@@ -103,7 +103,7 @@ export const trackEvent = (
 export const trackConversion = (
   type: string,
   value?: number,
-  properties?: Record<string, any>
+  properties?: Record<string, any>,
 ): void => {
   trackEvent("conversion", {
     conversion_type: type,
@@ -260,5 +260,40 @@ export const trackShareComplete = (params: {
   trackEvent("share_complete", {
     expression_id: params.expressionId,
     share_platform: params.sharePlatform,
+  });
+};
+
+/**
+ * 퀴즈 시작 추적
+ */
+export const trackQuizStart = (): void => {
+  trackEvent("quiz_start", {});
+};
+
+/**
+ * 퀴즈 정답 제출 추적
+ */
+export const trackQuizAnswer = (params: {
+  expressionId: string;
+  isCorrect: boolean;
+  questionIndex: number;
+}): void => {
+  trackEvent("quiz_answer", {
+    expression_id: params.expressionId,
+    is_correct: params.isCorrect,
+    question_index: params.questionIndex,
+  });
+};
+
+/**
+ * 퀴즈 완료 추적
+ */
+export const trackQuizComplete = (params: {
+  score: number;
+  totalQuestions: number;
+}): void => {
+  trackEvent("quiz_complete", {
+    score: params.score,
+    total_questions: params.totalQuestions,
   });
 };

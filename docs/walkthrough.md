@@ -2,6 +2,78 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.35: Code Audit & Performance Optimization (2026-01-21)
+
+### 1. Goal (목표)
+
+- Vercel React Best Practices를 기준으로 생성된 감사 보고서(`audit_report.html`)의 개선 권고 사항을 적용하여, 애플리케이션의 성능(Latency)과 데이터베이스 확장성(Scalability)을 확보합니다.
+
+### 2. Implementation (구현)
+
+#### A. Server-Side Parallel Data Fetching (`app/quiz/page.tsx`)
+
+- **Problem**: `getI18n()`(Dictionary)과 `getRandomExpressions()`(DB)가 `await`로 순차 실행되어 Waterfall 발생.
+- **Solution**: `Promise.all`을 사용하여 두 비동기 요청을 병렬로 시작.
+  ```typescript
+  const [{ dict }, expressions] = await Promise.all([
+    getI18n(),
+    getExpressions({ ...filters, limit: 10 }),
+  ]);
+  ```
+
+#### B. Regex Optimization (`lib/quiz.ts`)
+
+- **Problem**: `parseQuizQuestion` 함수 내부의 반복문(`options.forEach`) 안에서 정규식 리터럴(`/^([A-C])\.\s+(.*)/`)이 반복적으로 사용됨. (이론적으로 JS 엔진이 최적화할 수 있으나, 명시적인 호이스팅이 권장됨).
+- **Solution**: 정규식을 모듈 최상단 상수(`OPTION_REGEX`)로 호이스팅하여 컴파일 비용 제거.
+
+#### C. Database RPC for Scalability (`database/functions/create_random_expressions.sql`)
+
+- **Problem**: 기존 `getRandomExpressions`는 클라이언트(Node.js)에서 전체 ID를 가져온 후 셔플링하는 방식이었음. 데이터가 늘어날수록 메모리와 네트워크 부하가 급증(O(N))하는 구조.
+- **Solution**: DB 내부에서 효율적으로 샘플링을 수행하는 Stored Procedure 도입.
+  - **Function**: `speak_mango_en.get_random_expressions(limit_cnt)`
+  - **Logic**: `ORDER BY random() LIMIT N`을 DB 엔진 내부에서 수행하여, 클라이언트로는 딱 필요한 N개의 행만 전송.
+
+### 3. Result (결과)
+
+- ✅ **Latency**: 퀴즈 페이지 초기 로딩 속도 단축 (병렬 처리).
+- ✅ **Scalability**: 표현 데이터가 수만 건으로 늘어나도 퀴즈 생성 성능이 일정하게 유지됨 (RPC).
+- ✅ **Documentation**: `database` 폴더 구조를 `migrations`와 `functions`로 분리하여 관리 체계 개선.
+
+## v0.12.34: Random Quiz Feature (2026-01-20)
+
+### 1. Goal (목표)
+
+- 수동적인 읽기/듣기 학습을 넘어, 사용자가 능동적으로 참여할 수 있는 **퀴즈 게임** 기능을 도입합니다.
+- 매번 새로운 랜덤 문제 세트를 제공하여 반복 학습을 유도합니다.
+
+### 2. Implementation (구현)
+
+#### A. Random Data Fetching (`lib/expressions.ts`)
+
+- **Logic**:
+  1. 전체 ID 목록을 가볍게 조회 (`select("id")`).
+  2. 요청된 개수(예: 10개)만큼 ID를 무작위 추출 (Set 활용).
+  3. 추출된 ID로 `in` 쿼리를 수행하여 상세 정보 조회.
+  4. DB 조회 결과의 순서 편향을 막기 위해 클라이언트 측에서 한 번 더 셔플링.
+
+#### B. Quiz Game UI (`components/quiz/QuizGame.tsx`)
+
+- **Progressive UX**:
+  - **Playing State**: 상단 진행률 바(Progres Bar)와 함께 문제 표시. 선택지 클릭 시 즉시 정답/오답 피드백(Color Coded) 및 팁 노출.
+  - **Summary State**: 10문제 완료 후 점수와 함께 전체 문제 리뷰 리스트 제공. 틀린 문제와 맞은 문제를 한눈에 확인하고 상세 페이지로 이동 가능.
+
+#### C. Analytics Integration
+
+- 사용자 참여도를 측정하기 위해 단계별 이벤트 추적:
+  - `quiz_start`: 게임 시작 시점.
+  - `quiz_answer`: 각 문제 풀이 시점 (정답 여부 포함).
+  - `quiz_complete`: 게임 완료 및 최종 점수 기록.
+
+### 3. Result (결과)
+
+- ✅ **Gamification**: 단순 암기보다 재미있는 학습 경험 제공.
+- ✅ **Dynamic Content**: Next.js `force-dynamic`을 활용하여 접속할 때마다 항상 새로운 문제 세트 보장.
+
 ## v0.12.33: Verification Logic Refinement & Sync (2026-01-20)
 
 ### 1. Goal (목표)

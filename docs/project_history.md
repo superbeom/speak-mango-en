@@ -2,6 +2,33 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-21: Code Audit & Performance Optimization
+
+- **Goal**: Vercel React Best Practices 기반으로 코드베이스를 감사(Audit)하고, 식별된 성능 병목 및 확장성 문제를 해결.
+- **Actions**:
+  - **Audit Report**: `audit_report.html` 생성 및 한국어 번역본 제공. 주요 이슈(Waterfall, Regex Re-compilation, DB Scalability) 식별.
+  - **Performance Fixes**:
+    - **Server-Side Waterfall (`app/quiz/page.tsx`)**: `getI18n`과 `getRandomExpressions`를 `Promise.all`로 병렬화하여 응답 속도 개선.
+    - **Regex Optimization (`lib/quiz.ts`)**: 반복문 내부에서 컴파일되던 정규식(`OPTION_REGEX`)을 외부로 호이스팅.
+    - **Database Scalability (`database/016_...`)**: `ORDER BY random()`의 성능 저하를 방지하기 위해 `speak_mango_en.get_random_expressions` RPC 함수 구현 (`database/functions/`로 구조화).
+  - **Documentation Refinement**:
+    - `docs/database/schema.md`: 폴더 구조 변경(`migrations/`, `functions/`) 반영 및 RPC 섹션 위치 조정.
+    - `docs/features/random_quiz_architecture.md`: RPC 구현 상세 업데이트.
+- **Outcome**: 감사 보고서의 모든 Critical/Medium 이슈 해결 완료. 데이터베이스 함수 관리 체계 수립.
+
+### 2026-01-20: Random Quiz Feature Implementation
+
+- **Goal**: 사용자가 다양한 표현을 무작위로 학습하고 실력을 점검할 수 있는 퀴즈 게임 모드 추가.
+- **Actions**:
+  - **Feature Implementation**: `/quiz` 경로에 랜덤 퀴즈 페이지 구현.
+    - `force-dynamic` 렌더링을 사용하여 매 요청마다 새로운 10개의 표현 세트 생성.
+    - `Fisher-Yates Shuffle` 로직을 응용한 `getRandomExpressions` 유틸리티 구현.
+  - **Interactive UI**: `QuizGame` 클라이언트 컴포넌트 개발.
+    - 진행률 바, 정답/오답 즉시 피드백, 최종 결과 및 리뷰 화면 제공.
+  - **Analytics**: 퀴즈 시작, 정답 제출, 완료 시점 별 GA4 이벤트 추적 적용.
+  - **Documentation**: `docs/features/random_quiz_architecture.md` 작성.
+- **Outcome**: 반복적인 학습을 유도하는 게이미피케이션 요소 추가.
+
 ### 2026-01-20: Verification Logic Refinement & Sync
 
 - **Goal**: 검증 로직의 위음성(False Positives) 제거 및 로컬 CLI(`verify_db_data.js`)와 n8n 워크플로우 스크립트 간의 로직 불일치 해결.
