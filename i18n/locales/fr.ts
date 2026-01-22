@@ -30,6 +30,7 @@ export const fr = {
     loading: "Chargement...",
     loadMore: "Voir plus",
     notFound: "Données non trouvées.",
+    quiz: "Quiz 🎲",
   },
   home: {
     title: "Expressions d'Aujourd'hui",

@@ -30,6 +30,7 @@ export const de = {
     loading: "Laden...",
     loadMore: "Mehr laden",
     notFound: "Daten nicht gefunden.",
+    quiz: "Quiz 🎲",
   },
   home: {
     title: "Heutige Ausdrücke",

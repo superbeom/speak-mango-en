@@ -30,6 +30,7 @@ export const es = {
     loading: "Cargando...",
     loadMore: "Cargar más",
     notFound: "Datos no encontrados.",
+    quiz: "Test 🎲",
   },
   home: {
     title: "Expresiones de Hoy",

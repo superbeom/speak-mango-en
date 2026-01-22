@@ -25,6 +25,7 @@ export const zh = {
     loading: "加载中...",
     loadMore: "加载更多",
     notFound: "未找到数据。",
+    quiz: "测验 🎲",
   },
   home: {
     title: "今日表达",

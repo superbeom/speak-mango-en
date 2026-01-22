@@ -2,6 +2,17 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-22: Responsive Header & Global Navigation
+
+- **Goal**: 퀴즈 기능의 접근성을 높이고, 모바일 환경에서 헤더 영역의 공간 효율성을 개선합니다.
+- **Actions**:
+  - **Global Navigation (`app/page.tsx`)**: 헤더 네비게이션에 'Quiz 🎲' 링크를 추가하여 모든 페이지에서의 접근성을 확보했습니다.
+  - **Responsive Component (`components/HomeHeader.tsx`)**:
+    - `useIsMobile` 훅을 활용하여 모바일 기기에서는 서브헤더 텍스트(`One new expression...`)를 자동으로 숨기는 반응형 헤더 컴포넌트 구현.
+    - 클라이언트 사이드 렌더링(CSR)이 필요한 로직을 별도 컴포넌트로 분리하여 메인 페이지의 서버 컴포넌트 이점을 유지.
+  - **Localization**: 9개 언어 전체에 `common.quiz` 키를 추가하여 UI 다국어 지원 완료.
+- **Outcome**: 퀴즈 기능 유입 경로 확보 및 작은 화면에서의 UI 가독성 향상.
+
 ### 2026-01-22: Quiz UI Refinement & Localization
 
 - **Goal**: 퀴즈 페이지의 UI 일관성을 확보하고, 하드코딩된 텍스트와 스타일을 리팩토링하여 유지보수성을 향상시킵니다.

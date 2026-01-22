@@ -4,8 +4,7 @@ import { getI18n, getLocale } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
 import { getExpressions } from "@/lib/expressions";
-import Header from "@/components/Header";
-import Logo from "@/components/Logo";
+import HomeHeader from "@/components/HomeHeader";
 import FilterBar from "@/components/FilterBar";
 import ExpressionList from "@/components/ExpressionList";
 
@@ -51,14 +50,10 @@ export default async function Home({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-layout">
       {/* Header */}
-      <Header>
-        <div className="flex items-center justify-between">
-          <Logo name={SERVICE_NAME} />
-          <nav className="flex items-center gap-4">
-            <span className="text-sm text-zinc-500">{dict.home.subHeader}</span>
-          </nav>
-        </div>
-      </Header>
+      <HomeHeader
+        quizText={dict.common.quiz}
+        subHeaderText={dict.home.subHeader}
+      />
 
       {/* Main Content */}
       <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">

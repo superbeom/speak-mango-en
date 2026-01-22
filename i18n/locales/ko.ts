@@ -26,6 +26,7 @@ export const ko = {
     loading: "로딩 중...",
     loadMore: "더 보기",
     notFound: "데이터를 찾을 수 없습니다.",
+    quiz: "퀴즈 🎲",
   },
   home: {
     title: "오늘의 영어 표현",

@@ -26,6 +26,7 @@ export const en = {
     loading: "Loading...",
     loadMore: "Load More",
     notFound: "Data not found.",
+    quiz: "Quiz 🎲",
   },
   home: {
     title: "Today's Expressions",

@@ -26,6 +26,7 @@ export const ja = {
     loading: "読み込み中...",
     loadMore: "もっと見る",
     notFound: "データが見つかりません。",
+    quiz: "クイズ 🎲",
   },
   home: {
     title: "今日の表現",
