@@ -4,7 +4,6 @@ import { useState, useRef, useCallback } from "react";
 import { Play, Square, Loader2, Headphones, Eye, EyeOff } from "lucide-react";
 import { trackLearningModeToggle, trackAudioPlay } from "@/analytics";
 import { DialogueItem as DialogueItemType } from "@/types/database";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { SupportedLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { DialogueAudioButtonHandle } from "./DialogueAudioButton";
@@ -16,7 +15,6 @@ interface LearningToggleProps {
   onClick: () => void;
   title: string;
   icon: React.ReactNode;
-  isMobile: boolean;
   activeColor?: string; // Optional if we want different active colors in future
 }
 
@@ -37,7 +35,6 @@ function LearningToggle({
   onClick,
   title,
   icon,
-  isMobile,
 }: LearningToggleProps & { isSoftDisabled?: boolean }) {
   return (
     <button
@@ -53,7 +50,7 @@ function LearningToggle({
               ? "bg-highlight border-highlight text-highlight"
               : cn(
                   "bg-white border-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500",
-                  !isMobile && "hover:text-zinc-600 dark:hover:text-zinc-300",
+                  "sm:hover:text-zinc-600 dark:sm:hover:text-zinc-300",
                 ),
       )}
       title={title}
@@ -72,7 +69,6 @@ export default function DialogueSection({
   stopLabel = "Stop",
   loadingLabel = "Loading...",
 }: DialogueSectionProps) {
-  const isMobile = useIsMobile();
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const buttonRefs = useRef<(DialogueAudioButtonHandle | null)[]>([]);
@@ -261,12 +257,11 @@ export default function DialogueSection({
                 : isAutoPlaying
                   ? cn(
                       "bg-highlight border-highlight text-highlight",
-                      !isMobile && "hover-bg-highlight hover-text-highlight",
+                      "sm:hover-bg-highlight sm:hover-text-highlight",
                     )
                   : cn(
                       "bg-white border-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400",
-                      !isMobile &&
-                        "hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200",
+                      "sm:hover:bg-zinc-50 sm:hover:text-zinc-700 dark:sm:hover:bg-zinc-700 dark:sm:hover:text-zinc-200",
                     ),
             )}
           >
@@ -332,7 +327,6 @@ export default function DialogueSection({
             }}
             title="Blind Listening Mode (Hide Text)"
             icon={<Headphones className="w-3.5 h-3.5" />}
-            isMobile={!!isMobile}
           />
 
           {locale !== SupportedLanguage.EN && (
@@ -349,7 +343,6 @@ export default function DialogueSection({
                   <EyeOff className="w-3.5 h-3.5" />
                 )
               }
-              isMobile={!!isMobile}
             />
           )}
         </div>
@@ -391,7 +384,6 @@ export default function DialogueSection({
                 onEnded={handleLineEnded}
                 onReady={handleAudioReady}
                 isActive={isAutoPlaying && playingIndex === idx}
-                isMobile={!!isMobile}
                 expressionId={expressionId}
                 audioIndex={idx}
               />

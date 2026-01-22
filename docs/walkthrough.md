@@ -2,6 +2,30 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.44: Responsive UI Refactoring (CSS-based) (2026-01-22)
+
+### 1. Goal (목표)
+
+- `useIsMobile` 훅(JS)에 의존하던 반응형 로직을 CSS 유틸리티로 전환하여 초기 로딩 시의 Hydration Mismatch를 해결하고 렌더링 성능을 최적화합니다.
+
+### 2. Implementation (구현)
+
+#### A. CSS-First Responsive Design
+
+- **Problem**: 서버는 화면 크기를 모르기 때문에 데스크탑 뷰를 보내지만, 클라이언트는 모바일임을 감지하고 모바일 뷰로 다시 그리는 과정에서 화면 깜빡임과 에러 발생.
+- **Solution**: `!isMobile` 조건문을 제거하고 Tailwind의 `hidden sm:block` (데스크탑용)과 `block sm:hidden` (모바일용) 클래스를 사용하여 브라우저가 CSS로 즉시 뷰를 결정하도록 수정.
+- **Applied Components**: `DialogueAudioButton`, `DialogueItem`, `DialogueSection`, `RelatedExpressions`.
+
+#### B. Animation Optimization (`components/RelatedExpressions.tsx`)
+
+- **Problem**: CSS로 데스크탑 뷰를 숨겨도(`display: none`), JS 애니메이션(`requestAnimationFrame`)은 백그라운드에서 계속 돌아가 CPU를 낭비함.
+- **Solution**: 요소가 화면에 실제로 공간을 차지하는지 확인하는 `el.offsetParent` 체크를 도입하여, 숨겨진 상태에서는 애니메이션 루프를 일시 중지하도록 최적화.
+
+### 3. Result (결과)
+
+- ✅ **Stability**: 초기 로딩 안정성 확보 및 Layout Shift 제거.
+- ✅ **Performance**: 보이지 않는 요소에 대한 불필요한 연산 제거.
+
 ## v0.12.43: Quiz Summary Layout Refinement (2026-01-22)
 
 ### 1. Goal (목표)

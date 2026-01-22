@@ -36,7 +36,7 @@
 - [x] **UI/UX**: Framer Motion을 활용한 리스트 애니메이션 및 Scale-up 진입 효과 적용
 - [x] **UI/UX**: 관련 표현 추천 (Related Expressions) 및 드래그 가속 구현
 - [x] **UI/UX**: Sticky Header 및 FilterBar 고도화
-- [x] **UI/UX**: UI 스타일 중앙 관리 및 모바일 최적화 (유틸리티 클래스 & useIsMobile)
+- [x] **UI/UX**: UI 스타일 중앙 관리 및 반응형 최적화 (CSS-based & offsetParent optimization)
 - [x] **UI/UX**: 퀴즈 개행 문자(`\n`) 지원 및 가독성 개선
 - [x] **Automation**: TTS 파이프라인 구축 (Groq API + Supabase Storage 연동)
 - [x] **UI/UX**: 원어민 대화 듣기(Audio Playback) 기능 구현 및 동기화 로직 적용

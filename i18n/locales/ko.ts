@@ -63,7 +63,7 @@ export const ko = {
     shareFailed: "공유 실패",
   },
   quiz: {
-    metaTitle: `랜덤 퀴즈 챌린지 - ${SERVICE_NAME}`,
+    metaTitle: `랜덤 퀴즈 챌린지 | ${SERVICE_NAME}`,
     metaDescription: "랜덤으로 나오는 영어 표현으로 실력을 테스트해보세요!",
     completeTitle: "퀴즈 완료! 🎉",
     score: "점수:",

@@ -78,6 +78,13 @@ const itemVariants = {
   - 클릭 시 `window.scrollTo({ top: 0, behavior: 'smooth' })`를 호출하여 최상단으로 이동합니다.
 - **Mobile optimization**: 모바일에서는 손가락 터치 시 불필요한 호버 효과가 남지 않도록 제어합니다.
 
+### 1.4 Responsive UI Architecture (반응형 UI 아키텍처)
+
+초기 로딩 성능과 SSR(Server-Side Rendering) 호환성을 위해 JavaScript 의존도를 낮추고 CSS 유틸리티를 적극 활용하는 전략입니다.
+
+- **Transition Strategy**: 기존의 `useIsMobile` 훅을 사용한 JS 조건부 렌더링(`!isMobile && ...`)을 지양하고, Tailwind CSS의 반응형 유틸리티(`hidden sm:block`)를 사용하여 브라우저 렌더링 엔진 레벨에서 표시 여부를 제어합니다. 이는 **Hydration Mismatch(서버-클라이언트 불일치)** 오류를 원천 차단합니다.
+- **Performance Optimization**: `RelatedExpressions`와 같이 무거운 애니메이션이 포함된 컴포넌트의 경우, CSS로 숨겨진 상태(`display: none`)에서도 JS 연산이 계속되는 것을 막기 위해 `offsetParent === null` 체크를 도입했습니다. 이를 통해 모바일 환경에서 보이지 않는 데스크탑용 애니메이션 연산을 중지하여 배터리와 CPU 자원을 절약합니다.
+
 ## 2. UI Automation Logic (UI 자동화)
 
 ### 2.1 Auto-Scroll to Active Filter (필터 자동 스크롤)

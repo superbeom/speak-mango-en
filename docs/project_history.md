@@ -2,6 +2,15 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-22: Responsive UI Refactoring (CSS-based)
+
+- **Goal**: JS 기반의 반응형 처리(`useIsMobile`)를 CSS 유틸리티(`sm:hidden`, `sm:hover`)로 대체하여 SSR 호환성을 확보하고 렌더링 성능을 개선합니다.
+- **Actions**:
+  - **Components Refactoring**: `DialogueAudioButton`, `DialogueItem`, `DialogueSection`, `RelatedExpressions` 등 주요 컴포넌트의 조건부 렌더링 로직을 Tailwind CSS 클래스로 전환.
+  - **Performance**: `RelatedExpressions`에서 `offsetParent` 체크를 도입하여, CSS로 숨겨진 상태(모바일)에서는 무한 스크롤 애니메이션 연산을 중지하도록 최적화.
+  - **Style**: 데스크탑 호버 효과를 `sm:hover:`로 변경하여 터치 디바이스에서의 오작동 방지.
+- **Outcome**: 초기 로딩 시의 Hydration Mismatch 해결 및 불필요한 리렌더링 제거.
+
 ### 2026-01-22: Quiz UI Layout Refinement
 
 - **Goal**: 퀴즈 완료 화면(Summary)의 모바일 레이아웃을 개선하여 버튼 터치 영역을 확보하고, 컴포넌트 네이밍을 직관적으로 변경합니다.

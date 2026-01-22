@@ -11,7 +11,6 @@ import {
 import { Volume2, Loader2, Square, Pause, Play } from "lucide-react";
 import { trackAudioPlay, trackAudioComplete } from "@/analytics";
 import { useAudio } from "@/context/AudioContext";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { AUDIO_PLAYBACK_START } from "@/constants/events";
 import { cn, getStorageUrl } from "@/lib/utils";
 
@@ -95,7 +94,6 @@ const DialogueAudioButton = forwardRef<
     ref,
   ) => {
     const { getAudio } = useAudio();
-    const isMobile = useIsMobile();
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -193,7 +191,7 @@ const DialogueAudioButton = forwardRef<
           audioRef.current.volume = 1.0;
         }
       }
-    }, []);
+    }, [getAudio]);
 
     const togglePlay = useCallback(
       async (forcePlay = false, isSequential = false) => {
@@ -446,22 +444,18 @@ const DialogueAudioButton = forwardRef<
             isPlaying
               ? cn(
                   "bg-zinc-200/60 text-zinc-400 dark:bg-zinc-700 dark:text-zinc-400",
-                  !isMobile && "hover:text-zinc-600 dark:hover:text-zinc-100",
+                  "sm:hover:text-zinc-600 dark:sm:hover:text-zinc-100",
                 )
               : cn(
                   "text-zinc-400 dark:text-zinc-500",
-                  !isMobile &&
-                    "hover:bg-zinc-200/60 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-300",
+                  "sm:hover:bg-zinc-200/60 sm:hover:text-zinc-600 dark:sm:hover:bg-zinc-700 dark:sm:hover:text-zinc-300",
                 ),
           ],
           // Variant: Blue (User B - Blue bubble)
           variant === "blue" && [
             isPlaying
               ? "bg-blue-500 text-white" // Playing style = Hover style
-              : cn(
-                  "text-blue-200",
-                  !isMobile && "hover:bg-blue-500 hover:text-white",
-                ),
+              : cn("text-blue-200", "sm:hover:bg-blue-500 sm:hover:text-white"),
           ],
           isLoading && "cursor-not-allowed opacity-70",
           className,
