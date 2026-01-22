@@ -2,6 +2,319 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.43: Quiz Summary Layout Refinement (2026-01-22)
+
+### 1. Goal (목표)
+
+- 퀴즈 완료 후 리뷰 화면에서 모바일 사용자가 '학습하기' 버튼을 더 쉽게 누를 수 있도록 레이아웃을 최적화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Mobile-First Layout (`components/quiz/QuizGame.tsx`)
+
+- **Problem**: 기존 가로 배치(`flex-row`)는 모바일의 좁은 폭에서 버튼 텍스트가 잘리거나 터치 영역이 협소해지는 문제 발생.
+- **Solution**:
+  - **Mobile**: `flex-col`로 변경하여 버튼을 텍스트 아래로 내리고 `w-full`로 확장.
+  - **Desktop**: `sm:flex-row`를 유지하여 우측 정렬 고수.
+
+#### B. Component Renaming (`components/quiz/StudyButton.tsx`)
+
+- `StudyLink`라는 이름이 실제 UI(버튼 스타일)와 괴리가 있어 `StudyButton`으로 명칭을 일치시켜 혼란을 제거했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Touch Friendliness**: 모바일에서 넓은 터치 영역 제공.
+- ✅ **Code Clarity**: 컴포넌트 이름과 실제 역할의 일치.
+
+## v0.12.42: Mobile UI Stabilization & Skeleton Logic Refinement (2026-01-22)
+
+### 1. Goal (목표)
+
+- 모바일 헤더의 깜빡임(FouC/Layout Shift) 문제를 해결하고, 확장된 퀴즈 기능에 맞춰 스켈레톤 UI 로직을 견고하게 재설계합니다.
+
+### 2. Implementation (구현)
+
+#### A. Zero-Runtime Responsiveness (`components/HomeHeader.tsx`)
+
+- **Problem**: `useIsMobile` 훅은 클라이언트 사이드 마운트 후 실행되므로, 찰나의 순간에 데스크탑 UI가 보였다가 사라지는 플리커링 발생.
+- **Solution**:
+  - JS 로직(`{!isMobile && ...}`)을 제거.
+  - Tailwind CSS 유틸리티(`hidden sm:inline`)를 사용하여 브라우저 렌더링 단계에서 즉시 스타일 적용.
+  - 결과적으로 `"use client"` 지시어를 제거하여 Server Component로 최적화 성공.
+
+#### B. Skeleton Props Standardization (`components/ui/Skeletons.tsx`)
+
+- **Problem**: `isDetail`, `isQuiz` 등 불리언 플래그가 늘어날수록 조합과 관리가 복잡해짐.
+- **Solution**:
+  - `page` Prop 도입: `"home" | "detail" | "quiz"` (Union Type).
+  - **Constant Separation**: `constants/ui.ts`에 `SKELETON_PAGE` 상수를 정의하여, Server Component(`loading.tsx`)와 Client Component(`Skeletons.tsx`) 모두에서 안전하게 참조 가능하도록 구조 개선.
+
+### 3. Result (결과)
+
+- ✅ **UX Stability**: 모바일 진입 시 화면 떨림 없이 안정적인 헤더 표시.
+- ✅ **Maintainability**: 스켈레톤 상태 관리가 명확해지고, 향후 페이지 추가 시 확장성 확보.
+
+## v0.12.41: Responsive Header & Global Navigation (2026-01-22)
+
+### 1. Goal (목표)
+
+- 퀴즈 기능의 발견 가능성(Discoverability)을 높이고, 모바일 뷰포트에서 헤더 텍스트가 과도하게 공간을 차지하는 문제를 해결합니다.
+
+### 2. Implementation (구현)
+
+#### A. Responsive Logic Extraction (`components/HomeHeader.tsx`)
+
+- **Problem**: `window.matchMedia`를 사용하는 `useIsMobile` 훅은 클라이언트 사이드에서만 동작하므로, 서버 컴포넌트인 `app/page.tsx`에서 직접 사용할 수 없음.
+- **Solution**:
+  - 헤더 UI를 전담하는 `HomeHeader` 클라이언트 컴포넌트("use client")를 신규 생성.
+  - 모바일 감지 시 서브헤더 텍스트와 구분선(`|`)을 조건부 렌더링으로 숨김 처리.
+
+#### B. Global Entry Point (`app/page.tsx`)
+
+- **Problem**: 사용자가 퀴즈 페이지로 이동하려면 URL을 직접 입력하거나 특정 플로우를 타야만 했음.
+- **Solution**: 최상단 헤더 네비게이션에 `Quiz 🎲` 링크를 배치하여 글로벌 진입점 확보.
+
+### 3. Result (결과)
+
+- ✅ **Navigation**: 어디서든 원클릭으로 퀴즈 진입 가능.
+- ✅ **Mobile UX**: 좁은 화면에서도 중요 정보(로고, 퀴즈 링크) 위주로 깔끔하게 표시됨.
+
+## v0.12.40: Quiz UI Standardization (2026-01-22)
+
+### 1. Goal (목표)
+
+- 퀴즈 페이지(`QuizGame`) 내의 산재된 버튼 스타일과 하드코딩된 로직을 표준화하고, 사용자 피드백(터치/키보드)을 강화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Component Extraction (`components/quiz/StudyButton.tsx`)
+
+- **Problem**: '학습하기(Study)' 버튼이 여러 뷰(Summary, Question)에서 중복 정의되어 있고, 시각적으로 강조되지 않음.
+- **Solution**:
+  - 재사용 가능한 `StudyButton` 컴포넌트 생성.
+  - `Zinc` 컬러 팔레트를 적용하여 시각적 중립성 확보.
+
+#### B. CSS Utility Abstraction (`app/globals.css`)
+
+- **Problem**: `bg-blue-600 hover:bg-blue-700` 등의 Tailwind 클래스가 반복 사용됨.
+- **Solution**: `@utility blue-btn` 커스텀 유틸리티 생성 및 `ShareButton` 적용.
+
+### 3. Result (결과)
+
+- ✅ **UX**: 버튼 인터랙션 시각적 피드백 강화.
+- ✅ **Design**: Zinc 테마 적용으로 보다 차분하고 전문적인 UI 룩앤필 구현.
+
+## v0.12.39: Quiz Open Graph Image Implementation (2026-01-22)
+
+### 1. Goal (목표)
+
+- 퀴즈 페이지(`/quiz`)가 소셜 미디어(카카오톡, 트위터, 슬랙 등)에 공유될 때, 단순 텍스트가 아닌 "Random Quiz"라는 명확한 타이틀과 시각적 요소를 포함한 프리뷰 이미지를 제공합니다.
+
+### 2. Implementation (구현)
+
+#### A. Node.js Runtime for Local Assets (`app/quiz/opengraph-image.tsx`)
+
+- **Strategy**: 기본적으로 OG Image 생성에는 Edge Runtime이 권장되지만, 로컬에 존재하는 브랜드 로고(`public/assets/logo.png`)를 안정적으로 활용하기 위해 `nodejs` 런타임을 선택했습니다.
+- **Code**:
+  ```typescript
+  export const runtime = "nodejs";
+  const logoBuffer = fs.readFileSync(
+    path.join(process.cwd(), "public/assets/logo.png"),
+  );
+  ```
+- **Reason**: 외부 호스팅 URL에 의존하지 않고 빌드 타임/런타임에 로컬 에셋을 직접 읽어와 Base64로 인코딩하여 포함시킴으로써 이미지 로딩 실패 가능성을 차단했습니다.
+
+#### B. Brand-Aligning Design
+
+- **Font**: 구글 폰트(Inter)의 다양한 웨이트(500, 700, 900)를 `fetch`로 로드하여 타이포그래피 계층 구조를 형성했습니다.
+- **Color**: 브랜드 시그니처 그라디언트(Yellow-Orange-Green)를 텍스트(`backgroundClip: "text"`)에 적용하여 아이덴티티를 강조했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Visual Impact**: 공유 시 자동으로 고퀄리티의 1200x630 이미지가 생성되어 노출됩니다.
+- ✅ **Consistency**: Favicon 업데이트와 함께 앱 전반의 시각적 자산(Visual Assets)이 통일되었습니다.
+
+## v0.12.38: Category Caching & Hybrid Strategy (2026-01-21)
+
+### 1. Goal (목표)
+
+- ISR(1시간 캐시) 환경에서 데이터 갱신 시점 차이로 인해 발생하는 "새로고침 시 데이터 롤백(Stale Data)" 문제를 해결하고, 초기 로딩 속도와 데이터 최신성을 모두 만족하는 전략 수립.
+
+### 2. Implementation (구현)
+
+#### A. Cost-Effective Strategy (ISR Only for Initial Load)
+
+- **Rationale**: 콘텐츠가 하루 1회만 업데이트되므로, 1시간(3600s) 단위의 ISR 캐싱만으로도 충분히 최신성을 보장할 수 있음.
+- **Optimization**: `revalidateFirstPage: false`로 설정하여, 단순 페이지 진입 시 발생하는 불필요한 API 호출(10,000 DAU 기준 약 10,000회)을 제거. 서버 리소스 및 비용 절감 최적화.
+
+#### B. Safe Key Serialization
+
+- **Problem**: 객체 형태의 `filters` prop이 리렌더링마다 참조가 달라져 불필요한 API 요청이 발생하거나 캐시 키가 꼬이는 문제.
+- **Solution**:
+  - `getKey`에서 `JSON.stringify(filters)`로 키를 문자열화하여 고유성 보장.
+  - `fetcher`에서는 `JSON.parse`로 다시 객체로 변환하여 API 호출.
+
+### 3. Result (결과)
+
+- ✅ **Stability**: 카테고리 이동 및 필터링 시 데이터 불일치 및 깜빡임 현상 완전 해결.
+- ✅ **Performance**: ISR의 빠른 초기 응답 속도 유지.
+
+## v0.12.37: SEO Finalization & Route Centralization (2026-01-21)
+
+### 1. Goal (목표)
+
+- 산재된 URL 생성 로직을 중앙화하여 SEO에 필수적인 Canonical URL의 일관성을 보장하고, 누락된 다국어 메타데이터를 보완하여 SEO 구현을 완성합니다.
+
+### 2. Implementation (구현)
+
+#### A. Centralized Canonical URLs (`lib/routes.ts`)
+
+- **Problem**: `app/quiz/page.tsx`와 `app/expressions/[id]/page.tsx` 등 여러 곳에서 `${BASE_URL}/...` 형태의 문자열 조합이 반복되어, 도메인 변경이나 경로 구조 변경 시 오류 발생 가능성이 높았습니다.
+- **Solution**: `CANONICAL_URLS` 객체를 도입하여 절대 경로 생성 로직을 캡슐화했습니다.
+  ```typescript
+  export const CANONICAL_URLS = {
+    QUIZ: () => `${BASE_URL}${ROUTES.QUIZ}`,
+    EXPRESSION_DETAIL: (id: string) =>
+      `${BASE_URL}${ROUTES.EXPRESSION_DETAIL(id)}`,
+  };
+  ```
+- **Application**: JSON-LD(Schema.org) 및 OpenGraph 메타데이터 생성 시 이 헬퍼를 사용하여 단일 진실 공급원(Single Source of Truth)을 확립했습니다.
+
+#### B. Quiz Page SEO (`app/quiz/page.tsx`)
+
+- **I18n Metadata**: 기존의 하드코딩된 영어 제목 대신, 8개 국어 `i18n` 딕셔너리(`metaTitle`, `metaDescription`)를 연동하여 각 언어 사용자에게 맞는 검색 결과를 제공합니다.
+- **Sitemap**: `app/sitemap.ts`에 `/quiz` 경로를 추가하여 검색 엔진 크롤링을 허용했습니다.
+
+#### C. Twitter Card Optimization (`app/layout.tsx`)
+
+- **Explicit Image**: `twitter` 메타데이터에 `images` 속성을 명시적으로 추가하여, 일부 플랫폼에서 OpenGraph 이미지를 제대로 불러오지 못하는 문제를 방지했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Maintainability**: URL 관리 포인트가 `lib/routes.ts` 하나로 통합됨.
+- ✅ **Completeness**: Rich Result Test 및 소셜 미디어 공유 미리보기가 모든 페이지에서 완벽하게 작동.
+
+## v0.12.36: Additional Performance Optimization & Documentation (2026-01-21)
+
+### 1. Goal (목표)
+
+- 번들 사이즈 감소, 서버 요청 중복 제거, 클라이언트 렌더링 최적화 등 추가적인 성능 개선 사항을 적용하고, 이를 문서화하여 향후 개발 가이드라인으로 삼습니다.
+
+### 2. Implementation (구현)
+
+#### A. Request Deduplication (`lib/expressions.ts`)
+
+- **Problem**: 한 페이지 렌더링 과정에서 `getExpressions` 등의 DB 조회 함수가 여러 컴포넌트(메타데이터, 페이지 본문 등)에서 중복 호출될 경우 불필요한 DB 부하 발생.
+- **Solution**: `React.cache()`로 DB 조회 함수들을 래핑하여, **동일한 요청(Request) 수명 주기 내**에서는 결과값을 메모리에 캐싱하고 재사용하도록 구현. (Per-request Memoization).
+
+#### B. Client-Side Rendering Protection (`components/ExpressionCard.tsx`)
+
+- **Problem**: 리스트 렌더링 시 부모 컴포넌트의 상태 변화로 인해 수많은 자식 카드 컴포넌트가 불필요하게 리렌더링됨.
+- **Solution**:
+  - `React.memo`를 적용하여 Props가 변경되지 않은 카드의 리렌더링을 방지.
+  - `displayName`을 명시하여 React DevTools 하이드레이션 매칭 디버깅 용이성 확보.
+
+#### C. Layout Rendering Optimization (`app/globals.css`)
+
+- **Problem**: 수천 개의 `ExpressionCard`가 있는 긴 리스트(Long List) 렌더링 시 브라우저의 레이아웃 계산 비용 증가.
+- **Solution**:
+  - `content-visibility: auto` 속성을 적용한 `@utility content-visibility-auto` 클래스 생성.
+  - 화면 밖(Off-screen)에 있는 요소의 렌더링(페인팅 및 히트 테스팅)을 브라우저가 생략하도록 하여 초기 로딩 및 스크롤 성능 개선.
+
+#### D. Skeleton Optimization (`components/ui/Skeletons.tsx`)
+
+- **Problem**: 로딩 상태에서 부모 컴포넌트가 리렌더링될 때 스켈레톤 컴포넌트까지 불필요하게 리렌더링되는 문제.
+- **Solution**:
+  - `ExpressionList.tsx`의 인라인 스켈레톤을 `SkeletonExpressionList` 컴포넌트로 분리.
+  - `SkeletonCard`, `SkeletonNavbar` 등 모든 스켈레톤 컴포넌트에 `React.memo`를 적용하여 정적 UI의 리렌더링 비용 제거.
+
+#### E. Data Fetching Strategy (`hooks/usePaginatedList.ts`)
+
+- **Problem**: 기존 `usePaginatedList`는 `useState`, `useEffect`로 상태를 수동 관리하며, `ExpressionContext`에 리스트 전체(`items`)를 저장하여 메모리 비효율 발생.
+- **Solution**:
+  - `useSWRInfinite` 도입하여 데이터 페칭, 캐싱, 페이지네이션 상태 관리 자동화.
+  - `ExpressionContext`는 `size`(페이지 수)와 `scrollPosition`만 관리하도록 경량화하여, 뒤로가기 시 복원 로직 단순화.
+
+### 3. Result (결과)
+
+- ✅ **Optimization**: 런타임 성능 향상.
+- ✅ **Standardization**: `project_context.md`에 성능 최적화 표준 가이드라인 수립.
+- ✅ **Modernization**: `useSWR` 도입으로 데이터 페칭 로직의 유지보수성 및 확장성(실시간 갱신 등) 확보.
+
+## v0.12.35: Code Audit & Performance Optimization (2026-01-21)
+
+### 1. Goal (목표)
+
+- Vercel React Best Practices를 기준으로 생성된 감사 보고서(`audit_report.html`)의 개선 권고 사항을 적용하여, 애플리케이션의 성능(Latency)과 데이터베이스 확장성(Scalability)을 확보합니다.
+
+### 2. Implementation (구현)
+
+#### A. Server-Side Parallel Data Fetching (`app/quiz/page.tsx`)
+
+- **Problem**: `getI18n()`(Dictionary)과 `getRandomExpressions()`(DB)가 `await`로 순차 실행되어 Waterfall 발생.
+- **Solution**: `Promise.all`을 사용하여 두 비동기 요청을 병렬로 시작.
+  ```typescript
+  const [{ dict }, expressions] = await Promise.all([
+    getI18n(),
+    getExpressions({ ...filters, limit: 10 }),
+  ]);
+  ```
+
+#### B. Regex Optimization (`lib/quiz.ts`)
+
+- **Problem**: `parseQuizQuestion` 함수 내부의 반복문(`options.forEach`) 안에서 정규식 리터럴(`/^([A-C])\.\s+(.*)/`)이 반복적으로 사용됨. (이론적으로 JS 엔진이 최적화할 수 있으나, 명시적인 호이스팅이 권장됨).
+- **Solution**: 정규식을 모듈 최상단 상수(`OPTION_REGEX`)로 호이스팅하여 컴파일 비용 제거.
+
+#### C. Database RPC for Scalability (`database/functions/create_random_expressions.sql`)
+
+- **Problem**: 기존 `getRandomExpressions`는 클라이언트(Node.js)에서 전체 ID를 가져온 후 셔플링하는 방식이었음. 데이터가 늘어날수록 메모리와 네트워크 부하가 급증(O(N))하는 구조.
+- **Solution**: DB 내부에서 효율적으로 샘플링을 수행하는 Stored Procedure 도입.
+  - **Function**: `speak_mango_en.get_random_expressions(limit_cnt)`
+  - **Logic**: `ORDER BY random() LIMIT N`을 DB 엔진 내부에서 수행하여, 클라이언트로는 딱 필요한 N개의 행만 전송.
+
+### 3. Result (결과)
+
+- ✅ **Latency**: 퀴즈 페이지 초기 로딩 속도 단축 (병렬 처리).
+- ✅ **Scalability**: 표현 데이터가 수만 건으로 늘어나도 퀴즈 생성 성능이 일정하게 유지됨 (RPC).
+- ✅ **Documentation**:
+  - `database` 폴더 구조를 `migrations`와 `functions`로 분리하여 관리 체계 개선.
+  - `project_context.md`에 성능 최적화 가이드라인(Server-side Caching, Client-side Memoization 등)을 명문화하여 향후 개발 기준 수립.
+
+## v0.12.34: Random Quiz Feature (2026-01-20)
+
+### 1. Goal (목표)
+
+- 수동적인 읽기/듣기 학습을 넘어, 사용자가 능동적으로 참여할 수 있는 **퀴즈 게임** 기능을 도입합니다.
+- 매번 새로운 랜덤 문제 세트를 제공하여 반복 학습을 유도합니다.
+
+### 2. Implementation (구현)
+
+#### A. Random Data Fetching (`lib/expressions.ts`)
+
+- **Logic**:
+  1. 전체 ID 목록을 가볍게 조회 (`select("id")`).
+  2. 요청된 개수(예: 10개)만큼 ID를 무작위 추출 (Set 활용).
+  3. 추출된 ID로 `in` 쿼리를 수행하여 상세 정보 조회.
+  4. DB 조회 결과의 순서 편향을 막기 위해 클라이언트 측에서 한 번 더 셔플링.
+
+#### B. Quiz Game UI (`components/quiz/QuizGame.tsx`)
+
+- **Progressive UX**:
+  - **Playing State**: 상단 진행률 바(Progres Bar)와 함께 문제 표시. 선택지 클릭 시 즉시 정답/오답 피드백(Color Coded) 및 팁 노출.
+  - **Summary State**: 10문제 완료 후 점수와 함께 전체 문제 리뷰 리스트 제공. 틀린 문제와 맞은 문제를 한눈에 확인하고 상세 페이지로 이동 가능.
+
+#### C. Analytics Integration
+
+- 사용자 참여도를 측정하기 위해 단계별 이벤트 추적:
+  - `quiz_start`: 게임 시작 시점.
+  - `quiz_answer`: 각 문제 풀이 시점 (정답 여부 포함).
+  - `quiz_complete`: 게임 완료 및 최종 점수 기록.
+
+### 3. Result (결과)
+
+- ✅ **Gamification**: 단순 암기보다 재미있는 학습 경험 제공.
+- ✅ **Dynamic Content**: Next.js `force-dynamic`을 활용하여 접속할 때마다 항상 새로운 문제 세트 보장.
+
 ## v0.12.33: Verification Logic Refinement & Sync (2026-01-20)
 
 ### 1. Goal (목표)

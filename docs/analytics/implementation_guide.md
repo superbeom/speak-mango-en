@@ -76,12 +76,12 @@ analytics/
          (
            command: "config",
            targetId: string,
-           config?: Record<string, any>
+           config?: Record<string, any>,
          ): void;
          (
            command: "event",
            eventName: string,
-           params?: Record<string, any>
+           params?: Record<string, any>,
          ): void;
        };
        dataLayer?: any[];
@@ -102,7 +102,6 @@ analytics/
    ```
 
 3. **기본 추적 함수**
-
    - `trackPageView(path, title, lang)`: 페이지 뷰 추적
    - `trackEvent(eventName, properties)`: 커스텀 이벤트 추적
    - `trackConversion(type, value, properties)`: 전환 추적
@@ -429,6 +428,8 @@ const handleClick = () => {
   - [x] `RelatedExpressions.tsx`: 관련 표현 클릭 추적
 - [x] 공유 이벤트 추가
   - [x] `ShareButton.tsx`: 공유 버튼 클릭 및 완료 추적 (Native API & Clipboard)
+- [x] 퀴즈 이벤트 추가
+  - [x] `QuizGame.tsx`: 퀴즈 시작, 정답, 완료 추적
 
 ## 참고 자료
 

@@ -30,6 +30,7 @@ export const de = {
     loading: "Laden...",
     loadMore: "Mehr laden",
     notFound: "Daten nicht gefunden.",
+    quiz: "Quiz 🎲",
   },
   home: {
     title: "Heutige Ausdrücke",
@@ -65,5 +66,25 @@ export const de = {
     share: "Teilen",
     shareCopied: "Erfolgreich geteilt!",
     shareFailed: "Teilen fehlgeschlagen",
+  },
+  quiz: {
+    metaTitle: `Zufalls-Quiz-Challenge - ${SERVICE_NAME}`,
+    metaDescription:
+      "Teste deine Fähigkeiten mit zufälligen englischen Ausdrücken!",
+    completeTitle: "Quiz Beendet! 🎉",
+    score: "Punktzahl:",
+    reviewTitle: "Überprüfung",
+    goHome: "Nach Hause",
+    startNew: "Neues Quiz",
+    questionProgress: "Frage {index}",
+    correct: "🎉 Richtig!",
+    wrong: "😅 Hoppla! Die Antwort war {answer}.",
+    tip: "Tipp:",
+    header: "Zufallsquiz",
+    study: "Lernen 📝",
+    next: "Weiter",
+    seeResult: "Ergebnis Ansehen",
+    failedToLoad:
+      "Laden der Quizdaten fehlgeschlagen. Bitte versuchen Sie es erneut.",
   },
 };

@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+import { SKELETON_PAGE, type SkeletonPage } from "@/constants/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,7 +15,7 @@ export function Skeleton({
     <div
       className={cn(
         "animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800",
-        className
+        className,
       )}
       {...props}
     />
@@ -23,47 +25,68 @@ export function Skeleton({
 /**
  * 상단 네비게이션 바 형태의 스켈레톤
  */
-export function SkeletonNavbar({ isDetail = false }: { isDetail?: boolean }) {
+export const SkeletonNavbar = memo(function SkeletonNavbar({
+  page = SKELETON_PAGE.HOME,
+  className,
+}: {
+  page?: SkeletonPage;
+  className?: string;
+}) {
   return (
     <div className="sticky top-0 z-50 h-(--header-height) bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
       <div
         className={cn(
           "mx-auto max-w-layout px-4 py-4 sm:px-6 lg:px-8 flex items-center",
-          !isDetail && "justify-between"
+          page === SKELETON_PAGE.HOME && "justify-between",
+          className,
         )}
       >
-        {isDetail ? (
+        {page === SKELETON_PAGE.QUIZ ? (
+          <>
+            {/* Back Button Skeleton */}
+            <Skeleton className="h-4 w-16" />
+            {/* Page Title Skeleton */}
+            <Skeleton className="h-7 w-24" />
+          </>
+        ) : page === SKELETON_PAGE.DETAIL ? (
           /* Back Button Skeleton */
           <Skeleton className="h-4 w-16" />
         ) : (
           <>
             {/* Logo Skeleton */}
             <Skeleton className="h-7 w-32" />
-            {/* Nav/SubHeader Skeleton */}
-            <Skeleton className="h-4 w-24" />
+            <div className="flex items-center gap-4">
+              {/* Quiz Link Skeleton */}
+              <Skeleton className="h-4 w-16" />
+              {/* Nav/SubHeader Skeleton (Desktop only) */}
+              <div className="hidden sm:flex items-center gap-4">
+                <Skeleton className="h-4 w-1" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
           </>
         )}
       </div>
     </div>
   );
-}
+});
 
 /**
  * 홈 페이지 히어로 섹션(제목 및 설명) 형태의 스켈레톤
  */
-export function SkeletonHomeHero() {
+export const SkeletonHomeHero = memo(function SkeletonHomeHero() {
   return (
     <div className="mb-10">
       <Skeleton className="h-9 w-48 mb-3" />
       <Skeleton className="h-6 w-64" />
     </div>
   );
-}
+});
 
 /**
  * ExpressionCard 형태의 스켈레톤
  */
-export function SkeletonCard() {
+export const SkeletonCard = memo(function SkeletonCard() {
   return (
     <div className="h-full rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-surface p-7 shadow-sm">
       <div className="mb-5">
@@ -91,12 +114,12 @@ export function SkeletonCard() {
       </div>
     </div>
   );
-}
+});
 
 /**
  * FilterBar 형태의 스켈레톤
  */
-export function SkeletonFilterBar() {
+export const SkeletonFilterBar = memo(function SkeletonFilterBar() {
   return (
     <div className="space-y-4 pt-2 pb-4 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
       {/* Search Bar Skeleton */}
@@ -109,12 +132,12 @@ export function SkeletonFilterBar() {
       </div>
     </div>
   );
-}
+});
 
 /**
  * 상세 페이지 콘텐츠용 스켈레톤
  */
-export function SkeletonDetail() {
+export const SkeletonDetail = memo(function SkeletonDetail() {
   return (
     <article className="mx-auto max-w-3xl space-y-6">
       {/* Main Content Card Skeleton */}
@@ -173,4 +196,57 @@ export function SkeletonDetail() {
       </div>
     </article>
   );
-}
+});
+
+/**
+ * ExpressionList 로딩 시 보여줄 스켈레톤 그리드
+ */
+export const SkeletonExpressionList = memo(function SkeletonExpressionList() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
+      {[1, 2, 3].map((i) => (
+        <SkeletonCard key={`skeleton-${i}`} />
+      ))}
+    </div>
+  );
+});
+
+/**
+ * 퀴즈 페이지용 스켈레톤 (Progress Bar + Question Card)
+ */
+export const SkeletonQuiz = memo(function SkeletonQuiz() {
+  return (
+    <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
+      {/* Progress Bar Skeleton */}
+      <div className="mb-8">
+        <div className="flex justify-between mb-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-12" />
+        </div>
+        <Skeleton className="h-2 w-full rounded-full" />
+      </div>
+
+      {/* Question Card Skeleton */}
+      <section className="rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-surface shadow-lg overflow-hidden p-6 sm:p-8 space-y-6">
+        {/* Question Text Skeleton */}
+        <div className="space-y-3">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-3/4" />
+        </div>
+
+        {/* Options Skeleton */}
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="w-full p-4 rounded-xl border-2 border-zinc-100 dark:border-zinc-800 flex items-center gap-3"
+            >
+              <Skeleton className="h-6 w-6 rounded-md" />
+              <Skeleton className="h-6 w-1/2" />
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+});

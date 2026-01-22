@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import useSWRInfinite from "swr/infinite";
 import { Expression } from "@/types/database";
 import { useExpressionStore } from "@/context/ExpressionContext";
 import { fetchMoreExpressions } from "@/lib/actions";
@@ -14,8 +15,8 @@ interface UsePaginatedListProps {
 
 /**
  * 페이지네이션(더 보기) 된 리스트 데이터를 관리하고 전역 캐시와 동기화하는 커스텀 훅입니다.
- * 초기 데이터 및 필터 정보를 받아 아이템 목록, 다음 페이지 존재 여부, 로딩 상태를 관리하며
- * 데이터 변경 시마다 해당 필터(cacheKey)에 해당하는 전역 상태를 업데이트합니다.
+ * useSWRInfinite를 사용하여 데이터 페칭, 캐싱, 상태 관리를 자동화했습니다.
+ * ExpressionContext는 '페이지 수(size)'와 '스크롤 위치'만 관리하여 뒤로가기 시 복원을 돕습니다.
  */
 export function usePaginatedList({
   initialItems,
@@ -25,72 +26,66 @@ export function usePaginatedList({
   const { cache, updateCacheData } = useExpressionStore();
   const cachedState = cache[cacheKey];
 
-  // 1. 초기 상태 설정
-  // 이전 방문 기억(캐시)이 있다면 이를 우선 사용하고, 없다면 서버에서 받은 초기 데이터를 사용합니다.
-  const [items, setItems] = useState<Expression[]>(
-    cachedState ? cachedState.items : initialItems,
-  );
-  const [page, setPage] = useState(cachedState ? cachedState.page : 1);
-  const [hasMore, setHasMore] = useState(
-    cachedState ? cachedState.hasMore : initialItems.length >= 12,
-  );
-  const [loading, setLoading] = useState(false);
+  // 1. SWR 키 생성 함수
+  // 각 페이지별로 고유한 키를 생성합니다. null 반환 시 요청을 중단합니다.
+  const getKey = (pageIndex: number, previousPageData: Expression[] | null) => {
+    // 이전 페이지 데이터가 비어있다면 더 이상 요청하지 않음 (끝 도달)
+    if (previousPageData && !previousPageData.length) return null;
 
-  // 2. 캐시 동기화 (Data Persistence)
-  // 리스트 항목이나 페이지 번호가 변경될 때마다 전역 컨텍스트 캐시를 업데이트하여
-  // 상세 페이지 이동 후 돌아왔을 때 현재의 리스트 상태를 그대로 복원할 수 있게 합니다.
+    // 키 구성: [식별자, 필터(문자열), 페이지번호]
+    // filters 객체 참조 변경으로 인한 불필요한 리렌더링/요청 방지를 위해 직렬화(JSON.stringify)합니다.
+    return ["ExpressionList", JSON.stringify(filters), pageIndex + 1];
+  };
+
+  // 2. Data Fetcher
+  const fetcher = async ([_, serializedFilters, page]: [
+    string,
+    string,
+    number,
+  ]) => {
+    const currentFilters = JSON.parse(serializedFilters) as ExpressionFilters;
+    return await fetchMoreExpressions(currentFilters, page);
+  };
+
+  // 3. useSWRInfinite 설정
+  const { data, size, setSize, isLoading } = useSWRInfinite(getKey, fetcher, {
+    // 초기 데이터 설정 (SSR/ISR 데이터 활용)
+    // 캐시된 페이지 수(size)만큼 데이터를 미리 확보하는 로직은 fallback으로 처리하거나
+    // SWR이 첫 페이지만 initialData로 쓰고 나머지는 revalidate하는 방식을 따릅니다.
+    // 여기서는 첫 페이지만 initialData로 설정합니다.
+    fallbackData: [initialItems],
+    // 뒤로가기 시 이전에 보던 페이지 수만큼 복원
+    initialSize: cachedState ? cachedState.size : 1,
+    // 포커스 시 불필요한 자동 갱신 방지 (리스트가 너무 자주 바뀌면 사용자 경험 저하)
+    revalidateOnFocus: false,
+    // 첫 페이지는 항상 초기 데이터가 있으므로 마운트 시 불필요한 재검증 방지
+    revalidateFirstPage: false,
+  });
+
+  // 4. 데이터 가공 (2차원 배열 -> 1차원 배열)
+  const items = data ? data.flat() : initialItems;
+
+  const isEmpty = data?.[0]?.length === 0;
+  const isReachingEnd = isEmpty || (data && data[data.length - 1]?.length < 12);
+  const loadingMore =
+    isLoading || (size > 0 && data && typeof data[size - 1] === "undefined");
+
+  // 5. 캐시 동기화 (Data Persistence)
+  // 페이지 수(size)가 변경될 때마다 전역 컨텍스트 캐시를 업데이트합니다.
   useEffect(() => {
-    if (items.length > 0) {
-      updateCacheData(cacheKey, {
-        items,
-        page,
-        hasMore,
-      });
-    }
-  }, [items, page, hasMore, cacheKey, updateCacheData]);
+    updateCacheData(cacheKey, { size });
+  }, [size, cacheKey, updateCacheData]);
 
-  /**
-   * 추가 데이터를 페칭하고 상태를 업데이트하는 함수입니다.
-   */
-  const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-    const nextPage = page + 1;
-
-    try {
-      // 서버 액션을 호출하여 다음 페이지 데이터를 가져옵니다.
-      const nextItems = await fetchMoreExpressions(filters, nextPage);
-
-      if (nextItems && nextItems.length > 0) {
-        // 기존 목록 뒤에 새로운 항목들을 추가합니다.
-        setItems((prev) => [...prev, ...nextItems]);
-        setPage(nextPage);
-        // 가져온 데이터가 한 페이지 분량(12개) 미만이면 더 이상 데이터가 없다고 판단합니다.
-        setHasMore(nextItems.length >= 12);
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Failed to load more items:", error);
-    } finally {
-      setLoading(false); // 로딩 상태 해제
-    }
-  }, [
-    loading,
-    hasMore,
-    page,
-    filters,
-    setItems,
-    setPage,
-    setHasMore,
-    setLoading,
-  ]);
+  // 6. 더 보기 함수
+  const loadMore = useCallback(() => {
+    if (loadingMore || isReachingEnd) return;
+    setSize(size + 1);
+  }, [loadingMore, isReachingEnd, size, setSize]);
 
   return {
     items,
-    hasMore,
-    loading,
+    hasMore: !isReachingEnd,
+    loading: loadingMore,
     loadMore,
   };
 }

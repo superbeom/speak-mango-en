@@ -103,12 +103,15 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 
 #### 탐색 이벤트
 
-| 이벤트명        | 설명           | 파라미터                                 |
-| --------------- | -------------- | ---------------------------------------- |
-| `filter_apply`  | 필터 적용      | `filter_type`, `filter_value`            |
-| `search`        | 검색 실행      | `search_term`, `results_count`           |
-| `tag_click`     | 태그 클릭      | `tag_name`, `source`                     |
-| `related_click` | 관련 표현 클릭 | `from_expression_id`, `to_expression_id` |
+| 이벤트명        | 설명           | 파라미터                                        |
+| --------------- | -------------- | ----------------------------------------------- |
+| `filter_apply`  | 필터 적용      | `filter_type`, `filter_value`                   |
+| `search`        | 검색 실행      | `search_term`, `results_count`                  |
+| `tag_click`     | 태그 클릭      | `tag_name`, `source`                            |
+| `related_click` | 관련 표현 클릭 | `from_expression_id`, `to_expression_id`        |
+| `quiz_start`    | 퀴즈 시작      | -                                               |
+| `quiz_answer`   | 퀴즈 정답 제출 | `expression_id`, `is_correct`, `question_index` |
+| `quiz_complete` | 퀴즈 완료      | `score`, `total_questions`                      |
 
 #### 공유 이벤트
 
@@ -148,6 +151,13 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 - `share_platform`: 공유 플랫폼 (`native` | `clipboard`)
 - `utm_source`: 공유 출처 추적용 UTM 파라미터 (URL에 포함)
 
+**퀴즈 관련:**
+
+- `is_correct`: 정답 여부 (true/false)
+- `question_index`: 문제 번호 (0~9)
+- `score`: 최종 점수
+- `total_questions`: 전체 문제 수
+
 ## 5. 구현 계획
 
 ### 5.1 Phase 1: 기본 설정
@@ -181,22 +191,18 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 **작업 내용:**
 
 1. **표현 관련 이벤트**
-
    - ✅ `ExpressionCard.tsx`: 클릭 추적
    - ✅ `ExpressionViewTracker.tsx`: 조회 추적 (서버/클라이언트 분리)
 
 2. **오디오 관련 이벤트**
-
    - ✅ `DialogueAudioButton.tsx`: 재생 추적
    - ✅ `DialogueAudioButton.tsx`: 재생 완료 추적
 
 3. **학습 모드 이벤트**
-
    - ✅ `DialogueSection.tsx`: Blind Listening 모드 전환 추적
    - ✅ `DialogueSection.tsx`: Translation Blur 모드 전환 추적
 
 4. **탐색 이벤트**
-
    - ✅ `FilterBar.tsx`: 카테고리 필터 추적
    - ✅ `SearchBar.tsx`: 검색 실행 추적
    - ✅ `Tag.tsx`: 태그 클릭 추적 (source: card/detail/filter 구분)
@@ -250,12 +256,10 @@ Analytics를 통해 다음과 같은 질문에 답할 수 있습니다:
 **필요 조치:**
 
 1. **쿠키 동의 (Cookie Consent)**
-
    - 한국/EU 사용자를 위한 간소화된 동의 방식
    - 향후 구현 예정 (Phase 6 수익화 단계)
 
 2. **IP 익명화**
-
    - GA4 설정에서 활성화 (기본 제공)
 
 3. **데이터 보관 기간**

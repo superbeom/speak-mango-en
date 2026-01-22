@@ -70,4 +70,4 @@ studio_images/
 .opencode/
 
 # security audit report
-audit_report.html
+audit_report.*

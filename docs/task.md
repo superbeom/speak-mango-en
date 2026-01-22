@@ -48,6 +48,7 @@
 - [x] **Performance**: Server-side Waterfall 제거 (`app/page.tsx` Promise.all 적용)
 - [x] **Performance**: Client-side 렌더링 최적화 (`DialogueSection` React.memo & useCallback 적용)
 - [x] **Performance**: DB 검색 쿼리 최적화 (`meaning_text` 생성 컬럼 & Trigram 인덱스 도입)
+- [x] **Performance**: Data Fetching 전략 현대화 (`useSWRInfinite` 도입 및 `ExpressionContext` 최적화)
 - [x] **Automation**: n8n 워크플로우 성능(중복 체크) 및 콘텐츠 품질(대화 턴수, 통화 표기) 고도화
 - [x] **UI/UX**: 스켈레톤 로딩 (Skeleton Loading) 도입
 - [x] **UI/UX**: 리스트 탐색 경험 개선 ('더 보기' 버튼 및 레이아웃 안정화)
@@ -86,6 +87,12 @@
   - [x] `app/layout.tsx`: `keywords` 추가
   - [x] `app/expressions/[id]`: `LearningResource` 스키마에 `keywords` 주입
 - [x] **UI/UX**: 마케팅 스튜디오 구현 및 이미지 자동화 (`/studio/[id]`, `generate_studio_images.py`)
+- [x] **Feature**: 랜덤 퀴즈 게임 구현 (`/quiz`)
+  - [x] **Architecture**: 랜덤 표현 추출 로직 (`getRandomExpressions`) 및 퀴즈 파싱 (`lib/quiz.ts`)
+  - [x] **UI**: 퀴즈 게임 인터페이스 (`QuizGame.tsx`) 및 결과 화면
+  - [x] **Analytics**: 퀴즈 정답/오답 및 완료 이벤트 추적
+  - [x] **SEO**: 퀴즈 페이지 메타데이터(i18n) 및 sitemap 등록
+- [x] **Refactoring**: 라우트 로직 중앙화 (`CANONICAL_URLS`) 및 SEO 메타데이터 정제 (OpenGraph)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

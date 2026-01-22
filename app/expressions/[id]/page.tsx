@@ -6,11 +6,11 @@ import {
   getContentLocale,
   SupportedLanguage,
 } from "@/i18n";
-import { SERVICE_NAME, BASE_URL } from "@/constants";
+import { SERVICE_NAME } from "@/constants";
 import { getI18n } from "@/i18n/server";
 import { generateSeoKeywords } from "@/lib/seo";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
-import { getHomeWithFilters } from "@/lib/routes";
+import { CANONICAL_URLS, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import { formatMessage } from "@/lib/utils";
 import Header from "@/components/Header";
@@ -42,7 +42,7 @@ export async function generateMetadata({
     };
   }
 
-  const { locale, fullLocale, dict } = await getI18n();
+  const { locale, dict } = await getI18n();
   const primaryMeaning =
     expression.meaning[getContentLocale(expression.meaning, locale)] ||
     expression.meaning[SupportedLanguage.EN];
@@ -63,8 +63,10 @@ export async function generateMetadata({
     dict,
     expression.expression,
     primaryMeaning,
-    expression.category
+    expression.category,
   );
+
+  const url = CANONICAL_URLS.EXPRESSION_DETAIL(id);
 
   return {
     title,
@@ -73,12 +75,11 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: `${BASE_URL}/expressions/${id}`,
-      locale: fullLocale,
+      url,
       type: "article",
     },
     alternates: {
-      canonical: `${BASE_URL}/expressions/${id}`,
+      canonical: url,
     },
   };
 }
@@ -109,13 +110,13 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
   const relatedExpressions = await getRelatedExpressions(
     id,
     expression.category,
-    6 // 넉넉하게 6개까지 가져와서 스크롤 가능하게 함
+    6, // 넉넉하게 6개까지 가져와서 스크롤 가능하게 함
   );
 
   // UI Config 통합 가져오기
   const { domain, category } = getExpressionUIConfig(
     expression.domain,
-    expression.category
+    expression.category,
   );
 
   // SEO Keywords for Schema & UI
@@ -123,8 +124,10 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
     dict,
     expression.expression,
     meaning,
-    expression.category
+    expression.category,
   );
+
+  const url = CANONICAL_URLS.EXPRESSION_DETAIL(id);
 
   return (
     <div className="min-h-screen bg-layout pb-20">
@@ -162,12 +165,12 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                   "@type": "Organization",
                   name: SERVICE_NAME,
                 },
-                url: `${BASE_URL}/expressions/${id}`,
-                image: `${BASE_URL}/expressions/${id}/opengraph-image`,
+                url: url,
+                image: `${url}/opengraph-image`,
                 workTranslation: SUPPORTED_LANGUAGES.map((lang) => ({
                   "@type": "LearningResource",
                   inLanguage: lang,
-                  url: `${BASE_URL}/expressions/${id}?lang=${lang}`,
+                  url: `${url}?lang=${lang}`,
                 })),
               }),
             }}

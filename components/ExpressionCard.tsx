@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -19,6 +20,7 @@ interface ExpressionCardProps {
   item: Expression;
   locale: string;
   isStatic?: boolean;
+  className?: string;
 }
 
 const itemVariants = {
@@ -33,10 +35,11 @@ const itemVariants = {
   },
 };
 
-export default function ExpressionCard({
+const ExpressionCard = memo(function ExpressionCard({
   item,
   locale,
   isStatic = false,
+  className,
 }: ExpressionCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -148,7 +151,11 @@ export default function ExpressionCard({
   );
 
   if (isStatic) {
-    return <div className="w-full relative block">{CardContent}</div>;
+    return (
+      <div className={cn("w-full relative block", className)}>
+        {CardContent}
+      </div>
+    );
   }
 
   return (
@@ -160,7 +167,7 @@ export default function ExpressionCard({
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
       whileHover={enableHover ? { y: -5 } : undefined}
       whileTap={enableHover ? { scale: 0.98 } : undefined}
-      className="h-full"
+      className={cn("h-full", className)}
     >
       <Link
         href={ROUTES.EXPRESSION_DETAIL(item.id)}
@@ -206,4 +213,8 @@ export default function ExpressionCard({
       </Link>
     </motion.div>
   );
-}
+});
+
+ExpressionCard.displayName = "ExpressionCard";
+
+export default ExpressionCard;

@@ -92,7 +92,7 @@ const DialogueAudioButton = forwardRef<
       audioIndex,
       playType = "individual",
     },
-    ref
+    ref,
   ) => {
     const { getAudio } = useAudio();
     const isMobile = useIsMobile();
@@ -247,7 +247,7 @@ const DialogueAudioButton = forwardRef<
           window.dispatchEvent(
             new CustomEvent(AUDIO_PLAYBACK_START, {
               detail: { audio: audioRef.current },
-            })
+            }),
           );
 
           try {
@@ -280,7 +280,7 @@ const DialogueAudioButton = forwardRef<
           }
         }
       },
-      [initializeWebAudio]
+      [initializeWebAudio],
     );
 
     useImperativeHandle(
@@ -298,7 +298,7 @@ const DialogueAudioButton = forwardRef<
           }
         },
       }),
-      [togglePlay] // togglePlay가 stable해졌으므로 ref 객체도 안정적으로 유지됨
+      [togglePlay], // togglePlay가 stable해졌으므로 ref 객체도 안정적으로 유지됨
     );
 
     useEffect(() => {
@@ -446,12 +446,12 @@ const DialogueAudioButton = forwardRef<
             isPlaying
               ? cn(
                   "bg-zinc-200/60 text-zinc-400 dark:bg-zinc-700 dark:text-zinc-400",
-                  !isMobile && "hover:text-zinc-600 dark:hover:text-zinc-100"
+                  !isMobile && "hover:text-zinc-600 dark:hover:text-zinc-100",
                 )
               : cn(
                   "text-zinc-400 dark:text-zinc-500",
                   !isMobile &&
-                    "hover:bg-zinc-200/60 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+                    "hover:bg-zinc-200/60 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-300",
                 ),
           ],
           // Variant: Blue (User B - Blue bubble)
@@ -460,11 +460,11 @@ const DialogueAudioButton = forwardRef<
               ? "bg-blue-500 text-white" // Playing style = Hover style
               : cn(
                   "text-blue-200",
-                  !isMobile && "hover:bg-blue-500 hover:text-white"
+                  !isMobile && "hover:bg-blue-500 hover:text-white",
                 ),
           ],
           isLoading && "cursor-not-allowed opacity-70",
-          className
+          className,
         )}
         disabled={isLoading}
         aria-label={isPlaying ? "Stop audio" : "Play audio"}
@@ -477,7 +477,7 @@ const DialogueAudioButton = forwardRef<
         />
       </button>
     );
-  }
+  },
 );
 
 DialogueAudioButton.displayName = "DialogueAudioButton";

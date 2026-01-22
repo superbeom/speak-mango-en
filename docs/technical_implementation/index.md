@@ -159,7 +159,8 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 
 - **File**: `lib/routes.ts`
 - **Implementation**:
-  - 앱 내의 모든 URL 경로를 `ROUTES` 상수로 관리합니다.
+  - 앱 내의 모든 URL 경로를 `ROUTES` 상수로 관리합니다. (Relative Paths)
+  - `CANONICAL_URLS` 객체를 통해 SEO 및 공유에 필수적인 **절대 경로(Canonical URL)** 생성을 중앙화합니다.
   - 필터 조합(Category, Tag, Search)을 기반으로 적절한 홈 경로를 생성하는 `getHomeWithFilters()` 헬퍼 함수를 포함합니다.
 - **Benefit**: 하드코딩된 경로 문자열을 제거하여 링크 구조 변경 시 한 곳에서만 수정하면 되므로 유지보수성과 타입 안정성이 크게 향상됩니다.
 
@@ -696,7 +697,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 ### 14.1 Server-Side Waterfall Removal (서버 측 워터폴 제거)
 
-- **Problem**: `app/page.tsx`에서 `getI18n()`(헤더 파싱 + 딕셔너리 로딩) 완료 후 `getExpressions()`(DB 조회)가 실행되는 직렬 구조로 인해 TTFB(Time to First Byte) 지연.
+- **Problem**: `app/page.tsx` 및 `app/quiz/page.tsx`에서 `getI18n()`(헤더 파싱 + 딕셔너리 로딩) 완료 후 DB 조회 함수(`getExpressions`, `getRandomExpressions`)가 실행되는 직렬 구조로 인해 TTFB(Time to First Byte) 지연.
 - **Solution**: 의존성이 없는 비동기 작업을 `Promise.all`로 병렬 처리.
   - `getLocale()`을 먼저 호출하여 필요한 로케일 정보를 확보.
   - `getI18n()`과 `getExpressions()`를 동시에 실행하여 전체 응답 시간을 단축.
@@ -731,6 +732,38 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **requestAnimationFrame (rAF)**: `RelatedExpressions`의 무한 스크롤(3.1) 및 스크롤 복원(9.3)에 사용된 것과 동일한 패턴을 적용하여, 브라우저 페인팅 주기에 맞춰 이벤트를 최적화(Throttling)했습니다.
   - **Auto-Cleanup**: `useRef`를 통해 rAF ID를 관리하고, 컴포넌트 언마운트 시 `cancelAnimationFrame`을 호출하여 메모리 누수를 방지합니다.
   - **Referential Stability**: 핸들러 함수를 `useCallback`으로 감싸고 `useEffect` 의존성 배열에 명시하여, 리렌더링 시 불필요한 이벤트 리스너 재등록을 방지합니다.
+
+### 14.5 Database Random Sampling (RPC 기반 랜덤 샘플링)
+
+- **Problem**:
+  - 클라이언트(Node.js)에서 `SELECT id FROM expressions`로 전체 ID를 가져온 후 `JavaScript`로 셔플링하여 N개를 뽑는 방식은 테이블 크기가 커질수록 메모리 사용량과 네트워크 대역폭을 과도하게 점유합니다(O(N)).
+- **Solution (Database-Side Processing)**:
+  - PostgreSQL의 `ORDER BY random() LIMIT N` 기능을 캡슐화한 RPC 함수(`speak_mango_en.get_random_expressions`)를 도입했습니다.
+  - 데이터 셔플링과 추출을 DB 엔진 내부에서 수행하고, 최종 결과인 N개의 행만 네트워크로 전송합니다.
+- **Benefit**:
+  - **Constant Complexity**: 데이터가 100건이든 10만 건이든 클라이언트가 받는 부하는 동일합니다.
+  - **Memory Efficiency**: Node.js 런타임의 메모리 스파이크를 방지합니다.
+
+### 14.6 Request Deduplication (Server-Side Caching)
+
+- **Problem**: Next.js App Router 아키텍처에서 `Page` 컴포넌트와 `generateMetadata` 함수가 동일한 데이터를 필요로 할 때, 별도의 조치를 취하지 않으면 동일한 DB 쿼리가 한 요청(Request) 내에서 중복 실행되는 비효율이 발생합니다.
+- **Solution**:
+  - `lib/expressions.ts`의 모든 DB 조회 함수를 React의 `cache` 함수로 래핑했습니다.
+  - 이 메모이제이션은 **서버 요청 수명 주기(Per-request)** 동안만 유효하므로, 데이터의 최신성을 해치지 않으면서 중복 부하만 제거합니다.
+- **Implementation**:
+  ```typescript
+  export const getExpressions = cache(async (...) => { ... });
+  ```
+
+### 14.7 Data Fetching Strategy (SWR Adoption)
+
+- **Goal**: 클라이언트 사이드 데이터 페칭의 상태 관리 복잡성을 줄이고, UX(빠른 네비게이션, 자동 갱신)를 개선합니다.
+- **Implementation**:
+  - `docs/technical_implementation/use_swr_strategy.md`에 정의된 전략에 따라 `hooks/usePaginatedList.ts`를 `useSWRInfinite` 기반으로 리팩토링했습니다.
+  - **Key Serialization**: 객체 키(`filters`)의 참조 불안정성 문제를 해결하기 위해 `JSON.stringify`로 직렬화하여 키를 생성하고, Fetcher 내부에서 `JSON.parse`로 복원하는 패턴을 적용했습니다.
+  - **Optimized Fetching Strategy**: `app/page.tsx`는 ISR(`revalidate = 3600`)을 사용하여 초기 HTML 로딩을 처리합니다. 콘텐츠 업데이트 빈도(1일 1회)를 고려하여 `hooks/usePaginatedList.ts`에서 `revalidateFirstPage: false`를 설정, 초기 진입 시 중복 API 호출을 차단하여 성능을 최적화했습니다.
+  - 전역 상태(`ExpressionContext`)에서 무거운 데이터(`items`)를 제거하고, 오직 '페이지 수(`size`)'와 '스크롤 위치'만 관리하도록 경량화하여 메모리 사용량을 최적화했습니다.
+- **Reference**: 자세한 내용은 [useSWR 전략 문서](./use_swr_strategy.md)를 참조하십시오.
 
 ## 13. Service Essentials Implementation (시스템 필수 요소 구현)
 
@@ -767,11 +800,10 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
     - **Detail (`app/expressions/[id]/page.tsx`)**: `LearningResource` - 개별 표현 학습 자료 명시.
   - **Keyword Injection**: `meta keywords` 태그뿐만 아니라 JSON-LD 스키마 내에도 `keywords` 속성을 주입하여 엔티티 연관성을 강화했습니다.
 - **Node.js-generated OG Image**:
-  - `app/expressions/[id]/opengraph-image.tsx`를 구현했습니다.
+  - **Targets**: `app/expressions/[id]/opengraph-image.tsx` (Expression), `app/quiz/opengraph-image.tsx` (Quiz).
   - **Runtime Strategy**: 고화질 로고 이미지(`fs.readFileSync`)와 커스텀 폰트 파일 로딩을 위해 기본 `edge` 런타임 대신 **`nodejs` 런타임**을 채택했습니다.
-  - ImageResponse API를 사용하여, 공유되는 표현(Expression) 텍스트가 박힌 세련된 이미지를 **Request Time에 동적으로 생성**합니다.
-  - 이를 통해 수천 개의 표현에 대해 정적 이미지를 미리 만들어둘 필요 없이, 강력한 소셜 미디어 미리보기(썸네일)를 제공합니다.
-  - 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 제공합니다.
+  - **Implementation**: `ImageResponse`를 사용하여 텍스트와 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 **Request Time에 동적으로 생성**합니다.
+  - **Benefit**: 수천 개의 표현 및 퀴즈 페이지에 대해 정적 이미지를 미리 생성할 필요 없이, 강력한 소셜 미디어 미리보기(CTR 증대)를 제공합니다.
 
 ### 13.3 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
 

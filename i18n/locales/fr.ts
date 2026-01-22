@@ -30,6 +30,7 @@ export const fr = {
     loading: "Chargement...",
     loadMore: "Voir plus",
     notFound: "Données non trouvées.",
+    quiz: "Quiz 🎲",
   },
   home: {
     title: "Expressions d'Aujourd'hui",
@@ -65,5 +66,25 @@ export const fr = {
     share: "Partager",
     shareCopied: "Partagé avec succès !",
     shareFailed: "Échec du partage",
+  },
+  quiz: {
+    metaTitle: `Défi Quiz Aléatoire - ${SERVICE_NAME}`,
+    metaDescription:
+      "Testez vos compétences avec des expressions anglaises aléatoires !",
+    completeTitle: "Quiz Terminé ! 🎉",
+    score: "Score :",
+    reviewTitle: "Révision",
+    goHome: "Accueil",
+    startNew: "Nouveau Quiz",
+    questionProgress: "Question {index}",
+    correct: "🎉 Correct !",
+    wrong: "😅 Oups ! La réponse était {answer}.",
+    tip: "Astuce :",
+    header: "Quiz Aléatoire",
+    study: "Étudier 📝",
+    next: "Suivant",
+    seeResult: "Voir Résultat",
+    failedToLoad:
+      "Échec du chargement des données du quiz. Veuillez réessayer.",
   },
 };

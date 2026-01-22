@@ -26,6 +26,7 @@ export const ja = {
     loading: "読み込み中...",
     loadMore: "もっと見る",
     notFound: "データが見つかりません。",
+    quiz: "クイズ 🎲",
   },
   home: {
     title: "今日の表現",
@@ -60,5 +61,24 @@ export const ja = {
     share: "共有",
     shareCopied: "共有完了！",
     shareFailed: "共有に失敗しました",
+  },
+  quiz: {
+    metaTitle: `ランダムクイズチャレンジ - ${SERVICE_NAME}`,
+    metaDescription: "ランダムな英語表現で実力をテストしてみましょう！",
+    completeTitle: "クイズ完了！🎉",
+    score: "スコア:",
+    reviewTitle: "復習",
+    goHome: "ホームへ",
+    startNew: "新しいクイズ",
+    questionProgress: "質問 {index}",
+    correct: "🎉 正解！",
+    wrong: "😅 おっと！正解は{answer}でした。",
+    tip: "ヒント:",
+    header: "ランダムクイズ",
+    study: "学習する 📝",
+    next: "次へ",
+    seeResult: "結果を見る",
+    failedToLoad:
+      "クイズデータの読み込みに失敗しました。もう一度お試しください。",
   },
 };

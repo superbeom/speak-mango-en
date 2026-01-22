@@ -30,6 +30,7 @@ export const es = {
     loading: "Cargando...",
     loadMore: "Cargar más",
     notFound: "Datos no encontrados.",
+    quiz: "Test 🎲",
   },
   home: {
     title: "Expresiones de Hoy",
@@ -65,5 +66,25 @@ export const es = {
     share: "Compartir",
     shareCopied: "¡Compartido con éxito!",
     shareFailed: "Error al compartir",
+  },
+  quiz: {
+    metaTitle: `Desafío de Quiz Aleatorio - ${SERVICE_NAME}`,
+    metaDescription:
+      "¡Pon a prueba tus habilidades con expresiones en inglés aleatorias!",
+    completeTitle: "¡Prueba Completada! 🎉",
+    score: "Puntuación:",
+    reviewTitle: "Revisar",
+    goHome: "Ir a Inicio",
+    startNew: "Nueva Prueba",
+    questionProgress: "Pregunta {index}",
+    correct: "🎉 ¡Correcto!",
+    wrong: "😅 ¡Ups! La respuesta era {answer}.",
+    tip: "Consejo:",
+    header: "Prueba Aleatoria",
+    study: "Estudiar 📝",
+    next: "Siguiente",
+    seeResult: "Ver Resultado",
+    failedToLoad:
+      "Error al cargar los datos del cuestionario. Por favor, inténtalo de nuevo.",
   },
 };

@@ -126,7 +126,8 @@ function validateItem(item) {
 
   // 4. 콘텐츠: 대상 언어 + 영어(설명용) 허용
   if (item.content) {
-    TARGET_LANGS.forEach((lang) => {
+    const contentLangs = [...TARGET_LANGS, "en"];
+    contentLangs.forEach((lang) => {
       const contentObj = item.content[lang];
       if (!contentObj) {
         errors.push(`Missing content object for language: ${lang}`);

@@ -22,7 +22,7 @@ export default function Toast({ message, type, isVisible }: ToastProps) {
         "animate-in fade-in slide-in-from-bottom-2 duration-300",
         type === TOAST_TYPE.SUCCESS
           ? "bg-green-500 text-white"
-          : "bg-red-500 text-white"
+          : "bg-red-500 text-white",
       )}
     >
       {type === TOAST_TYPE.SUCCESS && <Check className="w-4 h-4" />}

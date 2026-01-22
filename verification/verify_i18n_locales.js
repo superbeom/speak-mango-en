@@ -51,11 +51,6 @@ const ALLOWED_ENGLISH_TERMS = [
   "Netflix",
   "Spotify",
   "LinkedIn",
-  // 템플릿 변수 (동적으로 치환되는 변수명)
-  "serviceName",
-  "expression",
-  "meaning",
-  "tag",
 ];
 
 // 언어별 설정
@@ -155,13 +150,16 @@ const LANGUAGE_CONFIG = {
  * - 소문자 영어 단어 (누출 가능성 높음)
  */
 function checkEnglishInclusion(text, context, errors) {
-  const englishMatches = text.match(/[a-zA-Z]{2,}/g) || [];
+  // 템플릿 변수 {variable} 제거
+  const cleanText = text.replace(/\{[^}]+\}/g, "");
+
+  const englishMatches = cleanText.match(/[a-zA-Z]{2,}/g) || [];
 
   const invalidWords = englishMatches.filter((word) => {
     // 1. 허용 목록에 있으면 통과 (대소문자 무시)
     if (
       ALLOWED_ENGLISH_TERMS.some(
-        (term) => term.toLowerCase() === word.toLowerCase()
+        (term) => term.toLowerCase() === word.toLowerCase(),
       )
     )
       return false;
@@ -175,7 +173,7 @@ function checkEnglishInclusion(text, context, errors) {
 
   if (invalidWords.length > 0) {
     errors.push(
-      `${context} contains English leakage: ${invalidWords.join(", ")}`
+      `${context} contains English leakage: ${invalidWords.join(", ")}`,
     );
   }
 }
@@ -207,7 +205,7 @@ function parseLocaleFile(filePath) {
 
   // export const ko = { ... }; 형태에서 객체 부분 추출
   const match = content.match(
-    /export\s+const\s+\w+\s*=\s*(\{[\s\S]*\});?\s*$/m
+    /export\s+const\s+\w+\s*=\s*(\{[\s\S]*\});?\s*$/m,
   );
 
   if (!match) {
@@ -283,7 +281,7 @@ function validateLocaleFile(lang, filePath) {
       config.forbiddenScripts.forEach((forbiddenRegex) => {
         if (forbiddenRegex.test(value)) {
           errors.push(
-            `[${path}] Contains forbidden script for ${config.name}: "${value}"`
+            `[${path}] Contains forbidden script for ${config.name}: "${value}"`,
           );
         }
       });
@@ -326,7 +324,7 @@ function main() {
     const filePath = path.join(localesDir, file);
 
     console.log(
-      `📄 Checking ${file} (${LANGUAGE_CONFIG[lang]?.name || lang})...`
+      `📄 Checking ${file} (${LANGUAGE_CONFIG[lang]?.name || lang})...`,
     );
 
     const result = validateLocaleFile(lang, filePath);
@@ -347,7 +345,7 @@ function main() {
 
   if (allViolations.length > 0) {
     console.log(
-      `\n❌ Validation Failed for ${allViolations.length} file(s):\n`
+      `\n❌ Validation Failed for ${allViolations.length} file(s):\n`,
     );
 
     allViolations.forEach(({ file, lang, errors }) => {

@@ -61,7 +61,9 @@ speak-mango-en/
 │   ├── index.ts         # 일반 상수 (서비스명, DB 스키마 등)
 │   └── events.ts        # 이벤트 상수 (오디오 재생 등)
 ├── context/             # 전역 상태 관리 (Context API)
-├── database/            # 데이터베이스 마이그레이션 스크립트 (SQL)
+├── database/            # 데이터베이스 관리
+│   ├── migrations/      # 마이그레이션 스크립트 (SQL) - 테이블 생성/변경
+│   └── functions/       # 데이터베이스 함수 (RPC) - 성능 최적화 로직
 ├── hooks/               # 커스텀 React 훅
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
@@ -111,7 +113,9 @@ speak-mango-en/
 │   ├── seo_strategy.md      # SEO 전략 및 구현 가이드 (Dynamic & Visible Keywords)
 │   ├── project_context.md   # 전체 프로젝트의 규칙, 아키텍처, 상태 정의 (Single Source of Truth)
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
-│   ├── technical_implementation.md # 주요 기능의 기술적 구현 상세 및 알고리즘
+│   ├── technical_implementation/    # 주요 기능의 기술적 구현 상세
+│   │   ├── index.md                 # 구현 개요 및 알고리즘
+│   │   └── use_swr_strategy.md      # Client-Side Data Fetching (useSWR) 전략
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
 │   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
@@ -196,6 +200,11 @@ speak-mango-en/
   - **Reusability**: Toast 컴포넌트는 독립적으로 설계되어 어떤 컴포넌트에서든 재사용 가능.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
+- **성능 최적화 (Performance Optimization)**:
+  - **Server-Side Caching**: DB 조회 함수는 `React.cache`로 래핑하여 동일 요청 내 중복 쿼리를 제거합니다 (Request Deduplication).
+  - **Client-Side Memoization**: 리스트 아이템 등 빈번한 리렌더링이 예상되는 컴포넌트는 `React.memo`를 적용합니다.
+  - **Layout Optimization**: 긴 리스트에는 `content-visibility: auto`를 적용하여 렌더링 성능을 개선합니다.
+  - **Data Fetching Strategy**: `docs/technical_implementation/use_swr_strategy.md` (useSWR 활용 가이드)
 
 ### Database
 
@@ -222,6 +231,12 @@ speak-mango-en/
   - **Dynamic Keyword Generation**: `lib/seo.ts`의 유틸리티를 사용하여 메타데이터와 UI 간 키워드 일치성 보장.
   - **Visible Keywords**: `components/KeywordList.tsx`를 사용하여 키워드를 시각적으로 노출 (Hidden Text 방지).
 
+### Analytics Strategy
+
+- **원칙**: 새로운 기능(Feature)을 생성하거나 추가할 때는 반드시 Google Analytics 4(GA4) 이벤트를 적절히 설계하여 추가해야 합니다.
+- **문서화**: 이벤트 추가 시 `docs/analytics/analytics_guide.md` 및 `docs/analytics/implementation_guide.md` 문서를 함께 업데이트하여 최신 상태를 유지해야 합니다.
+- **가이드**: `docs/analytics/analytics_guide.md`를 참조하여 이벤트 네이밍 규칙 및 파라미터 설계를 따릅니다.
+
 ### Automation (n8n)
 
 - **에러 처리**: 스크래핑 실패나 AI 응답 오류 시에도 워크플로우가 중단되지 않도록 Error Trigger 또는 대체 로직 구성.
@@ -240,7 +255,8 @@ speak-mango-en/
 4.  **기술 부채 관리**:
     - 코드 개선이 필요하거나 추후 작업이 필요한 항목은 `docs/product/future_todos.md`에 기록합니다.
 5.  **문서화**:
-    - DB 스키마 변경 시 `docs/database/schema.md`를 반드시 최신화합니다.
+    - DB 스키마/함수 변경 시 `docs/database/schema.md`를 반드시 최신화합니다.
+    - SQL 파일은 목적에 따라 `database/migrations/` 또는 `database/functions/`에 위치시킵니다.
     - Supabase 운영 방식은 `docs/database/supabase_strategy.md`를 따릅니다.
 6.  **에이전트 활용**:
     - `.agent/workflows/` 내의 워크플로우(`@restore_context`, `@generate_commit`, `@update_docs`)를 적극 활용하여 작업 효율성을 높입니다 (`docs/agent_workflows.md` 참조).
