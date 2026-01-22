@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-22: Quiz UI Layout Refinement
+
+- **Goal**: 퀴즈 완료 화면(Summary)의 모바일 레이아웃을 개선하여 버튼 터치 영역을 확보하고, 컴포넌트 네이밍을 직관적으로 변경합니다.
+- **Actions**:
+  - **Mobile Layout (`QuizGame.tsx`)**: 모바일 화면에서 리뷰 리스트의 버튼이 너무 좁아지는 문제를 해결하기 위해, `flex-col`을 적용하여 '텍스트 하단'으로 버튼을 이동시키고 너비를 100%로 확장했습니다.
+  - **Refactoring (`StudyButton.tsx`)**: 컴포넌트의 역할(Action)을 명확히 하기 위해 `StudyLink`를 `StudyButton`으로 이름을 변경했습니다.
+- **Outcome**: 모바일 사용성(Usability) 향상 및 코드 가독성 개선.
+
 ### 2026-01-22: Mobile Flicker Fix & Skeleton Refinement
 
 - **Goal**: 모바일 환경에서 헤더 텍스트가 깜빡이는(Flicker) 현상을 제거하고, 스켈레톤 UI의 로직을 상수로 중앙화하여 안정성을 높입니다.

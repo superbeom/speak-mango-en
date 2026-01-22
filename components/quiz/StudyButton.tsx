@@ -8,7 +8,7 @@ interface StudyLinkProps {
   className?: string;
 }
 
-export default function StudyLink({
+export default function StudyButton({
   expressionId,
   label,
   className,

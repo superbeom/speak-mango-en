@@ -148,6 +148,6 @@ body {
 
 @utility quiz-header-padding {
   @media (min-width: 1024px) {
-    padding-inline: 12rem !important;
+    padding-inline: 9rem !important;
   }
 }

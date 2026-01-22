@@ -61,7 +61,7 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
               {/* Nav/SubHeader Skeleton (Desktop only) */}
               <div className="hidden sm:flex items-center gap-4">
                 <Skeleton className="h-4 w-1" />
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-32" />
               </div>
             </div>
           </>

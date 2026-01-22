@@ -121,9 +121,9 @@ export default function QuizGame({
             {history.map((item) => (
               <li
                 key={item.expression.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-subtle"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-subtle gap-3 sm:gap-4"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
                   <span
                     className={`text-xl ${
                       item.isCorrect ? "text-green-500" : "text-red-500"
@@ -138,7 +138,7 @@ export default function QuizGame({
                 <StudyButton
                   expressionId={item.expression.id}
                   label={dict.quiz.study}
-                  className="px-3 py-1.5 text-xs"
+                  className="w-full sm:w-auto px-3 py-1.5 text-xs rounded-lg"
                 />
               </li>
             ))}

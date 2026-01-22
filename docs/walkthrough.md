@@ -2,6 +2,30 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.43: Quiz Summary Layout Refinement (2026-01-22)
+
+### 1. Goal (목표)
+
+- 퀴즈 완료 후 리뷰 화면에서 모바일 사용자가 '학습하기' 버튼을 더 쉽게 누를 수 있도록 레이아웃을 최적화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Mobile-First Layout (`components/quiz/QuizGame.tsx`)
+
+- **Problem**: 기존 가로 배치(`flex-row`)는 모바일의 좁은 폭에서 버튼 텍스트가 잘리거나 터치 영역이 협소해지는 문제 발생.
+- **Solution**:
+  - **Mobile**: `flex-col`로 변경하여 버튼을 텍스트 아래로 내리고 `w-full`로 확장.
+  - **Desktop**: `sm:flex-row`를 유지하여 우측 정렬 고수.
+
+#### B. Component Renaming (`components/quiz/StudyButton.tsx`)
+
+- `StudyLink`라는 이름이 실제 UI(버튼 스타일)와 괴리가 있어 `StudyButton`으로 명칭을 일치시켜 혼란을 제거했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Touch Friendliness**: 모바일에서 넓은 터치 영역 제공.
+- ✅ **Code Clarity**: 컴포넌트 이름과 실제 역할의 일치.
+
 ## v0.12.42: Mobile UI Stabilization & Skeleton Logic Refinement (2026-01-22)
 
 ### 1. Goal (목표)
