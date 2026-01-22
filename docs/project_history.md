@@ -2,6 +2,20 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-22: Mobile Flicker Fix & Skeleton Refinement
+
+- **Goal**: 모바일 환경에서 헤더 텍스트가 깜빡이는(Flicker) 현상을 제거하고, 스켈레톤 UI의 로직을 상수로 중앙화하여 안정성을 높입니다.
+- **Actions**:
+  - **Mobile Optimization (`components/HomeHeader.tsx`)**:
+    - `useIsMobile` 훅(JS) 기반의 조건부 렌더링을 CSS(`hidden sm:block`) 반응형 클래스로 교체.
+    - 초기 로딩 시점의 UI 불일치(Hydration Mismatch) 및 깜빡임 현상 원천 차단.
+    - Client Component(`"use client"`)에서 Server Component로 전환하여 번들 사이즈 감소.
+  - **Skeleton Refactoring (`components/ui/Skeletons.tsx`)**:
+    - `SkeletonNavbar`의 모드 제어 방식을 불리언(`isQuiz`)에서 명시적인 `page` Prop(`home` | `detail` | `quiz`)으로 변경.
+    - `SKELETON_PAGE` 상수를 `constants/ui.ts`로 분리하여 Client/Server 컴포넌트 간 임포트 에러 해결.
+    - 홈 화면 스켈레톤에 'Quiz 링크' 및 '반응형 서브헤더' 구조를 반영하여 실제 UI와 싱크를 맞춤.
+- **Outcome**: 모바일 사용자 경험(UX) 개선 및 코드베이스의 타입 안전성/유지보수성 향상.
+
 ### 2026-01-22: Responsive Header & Global Navigation
 
 - **Goal**: 퀴즈 기능의 접근성을 높이고, 모바일 환경에서 헤더 영역의 공간 효율성을 개선합니다.

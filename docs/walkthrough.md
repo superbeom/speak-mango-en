@@ -2,6 +2,34 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.42: Mobile UI Stabilization & Skeleton Logic Refinement (2026-01-22)
+
+### 1. Goal (목표)
+
+- 모바일 헤더의 깜빡임(FouC/Layout Shift) 문제를 해결하고, 확장된 퀴즈 기능에 맞춰 스켈레톤 UI 로직을 견고하게 재설계합니다.
+
+### 2. Implementation (구현)
+
+#### A. Zero-Runtime Responsiveness (`components/HomeHeader.tsx`)
+
+- **Problem**: `useIsMobile` 훅은 클라이언트 사이드 마운트 후 실행되므로, 찰나의 순간에 데스크탑 UI가 보였다가 사라지는 플리커링 발생.
+- **Solution**:
+  - JS 로직(`{!isMobile && ...}`)을 제거.
+  - Tailwind CSS 유틸리티(`hidden sm:inline`)를 사용하여 브라우저 렌더링 단계에서 즉시 스타일 적용.
+  - 결과적으로 `"use client"` 지시어를 제거하여 Server Component로 최적화 성공.
+
+#### B. Skeleton Props Standardization (`components/ui/Skeletons.tsx`)
+
+- **Problem**: `isDetail`, `isQuiz` 등 불리언 플래그가 늘어날수록 조합과 관리가 복잡해짐.
+- **Solution**:
+  - `page` Prop 도입: `"home" | "detail" | "quiz"` (Union Type).
+  - **Constant Separation**: `constants/ui.ts`에 `SKELETON_PAGE` 상수를 정의하여, Server Component(`loading.tsx`)와 Client Component(`Skeletons.tsx`) 모두에서 안전하게 참조 가능하도록 구조 개선.
+
+### 3. Result (결과)
+
+- ✅ **UX Stability**: 모바일 진입 시 화면 떨림 없이 안정적인 헤더 표시.
+- ✅ **Maintainability**: 스켈레톤 상태 관리가 명확해지고, 향후 페이지 추가 시 확장성 확보.
+
 ## v0.12.41: Responsive Header & Global Navigation (2026-01-22)
 
 ### 1. Goal (목표)

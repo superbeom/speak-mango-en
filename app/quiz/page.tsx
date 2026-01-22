@@ -36,7 +36,7 @@ export default async function QuizPage() {
   return (
     <div className="min-h-screen bg-layout pb-20">
       <Header>
-        <div className="flex justify-between items-center lg:px-48">
+        <div className="flex justify-between items-center quiz-header-padding">
           <BackButton label={dict.common.back} />
           <span className="ml-4 font-bold text-main">{dict.quiz.header}</span>
         </div>

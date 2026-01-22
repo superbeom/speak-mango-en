@@ -145,3 +145,9 @@ body {
 @utility blue-btn {
   @apply bg-blue-600 hover:bg-blue-700 text-white;
 }
+
+@utility quiz-header-padding {
+  @media (min-width: 1024px) {
+    padding-inline: 12rem !important;
+  }
+}

@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { SERVICE_NAME } from "@/constants";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
@@ -15,8 +12,6 @@ export default function HomeHeader({
   quizText,
   subHeaderText,
 }: HomeHeaderProps) {
-  const isMobile = useIsMobile();
-
   return (
     <Header>
       <div className="flex items-center justify-between">
@@ -29,12 +24,10 @@ export default function HomeHeader({
             {quizText}
           </Link>
           {/* 모바일이 아닐 때만 구분선과 서브헤더 표시 */}
-          {!isMobile && (
-            <>
-              <span className="text-sm text-disabled">|</span>
-              <span className="text-sm text-zinc-500">{subHeaderText}</span>
-            </>
-          )}
+          <span className="hidden sm:inline text-sm text-disabled">|</span>
+          <span className="hidden sm:inline text-sm text-zinc-500">
+            {subHeaderText}
+          </span>
         </nav>
       </div>
     </Header>
