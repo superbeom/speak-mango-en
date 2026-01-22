@@ -2,6 +2,17 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-22: Quiz Open Graph & Favicon Update
+
+- **Goal**: 퀴즈 페이지의 소셜 미디어 공유 시각적 경험(OG Image)을 개선하고, 파비콘 리소스를 최신화합니다.
+- **Actions**:
+  - **Dynamic Open Graph (`app/quiz/opengraph-image.tsx`)**:
+    - `ImageResponse`를 사용하여 "Random Quiz" 타이틀과 브랜드 로고가 포함된 이미지를 동적으로 생성.
+    - `nodejs` 런타임을 명시하여 로컬 파일 시스템(`fs`)에서 고화질 로고를 직접 로드하도록 구현.
+    - Google Fonts(Inter)를 3가지 웨이트(500, 700, 900)로 로드하여 타이포그래피 품질 확보.
+  - **Asset Update**: `app/favicon.ico`를 다양한 해상도(16x16 ~ 48x48)가 포함된 멀티 리소스 파일로 교체하여 레거시 및 모던 브라우저 호환성 강화.
+- **Outcome**: 퀴즈 페이지 공유 링크의 클릭률(CTR) 증대 기대 및 브랜드 아이덴티티 통일.
+
 ### 2026-01-21: Category Caching & SWR Synchronization Fix
 
 - **Problem**: 카테고리 필터 변경 시, 서버에서는 최신 데이터를 내려주지만 클라이언트(SWR)가 기존 캐시를 우선하여 오래된 목록이 표시되는 현상 발생. 또한 `hooks/usePaginatedList.ts`의 키 생성 로직과 Fetcher 간 타입 불일치로 인해 필터링이 무시되는 문제 확인.

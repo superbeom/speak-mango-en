@@ -2,6 +2,36 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.39: Quiz Open Graph Image Implementation (2026-01-22)
+
+### 1. Goal (목표)
+
+- 퀴즈 페이지(`/quiz`)가 소셜 미디어(카카오톡, 트위터, 슬랙 등)에 공유될 때, 단순 텍스트가 아닌 "Random Quiz"라는 명확한 타이틀과 시각적 요소를 포함한 프리뷰 이미지를 제공합니다.
+
+### 2. Implementation (구현)
+
+#### A. Node.js Runtime for Local Assets (`app/quiz/opengraph-image.tsx`)
+
+- **Strategy**: 기본적으로 OG Image 생성에는 Edge Runtime이 권장되지만, 로컬에 존재하는 브랜드 로고(`public/assets/logo.png`)를 안정적으로 활용하기 위해 `nodejs` 런타임을 선택했습니다.
+- **Code**:
+  ```typescript
+  export const runtime = "nodejs";
+  const logoBuffer = fs.readFileSync(
+    path.join(process.cwd(), "public/assets/logo.png"),
+  );
+  ```
+- **Reason**: 외부 호스팅 URL에 의존하지 않고 빌드 타임/런타임에 로컬 에셋을 직접 읽어와 Base64로 인코딩하여 포함시킴으로써 이미지 로딩 실패 가능성을 차단했습니다.
+
+#### B. Brand-Aligning Design
+
+- **Font**: 구글 폰트(Inter)의 다양한 웨이트(500, 700, 900)를 `fetch`로 로드하여 타이포그래피 계층 구조를 형성했습니다.
+- **Color**: 브랜드 시그니처 그라디언트(Yellow-Orange-Green)를 텍스트(`backgroundClip: "text"`)에 적용하여 아이덴티티를 강조했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Visual Impact**: 공유 시 자동으로 고퀄리티의 1200x630 이미지가 생성되어 노출됩니다.
+- ✅ **Consistency**: Favicon 업데이트와 함께 앱 전반의 시각적 자산(Visual Assets)이 통일되었습니다.
+
 ## v0.12.38: Category Caching & Hybrid Strategy (2026-01-21)
 
 ### 1. Goal (목표)

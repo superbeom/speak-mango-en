@@ -800,11 +800,10 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
     - **Detail (`app/expressions/[id]/page.tsx`)**: `LearningResource` - 개별 표현 학습 자료 명시.
   - **Keyword Injection**: `meta keywords` 태그뿐만 아니라 JSON-LD 스키마 내에도 `keywords` 속성을 주입하여 엔티티 연관성을 강화했습니다.
 - **Node.js-generated OG Image**:
-  - `app/expressions/[id]/opengraph-image.tsx`를 구현했습니다.
+  - **Targets**: `app/expressions/[id]/opengraph-image.tsx` (Expression), `app/quiz/opengraph-image.tsx` (Quiz).
   - **Runtime Strategy**: 고화질 로고 이미지(`fs.readFileSync`)와 커스텀 폰트 파일 로딩을 위해 기본 `edge` 런타임 대신 **`nodejs` 런타임**을 채택했습니다.
-  - ImageResponse API를 사용하여, 공유되는 표현(Expression) 텍스트가 박힌 세련된 이미지를 **Request Time에 동적으로 생성**합니다.
-  - 이를 통해 수천 개의 표현에 대해 정적 이미지를 미리 만들어둘 필요 없이, 강력한 소셜 미디어 미리보기(썸네일)를 제공합니다.
-  - 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 제공합니다.
+  - **Implementation**: `ImageResponse`를 사용하여 텍스트와 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 **Request Time에 동적으로 생성**합니다.
+  - **Benefit**: 수천 개의 표현 및 퀴즈 페이지에 대해 정적 이미지를 미리 생성할 필요 없이, 강력한 소셜 미디어 미리보기(CTR 증대)를 제공합니다.
 
 ### 13.3 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
 
