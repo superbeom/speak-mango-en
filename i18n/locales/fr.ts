@@ -83,5 +83,7 @@ export const fr = {
     study: "Étudier 📝",
     next: "Suivant",
     seeResult: "Voir Résultat",
+    failedToLoad:
+      "Échec du chargement des données du quiz. Veuillez réessayer.",
   },
 };

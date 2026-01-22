@@ -83,5 +83,7 @@ export const es = {
     study: "Estudiar 📝",
     next: "Siguiente",
     seeResult: "Ver Resultado",
+    failedToLoad:
+      "Error al cargar los datos del cuestionario. Por favor, inténtalo de nuevo.",
   },
 };

@@ -10,8 +10,8 @@ import {
 import { SupportedLanguage } from "@/i18n";
 import { Expression } from "@/types/database";
 import { formatMessage } from "@/lib/utils";
-import { ROUTES } from "@/lib/routes";
 import { parseQuizQuestion } from "@/lib/quiz";
+import StudyButton from "@/components/quiz/StudyButton";
 
 interface QuizGameProps {
   initialExpressions: Expression[];
@@ -107,13 +107,13 @@ export default function QuizGame({
           <h1 className="text-4xl font-black text-main">
             {dict.quiz.completeTitle}
           </h1>
-          <div className="text-2xl font-bold text-zinc-600 dark:text-zinc-400">
-            {dict.quiz.score} <span className="text-primary-600">{score}</span>{" "}
-            / {expressions.length}
+          <div className="text-2xl font-bold text-main">
+            {dict.quiz.score} <span className="text-green-500">{score}</span> /{" "}
+            {expressions.length}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-surface p-6 shadow-sm dark:border-zinc-800">
+        <div className="rounded-2xl border border-main bg-surface p-6 shadow-sm">
           <h2 className="text-lg font-bold mb-4 text-main">
             {dict.quiz.reviewTitle}
           </h2>
@@ -135,13 +135,11 @@ export default function QuizGame({
                     {item.expression.expression}
                   </span>
                 </div>
-                <Link
-                  href={ROUTES.EXPRESSION_DETAIL(item.expression.id)}
-                  target="_blank"
-                  className="text-xs font-bold text-blue-500 hover:text-blue-600 underline"
-                >
-                  {dict.quiz.study}
-                </Link>
+                <StudyButton
+                  expressionId={item.expression.id}
+                  label={dict.quiz.study}
+                  className="px-3 py-1.5 text-xs"
+                />
               </li>
             ))}
           </ul>
@@ -150,7 +148,7 @@ export default function QuizGame({
         <div className="flex gap-4 justify-center">
           <Link
             href="/"
-            className="px-6 py-3 rounded-xl font-bold bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors"
+            className="px-6 py-3 rounded-xl font-bold bg-zinc-700 text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-700 dark:hover:bg-zinc-200 transition-colors"
           >
             {dict.quiz.goHome}
           </Link>
@@ -244,7 +242,7 @@ export default function QuizGame({
 
         {/* Feedback / Next Section */}
         {isAnswerChecked && (
-          <div className="bg-zinc-50 border-t border-zinc-100 p-6 dark:bg-zinc-900 dark:border-zinc-800 animate-in fade-in slide-in-from-bottom-2">
+          <div className="bg-zinc-50 border-t border-subtle p-6 dark:bg-zinc-900 animate-in fade-in slide-in-from-bottom-2">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex-1">
@@ -264,16 +262,14 @@ export default function QuizGame({
                 </div>
 
                 <div className="flex gap-3 w-full sm:w-auto">
-                  <Link
-                    href={ROUTES.EXPRESSION_DETAIL(currentExpression.id)}
-                    target="_blank"
-                    className="flex-1 sm:flex-none px-6 py-3 rounded-xl border-2 border-zinc-200 text-zinc-600 font-bold hover:bg-zinc-100 hover:border-zinc-300 transition-colors text-center cursor-pointer dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    {dict.quiz.study}
-                  </Link>
+                  <StudyButton
+                    expressionId={currentExpression.id}
+                    label={dict.quiz.study}
+                    className="flex-1 sm:flex-none py-3 px-6 h-auto"
+                  />
                   <button
                     onClick={handleNext}
-                    className="flex-1 sm:flex-none px-8 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 cursor-pointer"
+                    className="flex-1 sm:flex-none px-8 py-3 rounded-xl blue-btn font-bold transition-colors shadow-lg shadow-blue-600/20 cursor-pointer"
                   >
                     {currentIndex < expressions.length - 1
                       ? dict.quiz.next
@@ -282,7 +278,7 @@ export default function QuizGame({
                 </div>
               </div>
 
-              <div className="text-sm text-zinc-500 bg-white p-4 rounded-xl border border-zinc-100 dark:bg-zinc-800 dark:border-zinc-700">
+              <div className="text-sm text-secondary bg-white p-4 rounded-xl border border-zinc-100 dark:bg-zinc-800 dark:border-zinc-700">
                 <span className="font-bold text-main mr-2">
                   {dict.quiz.tip}
                 </span>

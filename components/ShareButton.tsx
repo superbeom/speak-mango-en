@@ -136,8 +136,8 @@ export default function ShareButton({
               ]
             : [
                 "px-4 py-2.5",
-                "bg-blue-500 text-white",
-                "hover:bg-blue-600 active:scale-95",
+                "blue-btn",
+                "active:scale-95",
                 "shadow-sm hover:shadow-md",
               ],
         )}

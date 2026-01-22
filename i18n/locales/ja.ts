@@ -77,5 +77,7 @@ export const ja = {
     study: "学習する 📝",
     next: "次へ",
     seeResult: "結果を見る",
+    failedToLoad:
+      "クイズデータの読み込みに失敗しました。もう一度お試しください。",
   },
 };

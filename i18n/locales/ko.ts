@@ -77,5 +77,6 @@ export const ko = {
     study: "학습하기 📝",
     next: "다음",
     seeResult: "결과 보기",
+    failedToLoad: "퀴즈 데이터를 불러오는데 실패했습니다. 다시 시도해주세요.",
   },
 };

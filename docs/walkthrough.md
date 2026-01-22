@@ -2,6 +2,31 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.40: Quiz UI Standardization (2026-01-22)
+
+### 1. Goal (목표)
+
+- 퀴즈 페이지(`QuizGame`) 내의 산재된 버튼 스타일과 하드코딩된 로직을 표준화하고, 사용자 피드백(터치/키보드)을 강화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Component Extraction (`components/quiz/StudyButton.tsx`)
+
+- **Problem**: '학습하기(Study)' 버튼이 여러 뷰(Summary, Question)에서 중복 정의되어 있고, 시각적으로 강조되지 않음.
+- **Solution**:
+  - 재사용 가능한 `StudyButton` 컴포넌트 생성.
+  - `Zinc` 컬러 팔레트를 적용하여 시각적 중립성 확보.
+
+#### B. CSS Utility Abstraction (`app/globals.css`)
+
+- **Problem**: `bg-blue-600 hover:bg-blue-700` 등의 Tailwind 클래스가 반복 사용됨.
+- **Solution**: `@utility blue-btn` 커스텀 유틸리티 생성 및 `ShareButton` 적용.
+
+### 3. Result (결과)
+
+- ✅ **UX**: 버튼 인터랙션 시각적 피드백 강화.
+- ✅ **Design**: Zinc 테마 적용으로 보다 차분하고 전문적인 UI 룩앤필 구현.
+
 ## v0.12.39: Quiz Open Graph Image Implementation (2026-01-22)
 
 ### 1. Goal (목표)

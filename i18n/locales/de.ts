@@ -83,5 +83,7 @@ export const de = {
     study: "Lernen 📝",
     next: "Weiter",
     seeResult: "Ergebnis Ansehen",
+    failedToLoad:
+      "Laden der Quizdaten fehlgeschlagen. Bitte versuchen Sie es erneut.",
   },
 };

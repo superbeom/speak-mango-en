@@ -2,6 +2,19 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+### 2026-01-22: Quiz UI Refinement & Localization
+
+- **Goal**: 퀴즈 페이지의 UI 일관성을 확보하고, 하드코딩된 텍스트와 스타일을 리팩토링하여 유지보수성을 향상시킵니다.
+- **Actions**:
+  - **Component Refactoring (`StudyButton.tsx`)**:
+    - 중복되던 '학습하기' 링크 로직을 `StudyButton` 컴포넌트로 분리.
+    - 사용자 요청에 따라 Zinc(Neutral) 컬러 스킴 일괄 적용.
+  - **Style Standardization (`globals.css`)**:
+    - 반복되는 파란색 버튼 스타일을 `@utility blue-btn`으로 추상화.
+  - **Localization (`i18n/locales/*.ts`)**:
+    - `QuizGame` 내 하드코딩된 에러 메시지를 `dict.quiz.failedToLoad` 키로 대체하고 9개 언어 번역 적용.
+- **Outcome**: 퀴즈 기능의 시각적 완성도와 코드 재사용성이 높아졌으며, 글로벌 사용자를 위한 언어 지원이 강화되었습니다.
+
 ### 2026-01-22: Quiz Open Graph & Favicon Update
 
 - **Goal**: 퀴즈 페이지의 소셜 미디어 공유 시각적 경험(OG Image)을 개선하고, 파비콘 리소스를 최신화합니다.

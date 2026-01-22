@@ -77,5 +77,6 @@ export const en = {
     study: "Study 📝",
     next: "Next",
     seeResult: "See Result",
+    failedToLoad: "Failed to load quiz data. Please try again.",
   },
 };

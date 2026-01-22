@@ -36,7 +36,7 @@ export default async function QuizPage() {
   return (
     <div className="min-h-screen bg-layout pb-20">
       <Header>
-        <div className="flex items-center">
+        <div className="flex justify-between items-center lg:px-48">
           <BackButton label={dict.common.back} />
           <span className="ml-4 font-bold text-main">{dict.quiz.header}</span>
         </div>
@@ -51,7 +51,7 @@ export default async function QuizPage() {
           />
         ) : (
           <div className="p-10 text-center text-zinc-500">
-            Failed to load quiz data. Please try again.
+            {dict.quiz.failedToLoad}
           </div>
         )}
       </main>
