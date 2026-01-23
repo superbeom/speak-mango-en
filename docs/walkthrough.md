@@ -2,6 +2,33 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.46: Flexible Header Styling & Prop Injection (2026-01-23)
+
+### 1. Goal (목표)
+
+- 홈 화면의 `Header`와 `FilterBar` 사이의 경계를 제거하여 두 영역이 하나의 면처럼 느껴지도록 시각적 완성도를 높입니다.
+- 특정 페이지의 요구사항이 공통 컴포넌트(`Header`)의 내부 로직을 복잡하게 만들지 않도록 설계를 개선합니다.
+
+### 2. Implementation (구현)
+
+#### A. Scrolled Class Injection (`components/Header.tsx`)
+
+- **Problem**: 기존에는 홈 화면용 전용 스타일을 `Header` 내부에 `variant="home"`과 같은 식으로 하드코딩하려 했으나, 이는 `Header`가 페이지의 맥락을 너무 많이 알게 되어 유지보수성이 떨어지는 결과를 초래할 수 있음.
+- **Solution**:
+  - `scrolledClassName` Prop 추가.
+  - 스크롤 발생 시(`isScrolled`) 주입받은 클래스를 기존 스타일 뒤에 병합(`cn`)하도록 수정.
+  - 이로써 `Header`는 "스크롤 시 클래스를 추가한다"는 기능만 담당하고, 실제 스타일은 사용하는 곳에서 결정함.
+
+#### B. Seamless Home Layout (`components/HomeHeader.tsx`)
+
+- **Action**: `HomeHeader`에서 `scrolledClassName="bg-layout-transparent border-none-layout"`을 전달.
+- **Result**: 스크롤 시 배경이 회색조(`bg-layout`)로 변하고 테두리가 사라지면서 하단의 `FilterBar`와 완벽하게 연결됨.
+
+### 3. Result (결과)
+
+- ✅ **Design**: 홈 화면 디자인의 일관성과 고급스러운 레이아웃 구현.
+- ✅ **Architecture**: 의존성을 외부에서 주입하는 방식을 통해 컴포넌트의 순수성(Purity)과 재사용성 확보.
+
 ## v0.12.45: Quiz State Persistence & Mobile Navigation (2026-01-23)
 
 ### 1. Goal (목표)

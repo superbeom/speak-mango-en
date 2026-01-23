@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-23: 헤더 스타일링 유연성 개선 (Prop Injection 도입)
+
+### ✅ 진행 사항
+
+- **헤더 스타일링 유연성 개선(Header Utility Refactoring)**: 특정 페이지(홈)에서 헤더와 FilterBar를 시각적으로 자연스럽게 연결하기 위해 `scrolledClassName` prop 도입.
+- **의사결정**: 상위 컴포넌트(`HomeHeader`)가 하위의 특정 모드(`home` variant)를 아는 대신, 필요한 스타일을 직접 주입하는 방식(Prop Injection)을 채택하여 결합도를 낮추고 재사용성을 높임.
+- **문법 최적화**: `isScrolled && scrolledClassName` 패턴을 사용하여 `cn` 유틸리티 내에서 안전하게 조건부 클래스를 적용하도록 구현.
+
 ## 2026-01-23: 퀴즈 상태 유지 및 모바일 UX 개선
 
 ### ✅ 진행 사항

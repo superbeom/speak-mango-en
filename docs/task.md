@@ -42,6 +42,7 @@
 - [x] **UI/UX**: 원어민 대화 듣기(Audio Playback) 기능 구현 및 동기화 로직 적용
 - [x] **UI/UX**: 대화 전체 듣기(Sequential Playback) 및 하이라이트 기능 구현
 - [x] **UI/UX**: 퀴즈 상태 유지(Session Storage) 및 모바일 네비게이션 최적화
+- [x] **UI/UX**: 메인 페이지 헤더 스타일링 (Seamless Header with FilterBar)
 - [x] **Automation**: n8n 코드 및 프롬프트 모듈화 (개별 파일 분리 및 구조 최적화)
 - [x] **Documentation**: 에이전트 워크플로우(Commit/Doc Update) 및 스킬 가이드 최적화
 - [x] **Documentation**: 운영자용 사용자 가이드(`docs/n8n/expressions/user_guide.md`) 작성

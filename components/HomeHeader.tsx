@@ -13,7 +13,7 @@ export default function HomeHeader({
   subHeaderText,
 }: HomeHeaderProps) {
   return (
-    <Header>
+    <Header scrolledClassName="bg-layout-transparent border-none-layout">
       <div className="flex items-center justify-between">
         <Logo name={SERVICE_NAME} />
         <nav className="flex items-center gap-4">

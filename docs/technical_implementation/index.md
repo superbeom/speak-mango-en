@@ -178,8 +178,11 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 ### 6.4 Sticky UI Interaction (스티키 UI 상호작용)
 
 - **Hook**: `hooks/useScroll.ts`
-- **Logic**: 윈도우 스크롤 이벤트를 감지하여 특정 임계값(예: 80px)을 넘으면 `isStuck` 상태를 반환합니다.
-- **Visual**: `FilterBar`는 이 상태에 따라 테두리(`border-b`)를 표시하거나 배경 투명도를 조절하여, 헤더와 자연스럽게 연결되는 시각적 효과를 줍니다.
+- **Logic**: 윈도우 스크롤 이벤트를 감지하여 특정 임계값(예: 80px)을 넘으면 `isScrolled` 상태를 반환합니다.
+- **Visual Strategy (Prop Injection)**:
+  - `Header` 컴포넌트는 `scrolledClassName` prop을 통해 스크롤 시 추가될 스타일을 외부에서 주입받습니다.
+  - 이를 통해 메인 페이지(`HomeHeader`)에서는 스크롤 시 테두리를 제거(`border-none-layout`)하고 배경색을 레이아웃 색상(`bg-layout-transparent`)으로 변경하여 하단 필터바와 시각적으로 연결합니다.
+  - 반면 서브 페이지(퀴즈, 상세)에서는 기본 스타일을 유지하여 페이지 간의 맥락에 맞는 디자인을 유연하게 적용합니다.
 
 ### 6.5 Locale-Specific Search (로케일별 검색)
 
