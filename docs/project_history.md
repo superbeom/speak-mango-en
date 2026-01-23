@@ -2,6 +2,36 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-23: User System Strategy Update (NextAuth Pivot)
+
+### ✅ 진행 사항
+
+- **인증 아키텍처 변경**: Supabase Auth 대신 **NextAuth (Auth.js v5)** + **JWT** 방식을 채택. 초기 비용 절감 및 유연한 커스텀 필드 관리 목적.
+- **데이터베이스 스키마 재설계**:
+  - `users` (Custom Table) + `accounts` (OAuth) 구조 정의.
+  - `user_actions` 및 `user_custom_cards` 테이블 설계로 하이브리드 리포지토리 패턴 지원.
+  - `database/migrations/000_init_user_system.sql` 작성 완료.
+- **문서화 구조 개선**:
+  - 사용자 관련 문서를 `docs/users/` 폴더로 이동하여 응집도 강화.
+  - `docs/users/user_system_plan.md`에 하이브리드 리포지토리 패턴, 권한 매트릭스, 체험판 로직 등 상세 구현 계획 복구 및 업데이트.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Supabase Auth 대신 NextAuth를 선택했나?**
+
+- **A.**
+  1.  **비용 효율성**: MAU 증가 시 Supabase Auth 유료 플랜 비용을 절감.
+  2.  **커스텀 필드 제어**: `subscription_end_date`, `tier` 등의 핵심 필드를 JWT에 포함하여 DB 조회 없이 API 레벨에서 권한 검증 가능 (성능 최적화).
+  3.  **데이터 소유권**: 사용자 테이블(`users`)을 직접 제어하여 향후 마이그레이션 용이성 확보.
+
+**Q. `accounts` 테이블은 왜 필요한가?**
+
+- **A.** NextAuth 표준 스키마 준수 및 **1인 다중 로그인 수단(구글, 애플 등)** 지원을 위해 `users`와 분리된 계정 관리 테이블이 필수적임.
+
+**Q. 문서 구조를 왜 변경했나?**
+
+- **A.** `user_system_plan.md`와 `user_feature_requirements.md`가 제품 기획(`docs/product`)보다는 사용자 시스템이라는 특정 도메인에 집중되므로, `docs/users/`로 분리하여 관리 효율성을 높임.
+
 ## 2026-01-23: 헤더 스타일링 유연성 개선 (Prop Injection 도입)
 
 ### ✅ 진행 사항

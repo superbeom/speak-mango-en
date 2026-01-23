@@ -2,6 +2,41 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.13.0: NextAuth-based User System Planning (2026-01-23)
+
+### 1. Goal (목표)
+
+- 수백만 명의 사용자를 수용할 수 있는 비용 효율적이고 확장에 유연한 인증 시스템 및 데이터베이스 구조를 수립합니다.
+- 익명, 무료, 유료 사용자의 경험을 매끄럽게 연결하는 "하이브리드" 데이터 관리 전략을 정의합니다.
+
+### 2. Planning (설계)
+
+#### A. Hybrid Action Repository Architecture
+
+- **Concept**:
+  - 무료 사용자의 데이터 비용을 0원으로 만들기 위해 `LocalStorage`를 활용.
+  - 유료 전환(`Pro`) 시 DB로 데이터를 이관(`Migrate`)하여 영구 보존 및 멀티 디바이스 지원.
+  - 이를 위해 프론트엔드에서 `ActionRepository` 인터페이스를 정의하고, `Local` 구현체와 `Remote` 구현체를 상황에 맞춰 교체하는 전략 수립.
+
+#### B. Database Schema Redesign (`speak_mango_en`)
+
+- **Custom User Management**:
+  - NextAuth의 유연성을 활용하기 위해 `users`, `accounts`, `sessions` 테이블을 직접 생성.
+  - `tier` ('free' | 'pro') 및 `subscription_end_date` 컬럼을 `users` 테이블에 내장하여, 별도의 Profile 조인 없이 JWT 만으로 권한 검증이 가능하도록 최적화.
+- **Unified Action Table**:
+  - `user_actions` 테이블 하나로 좋아요, 저장, 학습 등 모든 상호작용을 관리.
+  - `UNIQUE(user_id, expression_id, action_type)` 제약 조건으로 데이터 무결성 보장.
+
+#### C. Documentation Restructuring
+
+- `docs/users/` 디렉토리를 신설하고 `user_system_plan.md`와 `user_feature_requirements.md`를 이관하여, 사용자 시스템 관련 도메인 지식을 한곳에 응집시킴.
+
+### 3. Expected Outcome (기대 효과)
+
+- **Cost Efficiency**: 초기 사용자 확보 단계에서 DB 비용 최소화.
+- **Performance**: JWT 기반의 Stateless 인증으로 API 응답 속도 최적화.
+- **Scalability**: 독립적인 User/Account 구조로 향후 다양한 인증 수단 확장 용이.
+
 ## v0.12.46: Flexible Header Styling & Prop Injection (2026-01-23)
 
 ### 1. Goal (목표)
