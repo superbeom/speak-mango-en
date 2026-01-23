@@ -10,7 +10,7 @@ import {
 import { SupportedLanguage } from "@/i18n";
 import { Expression } from "@/types/database";
 import { formatMessage } from "@/lib/utils";
-import { parseQuizQuestion } from "@/lib/quiz";
+import { parseQuizQuestion, QUIZ_STORAGE_KEYS } from "@/lib/quiz";
 import StudyButton from "@/components/quiz/StudyButton";
 
 interface QuizGameProps {
@@ -26,7 +26,8 @@ export default function QuizGame({
   locale,
   dict,
 }: QuizGameProps) {
-  const [expressions] = useState<Expression[]>(initialExpressions);
+  const [expressions, setExpressions] =
+    useState<Expression[]>(initialExpressions);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [gameState, setGameState] = useState<QuizState>("playing");
@@ -50,9 +51,61 @@ export default function QuizGame({
     return parseQuizQuestion(content.quiz);
   }, [content]);
 
+  // Restore state logic
   useEffect(() => {
-    trackQuizStart();
+    const shouldRestore = sessionStorage.getItem(QUIZ_STORAGE_KEYS.RETURN_FLAG);
+
+    if (shouldRestore) {
+      const savedState = sessionStorage.getItem(QUIZ_STORAGE_KEYS.STATE);
+      if (savedState) {
+        try {
+          const parsed = JSON.parse(savedState);
+          setExpressions(parsed.expressions);
+          setCurrentIndex(parsed.currentIndex);
+          setScore(parsed.score);
+          setGameState(parsed.gameState);
+          setHistory(parsed.history);
+          // Optional: restore selection state if you want precise resumption
+          if (parsed.selectedAnswer) setSelectedAnswer(parsed.selectedAnswer);
+          if (parsed.isAnswerChecked)
+            setIsAnswerChecked(parsed.isAnswerChecked);
+        } catch (e) {
+          console.error("Failed to restore quiz state", e);
+        }
+      }
+      // Consume the flag
+      sessionStorage.removeItem(QUIZ_STORAGE_KEYS.RETURN_FLAG);
+    } else {
+      // If not returning from study, start fresh -> clear any old state
+      sessionStorage.removeItem(QUIZ_STORAGE_KEYS.STATE);
+      trackQuizStart();
+    }
   }, []);
+
+  // Persist state logic
+  useEffect(() => {
+    const stateToSave = {
+      expressions,
+      currentIndex,
+      score,
+      gameState,
+      history,
+      selectedAnswer,
+      isAnswerChecked,
+    };
+    sessionStorage.setItem(
+      QUIZ_STORAGE_KEYS.STATE,
+      JSON.stringify(stateToSave),
+    );
+  }, [
+    expressions,
+    currentIndex,
+    score,
+    gameState,
+    history,
+    selectedAnswer,
+    isAnswerChecked,
+  ]);
 
   const handleAnswerSelect = (optionLabel: string) => {
     if (isAnswerChecked) return; // Prevent double clicking
@@ -97,6 +150,9 @@ export default function QuizGame({
   const handleRestart = () => {
     // For a simple standard web approach, we can verify if we want client-side fetch or full reload.
     // Full reload is easiest to get fresh server data (random order).
+    // Clear state before reloading
+    sessionStorage.removeItem(QUIZ_STORAGE_KEYS.STATE);
+    sessionStorage.removeItem(QUIZ_STORAGE_KEYS.RETURN_FLAG);
     window.location.reload();
   };
 

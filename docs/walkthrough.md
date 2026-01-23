@@ -2,6 +2,40 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.45: Quiz State Persistence & Mobile Navigation (2026-01-23)
+
+### 1. Goal (목표)
+
+- 퀴즈 진행 중 '학습하기(Study)'를 위해 상세 페이지로 이동했다가 뒤로 돌아왔을 때, 기존의 풀이 상태가 유지되지 않고 처음부터 다시 시작되는 문제를 해결합니다.
+- 모바일 환경에서 불필요한 새 탭 전환 및 레이아웃 깜빡임을 방지하여 사용자 경험을 최적화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Session-based State Recovery (`components/quiz/QuizGame.tsx`)
+
+- **Problem**: 퀴즈 상세 페이지로 이동(URL 변경) 시 리액트 상태가 초기화되어, 돌아왔을 때 무작위로 생성된 새로운 문제 세트로 덮어씌워짐.
+- **Solution**:
+  - `sessionStorage`를 사용하여 현재 퀴즈 상태(문제 목록, 현재 인덱스, 점수, 리뷰 히스토리)를 실시간으로 저장.
+  - **Selective Restoration**: 무조건적인 복원이 아니라, `StudyButton`을 클릭하여 나갔을 때만 설정되는 전용 플래그(`RETURN_FLAG`)가 있을 때만 상태를 복구함.
+  - 이로써 "Study 후 복귀" 시에는 `이어하기`가 가능하고, "새로고침" 시에는 기획 의도대로 `처음부터 시작`하는 정밀한 제어 구현 성공.
+
+#### B. Intelligent Navigation (`components/quiz/StudyButton.tsx`)
+
+- **Problem**: 데스크탑에서는 새 탭(`_blank`)이 편리하지만, 모바일(iOS/Android) 앱 브라우저 환경에서는 새 탭 전환 시 흰 화면이 노출되거나 네비게이션 흐름이 끊기는 문제 발생.
+- **Solution**:
+  - `useIsMobile` 훅을 활용하여 환경을 감지.
+  - **Mobile**: `target` 속성을 제거하여 현재 창에서 이동.
+  - **Desktop**: `target="_blank"`를 유지하여 학습과 퀴즈 병행 지원.
+
+#### C. Constant Centralization (`lib/quiz.ts`)
+
+- **Refactoring**: 매직 스트링(`"quiz_state"`) 사용을 지양하고 `QUIZ_STORAGE_KEYS` 상수를 도입하여 오타로 인한 버그를 원천 차단했습니다.
+
+### 3. Result (결과)
+
+- ✅ **UX Persistence**: 학습 중 흐름이 끊기지 않고 퀴즈를 끝까지 완료할 수 있음.
+- ✅ **Mobile Optimized**: 모바일 특유의 네비게이션 제약을 극복하고 깔끔한 화면 전환 제공.
+
 ## v0.12.44: Responsive UI Refactoring (CSS-based) (2026-01-22)
 
 ### 1. Goal (목표)

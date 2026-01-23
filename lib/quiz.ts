@@ -1,5 +1,10 @@
 import { ExpressionContent } from "@/types/database";
 
+export const QUIZ_STORAGE_KEYS = {
+  STATE: "quiz_state",
+  RETURN_FLAG: "quiz_return_flag",
+} as const;
+
 export interface ParsedQuiz {
   question: string;
   options: { label: string; text: string }[];

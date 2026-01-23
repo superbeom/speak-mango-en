@@ -476,6 +476,18 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
   - `철저한 가비지 컬렉션`: 사용자가 다른 페이지로 떠나는 즉시(Unmount), 메모리에 남아있을 수 있는 스크롤 리스너와 진행 중인 RAF 애니메이션을 단 1ms의 지체 없이 모두 제거하여 성능 누수를 원천 차단합니다.
   - `전역 설정 격리`: 브라우저의 스크롤 복원 모드(`manual/auto`) 전환을 해당 리스트 페이지가 활성화된 동안에만 적용합니다. 덕분에 리스트와 상관없는 다른 페이지들의 스크롤 동작에는 아무런 부작용을 주지 않습니다.
 
+### 9.6 Quiz State Persistence (퀴즈 상태 유지 전략)
+
+- **Objective**: 퀴즈 도중 상세 학습을 위해 페이지를 이탈했다가 복귀할 때, 진행 중이던 문제 번호와 점수를 완벽히 복원하여 학습 흐름을 유지합니다.
+- **Mechanism (Selective Restoration)**:
+  - **Storage**: `sessionStorage`를 사용하여 탭별 독립적인 상태 저장을 보장합니다.
+  - **Flag Logic**:
+    - `StudyButton` 클릭 시 `QUIZ_STORAGE_KEYS.RETURN_FLAG`를 설정합니다.
+    - `QuizGame` 컴포넌트 마운트 시 이 플래그가 있으면 저장된 `STATE`를 복원합니다.
+    - 일반 진입이나 새로고침 시에는 플래그가 없으므로 기존 데이터를 삭제하고 퀴즈를 리셋합니다.
+- **Mobile Navigation Adjustment**:
+  - 모바일 기기에서의 원활한 흐름을 위해, `useIsMobile` 훅으로 모바일을 감지하면 '공부하기' 링크가 새 탭이 아닌 현재 탭에서 동작하도록 `target` 속성을 동적으로 조정합니다.
+
 ## 10. Automation Pipeline (n8n & AI)
 
 ### 10.1 Pre-fetch Duplicate Check
