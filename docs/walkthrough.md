@@ -2,6 +2,91 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.12.46: Flexible Header Styling & Prop Injection (2026-01-23)
+
+### 1. Goal (목표)
+
+- 홈 화면의 `Header`와 `FilterBar` 사이의 경계를 제거하여 두 영역이 하나의 면처럼 느껴지도록 시각적 완성도를 높입니다.
+- 특정 페이지의 요구사항이 공통 컴포넌트(`Header`)의 내부 로직을 복잡하게 만들지 않도록 설계를 개선합니다.
+
+### 2. Implementation (구현)
+
+#### A. Scrolled Class Injection (`components/Header.tsx`)
+
+- **Problem**: 기존에는 홈 화면용 전용 스타일을 `Header` 내부에 `variant="home"`과 같은 식으로 하드코딩하려 했으나, 이는 `Header`가 페이지의 맥락을 너무 많이 알게 되어 유지보수성이 떨어지는 결과를 초래할 수 있음.
+- **Solution**:
+  - `scrolledClassName` Prop 추가.
+  - 스크롤 발생 시(`isScrolled`) 주입받은 클래스를 기존 스타일 뒤에 병합(`cn`)하도록 수정.
+  - 이로써 `Header`는 "스크롤 시 클래스를 추가한다"는 기능만 담당하고, 실제 스타일은 사용하는 곳에서 결정함.
+
+#### B. Seamless Home Layout (`components/HomeHeader.tsx`)
+
+- **Action**: `HomeHeader`에서 `scrolledClassName="bg-layout-transparent border-none-layout"`을 전달.
+- **Result**: 스크롤 시 배경이 회색조(`bg-layout`)로 변하고 테두리가 사라지면서 하단의 `FilterBar`와 완벽하게 연결됨.
+
+### 3. Result (결과)
+
+- ✅ **Design**: 홈 화면 디자인의 일관성과 고급스러운 레이아웃 구현.
+- ✅ **Architecture**: 의존성을 외부에서 주입하는 방식을 통해 컴포넌트의 순수성(Purity)과 재사용성 확보.
+
+## v0.12.45: Quiz State Persistence & Mobile Navigation (2026-01-23)
+
+### 1. Goal (목표)
+
+- 퀴즈 진행 중 '학습하기(Study)'를 위해 상세 페이지로 이동했다가 뒤로 돌아왔을 때, 기존의 풀이 상태가 유지되지 않고 처음부터 다시 시작되는 문제를 해결합니다.
+- 모바일 환경에서 불필요한 새 탭 전환 및 레이아웃 깜빡임을 방지하여 사용자 경험을 최적화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Session-based State Recovery (`components/quiz/QuizGame.tsx`)
+
+- **Problem**: 퀴즈 상세 페이지로 이동(URL 변경) 시 리액트 상태가 초기화되어, 돌아왔을 때 무작위로 생성된 새로운 문제 세트로 덮어씌워짐.
+- **Solution**:
+  - `sessionStorage`를 사용하여 현재 퀴즈 상태(문제 목록, 현재 인덱스, 점수, 리뷰 히스토리)를 실시간으로 저장.
+  - **Selective Restoration**: 무조건적인 복원이 아니라, `StudyButton`을 클릭하여 나갔을 때만 설정되는 전용 플래그(`RETURN_FLAG`)가 있을 때만 상태를 복구함.
+  - 이로써 "Study 후 복귀" 시에는 `이어하기`가 가능하고, "새로고침" 시에는 기획 의도대로 `처음부터 시작`하는 정밀한 제어 구현 성공.
+
+#### B. Intelligent Navigation (`components/quiz/StudyButton.tsx`)
+
+- **Problem**: 데스크탑에서는 새 탭(`_blank`)이 편리하지만, 모바일(iOS/Android) 앱 브라우저 환경에서는 새 탭 전환 시 흰 화면이 노출되거나 네비게이션 흐름이 끊기는 문제 발생.
+- **Solution**:
+  - `useIsMobile` 훅을 활용하여 환경을 감지.
+  - **Mobile**: `target` 속성을 제거하여 현재 창에서 이동.
+  - **Desktop**: `target="_blank"`를 유지하여 학습과 퀴즈 병행 지원.
+
+#### C. Constant Centralization (`lib/quiz.ts`)
+
+- **Refactoring**: 매직 스트링(`"quiz_state"`) 사용을 지양하고 `QUIZ_STORAGE_KEYS` 상수를 도입하여 오타로 인한 버그를 원천 차단했습니다.
+
+### 3. Result (결과)
+
+- ✅ **UX Persistence**: 학습 중 흐름이 끊기지 않고 퀴즈를 끝까지 완료할 수 있음.
+- ✅ **Mobile Optimized**: 모바일 특유의 네비게이션 제약을 극복하고 깔끔한 화면 전환 제공.
+
+## v0.12.44: Responsive UI Refactoring (CSS-based) (2026-01-22)
+
+### 1. Goal (목표)
+
+- `useIsMobile` 훅(JS)에 의존하던 반응형 로직을 CSS 유틸리티로 전환하여 초기 로딩 시의 Hydration Mismatch를 해결하고 렌더링 성능을 최적화합니다.
+
+### 2. Implementation (구현)
+
+#### A. CSS-First Responsive Design
+
+- **Problem**: 서버는 화면 크기를 모르기 때문에 데스크탑 뷰를 보내지만, 클라이언트는 모바일임을 감지하고 모바일 뷰로 다시 그리는 과정에서 화면 깜빡임과 에러 발생.
+- **Solution**: `!isMobile` 조건문을 제거하고 Tailwind의 `hidden sm:block` (데스크탑용)과 `block sm:hidden` (모바일용) 클래스를 사용하여 브라우저가 CSS로 즉시 뷰를 결정하도록 수정.
+- **Applied Components**: `DialogueAudioButton`, `DialogueItem`, `DialogueSection`, `RelatedExpressions`.
+
+#### B. Animation Optimization (`components/RelatedExpressions.tsx`)
+
+- **Problem**: CSS로 데스크탑 뷰를 숨겨도(`display: none`), JS 애니메이션(`requestAnimationFrame`)은 백그라운드에서 계속 돌아가 CPU를 낭비함.
+- **Solution**: 요소가 화면에 실제로 공간을 차지하는지 확인하는 `el.offsetParent` 체크를 도입하여, 숨겨진 상태에서는 애니메이션 루프를 일시 중지하도록 최적화.
+
+### 3. Result (결과)
+
+- ✅ **Stability**: 초기 로딩 안정성 확보 및 Layout Shift 제거.
+- ✅ **Performance**: 보이지 않는 요소에 대한 불필요한 연산 제거.
+
 ## v0.12.43: Quiz Summary Layout Refinement (2026-01-22)
 
 ### 1. Goal (목표)

@@ -24,9 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Force dynamic rendering to ensure fresh random questions on every request
-export const dynamic = "force-dynamic";
-
 export default async function QuizPage() {
   const [{ locale, dict }, expressions] = await Promise.all([
     getI18n(),

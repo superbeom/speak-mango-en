@@ -23,7 +23,6 @@ interface DialogueItemProps {
   onEnded: (index: number) => void;
   onReady: (index: number) => void;
   isActive: boolean;
-  isMobile: boolean;
   // Analytics props
   expressionId?: string;
   audioIndex?: number;
@@ -45,7 +44,6 @@ const DialogueItem = memo(
         onEnded,
         onReady,
         isActive,
-        isMobile,
         expressionId,
         audioIndex,
       },
@@ -109,7 +107,7 @@ const DialogueItem = memo(
                   ? "-mr-1 mt-0.5 shrink-0"
                   : cn(
                       "text-blue-200 -mr-1 mt-0.5 shrink-0",
-                      !isMobile && "hover:text-white hover:bg-blue-500",
+                      "sm:hover:text-white sm:hover:bg-blue-500",
                     )
               }
               variant={variant}

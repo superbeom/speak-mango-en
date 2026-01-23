@@ -162,6 +162,18 @@ speak-mango-en/
   - 뒤로가기(`back`) 시에는 플래그가 없으므로 브라우저가 위치를 자동 복원하도록 설계합니다.
   - 리스트 컴포넌트(`ExpressionList`) 언마운트 시에는 항상 설정을 `auto`로 복구하여 부작용을 방지합니다.
 
+### 퀴즈 상태 관리 (Quiz State Management)
+
+- **공공 저장소**: `sessionStorage`를 활용하여 퀴즈 진행 상태를 관리합니다 (`lib/quiz.ts` 내 `QUIZ_STORAGE_KEYS` 참조).
+- **상태 보존 (Persistence)**:
+  - 퀴즈 도중 '공부하기' 버튼을 클릭하여 이동할 때 `RETURN_FLAG`를 설정합니다.
+  - 뒤로가기로 복귀 시, 해당 플래그가 존재하면 `STATE`를 읽어 기존 진행 상황(문제, 점수 등)을 복원합니다.
+- **초기화 (Reset)**:
+  - 페이지 새로고침(Refresh)이나 직접 진입 시에는 플래그가 없으므로 기존 상태를 삭제하고 퀴즈를 처음부터 시작합니다.
+  - 사용자 의도에 따른 리셋(새 퀴즈 시작 버튼) 시에도 스토리지를 명시적으로 비웁니다.
+- **네비게이션**:
+  - 모바일 UX 일관성을 위해 모바일(터치 기기) 환경에서는 '공부하기' 링크가 새 탭이 아닌 현재 탭에서 동작하도록 `useIsMobile` 훅으로 제어합니다.
+
 ### Audio Asset Management
 
 - **저장소**: 모든 원어민 대화 음성 파일(TTS)은 Supabase Storage의 `speak-mango-en` 버킷에 저장합니다.
@@ -191,9 +203,12 @@ speak-mango-en/
   - **Custom Utilities (`@utility`)**: 특정 속성 조합이 반복될 때(예: `max-width` 설정)는 `@utility` 블록에 커스텀 유틸리티 클래스(예: `max-w-layout`)를 정의하여 사용합니다.
   - 하드코딩된 값 대신 위에서 정의한 변수와 유틸리티를 사용하여 레이아웃 일관성을 유지합니다.
 - **모바일 최적화 (Mobile Optimization)**: 새로운 페이지나 컴포넌트 추가 시 모바일 환경을 최우선으로 고려합니다. Tailwind의 반응형 유틸리티(`sm:`, `md:` 등)를 활용하여 작은 화면에서도 가독성과 사용성이 확보되도록 패딩, 텍스트 크기, 레이아웃을 최적화합니다.
-  - **Hover Effects**: 모바일(터치 디바이스)에서는 호버 효과(`hover:` 클래스, `whileHover` 애니메이션 등)를 비활성화해야 합니다. 터치 스크롤 시 의도치 않은 시각적 피드백이나 애니메이션이 발생하는 것을 방지하기 위해 `useIsMobile` 훅을 사용하여 조건부로 적용합니다.
+  - **Hover Effects**: 터치 스크롤 시 의도치 않은 시각적 피드백이나 애니메이션이 발생하는 것을 방지하기 위해 모바일(터치 디바이스)에서는 호버 효과(`hover:` 클래스, `whileHover` 애니메이션 등)를 비활성화해야 합니다. `useIsMobile` 훅 대신 Tailwind의 `sm:hover:` 유틸리티를 사용하여 CSS 레벨에서 데스크탑 전용 호버 효과를 적용하는 것을 권장합니다. 이는 SSR 호환성 및 렌더링 성능에 유리합니다.
   - **Clickable Elements**: 버튼, 링크, 칩 등 클릭 가능한 모든 요소에는 `cursor-pointer` 클래스를 명시적으로 적용하여 데스크탑 환경에서의 Affordance를 보장합니다.
-- **Reusable UI Logic**: 스크롤 감지, 화면 크기 확인 등 반복되는 UI 동작 로직은 커스텀 훅(예: `useScroll`, `useIsMobile`)으로 추출하여 `hooks/` 디렉토리에서 관리합니다. 이를 통해 컴포넌트 코드를 간결하게 유지하고 로직 중복을 최소화합니다.
+- **Reusable UI Logic**: 스크롤 감지, 화면 크기 확인 등 반복되는 UI 동작 로직은 커스텀 훅(예: `useScroll`, `useIsMobile`)으로 추출합니다.
+  - **Responsive Strategy**: 화면 크기에 따른 분기 처리는 다음 규칙을 따릅니다.
+    - **Rendering & Styling (Preferred)**: 단순한 보이기/숨기기나 스타일 변경은 **Tailwind 반응형 유틸리티**(`hidden sm:block`, `w-full sm:w-auto`, `sm:hover:`)를 최우선으로 사용합니다. 이는 SSR 호환성을 보장하고 초기 로딩 성능(LCP)을 높입니다.
+    - **Logic & Animation (Fallback)**: CSS로 처리가 불가능한 자바스크립트 로직(예: 모바일 전용 터치 이벤트, Framer Motion 애니메이션 값 변경)이 필요한 경우에만 제한적으로 `useIsMobile` 훅을 사용합니다. 이때는 반드시 `useEffect` 등을 통해 클라이언트 사이드에서만 실행되도록 처리하여 Hydration Mismatch를 방지해야 합니다.
 - **Toast Notification System**: 사용자 피드백이 필요한 액션(복사, 저장, 공유 등)에는 `components/ui/Toast.tsx` 컴포넌트를 활용합니다.
   - **Type Safety**: `types/toast.ts`에 정의된 `ToastType` 및 `TOAST_TYPE` 상수를 사용하여 타입 안정성 확보.
   - **Consistency**: 모든 Toast 알림은 동일한 디자인과 애니메이션을 사용하여 UX 일관성 유지.

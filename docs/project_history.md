@@ -2,6 +2,41 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-23: 헤더 스타일링 유연성 개선 (Prop Injection 도입)
+
+### ✅ 진행 사항
+
+- **헤더 스타일링 유연성 개선(Header Utility Refactoring)**: 특정 페이지(홈)에서 헤더와 FilterBar를 시각적으로 자연스럽게 연결하기 위해 `scrolledClassName` prop 도입.
+- **의사결정**: 상위 컴포넌트(`HomeHeader`)가 하위의 특정 모드(`home` variant)를 아는 대신, 필요한 스타일을 직접 주입하는 방식(Prop Injection)을 채택하여 결합도를 낮추고 재사용성을 높임.
+- **문법 최적화**: `isScrolled && scrolledClassName` 패턴을 사용하여 `cn` 유틸리티 내에서 안전하게 조건부 클래스를 적용하도록 구현.
+
+## 2026-01-23: 퀴즈 상태 유지 및 모바일 UX 개선
+
+### ✅ 진행 사항
+
+- **퀴즈 상태 유지(State Persistence)**: '공부하기' 페이지 방문 후 뒤로 가기 시 기존 퀴즈 진행 상황(문제 번호, 점수, 히스토리 등)이 유지되도록 `sessionStorage` 연동.
+- **모바일 네비게이션 최적화**: 모바일 환경에서 '공부하기' 버튼 클릭 시 새 탭 대신 현재 탭에서 이동하도록 수정하여 불필요한 레이아웃 깜빡임 및 리소스 낭비 방지.
+- **스토리지 키 중앙 관리**: `quiz_return_flag`, `quiz_state` 등 하드코딩된 문자열을 `lib/quiz.ts` 내 `QUIZ_STORAGE_KEYS` 상수로 정의하여 유지보수성 향상.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 새로고침 시에도 퀴즈 상태가 유지되어야 하나?**
+
+- **A.** 아니오. 사용자의 요구사항에 따라 '새로고침'이나 '일반 진입' 시에는 퀴즈가 처음부터 리셋되어야 함. 따라서 `StudyButton` 클릭 시에만 `quiz_return_flag`를 설정하여, 이 플래그가 있을 때만 복원 로직이 작동하도록 설계함.
+
+**Q. 왜 `sessionStorage`를 사용하나?**
+
+- **A.** `localStorage`는 브라우저를 닫아도 데이터가 남지만, `sessionStorage`는 탭별로 독립적이며 탭을 닫으면 자동으로 비워짐. 퀴즈와 같은 일회성 진행 상태를 관리하기에 가장 적합한 도구임.
+
+### 2026-01-22: Responsive UI Refactoring (CSS-based)
+
+- **Goal**: JS 기반의 반응형 처리(`useIsMobile`)를 CSS 유틸리티(`sm:hidden`, `sm:hover`)로 대체하여 SSR 호환성을 확보하고 렌더링 성능을 개선합니다.
+- **Actions**:
+  - **Components Refactoring**: `DialogueAudioButton`, `DialogueItem`, `DialogueSection`, `RelatedExpressions` 등 주요 컴포넌트의 조건부 렌더링 로직을 Tailwind CSS 클래스로 전환.
+  - **Performance**: `RelatedExpressions`에서 `offsetParent` 체크를 도입하여, CSS로 숨겨진 상태(모바일)에서는 무한 스크롤 애니메이션 연산을 중지하도록 최적화.
+  - **Style**: 데스크탑 호버 효과를 `sm:hover:`로 변경하여 터치 디바이스에서의 오작동 방지.
+- **Outcome**: 초기 로딩 시의 Hydration Mismatch 해결 및 불필요한 리렌더링 제거.
+
 ### 2026-01-22: Quiz UI Layout Refinement
 
 - **Goal**: 퀴즈 완료 화면(Summary)의 모바일 레이아웃을 개선하여 버튼 터치 영역을 확보하고, 컴포넌트 네이밍을 직관적으로 변경합니다.

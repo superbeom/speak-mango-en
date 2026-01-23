@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trackRelatedClick } from "@/analytics";
 import { Expression } from "@/types/database";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import ExpressionCard from "@/components/ExpressionCard";
 
 interface RelatedExpressionsProps {
@@ -42,8 +41,6 @@ export default function RelatedExpressions({
   title,
   currentExpressionId,
 }: RelatedExpressionsProps) {
-  const isMobile = useIsMobile();
-
   const handleCardClick = (toExpressionId: string) => {
     // Track related expression click
     trackRelatedClick({
@@ -56,7 +53,7 @@ export default function RelatedExpressions({
   const [showRightFade, setShowRightFade] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hoverDirection, setHoverDirection] = useState<"left" | "right" | null>(
-    null
+    null,
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
@@ -67,7 +64,9 @@ export default function RelatedExpressions({
 
   const checkScroll = useCallback(() => {
     const el = scrollContainerRef.current;
-    if (!el) return;
+    // 요소가 화면에 보이는지 확인 (데스크탑 모드인지 체크)
+    // 요소가 없거나, CSS로 숨겨진 상태(모바일)라면 불필요한 연산 방지
+    if (!el || el.offsetParent === null) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = el;
     setShowLeftFade(scrollLeft > 0);
@@ -75,9 +74,6 @@ export default function RelatedExpressions({
   }, []);
 
   useEffect(() => {
-    // 모바일이거나 아직 화면 크기를 모르면(undefined) 자동 스크롤 로직 실행 안 함
-    if (isMobile === undefined || isMobile) return;
-
     checkScroll();
 
     const el = scrollContainerRef.current;
@@ -87,6 +83,12 @@ export default function RelatedExpressions({
     let accumulatedScroll = el.scrollLeft;
 
     const autoScroll = () => {
+      // 모바일에서는 요소가 숨겨져 있으므로 애니메이션 연산을 일시 중지하여 성능 최적화
+      if (!el.offsetParent) {
+        animationRef.current = requestAnimationFrame(autoScroll);
+        return;
+      }
+
       // 기본 속도 0.3, 페이드 호버 시 속도 4.0 (약 13배 가속)
       let speed = 0.3;
       if (hoverDirection === "left") speed = -4.0;
@@ -117,21 +119,17 @@ export default function RelatedExpressions({
     }
 
     return () => cancelAnimationFrame(animationRef.current);
-  }, [isHovered, hoverDirection, expressions, checkScroll, isMobile]);
+  }, [isHovered, hoverDirection, expressions, checkScroll]);
 
   useEffect(() => {
-    if (isMobile === undefined || isMobile) return;
     window.addEventListener("resize", checkScroll);
     return () => window.removeEventListener("resize", checkScroll);
-  }, [checkScroll, isMobile]);
+  }, [checkScroll]);
 
-  // 화면 크기 확인 전까지는 아무것도 렌더링하지 않음 (Hydration Mismatch 방지)
-  if (isMobile === undefined) return null;
-
-  // 모바일 뷰: 세로 리스트
-  if (isMobile) {
-    return (
-      <section className="mt-12 pt-12">
+  return (
+    <>
+      {/* 모바일 뷰: 세로 리스트 */}
+      <section className="mt-12 pt-12 block sm:hidden">
         <h2 className="mb-6 text-xl font-bold text-main">{title}</h2>
         <div className="grid grid-cols-1 gap-4">
           {expressions.map((item) => (
@@ -141,64 +139,60 @@ export default function RelatedExpressions({
           ))}
         </div>
       </section>
-    );
-  }
 
-  // 데스크탑 뷰: 가로 자동 스크롤 (Marquee)
-  return (
-    <section className="mt-16 pt-16">
-      <h2 className="mb-4 px-4 text-2xl font-bold text-main">{title}</h2>
+      {/* 데스크탑 뷰: 가로 자동 스크롤 (Marquee) */}
+      <section className="mt-16 pt-16 hidden sm:block">
+        <h2 className="mb-4 px-4 text-2xl font-bold text-main">{title}</h2>
 
-      <div
-        className="relative group/scroll"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          setHoverDirection(null);
-        }}
-      >
-        <motion.div
-          ref={scrollContainerRef}
-          onScroll={checkScroll}
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex gap-6 overflow-x-auto scrollbar-hide pb-8 px-4 pt-4"
+        <div
+          className="relative group/scroll"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            setHoverDirection(null);
+          }}
         >
-          <AnimatePresence mode="popLayout">
-            {displayExpressions.map((item, index) => (
-              <motion.div
-                key={`${item.id}-${index}`} // 복제된 아이템이므로 고유 키 생성
-                variants={itemVariants}
-                className="min-w-72 sm:min-w-80 flex-1"
-                onClick={() => handleCardClick(item.id)}
-              >
-                <ExpressionCard item={item} locale={locale} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+          <motion.div
+            ref={scrollContainerRef}
+            onScroll={checkScroll}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-8 px-4 pt-4"
+          >
+            <AnimatePresence mode="popLayout">
+              {displayExpressions.map((item, index) => (
+                <motion.div
+                  key={`${item.id}-${index}`} // 복제된 아이템이므로 고유 키 생성
+                  variants={itemVariants}
+                  className="min-w-72 sm:min-w-80 flex-1"
+                  onClick={() => handleCardClick(item.id)}
+                >
+                  <ExpressionCard item={item} locale={locale} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
 
-        {/* Left Fade */}
+          {/* Left Fade */}
+          <div
+            onMouseEnter={() => setHoverDirection("left")}
+            onMouseLeave={() => setHoverDirection(null)}
+            className={`absolute left-0 top-0 bottom-0 w-24 z-20 bg-linear-to-r fade-mask-base cursor-w-resize ${
+              showLeftFade ? "fade-mask-visible" : "fade-mask-hidden"
+            }`}
+          />
 
-        <div
-          onMouseEnter={() => setHoverDirection("left")}
-          onMouseLeave={() => setHoverDirection(null)}
-          className={`absolute left-0 top-0 bottom-0 w-24 z-20 bg-linear-to-r fade-mask-base cursor-w-resize ${
-            showLeftFade ? "fade-mask-visible" : "fade-mask-hidden"
-          }`}
-        />
-
-        {/* Right Fade */}
-
-        <div
-          onMouseEnter={() => setHoverDirection("right")}
-          onMouseLeave={() => setHoverDirection(null)}
-          className={`absolute right-0 top-0 bottom-0 w-24 z-20 bg-linear-to-l fade-mask-base cursor-e-resize ${
-            showRightFade ? "fade-mask-visible" : "fade-mask-hidden"
-          }`}
-        />
-      </div>
-    </section>
+          {/* Right Fade */}
+          <div
+            onMouseEnter={() => setHoverDirection("right")}
+            onMouseLeave={() => setHoverDirection(null)}
+            className={`absolute right-0 top-0 bottom-0 w-24 z-20 bg-linear-to-l fade-mask-base cursor-e-resize ${
+              showRightFade ? "fade-mask-visible" : "fade-mask-hidden"
+            }`}
+          />
+        </div>
+      </section>
+    </>
   );
 }

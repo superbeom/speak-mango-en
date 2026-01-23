@@ -78,6 +78,13 @@ const itemVariants = {
   - 클릭 시 `window.scrollTo({ top: 0, behavior: 'smooth' })`를 호출하여 최상단으로 이동합니다.
 - **Mobile optimization**: 모바일에서는 손가락 터치 시 불필요한 호버 효과가 남지 않도록 제어합니다.
 
+### 1.4 Responsive UI Architecture (반응형 UI 아키텍처)
+
+초기 로딩 성능과 SSR(Server-Side Rendering) 호환성을 위해 JavaScript 의존도를 낮추고 CSS 유틸리티를 적극 활용하는 전략입니다.
+
+- **Transition Strategy**: 기존의 `useIsMobile` 훅을 사용한 JS 조건부 렌더링(`!isMobile && ...`)을 지양하고, Tailwind CSS의 반응형 유틸리티(`hidden sm:block`)를 사용하여 브라우저 렌더링 엔진 레벨에서 표시 여부를 제어합니다. 이는 **Hydration Mismatch(서버-클라이언트 불일치)** 오류를 원천 차단합니다.
+- **Performance Optimization**: `RelatedExpressions`와 같이 무거운 애니메이션이 포함된 컴포넌트의 경우, CSS로 숨겨진 상태(`display: none`)에서도 JS 연산이 계속되는 것을 막기 위해 `offsetParent === null` 체크를 도입했습니다. 이를 통해 모바일 환경에서 보이지 않는 데스크탑용 애니메이션 연산을 중지하여 배터리와 CPU 자원을 절약합니다.
+
 ## 2. UI Automation Logic (UI 자동화)
 
 ### 2.1 Auto-Scroll to Active Filter (필터 자동 스크롤)
@@ -171,8 +178,11 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 ### 6.4 Sticky UI Interaction (스티키 UI 상호작용)
 
 - **Hook**: `hooks/useScroll.ts`
-- **Logic**: 윈도우 스크롤 이벤트를 감지하여 특정 임계값(예: 80px)을 넘으면 `isStuck` 상태를 반환합니다.
-- **Visual**: `FilterBar`는 이 상태에 따라 테두리(`border-b`)를 표시하거나 배경 투명도를 조절하여, 헤더와 자연스럽게 연결되는 시각적 효과를 줍니다.
+- **Logic**: 윈도우 스크롤 이벤트를 감지하여 특정 임계값(예: 80px)을 넘으면 `isScrolled` 상태를 반환합니다.
+- **Visual Strategy (Prop Injection)**:
+  - `Header` 컴포넌트는 `scrolledClassName` prop을 통해 스크롤 시 추가될 스타일을 외부에서 주입받습니다.
+  - 이를 통해 메인 페이지(`HomeHeader`)에서는 스크롤 시 테두리를 제거(`border-none-layout`)하고 배경색을 레이아웃 색상(`bg-layout-transparent`)으로 변경하여 하단 필터바와 시각적으로 연결합니다.
+  - 반면 서브 페이지(퀴즈, 상세)에서는 기본 스타일을 유지하여 페이지 간의 맥락에 맞는 디자인을 유연하게 적용합니다.
 
 ### 6.5 Locale-Specific Search (로케일별 검색)
 
@@ -468,6 +478,18 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
 - **Lifecycle Management (자원 관리 - 클린업 & 부작용 방지)**:
   - `철저한 가비지 컬렉션`: 사용자가 다른 페이지로 떠나는 즉시(Unmount), 메모리에 남아있을 수 있는 스크롤 리스너와 진행 중인 RAF 애니메이션을 단 1ms의 지체 없이 모두 제거하여 성능 누수를 원천 차단합니다.
   - `전역 설정 격리`: 브라우저의 스크롤 복원 모드(`manual/auto`) 전환을 해당 리스트 페이지가 활성화된 동안에만 적용합니다. 덕분에 리스트와 상관없는 다른 페이지들의 스크롤 동작에는 아무런 부작용을 주지 않습니다.
+
+### 9.6 Quiz State Persistence (퀴즈 상태 유지 전략)
+
+- **Objective**: 퀴즈 도중 상세 학습을 위해 페이지를 이탈했다가 복귀할 때, 진행 중이던 문제 번호와 점수를 완벽히 복원하여 학습 흐름을 유지합니다.
+- **Mechanism (Selective Restoration)**:
+  - **Storage**: `sessionStorage`를 사용하여 탭별 독립적인 상태 저장을 보장합니다.
+  - **Flag Logic**:
+    - `StudyButton` 클릭 시 `QUIZ_STORAGE_KEYS.RETURN_FLAG`를 설정합니다.
+    - `QuizGame` 컴포넌트 마운트 시 이 플래그가 있으면 저장된 `STATE`를 복원합니다.
+    - 일반 진입이나 새로고침 시에는 플래그가 없으므로 기존 데이터를 삭제하고 퀴즈를 리셋합니다.
+- **Mobile Navigation Adjustment**:
+  - 모바일 기기에서의 원활한 흐름을 위해, `useIsMobile` 훅으로 모바일을 감지하면 '공부하기' 링크가 새 탭이 아닌 현재 탭에서 동작하도록 `target` 속성을 동적으로 조정합니다.
 
 ## 10. Automation Pipeline (n8n & AI)
 

@@ -68,7 +68,7 @@ export const es = {
     shareFailed: "Error al compartir",
   },
   quiz: {
-    metaTitle: `Desafío de Quiz Aleatorio - ${SERVICE_NAME}`,
+    metaTitle: `Desafío de Quiz Aleatorio | ${SERVICE_NAME}`,
     metaDescription:
       "¡Pon a prueba tus habilidades con expresiones en inglés aleatorias!",
     completeTitle: "¡Prueba Completada! 🎉",
