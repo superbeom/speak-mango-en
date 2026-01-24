@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-19
+**최종 수정일**: 2026-01-23
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -63,10 +63,13 @@ speak-mango-en/
 ├── context/             # 전역 상태 관리 (Context API)
 ├── database/            # 데이터베이스 관리
 │   ├── migrations/      # 마이그레이션 스크립트 (SQL) - 테이블 생성/변경
-│   └── functions/       # 데이터베이스 함수 (RPC) - 성능 최적화 로직
+│   ├── functions/       # 데이터베이스 함수 (RPC) - 성능 최적화 로직
+│   └── triggers/        # 트리거 함수 및 정의 - 자동화된 데이터 관리
 ├── hooks/               # 커스텀 React 훅
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
+│   ├── auth/            # 인증 설정 및 유틸리티
+│   │   └── config.ts    # NextAuth 설정 (Google Provider, Session Strategy)
 │   ├── supabase/        # Supabase 클라이언트 설정 (server/client)
 │   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수

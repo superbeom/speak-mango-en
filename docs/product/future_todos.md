@@ -34,19 +34,19 @@
 - [ ] **Security (n8n)**: Supabase Credential의 'Allowed HTTP Request Domains'를 'All'에서 'Specific Domains'로 변경하여 보안 강화.
 - [ ] **i18n Content Strategy**: DB의 `meaning` 및 `content` JSONB 컬럼에 `ja`, `es` 등 추가 언어 데이터 생성 워크플로우(n8n) 고도화.
 
-## User System & Learning (사용자 시스템 및 학습)
+## User System & Interaction (사용자 시스템 및 고도화)
 
-### 사용자 등록 및 학습 상태 추적
+### 하이브리드 리포지토리 및 실시간 동기화
 
-- **User Registration**: 이메일/소셜 로그인을 통한 회원가입/로그인 기능 구현 (Supabase Auth).
-- **Learning Status**:
-  - 각 표현 상세 페이지에 '학습 완료(Mark as Learned)' 버튼 추가.
-  - '저장(Save/Bookmark)' 버튼 추가하여 관심 표현 보관.
-- **Data Structure**:
-  - `user_progress` 테이블: `user_id`, `expression_id`, `status` ('learned', 'saved'), `last_reviewed_at`.
-- **My Page**:
-  - '학습 완료한 표현': 내가 마스터한 표현 목록 및 통계.
-  - '저장한 표현': 다시 보고 싶은 표현 모음집.
+- [ ] **Hybrid Repository Layer**: `useUserActions` 훅에서 로그인 상태에 따라 `LocalRepository`와 `RemoteRepository`를 투명하게 전환하는 추상화 계층 구현.
+- [ ] **Bulk Sync Logic**: 사용자가 로그인하거나 구독 결제 완료 시, 로컬 데이터를 서버 DB로 일괄 이동(`Merge`)하는 서버 액션 구현.
+- [ ] **Action Integrity**: 중복 액션 방지 및 네트워크 불안정 시 로컬 캐시 우선 반영 로직 고도화.
+
+### 학습 관리 및 마이 페이지
+
+- [ ] **Engagement Tracking**: '학습 완료' 처리 시 자동으로 다음 추천 콘텐츠로 스크롤하거나 관련 퀴즈를 제안하는 연속적 UX 구현.
+- [ ] **My Mango (Dashboard)**: `/my` 경로에서 좋아요/저장/학습한 기여도 요약 및 필터링된 카드 리스트 제공.
+- [ ] **Adaptive Listing**: 메인 페이지에서 '이미 학습한 표현'을 흐리게 처리하거나 필터로 숨길 수 있는 개인화 기능 UI 추가.
 
 ### 학습 기반 퀴즈 (Learning-based Quiz)
 

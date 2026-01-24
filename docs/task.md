@@ -113,13 +113,29 @@
 - [x] **Tracking (Related)**: 관련 표현 클릭 추적 (`trackRelatedClick`)
 - [x] **Tracking (Share)**: 공유 버튼 클릭 및 완료 추적
 
-## Phase 6: Monetization (수익화)
+## Phase 6: User System & Monetization (사용자 및 수익화)
 
-- [ ] **Feature Gating (Audio Support)**: 음성 지원(TTS) 기능을 사용자 티어(`free`/`pro`)에 따라 차별화하여 제공.
-  - [x] **Scalable Architecture**: `DialogueAudioButton`에 `onPlayAttempt` 콜백을 추가하여 부동한 권한 체크 로직을 주입할 수 있는 구조로 개선.
-  - [ ] **UI Logic**: 무료 사용자가 '원어민 대화 듣기' 버튼 클릭 시 유료 기능 안내 모달 팝업 및 결제 유도.
-- [ ] **MVP**: '북마크' 기능 구현 (Local Storage)
-- [ ] **MVP**: 'My Voca' 페이지 구현
-- [ ] **Auth**: Supabase Auth 연동 및 프로필 테이블 생성
-- [ ] **Sync**: Local -> DB 데이터 동기화 로직 구현
-- [ ] **Payment**: PayPal 정기 결제 연동 ($9.99/mo)
+- [x] **Phase 1: Foundation & Auth**
+  - [x] **Strategy**: NextAuth (Auth.js v5) 피벗 및 Refresh Token 전략 수립
+  - [x] **DB**: 사용자 시스템용 테이블 및 트리거 구축 (`016_init_user_system.sql`)
+  - [x] **Auth**: NextAuth 아키텍처 및 Google Provider 연동 설정
+  - [x] **Hook**: 클라이언트 사이드 인증 훅 (`useAuthUser`) 구현
+  - [x] **Setup**: 환경 변수(`.env.local`) 설정 및 로컬 테스트 (사용자 작업)
+- [ ] **Phase 2: Hybrid Repository Pattern**
+  - [ ] **Design**: Local/Remote 통합 리포지토리 인터페이스 정의
+  - [ ] **Local**: Zustand 기반 Local Storage 리포지토리 구현
+  - [ ] **Remote**: Supabase Server Action 기반 Remote 리포지토리 구현
+  - [ ] **Sync**: 무료 -> 유료 전환 시 데이터 마이그레이션 로직 구현
+- [ ] **Phase 3: Interactive Features**
+  - [ ] **Actions**: Like, Save, Learn 버튼 UI 및 상태 연동
+  - [ ] **UI**: 비로그인 액션 시 로그인 유도 모달(Login Modal) 구현
+  - [ ] **Logic**: '학습 완료' 시 자동 추천 스크롤 및 목록 필터링
+- [ ] **Phase 4: Feature Gating & Trial**
+  - [ ] **Audio/Blur**: 사용자 티어별 기능 접근 제어 로직 구현
+  - [ ] **Trial**: 무료 사용자용 사용 횟수 제한(Trial Counter) 구현
+  - [ ] **Upsell**: 체험 종료 시 결제 안내 및 업그레이드 모달 구현
+- [ ] **Phase 5: Payments & Pro**
+  - [ ] **Payment**: PayPal 정기 결제($9.99/mo) 연동
+  - [ ] **Verification**: 결제 성공 시 DB `users.tier` 즉시 업데이트 및 세션 갱신
+  - [ ] **Dashboard**: 마이 페이지 (`/my`) 구현 (Liked, Saved, Learned)
+  - [ ] **Ads**: 무료 사용자용 광고 배너/인피드 컴포넌트 추가

@@ -19,6 +19,9 @@
 | **Free User**<br>(무료) | 로그인했으나 구독 안 함 | `Local Storage`         | - **비용 절감**: 서버 DB 쓰기 최소화<br>- 기기 간 데이터 연동 안 됨 (Single Device)<br>- 광고 노출, 기능 제한 (체험판)             |
 | **Pro User**<br>(유료)  | **월 $9.99** 구독자     | **Supabase DB**         | - **멀티 디바이스 동기화** (Multi-Device)<br>- 학습 기록 영구 보존<br>- 고급 기능 (오디오/블러 무제한, 커스텀 카드)<br>- 광고 제거 |
 
+> [!NOTE]
+> **Admin 권한**: 관리자 기능이 필요한 경우, 별도의 `admins` 테이블을 생성하여 관리합니다. 일반 사용자 tier에는 포함하지 않습니다.
+
 - **익명(비로그인) 사용자**: 콘텐츠 열람만 가능. 좋아요/저장 등 액션 시 **로그인 모달**을 띄워 가입 유도.
 - **무료 사용자**: **로그인한 상태**이나 구독하지 않은 사용자. 비용 절감 및 유료 전환 유도를 위해 **로컬 스토리지(Local Storage)** 사용. (기기 연동 불가)
 - **Pro 사용자**: **구독 중인 사용자**. **Supabase DB**를 사용하여 데이터 영구 보존, 멀티 디바이스 동기화, 고급 학습 기능 제공.
@@ -42,10 +45,13 @@
 Supabase Auth 대신 NextAuth를 사용하여 인증 계층을 직접 제어합니다.
 
 - **Provider**: Google Login (OAuth 2.0).
-- **Session Strategy**: **JWT (JSON Web Token)**.
-  - Database Session을 사용하지 않아 DB 부하를 줄임.
-  - Session 콜백에서 `user.id`, `user.tier`, `user.subscription_end_date`를 토큰에 포함.
-- **Adapter**: `Prisma Adapter`와 유사한 방식의 Custom PostgreSQL Schemas 사용 (아래 스키마 참조).
+- **Session Strategy**: **Database Session (Refresh Token)**.
+  - 세션 정보를 DB의 `sessions` 테이블에 저장하여 즉시 권한 제어 가능.
+  - **Access Token 개념**: 세션 쿠키를 통해 짧은 수명의 액세스 토큰처럼 동작.
+  - **Refresh Token**: DB의 `sessionToken`이 Refresh Token 역할 (최대 30일).
+  - **보안 강화**: 토큰 탈취 시 DB에서 세션 삭제로 즉시 차단 가능.
+  - **유연한 권한 관리**: 구독 취소 시 DB 업데이트로 다음 요청부터 즉시 반영.
+- **Adapter**: `@auth/supabase-adapter`를 사용하여 Supabase PostgreSQL과 통신.
 
 ### 3.2 하이브리드 데이터 리포지토리 패턴
 
@@ -96,7 +102,7 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 
 - **기본 필드**: `id` (UUID), `name`, `email`, `image`, `emailVerified`
 - **커스텀 필드**:
-  - `tier`: 'free' | 'pro' | 'admin' (Default: 'free')
+  - `tier`: 'free' | 'pro' (Default: 'free')
   - `subscription_end_date`: TIMESTAMP (구독 만료일)
   - `trial_usage_count`: (INT, default 0): 무료 사용자의 유료 기능(오디오/블러) 체험 횟수 추적
 
@@ -105,9 +111,14 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 - 한 사용자가 여러 소셜 계정(Google, Apple 등)을 연동할 수 있도록 `users`와 1:N 관계를 가집니다.
 - `provider`, `providerAccountId`, `access_token`, `refresh_token` 등을 저장.
 
-**3. `sessions`, `verification_tokens`**
+**3. `sessions` (Refresh Token 저장)**
 
-- NextAuth 표준 테이블 (JWT 사용 시 `sessions`는 선택적이나, 확장성을 위해 생성 권장).
+- **역할**: Refresh Token을 DB에 저장하여 서버에서 언제든 무효화 가능.
+- **필드**:
+  - `sessionToken`: 고유 세션 식별자 (Refresh Token 역할)
+  - `userId`: 사용자 참조
+  - `expires`: 만료 시간 (기본 30일)
+- **보안**: 구독 취소 또는 계정 정지 시 해당 세션을 DB에서 삭제하면 즉시 접근 차단.
 
 ### 4.2 사용자 데이터 (User Data)
 
@@ -125,10 +136,14 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 - 유료 사용자가 직접 생성한 단어장 데이터.
 - `word`, `meaning`, `context`, `tags` 등을 저장.
 
+### 4.3 분석 및 집계 (Analytics & Aggregation)
+
 **6. `ranking_stats` (집계 테이블/View)**
 
-- pg_cron 또는 Edge Function으로 일간/주간 재계산
-- `expression_id`, `like_count`, `save_count`, `learn_count` 등을 포함
+- **목적**: 표현별 인기도 및 학습 통계 집계 (주간 베스트 등)
+- **갱신 방식**: pg_cron 또는 Edge Function으로 일간/주간 재계산
+- **필드**: `expression_id`, `like_count`, `save_count`, `learn_count` 등
+- **참고**: 실제 구현 시 Materialized View 또는 별도 집계 테이블로 생성 (Phase 6 단계에서 구현 예정)
 
 ---
 
@@ -206,11 +221,11 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 
 ### Phase 1: 인증 및 데이터베이스 기초 (Current)
 
-- [ ] `database/migrations/000_init_user_system.sql` 실행 (Table 생성).
-- [ ] NextAuth 패키지 설치 (`next-auth@beta`).
-- [ ] `auth.ts` 설정 파일 작성 (Google Provider, Callbacks).
-- [ ] 환경 변수 설정 (`AUTH_SECRET`, `GOOGLE_CLIENT_ID` 등).
-- [ ] `hook/useAuthUser.ts` 생성: 클라이언트 컴포넌트용 인증 래퍼.
+- [x] `database/migrations/016_init_user_system.sql` 실행 (Table 생성).
+- [x] NextAuth 패키지 설치 (`next-auth@beta`).
+- [x] `auth.ts` 설정 파일 작성 (Google Provider, Callbacks).
+- [x] 환경 변수 설정 (`AUTH_SECRET`, `GOOGLE_CLIENT_ID` 등).
+- [x] `hook/useAuthUser.ts` 생성: 클라이언트 컴포넌트용 인증 래퍼.
 
 ### Phase 2: 리포지토리 및 기본 액션
 

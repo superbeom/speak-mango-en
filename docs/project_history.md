@@ -2,6 +2,37 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-24: User System Phase 1 Implementation (NextAuth & Schema)
+
+### ✅ 진행 사항
+
+- **인프라 구축**: NextAuth (Auth.js v5) 기반의 사용자 인증 시스템 초기 구축 완료.
+- **Refresh Token 전략**: 보안 및 세션 제어 강화를 위해 Database Session (Refresh Token) 방식 도입.
+- **데이터베이스 마이그레이션**:
+  - `016_init_user_system.sql` 실행 완료: `users`, `accounts`, `sessions`, `user_actions` 테이블 생성.
+  - `database/triggers/update_users_timestamp.sql` 구현: 사용자 정보 변경 시 `updated_at` 자동 갱신.
+- **인증 설정 및 훅**:
+  - `lib/auth/config.ts`: Google Provider 및 Database Session 설정 완료.
+  - `hooks/useAuthUser.ts`: 클라이언트 사이드 인증 정보 접근성 강화.
+- **환경 설정**: `docs/environment_setup.md` 작성을 통한 로컬/프로덕션 환경 변수 가이드 마련.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 JWT에서 Database Session (Refresh Token) 방식으로 변경했나?**
+
+- **A.**
+  1. **즉각적인 권한 제어**: 사용자가 구독을 취소하거나 계정이 정지되었을 때, DB에서 세션을 삭제하여 즉시 접근을 차단하기 위함.
+  2. **보안성**: 토큰이 탈취되었을 때 서버 사이드에서 세션을 무효화할 수 있는 수단이 필요했음.
+  3. **유연성**: 사용자 등급(Tier) 변경 등이 발생했을 때 세션 갱신 주기(24시간) 내에 DB를 통해 최신 정보를 강제할 수 있음.
+
+**Q. 왜 Trigger를 별도 파일로 분리했나?**
+
+- **A.** 트리거 함수(`update_updated_at_column`)와 트리거 정의가 마이그레이션 스크립트에 섞여 있으면 관리가 어려움. `database/triggers/` 폴더를 신설하여 상세한 주석과 함께 독립적으로 관리함으로써 유지보수성을 높임.
+
+**Q. `ranking_stats` 테이블의 위치를 왜 변경했나?**
+
+- **A.** 해당 테이블은 사용자별 고유 데이터가 아닌, 전체 데이터를 기반으로 한 **집계(Aggregation)** 목적이 크므로 '사용자 데이터' 섹션보다는 '분석 및 집계' 섹션으로 독립시켜 설계의 명확성을 확보함. (참고: 현 단계에서는 설계만 분리되었으며, 실제 테이블 생성은 Phase 6에서 진행 예정)
+
 ## 2026-01-23: User System Strategy Update (NextAuth Pivot)
 
 ### ✅ 진행 사항

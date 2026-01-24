@@ -1434,3 +1434,36 @@ SNS 마케팅을 위한 고화질 에셋을 생성하고 대량 자동화하기 
   - 호버 효과 및 클릭 상호작용을 제거합니다.
   - 레이아웃을 `h-auto`로 고정하여 캡처 도구(`html-to-image`)가 실제 콘텐츠 높이를 정확히 계산할 수 있도록 돕습니다.
 - **Benefit**: 캡처 시점에 애니메이션 중간 단계가 찍히거나 레이아웃이 어긋나는 문제를 원천 차단합니다.
+
+## 17. User System & Authentication (사용자 시스템 및 인증)
+
+NextAuth(Auth.js v5)를 기반으로 구축된 보안 중심의 사용자 인증 및 권한 관리 시스템입니다.
+
+### 17.1 Refresh Token & Database Session Strategy (세션 관리 전략)
+
+- **Problem**: 표준 JWT 방식은 빠르지만, 사용자의 구독 상태(Tier)가 변경되거나 계정이 정지되었을 때 서버에서 즉시 무효화하기 어렵다는 단점이 있습니다.
+- **Solution (Database Session)**: `strategy: "database"` 방식을 채택하고 `sessions` 테이블을 직접 운영합니다.
+  - **Immediate Revocation**: 사용자가 로그아웃하거나 관리자가 DB에서 세션을 삭제하는 즉시 모든 기기에서 로그아웃 처리(Access 차단)가 가능합니다.
+  - **Live Tier Updates**: 구독 결제 완료 후 세션 갱신 주기(24시간) 내에 DB 정보를 강제 동기화하여 Pro 기능을 즉시 개방할 수 있습니다.
+  - **Security**: 탈취된 세션 토큰을 서버 사이드에서 영구 무효화할 수 있는 강력한 보안 수단을 제공합니다.
+
+### 17.2 NextAuth v5 Architecture (인증 아키텍처)
+
+- **File**: `lib/auth/config.ts`, `app/api/auth/[...nextauth]/route.ts`
+- **Modern Pattern**: NextAuth v5의 최신 패턴을 따라 `auth.ts` 설정 파일을 `lib/auth/config.ts`로 분리하고, API Route에서는 간결하게 핸들러만 노출합니다.
+- **Middleware-less**: V5에서는 필요한 경우에만 `auth()` 함수를 호출하여 세션을 확인하는 Lazy Loading 방식을 사용하여 성능을 최적화합니다.
+
+### 17.3 Supabase Adapter & Custom Fields (어댑터 및 커스텀 필드)
+
+- **Library**: `@auth/supabase-adapter`
+- **Mechanism**: Supabase를 NextAuth의 영속성 계층으로 사용합니다.
+- **Custom Mapping**:
+  - `callbacks.session`: DB에서 가져온 `tier`, `subscriptionEndDate` 정보를 NextAuth 세션 객체에 주입합니다.
+  - 이를 통해 API나 컴포넌트 레벨에서 별도의 추가 DB 조회 없이 사용자의 권한 등급을 즉시 파악할 수 있습니다.
+
+### 17.4 Type-Safe Session Access (타입 안전 인증 접근)
+
+- **Ambient Module Extension**: `types/next-auth.d.ts`에서 NextAuth의 `Session` 및 `User` 인터페이스를 확장하여 커스텀 필드(`tier` 등)에 대한 IDE 자동 완성 및 타입 검사를 지원합니다.
+- **Common Hook**: `hooks/useAuthUser.ts`
+  - 클라이언트 컴포넌트에서 인증 상태(`loading`, `authenticated`)와 사용자 정보를 한 번에 가져올 수 있는 추상화된 훅을 제공합니다.
+  - **Benefit**: 중복 코드를 줄이고, 미래에 인증 라이브러리가 바뀌더라도 훅의 인터페이스만 유지하면 컴포넌트 코드는 수정할 필요가 없습니다.

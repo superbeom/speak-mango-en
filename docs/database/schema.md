@@ -1,7 +1,7 @@
 # Database Schema Documentation
 
 이 문서는 프로젝트에서 사용하는 데이터베이스 스키마와 테이블의 상세 명세를 관리합니다.
-모든 SQL 변경 사항은 `database/migrations` 및 `database/functions` 폴더의 SQL 파일뿐만 아니라, 이 문서에도 반영되어야 합니다.
+모든 SQL 변경 사항은 `database/migrations`, `database/functions`, `database/triggers` 폴더의 SQL 파일뿐만 아니라, 이 문서에도 반영되어야 합니다.
 
 ## Schema: `speak_mango_en`
 
@@ -27,6 +27,65 @@
 | `tags`         | TEXT[]      |     | `NULL`               | 태그 배열 (예: business, daily)             |
 | `meaning_text` | TEXT        |     | `GENERATED(meaning)` | 검색 최적화를 위한 meaning의 TEXT 변환 컬럼 |
 
+#### 2. `users`
+
+사용자 프로필 및 구독 상태를 관리하는 테이블입니다 (NextAuth 호환).
+
+| Column Name             | Type        | Key | Default             | Description                                 |
+| ----------------------- | ----------- | --- | ------------------- | ------------------------------------------- |
+| `id`                    | UUID        | PK  | `gen_random_uuid()` | 사용자 고유 식별자                          |
+| `name`                  | TEXT        |     | -                   | 이름/닉네임                                 |
+| `email`                 | TEXT        | UK  | -                   | 이메일 주소                                 |
+| `emailVerified`         | TIMESTAMPTZ |     | -                   | 이메일 인증 일시                            |
+| `image`                 | TEXT        |     | -                   | 프로필 이미지 URL                           |
+| `tier`                  | `user_tier` |     | 'free'              | 사용자 등급 ('free', 'pro')                 |
+| `subscription_end_date` | TIMESTAMPTZ |     | -                   | 구독 만료 일시                              |
+| `trial_usage_count`     | INT         |     | 0                   | 무료 기능 체험 횟수                         |
+| `created_at`            | TIMESTAMPTZ |     | `now()`             | 계정 생성 일시                              |
+| `updated_at`            | TIMESTAMPTZ |     | `now()`             | 계정 정보 최종 수정 일시 (Trigger 자동갱신) |
+
+#### 3. `accounts`
+
+NextAuth의 OAuth 계정 연결 정보를 저장하는 테이블입니다.
+
+| Column Name         | Type   | Key  | Default             | Description            |
+| ------------------- | ------ | ---- | ------------------- | ---------------------- |
+| `id`                | UUID   | PK   | `gen_random_uuid()` | 고유 식별자            |
+| `userId`            | UUID   | FK   | -                   | `users.id` 참조        |
+| `type`              | TEXT   |      | -                   | 계정 타입 (예: oauth)  |
+| `provider`          | TEXT   | UK\* | -                   | 제공자 (예: google)    |
+| `providerAccountId` | TEXT   | UK\* | -                   | 제공자 할당 ID         |
+| `refresh_token`     | TEXT   |      | -                   | OAuth 갱신 토큰        |
+| `access_token`      | TEXT   |      | -                   | OAuth 액세스 토큰      |
+| `expires_at`        | BIGINT |      | -                   | 액세스 토큰 만료 시간  |
+| `token_type`        | TEXT   |      | -                   | 토큰 타입 (예: bearer) |
+| `scope`             | TEXT   |      | -                   | 권한 범위              |
+| `id_token`          | TEXT   |      | -                   | OIDC ID 토큰           |
+| `session_state`     | TEXT   |      | -                   | 세션 상태              |
+
+#### 4. `sessions`
+
+NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블입니다.
+
+| Column Name    | Type        | Key | Default             | Description                |
+| -------------- | ----------- | --- | ------------------- | -------------------------- |
+| `id`           | UUID        | PK  | `gen_random_uuid()` | 고유 식별자                |
+| `sessionToken` | TEXT        | UK  | -                   | 세션 토큰 (식별자)         |
+| `userId`       | UUID        | FK  | -                   | `users.id` 참조            |
+| `expires`      | TIMESTAMPTZ |     | -                   | 세션 만료 일시 (기본 30일) |
+
+#### 5. `user_actions`
+
+표현에 대한 사용자의 상호작용(좋아요, 저장, 학습 등)을 저장하는 테이블입니다.
+
+| Column Name     | Type          | Key  | Default             | Description                         |
+| --------------- | ------------- | ---- | ------------------- | ----------------------------------- |
+| `id`            | UUID          | PK   | `gen_random_uuid()` | 고유 식별자                         |
+| `user_id`       | UUID          | FK\* | -                   | `users.id` 참조                     |
+| `expression_id` | UUID          | FK\* | -                   | `expressions.id` 참조               |
+| `action_type`   | `action_type` | UK\* | -                   | 액션 종류 ('like', 'save', 'learn') |
+| `created_at`    | TIMESTAMPTZ   |      | `now()`             | 액션 발생 일시                      |
+
 ### Index Strategy & Configuration
 
 데이터베이스 성능 최적화를 위해 컬럼의 특성에 맞춰 **B-Tree**와 **GIN** 인덱스를 전략적으로 사용합니다.
@@ -46,6 +105,8 @@
 
 #### Current Indexes
 
+##### Table: `expressions`
+
 | Index Name                          | Type          | Target              | Description                         |
 | :---------------------------------- | :------------ | :------------------ | :---------------------------------- |
 | `expressions_pkey`                  | B-Tree        | `id`                | Primary Key (Unique)                |
@@ -59,6 +120,23 @@
 | `idx_expressions_expression_trgm`   | GIN (Trigram) | `expression`        | 부분 문자열 검색 최적화             |
 | `idx_expressions_meaning_text_trgm` | GIN (Trigram) | `meaning_text`      | 뜻(Meaning) 전체 텍스트 검색 최적화 |
 | `unique_expression`                 | B-Tree        | `expression`        | 표현 중복 방지 (Unique Constraint)  |
+
+##### Table: `users` & Auth
+
+| Index Name                  | Type   | Target         | Description                |
+| :-------------------------- | :----- | :------------- | :------------------------- |
+| `idx_users_email`           | B-Tree | `email`        | 사용자 이메일 조회 최적화  |
+| `idx_accounts_userId`       | B-Tree | `userId`       | 사용자별 계정 연동 조회    |
+| `idx_sessions_userId`       | B-Tree | `userId`       | 사용자별 세션 조회         |
+| `idx_sessions_sessionToken` | B-Tree | `sessionToken` | 세션 토큰 조회 (인증 처리) |
+
+##### Table: `user_actions`
+
+| Index Name                       | Type   | Target                 | Description                  |
+| :------------------------------- | :----- | :--------------------- | :--------------------------- |
+| `idx_user_actions_user_id`       | B-Tree | `user_id`              | 사용자별 액션 조회           |
+| `idx_user_actions_expression_id` | B-Tree | `expression_id`        | 표현별 액션 통계 조회        |
+| `idx_user_actions_composite`     | B-Tree | `user_id, action_type` | 사용자별 특정 액션 목록 조회 |
 
 #### Future Recommendations
 
@@ -86,6 +164,55 @@
     limit limit_cnt;
   $$;
   ```
+
+### Database Triggers
+
+트리거는 데이터 변경 시 자동으로 실행되는 로직을 정의합니다.
+
+#### 1. Trigger Functions
+
+| Function Name                | Returns   | Description                                           |
+| ---------------------------- | --------- | ----------------------------------------------------- |
+| `update_updated_at_column()` | `TRIGGER` | 레코드 수정 시 `updated_at` 컬럼을 현재 시간으로 갱신 |
+
+**SQL Definition**:
+
+```sql
+create or replace function speak_mango_en.update_updated_at_column()
+returns trigger
+language plpgsql
+as $$
+begin
+    new.updated_at = now();
+    return new;
+end;
+$$;
+```
+
+#### 2. Triggers
+
+| Trigger Name              | Table   | Event           | Description                                |
+| ------------------------- | ------- | --------------- | ------------------------------------------ |
+| `update_users_updated_at` | `users` | `BEFORE UPDATE` | 사용자 정보 변경 시 `updated_at` 필드 갱신 |
+
+### Custom Enums
+
+프로젝트 도메인에 특화된 사용자 정의 타입입니다.
+
+#### 1. `user_tier`
+
+사용자의 서비스 이용 등급을 구분합니다.
+
+- `free`: 기본 사용자 (LocalStorage 저장, 기능 제한)
+- `pro`: 유료 구독 사용자 (DB 저장, 모든 기능 개방)
+
+#### 2. `action_type`
+
+사용자가 표현에 대해 수행하는 상호작용의 종류를 정의합니다.
+
+- `like`: 좋아요 표시
+- `save`: 저장/북마크 (나중에 공부하기)
+- `learn`: 학습 완료 표시
 
 ### Dual-Category System
 

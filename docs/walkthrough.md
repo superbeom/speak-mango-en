@@ -2,6 +2,40 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.0: User System Phase 1 Implementation (2026-01-24)
+
+### 1. Goal (목표)
+
+- 실제로 동작하는 인증 시스템 기본 인프라를 구축합니다.
+- 보안이 강화된 Refresh Token(Database Session) 전략을 구현하여 세션 제어권을 확보합니다.
+
+### 2. Implementation (구현)
+
+#### A. Security-First Auth Strategy
+
+- **Refresh Token Strategy**: `JWT` 전용 방식 대신 `database` 세션 전략을 채택.
+  - `sessions` 테이블에 세션 토큰을 저장하여 서버에서 언제든 세션을 삭제(Logout 또는 권한 회수)할 수 있는 구조 확보.
+  - `@auth/supabase-adapter` 연동으로 Supabase DB를 세션 저장소로 활용.
+
+#### B. Database & Infrastructure
+
+- **Migration & Triggers**:
+  - `016_init_user_system.sql`: `users`, `accounts`, `sessions`, `user_actions` 테이블 생성 및 인덱싱 완료.
+  - `database/triggers/update_users_timestamp.sql`: 사용자 레코드 수정 시 `updated_at` 컬럼 자동 갱신 트리거 구축.
+- **Config & Hooks**:
+  - `lib/auth/config.ts`: Google OAuth 및 세션 수명(30일), 갱신 주기(24시간) 설정 완료.
+  - `hooks/useAuthUser.ts`: 클라이언트 컴포넌트에서 `tier`, `subscriptionEndDate` 등 커스텀 속성에 접근 가능한 통합 훅 구현.
+
+#### C. Integrated Setup Guide
+
+- **Environment Setup**: `docs/environment_setup.md`를 신설하여 `AUTH_SECRET` 생성 및 Google OAuth 리디렉션 URI(`.../api/auth/callback/google`) 설정 가이드 보완.
+
+### 3. Result (결과)
+
+- ✅ **Infrastructure**: 사용자 가입 및 구독 관리를 위한 기초 공사 완료.
+- ✅ **Security**: 세션 무효화 기능을 갖춘 안전한 인증 환경 조성.
+- ✅ **Type Safety**: TypeScript 앰비언트 모듈 확장으로 세션 객체 내 커스텀 필드 타입 안전성 보장.
+
 ## v0.13.0: NextAuth-based User System Planning (2026-01-23)
 
 ### 1. Goal (목표)
