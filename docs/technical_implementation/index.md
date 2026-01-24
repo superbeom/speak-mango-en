@@ -1464,6 +1464,6 @@ NextAuth(Auth.js v5)를 기반으로 구축된 보안 중심의 사용자 인증
 ### 17.4 Type-Safe Session Access (타입 안전 인증 접근)
 
 - **Ambient Module Extension**: `types/next-auth.d.ts`에서 NextAuth의 `Session` 및 `User` 인터페이스를 확장하여 커스텀 필드(`tier` 등)에 대한 IDE 자동 완성 및 타입 검사를 지원합니다.
-- **Common Hook**: `hooks/useAuthUser.ts`
+- **Common Hook**: `hooks/user/useAuthUser.ts`
   - 클라이언트 컴포넌트에서 인증 상태(`loading`, `authenticated`)와 사용자 정보를 한 번에 가져올 수 있는 추상화된 훅을 제공합니다.
   - **Benefit**: 중복 코드를 줄이고, 미래에 인증 라이브러리가 바뀌더라도 훅의 인터페이스만 유지하면 컴포넌트 코드는 수정할 필요가 없습니다.

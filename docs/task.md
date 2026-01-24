@@ -121,11 +121,11 @@
   - [x] **Auth**: NextAuth 아키텍처 및 Google Provider 연동 설정
   - [x] **Hook**: 클라이언트 사이드 인증 훅 (`useAuthUser`) 구현
   - [x] **Setup**: 환경 변수(`.env.local`) 설정 및 로컬 테스트 (사용자 작업)
-- [ ] **Phase 2: Hybrid Repository Pattern**
-  - [ ] **Design**: Local/Remote 통합 리포지토리 인터페이스 정의
-  - [ ] **Local**: Zustand 기반 Local Storage 리포지토리 구현
-  - [ ] **Remote**: Supabase Server Action 기반 Remote 리포지토리 구현
-  - [ ] **Sync**: 무료 -> 유료 전환 시 데이터 마이그레이션 로직 구현
+- [x] **Phase 2: Hybrid Repository Pattern**
+  - [x] **Design**: Local/Remote 통합 리포지토리 인터페이스 정의
+  - [x] **Local**: `localStorage` 기반 리포지토리 구현 (Zustand 도입 예정)
+  - [x] **Remote**: Supabase Server Action 기반 Remote 리포지토리 구현
+  - [x] **Sync**: 무료 -> 유료 전환 시 데이터 마이그레이션 로직 구현
 - [ ] **Phase 3: Interactive Features**
   - [ ] **Actions**: Like, Save, Learn 버튼 UI 및 상태 연동
   - [ ] **UI**: 비로그인 액션 시 로그인 유도 모달(Login Modal) 구현

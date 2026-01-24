@@ -2,6 +2,37 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.1: User System Phase 2 - Hybrid Repository Pattern (2026-01-24)
+
+### 1. Goal (목표)
+
+- 무료(Guest) 사용자와 유료(Pro) 사용자 모두에게 끊김 없는 '좋아요/저장/학습' 경험을 제공합니다.
+- 데이터 저장소(Local vs Remote)를 투명하게 전환하고, 유료 전환 시 데이터를 동기화하는 **하이브리드 아키텍처**를 구현합니다.
+
+### 2. Implementation (구현)
+
+#### A. Repository Interface & Strategy
+
+- **Interface**: `UserActionRepository`를 정의하여 `getActions`, `toggleAction`, `hasAction` 메서드를 표준화했습니다.
+- **Implementations**:
+  - `LocalUserActionRepository`: `localStorage`에 직접 접근하여 데이터를 관리합니다. (Stateless, Single Source of Truth)
+  - `RemoteUserActionRepository`: `services/actions/user.ts`의 Server Action을 호출하여 Supabase DB와 통신합니다.
+
+#### B. Strategy Switcher Hook (`useUserActions`)
+
+- **Logic**: `useAuthUser` 훅을 통해 사용자의 티어(`free` vs `pro`)를 감지하고, 적절한 Repository 구현체를 자동으로 선택하여 반환합니다.
+- **Benefit**: UI 컴포넌트(`LikeButton` 등)는 내부 저장 로직을 알 필요 없이 `toggleAction`만 호출하면 되므로 결합도가 낮아집니다.
+
+#### C. Synchronization Logic
+
+- **Bulk Sync**: `UserActionRepository.sync()` 메서드를 통해 로컬 데이터를 서버로 일괄 전송(`upsert`)하는 로직을 구현했습니다.
+- **Server Action**: `syncUserActions` 함수는 `ON CONFLICT DO NOTHING` 전략을 사용하여 중복 데이터 충돌 없이 안전하게 병합을 수행합니다.
+
+### 3. Result (결과)
+
+- ✅ **Hybrid Storage**: 비용 효율적인 로컬 저장소와 신뢰성 높은 원격 저장소를 동시에 운용 가능.
+- ✅ **Scalability**: 향후 `IndexedDB` 등으로 로컬 저장소를 고도화하거나, 캐싱 레이어를 추가하기 용이한 구조.
+
 ## v0.14.0: User System Phase 1 Implementation (2026-01-24)
 
 ### 1. Goal (목표)

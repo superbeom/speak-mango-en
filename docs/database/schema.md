@@ -153,17 +153,17 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Parameters**:
   - `limit_cnt` (int): 반환할 행의 최대 개수.
 - **Returns**: `setof speak_mango_en.expressions`
-- **SQL Definition**:
-  ```sql
-  create or replace function speak_mango_en.get_random_expressions(limit_cnt int)
-  returns setof speak_mango_en.expressions
-  language sql
-  as $$
-    select * from speak_mango_en.expressions
-    order by random()
-    limit limit_cnt;
-  $$;
-  ```
+- **SQL Definition**: `database/functions/get_random_expressions.sql` 참조.
+
+#### 2. `toggle_user_action`
+
+- **Description**: 사용자 액션(좋아요/저장/학습)을 원자적(Atomic)으로 토글합니다. 존재하면 삭제하고, 없으면 생성합니다.
+- **Usage**: 클라이언트에서 더블 클릭 등으로 인한 Race Condition을 방지하고 네트워크 요청을 최적화(1 RTT)하기 위해 사용합니다.
+- **Parameters**:
+  - `p_expression_id` (uuid): 대상 표현 ID.
+  - `p_action_type` (text): 액션 타입 ('like', 'save', 'learn').
+- **Returns**: `void`
+- **SQL Definition**: `database/functions/toggle_user_action.sql` 참조.
 
 ### Database Triggers
 

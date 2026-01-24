@@ -225,16 +225,16 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 - [x] NextAuth 패키지 설치 (`next-auth@beta`).
 - [x] `auth.ts` 설정 파일 작성 (Google Provider, Callbacks).
 - [x] 환경 변수 설정 (`AUTH_SECRET`, `GOOGLE_CLIENT_ID` 등).
-- [x] `hook/useAuthUser.ts` 생성: 클라이언트 컴포넌트용 인증 래퍼.
+- [x] `hooks/user/useAuthUser.ts` 생성: 클라이언트 컴포넌트용 인증 래퍼.
 
 ### Phase 2: 리포지토리 및 기본 액션
 
 - **리포지토리 인터페이스 정의**:
-- [ ] `types/user.ts`: 사용자 및 액션 관련 타입 정의.
-- [ ] `services/actions/localRepository.ts`: Zustand + persist 미들웨어를 사용하여 로컬 스토리지 제어 로직 구현.
-- [ ] `services/actions/remoteRepository.ts`: Supabase Server Action 구현.
+- [x] `services/repositories/UserActionRepository.ts`: 사용자 및 액션 관련 타입 정의.
+- [x] `services/repositories/LocalUserActionRepository.ts`: Local Storage 기반 리포지토리 구현.
+- [x] `services/repositories/RemoteUserActionRepository.ts`: Supabase Server Action 기반 리포지토리 구현.
 - **통합 훅**:
-- [ ] `hooks/useUserActions.ts`: 로그인 상태에 따라 Local/Remote 자동 분기 처리.
+- [x] `hooks/user/useUserActions.ts`: 로그인 상태에 따라 Local/Remote 자동 분기 처리.
 - **UI 컴포넌트**:
   - [ ] `components/actions/LikeButton.tsx`, `SaveButton.tsx`, `LearnButton.tsx` 구현.
   - [ ] **Anonymous 제어**: 각 버튼 컴포넌트 내부에서 로그인 여부 체크 후 `LoginModal` 호출 로직 추가.
