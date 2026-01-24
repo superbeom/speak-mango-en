@@ -17,3 +17,7 @@ export const CATEGORIES = [
 ];
 
 export const SCROLL_RESET_KEY = "SCROLL_RESET";
+
+export const LOCAL_STORAGE_KEYS = {
+  USER_ACTIONS: "user_actions",
+};

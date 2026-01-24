@@ -155,6 +155,18 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Reason**: Next.js 환경에서 쿠키 접근 방식이 다르기 때문에, 브라우저 환경(`createBrowserClient`)과 서버 환경(`createServerClient`)용 유틸리티를 분리하여 구현했습니다.
 - **Multi-Schema**: `createBrowserSupabase(schema?)`와 같이 스키마를 인자로 받아 다국어 확장에 유연하게 대응하도록 설계되었습니다.
 
+### 5.3 Client-Side State Management (Zustand)
+
+- **Library**: `zustand` + `persist` middleware.
+- **Purpose**: 로컬 사용자 액션(좋아요, 저장 등)의 고성능 처리 및 UI 반응성 확보.
+- **Implementation**:
+  - **Memory-First**: `Set` 자료구조를 사용하여 `O(1)` 성능으로 상태를 관리합니다.
+  - **Auto-Persist**: 상태 변경 시 자동으로 `localStorage`에 직렬화(`Array.from`)하여 저장하고, 로드 시 역직렬화(`new Set`)합니다.
+  - **SSR Safety**: `persist` 미들웨어의 내부 로직 덕분에 Next.js Hydration 과정에서 불일치 에러 없이 안전하게 초기화됩니다.
+- **Structure**:
+  - `store/useLocalActionStore.ts`: 실제 상태를 관리하는 Zustand 스토어.
+  - `services/repositories/LocalUserActionRepository.ts`: 스토어에 접근하는 비동기 어댑터 (Repository Pattern 유지).
+
 ## 6. Search & Navigation Logic
 
 ### 6.1 URL Query Parameter State

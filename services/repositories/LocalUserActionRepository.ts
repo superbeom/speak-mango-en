@@ -1,48 +1,18 @@
 import { ActionType, UserActionRepository } from "./UserActionRepository";
+import { useLocalActionStore } from "@/store/useLocalActionStore";
 
-const STORAGE_PREFIX = "mango_actions_";
-
-const getStorageKey = (type: ActionType): string => {
-  return `${STORAGE_PREFIX}${type}`;
-};
-
-const getStoredIds = (type: ActionType): Set<string> => {
-  if (typeof window === "undefined") return new Set();
-
-  const key = getStorageKey(type);
-  const json = localStorage.getItem(key);
-
-  if (!json) return new Set();
-  try {
-    return new Set(JSON.parse(json));
-  } catch {
-    return new Set();
-  }
-};
-
-const saveStoredIds = (type: ActionType, ids: Set<string>): void => {
-  if (typeof window === "undefined") return;
-  const key = getStorageKey(type);
-  localStorage.setItem(key, JSON.stringify(Array.from(ids)));
-};
-
+// Access the store outside of React components using .getState()
+// This preserves the interface while leveraging Zustand's state management
 export const localUserActionRepository: UserActionRepository = {
   async getActions(type: ActionType): Promise<string[]> {
-    return Array.from(getStoredIds(type));
+    return useLocalActionStore.getState().getActions(type);
   },
 
   async toggleAction(expressionId: string, type: ActionType): Promise<void> {
-    const ids = getStoredIds(type);
-    if (ids.has(expressionId)) {
-      ids.delete(expressionId);
-    } else {
-      ids.add(expressionId);
-    }
-    saveStoredIds(type, ids);
+    useLocalActionStore.getState().toggleAction(expressionId, type);
   },
 
   async hasAction(expressionId: string, type: ActionType): Promise<boolean> {
-    const ids = getStoredIds(type);
-    return ids.has(expressionId);
+    return useLocalActionStore.getState().hasAction(expressionId, type);
   },
 };

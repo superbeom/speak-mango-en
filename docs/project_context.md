@@ -77,6 +77,8 @@ speak-mango-en/
 ├── services/            # 비즈니스 로직 및 데이터 접근 서비스
 │   ├── actions/         # Next.js Server Actions (user context 등)
 │   └── repositories/    # 데이터 레이어 추상화 (Local/Remote Hybrid Pattern)
+├── store/               # 전역 상태 관리 (Zustand)
+│   └── useLocalActionStore.ts # 로컬 액션 상태 (localStorage 연동)
 ├── n8n/                 # n8n 자동화 관련 설정 및 템플릿
 │   └── expressions/     # 영어 표현(Expressions) 생성 워크플로우
 │       ├── code/        # 각 노드의 JavaScript 코드 파일 (단계별 분리)

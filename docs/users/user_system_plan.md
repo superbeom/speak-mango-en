@@ -237,6 +237,7 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 - [x] `hooks/user/useUserActions.ts`: 로그인 상태에 따라 Local/Remote 자동 분기 처리.
 - **UI 컴포넌트**:
   - [ ] `components/actions/LikeButton.tsx`, `SaveButton.tsx`, `LearnButton.tsx` 구현.
+  - [ ] **UI 반응성(Reactivity)**: 현재 `useUserActions`는 비동기 리포지토리를 반환하므로, 버튼 UI는 `useLocalActionStore`를 직접 구독하거나 훅을 개선하여 상태 변경을 즉시 반영해야 함.
   - [ ] **Anonymous 제어**: 각 버튼 컴포넌트 내부에서 로그인 여부 체크 후 `LoginModal` 호출 로직 추가.
 
 ### Phase 3: UI 통합

@@ -11,9 +11,13 @@
   - 유료 사용자: `Supabase RPC`(`toggle_user_action`) 및 `Server Actions`를 통한 데이터 영구 저장 및 원자성 확보.
 - **Interface Segregation**: `UserActionRepository` (기본)와 `SyncableRepository` (동기화 포함) 인터페이스 분리.
 - **Functional Refactoring**: 클래스 기반 리포지토리를 객체 리터럴(Object Literal)로 변경하여 React Hook과의 호환성 및 간결성 확보.
+- **Client-Side State Management (Zustand)**:
+  - `LocalUserActionRepository`를 Zustand Store(`store/useLocalActionStore.ts`) 기반으로 재구현.
+  - `localStorage` 직접 접근 방식의 비효율성(매번 파싱) 제거 및 UI 반응성(Reactivity) 기반 마련.
+  - `constants/index.ts`에 `LOCAL_STORAGE_KEYS` 상수를 도입하여 키 관리 안전성 확보.
 - **Code Audit (Vercel Best Practices)**:
-  - `localStorage` 파싱 최적화를 검토했으나, 상태 불일치 위험 방지를 위해 **Direct Access** 방식을 채택.
-  - `RPC` 도입으로 클라이언트-DB 통신 횟수 및 동시성 문제 해결.
+  - `persist` 미들웨어 사용으로 SSR Hydration Mismatch 방지.
+  - `Set` 자료구조 직렬화(Serialization) 로직 구현.
 
 ## 2026-01-24: User System Phase 1 Implementation (NextAuth & Schema)
 

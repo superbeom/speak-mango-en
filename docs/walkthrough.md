@@ -15,7 +15,9 @@
 
 - **Interface**: `UserActionRepository`를 정의하여 `getActions`, `toggleAction`, `hasAction` 메서드를 표준화했습니다.
 - **Implementations**:
-  - `LocalUserActionRepository`: `localStorage`에 직접 접근하여 데이터를 관리합니다. (Stateless, Single Source of Truth)
+  - `LocalUserActionRepository`: `Zustand` 스토어를 래핑하여 구현. (`store/useLocalActionStore.ts`)
+    - **Reactivity**: 스토어 상태 변경 시 `persist` 미들웨어가 자동으로 `localStorage`에 동기화합니다.
+    - **Performance**: 메모리 상의 `Set` 객체를 사용하므로 `O(1)` 조회가 가능하며, 매번 스토리지를 파싱하지 않습니다.
   - `RemoteUserActionRepository`: `services/actions/user.ts`의 Server Action을 호출하여 Supabase DB와 통신합니다.
 
 #### B. Strategy Switcher Hook (`useUserActions`)
