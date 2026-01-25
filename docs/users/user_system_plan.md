@@ -236,14 +236,15 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 - **통합 훅**:
 - [x] `hooks/user/useUserActions.ts`: 로그인 상태에 따라 Local/Remote 자동 분기 처리.
 - **UI 컴포넌트**:
-  - [ ] `components/actions/LikeButton.tsx`, `SaveButton.tsx`, `LearnButton.tsx` 구현.
-  - [ ] **UI 반응성(Reactivity)**: 현재 `useUserActions`는 비동기 리포지토리를 반환하므로, 버튼 UI는 `useLocalActionStore`를 직접 구독하거나 훅을 개선하여 상태 변경을 즉시 반영해야 함.
-  - [ ] **Anonymous 제어**: 각 버튼 컴포넌트 내부에서 로그인 여부 체크 후 `LoginModal` 호출 로직 추가.
+  - [x] `components/actions/LikeButton.tsx`, `SaveButton.tsx`, `LearnButton.tsx` 구현.
+  - [x] **UI 반응성(Reactivity)**: 현재 `useUserActions`는 비동기 리포지토리를 반환하므로, 버튼 UI는 `useLocalActionStore`를 직접 구독하거나 훅을 개선하여 상태 변경을 즉시 반영해야 함.
+  - [x] **Anonymous 제어**: 각 버튼 컴포넌트 내부에서 로그인 여부 체크 후 `LoginModal` 호출 로직 추가.
 
 ### Phase 3: UI 통합
 
-- [ ] **Login Modal**: 액션 시도 시 뜨는 가입 유도 모달.
-- [ ] **Action Buttons**: Like/Save/Learn 버튼 컴포넌트화 및 훅 연결.
+- [x] **Login Modal**: 액션 시도 시 뜨는 가입 유도 모달.
+- [x] **Action Buttons**: Like/Save/Learn 버튼 컴포넌트화 및 훅 연결.
+- [x] **Login Trigger**: 헤더의 로그인 버튼 구현.
 - [ ] **Trial Counter**: 오디오 재생 시 카운트 차감 및 제한 팝업 구현.
 
 ### Phase 4: 마이 페이지 & 랭킹

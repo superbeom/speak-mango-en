@@ -21,6 +21,9 @@ import BackButton from "@/components/BackButton";
 import DialogueSection from "@/components/DialogueSection";
 import ShareButton from "@/components/ShareButton";
 import KeywordList from "@/components/KeywordList";
+import LikeButton from "@/components/actions/LikeButton";
+import SaveButton from "@/components/actions/SaveButton";
+import LearnButton from "@/components/actions/LearnButton";
 
 interface PageProps {
   params: Promise<{
@@ -203,6 +206,22 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 {meaning}
               </p>
 
+              {/* Action Buttons */}
+              <div className="mt-6 flex items-center gap-4 border-y border-subtle py-4">
+                <LikeButton expressionId={expression.id} size="lg" showCount />
+                <SaveButton expressionId={expression.id} size="lg" />
+                <div className="ml-auto">
+                  <ShareButton
+                    expressionId={expression.id}
+                    expressionText={expression.expression}
+                    meaning={meaning}
+                    shareLabel={dict.detail.share}
+                    shareCopiedLabel={dict.detail.shareCopied}
+                    shareFailedLabel={dict.detail.shareFailed}
+                  />
+                </div>
+              </div>
+
               <div className="mt-8 sm:mt-10 space-y-6 sm:space-y-8">
                 {/* Situation */}
                 <div className="rounded-2xl bg-subtle p-5 sm:p-6 border border-subtle">
@@ -258,6 +277,14 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
               </p>
             </details>
           </section>
+
+          {/* Learn Button (Primary Action) */}
+          <div className="flex justify-center py-8">
+            <LearnButton
+              expressionId={expression.id}
+              className="w-full sm:w-auto text-base py-4 px-10"
+            />
+          </div>
 
           {/* Tags & Share */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">

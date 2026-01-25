@@ -233,7 +233,8 @@ speak-mango-en/
 ### Database
 
 - **운영 전략**: `docs/database/supabase_strategy.md`에 따라 단일 Pro 프로젝트 내 **스키마 분리** 전략을 사용합니다.
-- **스키마 명**: `speak_mango_en` (기본 public 스키마 사용 지양).
+- **메인 스키마**: `speak_mango_en` (User Data).
+- **인증 스키마**: `speak_mango_en_next_auth` (NextAuth View Layer).
 
 ### Internationalization (i18n)
 

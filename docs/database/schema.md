@@ -7,6 +7,12 @@
 
 **Description**: Speak Mango 프로젝트 전용 격리 스키마. 다른 프로젝트와 DB를 공유하기 위해 데이터를 분리합니다.
 
+> [!NOTE]
+> **NextAuth 연동**:
+> 이 스키마는 **Snake Case** 표준을 따릅니다.
+> NextAuth와의 연동은 `speak_mango_en_next_auth` 스키마의 **View**를 통해 이루어집니다.
+> 따라서 애플리케이션 코드는 `speak_mango_en_next_auth` 스키마를 통해 CamelCase로 접근하지만, 실제 데이터는 이곳에 Snake Case로 저장됩니다.
+
 ### Tables
 
 #### 1. `expressions`
@@ -36,7 +42,7 @@
 | `id`                    | UUID        | PK  | `gen_random_uuid()` | 사용자 고유 식별자                          |
 | `name`                  | TEXT        |     | -                   | 이름/닉네임                                 |
 | `email`                 | TEXT        | UK  | -                   | 이메일 주소                                 |
-| `emailVerified`         | TIMESTAMPTZ |     | -                   | 이메일 인증 일시                            |
+| `email_verified`        | TIMESTAMPTZ |     | -                   | 이메일 인증 일시                            |
 | `image`                 | TEXT        |     | -                   | 프로필 이미지 URL                           |
 | `tier`                  | `user_tier` |     | 'free'              | 사용자 등급 ('free', 'pro')                 |
 | `subscription_end_date` | TIMESTAMPTZ |     | -                   | 구독 만료 일시                              |
@@ -48,31 +54,31 @@
 
 NextAuth의 OAuth 계정 연결 정보를 저장하는 테이블입니다.
 
-| Column Name         | Type   | Key  | Default             | Description            |
-| ------------------- | ------ | ---- | ------------------- | ---------------------- |
-| `id`                | UUID   | PK   | `gen_random_uuid()` | 고유 식별자            |
-| `userId`            | UUID   | FK   | -                   | `users.id` 참조        |
-| `type`              | TEXT   |      | -                   | 계정 타입 (예: oauth)  |
-| `provider`          | TEXT   | UK\* | -                   | 제공자 (예: google)    |
-| `providerAccountId` | TEXT   | UK\* | -                   | 제공자 할당 ID         |
-| `refresh_token`     | TEXT   |      | -                   | OAuth 갱신 토큰        |
-| `access_token`      | TEXT   |      | -                   | OAuth 액세스 토큰      |
-| `expires_at`        | BIGINT |      | -                   | 액세스 토큰 만료 시간  |
-| `token_type`        | TEXT   |      | -                   | 토큰 타입 (예: bearer) |
-| `scope`             | TEXT   |      | -                   | 권한 범위              |
-| `id_token`          | TEXT   |      | -                   | OIDC ID 토큰           |
-| `session_state`     | TEXT   |      | -                   | 세션 상태              |
+| Column Name           | Type   | Key  | Default             | Description            |
+| --------------------- | ------ | ---- | ------------------- | ---------------------- |
+| `id`                  | UUID   | PK   | `gen_random_uuid()` | 고유 식별자            |
+| `user_id`             | UUID   | FK   | -                   | `users.id` 참조        |
+| `type`                | TEXT   |      | -                   | 계정 타입 (예: oauth)  |
+| `provider`            | TEXT   | UK\* | -                   | 제공자 (예: google)    |
+| `provider_account_id` | TEXT   | UK\* | -                   | 제공자 할당 ID         |
+| `refresh_token`       | TEXT   |      | -                   | OAuth 갱신 토큰        |
+| `access_token`        | TEXT   |      | -                   | OAuth 액세스 토큰      |
+| `expires_at`          | BIGINT |      | -                   | 액세스 토큰 만료 시간  |
+| `token_type`          | TEXT   |      | -                   | 토큰 타입 (예: bearer) |
+| `scope`               | TEXT   |      | -                   | 권한 범위              |
+| `id_token`            | TEXT   |      | -                   | OIDC ID 토큰           |
+| `session_state`       | TEXT   |      | -                   | 세션 상태              |
 
 #### 4. `sessions`
 
 NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블입니다.
 
-| Column Name    | Type        | Key | Default             | Description                |
-| -------------- | ----------- | --- | ------------------- | -------------------------- |
-| `id`           | UUID        | PK  | `gen_random_uuid()` | 고유 식별자                |
-| `sessionToken` | TEXT        | UK  | -                   | 세션 토큰 (식별자)         |
-| `userId`       | UUID        | FK  | -                   | `users.id` 참조            |
-| `expires`      | TIMESTAMPTZ |     | -                   | 세션 만료 일시 (기본 30일) |
+| Column Name     | Type        | Key | Default             | Description                |
+| --------------- | ----------- | --- | ------------------- | -------------------------- |
+| `id`            | UUID        | PK  | `gen_random_uuid()` | 고유 식별자                |
+| `session_token` | TEXT        | UK  | -                   | 세션 토큰 (식별자)         |
+| `user_id`       | UUID        | FK  | -                   | `users.id` 참조            |
+| `expires`       | TIMESTAMPTZ |     | -                   | 세션 만료 일시 (기본 30일) |
 
 #### 5. `user_actions`
 
@@ -123,12 +129,12 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 ##### Table: `users` & Auth
 
-| Index Name                  | Type   | Target         | Description                |
-| :-------------------------- | :----- | :------------- | :------------------------- |
-| `idx_users_email`           | B-Tree | `email`        | 사용자 이메일 조회 최적화  |
-| `idx_accounts_userId`       | B-Tree | `userId`       | 사용자별 계정 연동 조회    |
-| `idx_sessions_userId`       | B-Tree | `userId`       | 사용자별 세션 조회         |
-| `idx_sessions_sessionToken` | B-Tree | `sessionToken` | 세션 토큰 조회 (인증 처리) |
+| Index Name                   | Type   | Target          | Description                |
+| :--------------------------- | :----- | :-------------- | :------------------------- |
+| `idx_users_email`            | B-Tree | `email`         | 사용자 이메일 조회 최적화  |
+| `idx_accounts_user_id`       | B-Tree | `user_id`       | 사용자별 계정 연동 조회    |
+| `idx_sessions_user_id`       | B-Tree | `user_id`       | 사용자별 세션 조회         |
+| `idx_sessions_session_token` | B-Tree | `session_token` | 세션 토큰 조회 (인증 처리) |
 
 ##### Table: `user_actions`
 

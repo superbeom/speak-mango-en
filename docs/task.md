@@ -127,8 +127,8 @@
   - [x] **Remote**: Supabase Server Action 기반 Remote 리포지토리 구현
   - [x] **Sync**: 무료 -> 유료 전환 시 데이터 마이그레이션 로직 구현
 - [ ] **Phase 3: Interactive Features**
-  - [ ] **Actions**: Like, Save, Learn 버튼 UI 및 상태 연동
-  - [ ] **UI**: 비로그인 액션 시 로그인 유도 모달(Login Modal) 구현
+  - [x] **Actions**: Like, Save, Learn 버튼 UI 및 상태 연동
+  - [x] **UI**: 비로그인 액션 시 로그인 유도 모달(Login Modal) 구현
   - [ ] **Logic**: '학습 완료' 시 자동 추천 스크롤 및 목록 필터링
 - [ ] **Phase 4: Feature Gating & Trial**
   - [ ] **Audio/Blur**: 사용자 티어별 기능 접근 제어 로직 구현

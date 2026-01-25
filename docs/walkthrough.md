@@ -30,6 +30,15 @@
 - **Bulk Sync**: `UserActionRepository.sync()` 메서드를 통해 로컬 데이터를 서버로 일괄 전송(`upsert`)하는 로직을 구현했습니다.
 - **Server Action**: `syncUserActions` 함수는 `ON CONFLICT DO NOTHING` 전략을 사용하여 중복 데이터 충돌 없이 안전하게 병합을 수행합니다.
 
+#### D. Interactive UI Components
+
+- **Login Integration**:
+  - `LoginButton`: 헤더 및 모달 내에서 Google 로그인을 트리거하는 컴포넌트.
+  - `LoginModal`: 비로그인 사용자가 액션 시도 시 부드럽게 나타나는 가입 유도 모달 (`Framer Motion` 적용).
+- **Responsive Action Buttons**:
+  - `LikeButton`, `SaveButton`, `LearnButton`: 각 액션별 아이콘과 상태(Active/Inactive)를 관리.
+  - **Store Subscription**: `useLocalActionStore`를 구독하여, 다른 곳에서 상태가 변하더라도(예: 리스트에서 좋아요 취소) 상세 페이지 버튼이 즉시 반응함.
+
 ### 3. Result (결과)
 
 - ✅ **Hybrid Storage**: 비용 효율적인 로컬 저장소와 신뢰성 높은 원격 저장소를 동시에 운용 가능.

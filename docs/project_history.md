@@ -2,6 +2,74 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-24: User System Finalization (Hybrid Repo & UI)
+
+### ✅ 진행 사항
+
+1.  **Interactive UI Components (사용자 인터페이스)**:
+    - **Authentication**: `LoginButton.tsx` (헤더 로그인) 및 `LoginModal.tsx` (가입 유도) 구현. `Framer Motion`을 적용하여 부드러운 진입/퇴장 애니메이션 제공.
+    - **Action Buttons**:
+      - `LikeButton`: 하트 애니메이션과 함께 좋아요 토글.
+      - `SaveButton`: 북마크 저장/취소.
+      - `LearnButton`: 학습 완료 처리 및 다음 카드로 자동 스크롤.
+    - **Reactivity**: `useLocalActionStore`를 구독하여, 리스트에서 좋아요를 눌렀을 때 상세 페이지의 버튼 상태도 즉시 동기화되도록 구현.
+
+2.  **Hybrid Repository Pattern (데이터 저장소)**:
+    - **Dual Strategy**: 티어에 따라 저장소를 자동 전환하는 전략 구현.
+      - **Free/Anonymous**: `localStorage` 사용 (비용 $0, 속도 Fast). `Set` 자료구조 직렬화 로직 및 `persist` 미들웨어 적용.
+      - **Pro**: `Supabase DB` 사용 (영구 보존, 멀티 디바이스). `toggle_user_action` RPC 및 Server Action 연동.
+    - **Sync System**: 유료 전환 시 로컬 데이터를 서버로 일괄 업로드(`syncUserActions`)하는 마이그레이션 로직 포함.
+
+3.  **Auth Architecture Stabilization (Schema View Strategy)**:
+    - **문제 해결**: NextAuth(`camelCase`)와 Supabase(`snake_case`)의 네이밍 충돌 해결.
+    - **View Proxy Pattern**:
+      - Data Layer: `speak_mango_en` (Snake Case Standard).
+      - View Layer: `speak_mango_en_next_auth` (Camel Case View).
+      - Adapter: `CustomSupabaseAdapter`를 통해 View Layer와 통신.
+
+4.  **Backend Infrastructure**:
+    - **Session Strategy**: Database Session (Refresh Token) 방식으로 보안 강화.
+    - **Triggers**: `users`, `sessions` 테이블 자동 갱신 트리거 및 인덱스 최적화 완료.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 로그인 모달은 언제 뜨나요?**
+
+- **A.** 비로그인(익명) 사용자가 '좋아요', '저장', '학습 완료' 버튼을 클릭할 때 즉시 노출됩니다. 콘텐츠 열람은 자유롭지만, 상호작용을 위해서는 로그인이 필요함을 부드럽게 알리기 위함입니다.
+
+**Q. 왜 View Proxy 패턴을 썼나요?**
+
+- **A.** DB 컬럼명을 라이브러리에 맞춰 `camelCase`로 바꾸면 SQL 가독성이 떨어지고, 기존 컨벤션을 해치게 됩니다. "DB는 DB답게, 코드는 코드답게" 유지하기 위해 View를 번역기(Translator)로 사용했습니다.
+
+**Q. 버튼 상태 동기화는 어떻게 처리했나요?**
+
+- **A.** `useLocalActionStore`가 전역 상태 관리(Zustand) 역할을 수행합니다. 어떤 컴포넌트에서든 액션이 발생하면 스토어가 업데이트되고, 이를 구독하는 모든 버튼 컴포넌트가 리렌더링되어 최신 상태를 반영합니다.
+
+## 2026-01-24: Auth System Stabilization (Schema View Strategy)
+
+### ✅ 진행 사항
+
+- **인증 아키텍처 개선 (Schema View Strategy)**:
+  - **문제**: NextAuth Supabase Adapter는 `next_auth` 스키마와 `camelCase` 컬럼을 강제하여, 기존 `speak_mango_en` 스키마(`snake_case`)와 충돌 발생.
+  - **해결**: **"View Proxy Pattern"** 도입.
+    - **Data Layer (`speak_mango_en`)**: 테이블과 컬럼은 `snake_case` 표준을 준수하여 저장 (`user_id`, `session_token` 등).
+    - **View Layer (`speak_mango_en_next_auth`)**: NextAuth 전용 스키마를 생성하고, Updatable View를 통해 테이블과 매핑 (`userId` -> `user_id`).
+    - **Adapter**: 공식 `@auth/supabase-adapter` 대신 스키마 설정이 가능한 `CustomSupabaseAdapter` (Lite Version) 사용.
+- **코드 리팩토링**:
+  - `constants/index.ts`에 `AUTH_SCHEMA` 상수 추가하여 하드코딩 제거.
+  - `017_create_next_auth_views.sql`: 전용 스키마 및 View 생성 마이그레이션 적용.
+  - `018_cleanup_indexes.sql`: 중복 인덱스 정리.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 공식 어댑터 대신 커스텀 어댑터를 사용했나?**
+
+- **A.** 공식 어댑터는 스키마 이름이 `next_auth`로 하드코딩되어 변경할 수 없습니다. 다중 프로젝트 전략(`supabase_strategy.md`)에 따라 `speak_mango_en_next_auth`와 같이 네임스페이스가 포함된 스키마를 사용하기 위해, 스키마 옵션만 주입할 수 있는 경량 커스텀 어댑터를 적용했습니다.
+
+**Q. 왜 View를 사용했나?**
+
+- **A.** 데이터베이스 표준(Snake Case)과 라이브러리 요구사항(Camel Case)을 모두 만족시키기 위해서입니다. 테이블 컬럼명을 라이브러리에 맞춰 Camel Case로 바꾸면 SQL 쿼리 작성 시 쌍따옴표(`"userId"`)를 매번 써야 하는 불편함과 기존 관례 파괴 문제가 발생합니다. View를 "번역기"로 활용하여 이 문제를 우아하게 해결했습니다.
+
 ## 2026-01-24: User System Phase 2 Implementation (Hybrid Repository)
 
 ### ✅ 진행 사항

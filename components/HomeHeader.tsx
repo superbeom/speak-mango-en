@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SERVICE_NAME } from "@/constants";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
+import LoginButton from "@/components/auth/LoginButton";
 
 interface HomeHeaderProps {
   quizText: string;
@@ -28,6 +29,8 @@ export default function HomeHeader({
           <span className="hidden sm:inline text-sm text-zinc-500">
             {subHeaderText}
           </span>
+          <span className="hidden sm:inline text-sm text-disabled">|</span>
+          <LoginButton />
         </nav>
       </div>
     </Header>

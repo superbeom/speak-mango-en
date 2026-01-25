@@ -15,6 +15,8 @@ import { getExpressionUIConfig } from "@/lib/ui-config";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
 import ShareButton from "@/components/ShareButton";
+import LikeButton from "@/components/actions/LikeButton";
+import SaveButton from "@/components/actions/SaveButton";
 
 interface ExpressionCardProps {
   item: Expression;
@@ -147,6 +149,27 @@ const ExpressionCard = memo(function ExpressionCard({
           ))}
         </div>
       )}
+
+      {/* Action Bar */}
+      {!isStatic && (
+        <div className="mt-6 flex items-center justify-between border-t border-subtle pt-4">
+          <div className="flex gap-2">
+            <LikeButton expressionId={item.id} />
+            <SaveButton expressionId={item.id} />
+          </div>
+          {/* Share Button */}
+          <ShareButton
+            variant="compact"
+            expressionId={item.id}
+            expressionText={item.expression}
+            meaning={meaning}
+            shareLabel={dict.card.share}
+            shareCopiedLabel={dict.card.shareCopied}
+            shareFailedLabel={dict.card.shareFailed}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 
@@ -196,20 +219,6 @@ const ExpressionCard = memo(function ExpressionCard({
         }}
       >
         {CardContent}
-
-        {/* Share Button */}
-        <div className="absolute bottom-5 right-5">
-          <ShareButton
-            variant="compact"
-            expressionId={item.id}
-            expressionText={item.expression}
-            meaning={meaning}
-            shareLabel={dict.card.share}
-            shareCopiedLabel={dict.card.shareCopied}
-            shareFailedLabel={dict.card.shareFailed}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
       </Link>
     </motion.div>
   );

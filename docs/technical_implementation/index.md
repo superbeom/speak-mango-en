@@ -727,16 +727,16 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 - **Partial Reveal**: 영어 문장 클릭 시 `revealedEnglishIndices`에 추가하고 즉시 노출합니다.
 - **Auto Sync**: `revealedEnglishIndices`의 크기가 전체 대화 길이와 같아지면 즉시 `viewMode`를 `exposed`로 전환하고, `savedRevealedIndices`를 파기(Discard)하여 현재 상태를 새로운 Context로 확정합니다.
 
-## 14. Performance Optimization Techniques (성능 최적화 기법)
+## 13. Performance Optimization Techniques (성능 최적화 기법)
 
-### 14.1 Server-Side Waterfall Removal (서버 측 워터폴 제거)
+### 13.1 Server-Side Waterfall Removal (서버 측 워터폴 제거)
 
 - **Problem**: `app/page.tsx` 및 `app/quiz/page.tsx`에서 `getI18n()`(헤더 파싱 + 딕셔너리 로딩) 완료 후 DB 조회 함수(`getExpressions`, `getRandomExpressions`)가 실행되는 직렬 구조로 인해 TTFB(Time to First Byte) 지연.
 - **Solution**: 의존성이 없는 비동기 작업을 `Promise.all`로 병렬 처리.
   - `getLocale()`을 먼저 호출하여 필요한 로케일 정보를 확보.
   - `getI18n()`과 `getExpressions()`를 동시에 실행하여 전체 응답 시간을 단축.
 
-### 14.2 React Component Rendering Optimization (리렌더링 최적화)
+### 13.2 React Component Rendering Optimization (리렌더링 최적화)
 
 - **Target**: `DialogueSection` 및 `DialogueItem` (오디오 재생 시 빈번한 상태 변경 발생)
 - **Problem**: 오디오 재생 인덱스(`playingIndex`)가 변경될 때마다 섹션 내의 모든 대화 아이템이 리렌더링됨.
@@ -745,7 +745,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **Stable Callbacks**: `DialogueSection`의 이벤트 핸들러(`onPlay`, `onEnded` 등)를 `useCallback`으로 감싸고, `index`를 인자로 받는 형태로 리팩토링하여 함수 참조 안정성 확보.
   - **State Logic Refactor**: `handleEnglishClick` 내부의 중복된 상태 업데이트 로직을 제거하고, 순수 함수 형태로 개선하여 사이드 이펙트 최소화.
 
-### 14.3 Database Search Optimization (검색 쿼리 최적화)
+### 13.3 Database Search Optimization (검색 쿼리 최적화)
 
 - **Problem**:
   - `meaning` 필드는 JSONB 타입이므로, 특정 키(`ko`, `en` 등) 내부의 텍스트를 `ILIKE`로 검색할 때 인덱스를 사용할 수 없음 (Full Table Scan 발생).
@@ -799,11 +799,11 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - 전역 상태(`ExpressionContext`)에서 무거운 데이터(`items`)를 제거하고, 오직 '페이지 수(`size`)'와 '스크롤 위치'만 관리하도록 경량화하여 메모리 사용량을 최적화했습니다.
 - **Reference**: 자세한 내용은 [useSWR 전략 문서](./use_swr_strategy.md)를 참조하십시오.
 
-## 13. Service Essentials Implementation (시스템 필수 요소 구현)
+## 14. Service Essentials Implementation (시스템 필수 요소 구현)
 
 서비스 품질을 결정짓는 3대 요소(PWA, SEO, i18n)에 대한 기술적 구현 상세입니다.
 
-### 13.1 PWA & Splash Screen Strategy (스플래시 스크린 전략)
+### 14.1 PWA & Splash Screen Strategy (스플래시 스크린 전략)
 
 - **Library**: `next-pwa` (플러그인) + `pwa-asset-generator` (에셋 생성)
 - **Challenge**: iOS는 안드로이드와 달리 매니페스트 파일만으로 스플래시 스크린을 자동 생성해주지 않으며, 기기 해상도별로 정확한 사이즈의 이미지를 `<link rel="apple-touch-startup-image">`로 제공해야 합니다.
@@ -813,18 +813,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 - **Build Config**: `next-pwa`와 Turbopack의 호환성 문제 및 Vercel 배포 안정성을 위해, Dev/Build 스크립트에 `--webpack` 플래그를 명시적으로 적용했습니다.
 - **Explicit Injection (iOS Fix)**: Next.js `metadata.appleWebApp`의 자동 생성 태그가 iOS에서 스플래시 스크린을 제대로 트리거하지 못하는 이슈(White Screen)가 확인되어, `app/layout.tsx`에 수동으로 `<head>` 태그를 선언하고 `<link rel="apple-touch-startup-image">`를 직접 주입하는 **Hard-coded Link Strategy**를 채택했습니다. 또한 `apple-mobile-web-app-capable` 태그도 명시적으로 추가하여 Standalone 모드를 보장합니다.
 
-### 13.4 PWA Theme Color (동적 테마 컬러)
-
-- **Problem**: `viewport`의 `themeColor`를 단일 문자열(`#ffffff`)로 설정 시, 다크 모드에서도 상태 표시줄이 흰색으로 유지되어 눈부심 유발.
-- **Solution**: Next.js Viewport API를 활용하여 미디어 쿼리 기반의 동적 색상 배열을 설정했습니다.
-  ```typescript
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-  ];
-  ```
-
-### 13.2 Dynamic SEO & Open Graph (동적 SEO)
+### 14.2 Dynamic SEO & Open Graph (동적 SEO)
 
 - **Metadata API**: Next.js 14+의 `generateMetadata` 함수를 활용하여 페이지별로 동적인 `title`과 `description`을 주입합니다.
 - **Structured Data (JSON-LD) Strategy**:
@@ -839,7 +828,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **Implementation**: `ImageResponse`를 사용하여 텍스트와 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 **Request Time에 동적으로 생성**합니다.
   - **Benefit**: 수천 개의 표현 및 퀴즈 페이지에 대해 정적 이미지를 미리 생성할 필요 없이, 강력한 소셜 미디어 미리보기(CTR 증대)를 제공합니다.
 
-### 13.3 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
+### 14.3 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
 
 단순 번역을 넘어, 검색 의도(Search Intent)와 사용자 언어 맥락(Context)에 맞는 키워드를 동적으로 생성하는 전략입니다.
 
@@ -852,7 +841,18 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 - **Visible Tags (White Hat)**:
   - 메타 태그(`keywords`)뿐만 아니라, `components/KeywordList.tsx`를 통해 페이지 하단에 실제 텍스트로 키워드를 노출합니다. 이는 _Keyword Stuffing_(숨겨진 텍스트로 키워드 남발)으로 오인받지 않으면서 검색 엔진에 페이지의 관련성을 강력하게 어필하는 **White Hat SEO** 기법입니다.
 
-### 13.4 Type-Safe i18n Architecture (타입 안전 i18n)
+### 14.4 PWA Theme Color (동적 테마 컬러)
+
+- **Problem**: `viewport`의 `themeColor`를 단일 문자열(`#ffffff`)로 설정 시, 다크 모드에서도 상태 표시줄이 흰색으로 유지되어 눈부심 유발.
+- **Solution**: Next.js Viewport API를 활용하여 미디어 쿼리 기반의 동적 색상 배열을 설정했습니다.
+  ```typescript
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ];
+  ```
+
+### 14.5 Type-Safe i18n Architecture (타입 안전 i18n)
 
 - **Total 9 Languages**: EN, KO, JA, ES, FR, DE, RU, ZH, AR 지원.
 - **Inference & Maintenance**:
@@ -867,7 +867,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
 - **Benefit**: 새로운 언어 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 안정적인 확장이 가능합니다.
 
-### 13.5 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
+### 14.6 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
 
 **File**: `verification/verify_i18n_locales.js`
 
@@ -1045,11 +1045,11 @@ $ node verification/verify_i18n_locales.js
 - `0`: 모든 검증 통과
 - `1`: 하나 이상의 언어 파일에서 위반 발견
 
-## 14. Analytics Implementation (사용자 행동 분석)
+## 15. Analytics Implementation (사용자 행동 분석)
 
 Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행동 데이터를 수집하고 분석하는 시스템입니다.
 
-### 14.1 Environment-Based Configuration (환경별 설정)
+### 15.1 Environment-Based Configuration (환경별 설정)
 
 - **Dual Property Strategy**: 개발과 프로덕션 환경에서 별도의 GA4 속성을 사용하여 테스트 데이터가 실제 통계에 섞이지 않도록 분리합니다.
 - **Environment Variables**:
@@ -1064,7 +1064,7 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
   ```
 - **Benefit**: 환경 전환 시 수동 설정 변경 불필요, 실수 방지
 
-### 14.2 Type-Safe Event Tracking (타입 안전한 이벤트 추적)
+### 15.2 Type-Safe Event Tracking (타입 안전한 이벤트 추적)
 
 - **Function Overloading**: `gtag` 함수의 타입 정의를 함수 오버로드로 구현하여 각 명령어(`js`, `config`, `event`)별로 다른 타입의 파라미터를 받을 수 있도록 설계:
   ```typescript
@@ -1105,7 +1105,7 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
   ```
 - **Benefit**: 컴파일 타임에 파라미터 검증, 런타임 에러 방지, IDE 자동 완성 지원
 
-### 14.3 Automatic Page View Tracking (자동 페이지 뷰 추적)
+### 15.3 Automatic Page View Tracking (자동 페이지 뷰 추적)
 
 - **Provider Component**: `lib/analytics/AnalyticsProvider.tsx`가 라우트 변경을 감지하여 자동으로 페이지 뷰 전송
 - **Implementation**:
@@ -1138,7 +1138,7 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
   </AnalyticsProvider>
   ```
 
-### 14.4 Development vs Production Behavior (개발/프로덕션 동작 분리)
+### 15.4 Development vs Production Behavior (개발/프로덕션 동작 분리)
 
 - **Development Mode**:
   - 콘솔 로그로 이벤트 출력: `console.log('[Analytics] Event:', eventName, properties)`
@@ -1154,7 +1154,7 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
   };
   ```
 
-### 14.5 Event Taxonomy (이벤트 분류 체계)
+### 15.5 Event Taxonomy (이벤트 분류 체계)
 
 - **Naming Convention**: `{object}_{action}` 형식의 snake_case 사용
 - **Core Events** (10개):
@@ -1170,7 +1170,7 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
   10. `related_click`: 관련 표현 클릭
 - **Future Events** (2개): 11. `share_click`: 공유 버튼 클릭 12. `share_complete`: 공유 완료
 
-### 14.6 Integration with Next.js App Router (Next.js 통합)
+### 15.6 Integration with Next.js App Router (Next.js 통합)
 
 - **Script Injection**: `app/layout.tsx`에서 GA4 스크립트를 `afterInteractive` 전략으로 로드:
   ```tsx
@@ -1182,7 +1182,7 @@ Google Analytics 4를 Next.js 16 App Router 환경에 통합하여 사용자 행
 - **Configuration**: `send_page_view: false`로 설정하여 자동 페이지 뷰를 비활성화하고 `AnalyticsProvider`에서 수동 제어
 - **Single Source of Truth**: `GA_MEASUREMENT_ID`를 `analytics/index.ts`에서 export하여 환경별 선택 로직을 한 곳에 집중
 
-### 14.7 Component-Level Event Tracking (컴포넌트 레벨 이벤트 추적)
+### 15.7 Component-Level Event Tracking (컴포넌트 레벨 이벤트 추적)
 
 Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
 
@@ -1282,7 +1282,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - Props가 제공되면 추적하고, 없으면 추적하지 않는 조건부 로직
 - **Next Step**: `DialogueSection.tsx`에서 `expressionId` prop을 받아 `DialogueItem`으로 전달 필요
 
-### 14.8 Analytics Module Organization (모듈 구조)
+### 15.8 Analytics Module Organization (모듈 구조)
 
 - **Directory**: `analytics/` (루트 레벨, `lib/`에서 이동)
 - **Rationale**: Analytics는 단순 유틸리티가 아니라 독립적인 기능 모듈
@@ -1298,11 +1298,11 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
 - **Import Path**: `@/analytics` (기존 `@/lib/analytics`에서 변경)
 - **Comment Convention**: 모든 주석 한국어로 통일 (프로젝트 규칙 준수)
 
-## 15. Share Functionality Implementation (공유 기능 구현)
+## 16. Share Functionality Implementation (공유 기능 구현)
 
 사용자가 표현을 소셜 미디어나 메신저로 공유할 수 있도록 Web Share API와 Clipboard API를 활용한 크로스 플랫폼 공유 시스템입니다.
 
-### 15.1 ShareButton Component Architecture (컴포넌트 아키텍처)
+### 16.1 ShareButton Component Architecture (컴포넌트 아키텍처)
 
 - **File**: `components/ShareButton.tsx`
 - **Strategy**: Progressive Enhancement (점진적 향상)
@@ -1312,7 +1312,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - `default`: 아이콘 + 텍스트 (상세 페이지용)
   - `compact`: 아이콘만 (카드용, 공간 효율적)
 
-### 15.2 Web Share API Integration (네이티브 공유 통합)
+### 16.2 Web Share API Integration (네이티브 공유 통합)
 
 - **Feature Detection**: `navigator.share` 존재 여부로 지원 확인
 - **Share Data**:
@@ -1327,7 +1327,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - **Mobile**: Instagram, Twitter, KakaoTalk, WhatsApp 등 설치된 앱으로 직접 공유
   - **Desktop**: 대부분 미지원 → Clipboard Fallback 자동 전환
 
-### 15.3 Clipboard Fallback Strategy (클립보드 폴백)
+### 16.3 Clipboard Fallback Strategy (클립보드 폴백)
 
 - **API**: `navigator.clipboard.writeText(url)`
 - **User Feedback**: Toast 알림으로 복사 성공/실패 피드백
@@ -1345,7 +1345,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   ```
 - **UTM Parameters**: 공유 출처 추적 (`utm_source=share`, `utm_medium=native`)
 
-### 15.4 Toast Notification System (토스트 알림 시스템)
+### 16.4 Toast Notification System (토스트 알림 시스템)
 
 - **Component**: `components/ui/Toast.tsx`
 - **Type System**: `types/toast.ts`
@@ -1356,7 +1356,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
 - **Animation**: Framer Motion 기반 fade-in + slide-in 효과
 - **Auto-dismiss**: 3초 후 자동 사라짐
 
-### 15.5 Event Propagation Prevention (이벤트 전파 방지)
+### 16.5 Event Propagation Prevention (이벤트 전파 방지)
 
 - **Problem**: Expression Card는 전체가 `<Link>`로 감싸져 있어, 공유 버튼 클릭 시 상세 페이지로 이동하는 문제 발생
 - **Solution**: 이중 방어 전략
@@ -1364,7 +1364,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   2. **ExpressionCard**: ShareButton의 `onClick` prop에서 `e.stopPropagation()`
 - **Result**: 공유 버튼 클릭 시 페이지 이동 없이 공유 기능만 실행
 
-### 15.6 Card Integration with Absolute Positioning (카드 통합)
+### 16.6 Card Integration with Absolute Positioning (카드 통합)
 
 - **Layout Strategy**: Absolute 포지셔닝으로 독립적 배치
 
@@ -1386,7 +1386,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - 시각적 균형 확보
   - 태그 영역 침범 없음
 
-### 15.7 Analytics Integration (분석 통합)
+### 16.7 Analytics Integration (분석 통합)
 
 - **Events**:
   - `trackShareClick`: 공유 버튼 클릭 시 자동 호출
@@ -1395,7 +1395,7 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - `trackShareComplete`: 공유 성공 시 자동 호출
 - **Implementation**: ShareButton 내부에서 자동 추적, 컴포넌트 사용자는 별도 로직 불필요
 
-### 15.8 Internationalization (다국어 지원)
+### 16.8 Internationalization (다국어 지원)
 
 - **Translation Keys**: 9개 언어 (EN, KO, JA, ES, FR, DE, RU, ZH, AR)
   - `detail.share`: "Share" / "공유" / "共有" 등
@@ -1403,18 +1403,18 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - `detail.shareFailed`: "Failed to share" / "공유 실패" 등
   - `card.share`, `card.shareCopied`, `card.shareFailed`: 카드용 동일 텍스트
 
-## 16. Marketing Asset Generation System (Marketing Studio)
+## 17. Marketing Asset Generation System (Marketing Studio)
 
 SNS 마케팅을 위한 고화질 에셋을 생성하고 대량 자동화하기 위한 기술적 구현 상세입니다.
 
-### 16.1 Client-Side Image Rendering (`html-to-image`)
+### 17.1 Client-Side Image Rendering (`html-to-image`)
 
 - **Objective**: 브라우저에 렌더링된 DOM 요소를 고화질 이미지(PNG)로 변환합니다.
 - **Library**: `html-to-image`를 사용하여 SVG ForeignObject 기반의 캔버스 렌더링을 수행합니다.
 - **High Resolution (Retina Support)**: 캡처 시 `pixelRatio: 2` 옵션을 적용하여 모바일 및 고해상도 디스플레이에서도 선명한 결과물을 얻습니다.
 - **Download Handling**: 생성된 데이터 URL을 `file-saver`를 통해 사용자 로컬 기기에 즉시 저장합니다.
 
-### 16.2 Automation with Playwright (자동화 스크립트)
+### 17.2 Automation with Playwright (자동화 스크립트)
 
 - **Language**: Python
 - **Engine**: Playwright (Headless Chromium)
@@ -1424,13 +1424,13 @@ SNS 마케팅을 위한 고화질 에셋을 생성하고 대량 자동화하기 
   3. 특정 요소(`#studio-capture-area`)가 화면에 나타날 때까지 대기(`wait_for_selector`)한 후 해당 영역만 스크린샷을 찍습니다.
 - **Quality Assurance**: 폰트 및 이미지 로딩 지연으로 인한 깨짐 방지를 위해 캡처 전 `1000ms`의 지연 시간을 강제합니다.
 
-### 16.3 Localized Asset Generation (다국어 이미지 생성)
+### 17.3 Localized Asset Generation (다국어 이미지 생성)
 
 - **Query Param Strategy**: 실제 사용자 URL 구조를 깨뜨리지 않으면서 스크립트가 특정 언어를 강제할 수 있도록 `?lang=[code]` 쿼리 파라미터를 활용합니다.
 - **Middleware Integration**: `proxy.ts` 미들웨어가 해당 파라미터를 감지하여 `x-locale` 헤더를 설정함으로써 서버 컴포넌트가 해당 언어의 딕셔너리를 로드하도록 유도합니다.
 - **Directory Sharding**: 생성된 이미지는 `studio_images/[lang]/` 폴더로 자동 분류되어 저장됩니다.
 
-### 16.4 Layout Adaptability for Long Content (유동적 레이아웃)
+### 17.4 Layout Adaptability for Long Content (유동적 레이아웃)
 
 - **Problem**: 내용이 길어질 경우 `absolute`로 배치된 브랜딩 로고가 텍스트와 겹치는 현상 발생.
 - **Solution**: **Flexbox Flow**로 전환.
@@ -1438,7 +1438,7 @@ SNS 마케팅을 위한 고화질 에셋을 생성하고 대량 자동화하기 
   - 상단에 카드 본체(`flex-1`), 하단에 로고 영역을 배치하여 내용이 많아지면 로고가 자연스럽게 아래로 밀리도록 설계했습니다.
   - 이 과정에서 `aspect-ratio`를 유지하면서도 콘텐츠 오버플로우를 안전하게 처리합니다.
 
-### 16.5 Static Capture Mode (정적 캡처 모드)
+### 17.5 Static Capture Mode (정적 캡처 모드)
 
 - **Prop**: `ExpressionCard`에 `isStatic` 옵션을 도입했습니다.
 - **Implementation**:
@@ -1447,11 +1447,11 @@ SNS 마케팅을 위한 고화질 에셋을 생성하고 대량 자동화하기 
   - 레이아웃을 `h-auto`로 고정하여 캡처 도구(`html-to-image`)가 실제 콘텐츠 높이를 정확히 계산할 수 있도록 돕습니다.
 - **Benefit**: 캡처 시점에 애니메이션 중간 단계가 찍히거나 레이아웃이 어긋나는 문제를 원천 차단합니다.
 
-## 17. User System & Authentication (사용자 시스템 및 인증)
+## 18. User System & Authentication (사용자 시스템 및 인증)
 
 NextAuth(Auth.js v5)를 기반으로 구축된 보안 중심의 사용자 인증 및 권한 관리 시스템입니다.
 
-### 17.1 Refresh Token & Database Session Strategy (세션 관리 전략)
+### 18.1 Refresh Token & Database Session Strategy (세션 관리 전략)
 
 - **Problem**: 표준 JWT 방식은 빠르지만, 사용자의 구독 상태(Tier)가 변경되거나 계정이 정지되었을 때 서버에서 즉시 무효화하기 어렵다는 단점이 있습니다.
 - **Solution (Database Session)**: `strategy: "database"` 방식을 채택하고 `sessions` 테이블을 직접 운영합니다.
@@ -1459,13 +1459,13 @@ NextAuth(Auth.js v5)를 기반으로 구축된 보안 중심의 사용자 인증
   - **Live Tier Updates**: 구독 결제 완료 후 세션 갱신 주기(24시간) 내에 DB 정보를 강제 동기화하여 Pro 기능을 즉시 개방할 수 있습니다.
   - **Security**: 탈취된 세션 토큰을 서버 사이드에서 영구 무효화할 수 있는 강력한 보안 수단을 제공합니다.
 
-### 17.2 NextAuth v5 Architecture (인증 아키텍처)
+### 18.2 NextAuth v5 Architecture (인증 아키텍처)
 
 - **File**: `lib/auth/config.ts`, `app/api/auth/[...nextauth]/route.ts`
 - **Modern Pattern**: NextAuth v5의 최신 패턴을 따라 `auth.ts` 설정 파일을 `lib/auth/config.ts`로 분리하고, API Route에서는 간결하게 핸들러만 노출합니다.
 - **Middleware-less**: V5에서는 필요한 경우에만 `auth()` 함수를 호출하여 세션을 확인하는 Lazy Loading 방식을 사용하여 성능을 최적화합니다.
 
-### 17.3 Supabase Adapter & Custom Fields (어댑터 및 커스텀 필드)
+### 18.3 Supabase Adapter & Custom Fields (어댑터 및 커스텀 필드)
 
 - **Library**: `@auth/supabase-adapter`
 - **Mechanism**: Supabase를 NextAuth의 영속성 계층으로 사용합니다.
@@ -1473,9 +1473,22 @@ NextAuth(Auth.js v5)를 기반으로 구축된 보안 중심의 사용자 인증
   - `callbacks.session`: DB에서 가져온 `tier`, `subscriptionEndDate` 정보를 NextAuth 세션 객체에 주입합니다.
   - 이를 통해 API나 컴포넌트 레벨에서 별도의 추가 DB 조회 없이 사용자의 권한 등급을 즉시 파악할 수 있습니다.
 
-### 17.4 Type-Safe Session Access (타입 안전 인증 접근)
+### 18.4 Type-Safe Session Access (타입 안전 인증 접근)
 
 - **Ambient Module Extension**: `types/next-auth.d.ts`에서 NextAuth의 `Session` 및 `User` 인터페이스를 확장하여 커스텀 필드(`tier` 등)에 대한 IDE 자동 완성 및 타입 검사를 지원합니다.
 - **Common Hook**: `hooks/user/useAuthUser.ts`
   - 클라이언트 컴포넌트에서 인증 상태(`loading`, `authenticated`)와 사용자 정보를 한 번에 가져올 수 있는 추상화된 훅을 제공합니다.
   - **Benefit**: 중복 코드를 줄이고, 미래에 인증 라이브러리가 바뀌더라도 훅의 인터페이스만 유지하면 컴포넌트 코드는 수정할 필요가 없습니다.
+
+### 18.5 Schema View Strategy (인증 스키마 전략)
+
+NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)을 해결하기 위한 **View Proxy Pattern**입니다.
+
+- **The Conflict**:
+  - Supabase/PostgreSQL: `snake_case` (DB 표준)
+  - NextAuth: `camelCase` (JS 라이브러리 표준)
+- **The Solution (View Layer)**:
+  - **Physical (`speak_mango_en`)**: `snake_case` 테이블 (`users`, `sessions`).
+  - **Logical (`speak_mango_en_next_auth`)**: `camelCase`로 매핑된 Updatable View.
+  - **Mapping**: `CREATE VIEW ... SELECT user_id AS "userId" ...`
+- **Benefit**: DB 표준을 준수하면서도 외부 라이브러리와의 호환성을 완벽하게 유지합니다.

@@ -24,7 +24,6 @@ Speak Mango와 같이 **서브 도메인으로 언어별 서비스를 분리**�
 **"Global User, Local Content"** 전략을 사용하여 콘텐츠의 독립성과 사용자 경험의 통합성을 동시에 확보합니다.
 
 1.  **Content Schemas (Local)**: 각 언어별 학습 콘텐츠를 저장합니다.
-
     - `speak_mango_en`: 영어 학습 콘텐츠 (예: `expressions` 테이블)
     - `speak_mango_ko`: 한국어 학습 콘텐츠
     - `speak_mango_es`: 스페인어 학습 콘텐츠
@@ -110,9 +109,53 @@ CREATE TABLE style_studio.profiles (
 > **💡 Naming Note: Why 'profiles' not 'users'?**
 > Supabase는 내부적으로 `auth.users`라는 시스템 테이블을 사용합니다. 혼동을 방지하고 "인증 정보(User)"와 "사용자 정보(Profile)"를 명확히 구분하기 위해, 애플리케이션 레벨의 테이블은 관례적으로 `profiles`라고 명명합니다.
 
-## 5. 구현 가이드 (Implementation Guide)
+## 5. 인증 스키마 전략 (Authentication Schema Strategy)
 
-### 5.1. 스키마 생성 및 설정
+NextAuth와 같이 자체적인 테이블 구조와 명명 규칙(CamelCase)을 강제하는 외부 라이브러리를 통합할 때 사용하는 **"View Proxy Pattern"**입니다.
+
+### 5.1 View Proxy Architecture
+
+데이터베이스의 표준(`snake_case`)을 해치지 않으면서 외부 라이브러리의 요구사항(`camelCase`)을 수용하기 위해, **전용 스키마와 Updatable View**를 활용합니다.
+
+1.  **Data Schema (`speak_mango_en`)**:
+    - **역할**: 실제 데이터 저장소 (Physical Storage).
+    - **규칙**: PostgreSQL 표준인 **Snake Case** (`user_id`, `session_token`) 준수.
+    - **테이블**: `users`, `accounts`, `sessions`.
+
+2.  **Auth Schema (`speak_mango_en_next_auth`)**:
+    - **역할**: 외부 라이브러리용 인터페이스 (Logical Interface).
+    - **규칙**: 라이브러리가 요구하는 **Camel Case** (`userId`, `sessionToken`) 준수.
+    - **구성**: 실제 테이블이 아닌, Data Schema를 가리키는 **View**로만 구성.
+
+### 5.2 Implementation Example
+
+```sql
+-- 1. Create Data Schema (Snake Case)
+CREATE TABLE speak_mango_en.users (
+  id UUID PRIMARY KEY,
+  email_verified TIMESTAMPTZ,
+  ...
+);
+
+-- 2. Create Auth Schema
+CREATE SCHEMA speak_mango_en_next_auth;
+
+-- 3. Create View (Mapping)
+CREATE VIEW speak_mango_en_next_auth.users AS
+SELECT
+  id,
+  email_verified AS "emailVerified" -- CamelCase로 변환
+FROM speak_mango_en.users;
+
+-- 4. Grant Permissions
+GRANT ALL ON ALL TABLES IN SCHEMA speak_mango_en_next_auth TO service_role;
+```
+
+이 전략을 통해 **"DB는 DB답게, 코드는 코드답게"** 유지할 수 있습니다.
+
+## 6. 구현 가이드 (Implementation Guide)
+
+### 6.1. 스키마 생성 및 설정
 
 각 프로젝트 시작 시, `public` 스키마 대신 전용 스키마를 생성합니다.
 
@@ -129,7 +172,7 @@ GRANT USAGE ON SCHEMA speak_mango_shared TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA speak_mango_shared TO anon, authenticated, service_role;
 ```
 
-### 5.2. API 노출 설정 (Exposing Schema)
+### 6.2. API 노출 설정 (Exposing Schema)
 
 Supabase 대시보드에서 해당 스키마를 API로 접근 가능하도록 설정해야 합니다.
 
@@ -138,7 +181,7 @@ Supabase 대시보드에서 해당 스키마를 API로 접근 가능하도록 �
 3.  `public` 외에 추가한 스키마(예: `speak_mango_en`, `speak_mango_shared`)를 리스트에 추가
 4.  저장 (Save)
 
-### 5.3. 클라이언트 연결 (Client Setup)
+### 6.3. 클라이언트 연결 (Client Setup)
 
 #### Scenario A: Single Schema (Basic)
 
@@ -164,7 +207,7 @@ export function createBrowserSupabase() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       db: { schema: DATABASE_SCHEMA },
-    }
+    },
   );
 }
 
@@ -225,7 +268,7 @@ export function createBrowserSupabase(schema: string = DATABASE_SCHEMA) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       db: { schema },
-    }
+    },
   );
 }
 
@@ -265,14 +308,14 @@ export async function createServerSupabase(schema: string = DATABASE_SCHEMA) {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             /* 서버 컴포넌트에서 호출 시 예외 처리 */
           }
         },
       },
-    }
+    },
   );
 }
 
@@ -302,17 +345,17 @@ export async function createServerSupabase(schema: string = DATABASE_SCHEMA) {
  */
 ```
 
-## 6. Storage 관리 전략 (Storage Management Strategy)
+## 7. Storage 관리 전략 (Storage Management Strategy)
 
 데이터베이스와 마찬가지로 스토리지 또한 단일 프로젝트 내에서 다수의 서비스를 효율적으로 관리하기 위한 구조를 채택합니다.
 
-### 6.1. 버킷 명명 규칙 (Bucket Naming)
+### 7.1. 버킷 명명 규칙 (Bucket Naming)
 
 - **규칙**: 서비스 식별자(Project Name)를 버킷명으로 사용합니다.
 - **예시**: `speak-mango-en`, `style-studio`
 - **장점**: 특정 용도(예: `audio`)로 한정하지 않아 하나의 버킷을 해당 서비스의 통합 저장소로 활용 가능합니다.
 
-### 6.2. 하위 폴더를 통한 자산 격리 (Folder-based Isolation)
+### 7.2. 하위 폴더를 통한 자산 격리 (Folder-based Isolation)
 
 버킷 루트에 파일을 직접 저장하지 않고, 데이터의 성격에 따라 하위 폴더를 생성하여 관리합니다. 특히 하나의 리소스(예: 단어장 아이템)가 여러 종류의 자산(음성, 이미지 등)을 가질 경우, 아래와 같이 자산 타입별로 하위 폴더를 나누어 관리하는 것이 확장성에 매우 유리합니다.
 
@@ -322,7 +365,7 @@ export async function createServerSupabase(schema: string = DATABASE_SCHEMA) {
 - **Users**: `users/{user_id}/avatar.png`
 - **General Images**: `images/banners/hero.webp`
 
-### 6.3. 확장성 및 이점 (Extensibility)
+### 7.3. 확장성 및 이점 (Extensibility)
 
 1.  **관리 효율**: 서비스와 관련된 모든 바이너리 자산(음성, 이미지, 문서 등)을 하나의 버킷 내에서 체계적으로 관리할 수 있습니다.
 2.  **보안 정책(RLS)**: Supabase Storage 정책 설정 시 폴더 경로 패턴을 기반으로 권한을 세밀하게 제어할 수 있습니다. (예: `users/` 폴더는 본인만 접근 가능하도록 설정)
@@ -330,11 +373,12 @@ export async function createServerSupabase(schema: string = DATABASE_SCHEMA) {
 
 > **⚠️ 보안 고도화 주의사항 (Audio Feature Gating)**
 > 현재 음성 파일 버킷은 개발 편의 및 MVP 단계를 위해 **Public**으로 설정되어 있습니다. 향후 `docs/product/future_todos.md`에 정의된 **'유료 사용자에게만 음성 제공'** 기능을 구현할 때는 다음의 절차를 반드시 준수해야 합니다.
+
 > - **버킷 전환**: 버킷 권한을 `Public`에서 **`Private`**으로 변경.
 > - **RLS 적용**: `storage.objects` 테이블에 유료 사용자 여부(프로필 티어 등)를 확인하는 **Storage Policy(RLS)**를 추가하여 접근 제어.
 > - **접근 방식**: 프론트엔드에서 직통 URL 대신 Supabase SDK의 `createSignedUrl`을 사용하거나 정책 기반의 인증 세션을 통해 파일에 접근.
 
-## 7. 확장 및 졸업 (Migration & Graduation)
+## 8. 확장 및 졸업 (Migration & Graduation)
 
 특정 서비스의 트래픽이 급증하여 다른 서비스에 영향을 줄 경우:
 

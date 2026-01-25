@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GA_MEASUREMENT_ID } from "@/analytics";
 import AnalyticsProvider from "@/analytics/AnalyticsProvider";
+import SessionProvider from "@/context/SessionProvider";
 import { AudioProvider } from "@/context/AudioContext";
 import { ExpressionProvider } from "@/context/ExpressionContext";
 import { getI18n } from "@/i18n/server";
@@ -372,12 +373,14 @@ export default async function RootLayout({
         />
 
         <AnalyticsProvider lang={locale}>
-          <AudioProvider>
-            <ExpressionProvider>
-              {children}
-              <ScrollToTop />
-            </ExpressionProvider>
-          </AudioProvider>
+          <SessionProvider>
+            <AudioProvider>
+              <ExpressionProvider>
+                {children}
+                <ScrollToTop />
+              </ExpressionProvider>
+            </AudioProvider>
+          </SessionProvider>
         </AnalyticsProvider>
       </body>
     </html>
