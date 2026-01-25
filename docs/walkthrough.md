@@ -2,6 +2,37 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.3: I18n Refactoring - Context-based Localization (2026-01-25)
+
+### 1. Goal (목표)
+
+- 산재되어 있던 다국어 데이터(`dict`, `locale`) 주입 방식을 개선하여 **Prop Drilling**을 제거합니다.
+- 부모 컴포넌트의 단순 전달 역할을 최소화하고, 말단 컴포넌트가 독립적으로 최신 언어 정보를 참조하도록 아키텍처를 고도화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Global I18n Context (`context/I18nContext.tsx`)
+
+- **Context Design**: `locale`과 `dict`를 안전하게 보관하고 공급하는 공유 저장소를 구축했습니다.
+- **Hook Strategy**: `useI18n()` 훅을 통해 컨텍스트 접근 시 발생할 수 있는 'Provider 외부 호출' 에러를 사전에 차단하도록 검증 로직을 포함했습니다.
+
+#### B. Component Propagation Elimination
+
+- **Top-down Removal**: `ExpressionList`, `ExpressionCard`, `DialogueSection` 등 중간 레이어 컴포넌트에서 하위로 단순히 `dict`를 넘겨주던 모든 `props`와 인터페이스를 제거했습니다.
+- **Client Adoption**:
+  - `DialogueAudioButton`, `DialogueSection`, `ShareButton`, `ScrollToTop`, `KeywordList`, `LoginModal` 등 모든 클라이언트 컴포넌트 내부에서 `useI18n()`을 직접 호출하도록 리팩토링했습니다.
+
+#### C. Localization Integrity Enhancement
+
+- **Missing Key Backfill**: 다국어 리팩토링 과정에서 식별된 '번역 누락' 항목들을 9개 국어 전체 파일에 대해 전수 보충했습니다.
+  - 로그인 모달 제목/설명, 오디오 제어 버튼 툴팁, 학습 모드 안내 라벨 등.
+
+### 3. Result (결과)
+
+- ✅ **Developer Experience**: 새로운 클라이언트 컴포넌트 생성 시 부모로부터 데이터를 받아올 걱정 없이 즉시 다국어 지원 가능.
+- ✅ **Decoupling**: 컴포넌트 간의 의존성이 낮아져 특정 모듈의 독자적인 테스트 및 이동이 용이해짐.
+- ✅ **Consistency**: 모든 UI 텍스트에 대한 단일 상태 관리를 통해 일관된 다국어 사용자 경험 제공.
+
 ## v0.14.2: UI Centralization & Navigation Polishing (2026-01-25)
 
 ### 1. Goal (목표)

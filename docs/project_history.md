@@ -2,6 +2,25 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-25: Internationalization (i18n) Refactoring
+
+### ✅ 진행 사항
+
+1.  **I18n Context Adoption (다국어 컨텍스트 도입)**:
+    - **`I18nProvider` & `useI18n`**: 서버 유래 데이터(`dict`, `locale`)를 클라이언트 컴포넌트 트리 전체에 공유하기 위한 전역 컨텍스트를 구축했습니다.
+2.  **Prop Drilling Elimination (배달용 Prop 제거)**:
+    - **말단 컴포넌트 리팩토링**: `ShareButton`, `ScrollToTop`, `DialogueSection`, `KeywordList`, `LoginModal` 등 모든 클라이언트 컴포넌트가 부모로부터 `dict`를 넘겨받는 대신 `useI18n()` 훅을 통해 직접 데이터를 가져오도록 수정했습니다.
+3.  **Localization Scale-up (언어팩 고도화)**:
+    - **Localization Integrity**: 9개국 모든 언어팩에 로그인 모달 문구, 학습 모드 토글 라벨, 오디오 제어 툴팁 등을 일괄 추가하여 UI의 다국어 완성도를 높였습니다.
+4.  **Logo Static Refactoring (로고 컴포넌트 정적화)**:
+    - `Logo` 컴포넌트가 더 이상 서비스명을 Prop으로 받지 않고, 내부에서 `SERVICE_NAME` 상수를 직접 참조하도록 변경하여 결합도를 낮췄습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Prop Drilling 방식을 Context 방식으로 바꿨나요?**
+
+- **A.** 프로젝트가 확장되면서 거의 모든 클라이언트 컴포넌트가 번역 데이터(`dict`)를 필요로 하게 되었습니다. 이를 매번 부모 컴포넌트에서 주입해주는 방식은 코드의 가독성을 해치고, 중간 단계의 컴포넌트들이 불필요한 데이터를 들고 있어야 하는 오버헤드를 발생시켰기 때문입니다. Context 공법을 통해 각 컴포넌트가 독립적으로 최신 언어 상태를 참조할 수 있게 되었습니다.
+
 ## 2026-01-25: UI Centralization & Navigation Polishing
 
 ### ✅ 진행 사항

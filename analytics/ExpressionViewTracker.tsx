@@ -2,11 +2,11 @@
 
 import { useEffect } from "react";
 import { trackExpressionView } from "@/analytics";
+import { useI18n } from "@/context/I18nContext";
 
 interface ExpressionViewTrackerProps {
   expressionId: string;
   category: string;
-  lang: string;
 }
 
 /**
@@ -18,8 +18,9 @@ interface ExpressionViewTrackerProps {
 export default function ExpressionViewTracker({
   expressionId,
   category,
-  lang,
 }: ExpressionViewTrackerProps) {
+  const { locale: lang } = useI18n();
+
   useEffect(() => {
     trackExpressionView({
       expressionId,

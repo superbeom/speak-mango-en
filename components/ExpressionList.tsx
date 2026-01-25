@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/context/I18nContext";
 import { Expression } from "@/types/database";
 import { usePaginatedList } from "@/hooks/usePaginatedList";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
@@ -13,16 +14,13 @@ import LoadMoreButton from "./LoadMoreButton";
 interface ExpressionListProps {
   initialItems: Expression[];
   filters: ExpressionFilters;
-  locale: string;
-  loadMoreText: string;
 }
 
 export default function ExpressionList({
   initialItems,
   filters,
-  locale,
-  loadMoreText,
 }: ExpressionListProps) {
+  const { locale, dict } = useI18n();
   const cacheKey = serializeFilters(filters);
 
   // 로케일을 포함한 필터 (페이지네이션 시 사용)
@@ -46,7 +44,6 @@ export default function ExpressionList({
             <ExpressionCard
               key={item.id}
               item={item}
-              locale={locale}
               className="content-visibility-auto"
             />
           ))}
@@ -57,7 +54,7 @@ export default function ExpressionList({
       </div>
 
       {hasMore && !loading && (
-        <LoadMoreButton onClick={loadMore} label={loadMoreText} />
+        <LoadMoreButton onClick={loadMore} label={dict.common.loadMore} />
       )}
     </div>
   );

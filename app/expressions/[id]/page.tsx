@@ -135,11 +135,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-layout pb-20">
       {/* Track expression view */}
-      <ExpressionViewTracker
-        expressionId={id}
-        category={expression.category}
-        lang={locale}
-      />
+      <ExpressionViewTracker expressionId={id} category={expression.category} />
 
       <Header>
         <div className="flex items-center">
@@ -215,9 +211,6 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                     expressionId={expression.id}
                     expressionText={expression.expression}
                     meaning={meaning}
-                    shareLabel={dict.detail.share}
-                    shareCopiedLabel={dict.detail.shareCopied}
-                    shareFailedLabel={dict.detail.shareFailed}
                   />
                 </div>
               </div>
@@ -235,13 +228,8 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
                 {/* Dialogue */}
                 <DialogueSection
-                  title={dict.detail.dialogueTitle}
                   dialogue={expression.dialogue || []}
-                  locale={locale}
                   expressionId={expression.id}
-                  playAllLabel={dict.detail.playAll}
-                  stopLabel={dict.detail.stop}
-                  loadingLabel={dict.common.loading}
                 />
 
                 {/* Tip */}
@@ -303,9 +291,6 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
               expressionId={expression.id}
               expressionText={expression.expression}
               meaning={meaning}
-              shareLabel={dict.detail.share}
-              shareCopiedLabel={dict.detail.shareCopied}
-              shareFailedLabel={dict.detail.shareFailed}
             />
           </div>
 
@@ -316,8 +301,6 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
         {relatedExpressions.length > 0 && (
           <RelatedExpressions
             expressions={relatedExpressions}
-            locale={locale}
-            title={dict.detail.relatedTitle}
             currentExpressionId={expression.id}
           />
         )}

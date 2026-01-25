@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter } from "lucide-react";
 import { trackFilterApply } from "@/analytics";
-import { getDictionary } from "@/i18n";
+import { useI18n } from "@/context/I18nContext";
 import { useScroll } from "@/hooks/useScroll";
 import { getCategoryConfig } from "@/lib/ui-config";
 import { CATEGORIES } from "@/constants";
@@ -12,14 +12,10 @@ import { cn, formatMessage } from "@/lib/utils";
 import { getHomeWithFilters } from "@/lib/routes";
 import SearchBar from "@/components/SearchBar";
 
-interface FilterBarProps {
-  locale: string;
-}
-
-export default function FilterBar({ locale }: FilterBarProps) {
+export default function FilterBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dict = getDictionary(locale);
+  const { dict } = useI18n();
 
   const currentCategory = searchParams.get("category") || "all";
   const currentSearch = searchParams.get("search") || "";

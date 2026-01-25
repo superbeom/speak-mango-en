@@ -95,6 +95,7 @@
   - [x] **Analytics**: 퀴즈 정답/오답 및 완료 이벤트 추적
   - [x] **SEO**: 퀴즈 페이지 메타데이터(i18n) 및 sitemap 등록
 - [x] **Refactoring**: 라우트 로직 중앙화 (`CANONICAL_URLS`) 및 SEO 메타데이터 정제 (OpenGraph)
+- [x] **Refactoring**: 다국어(i18n) Prop Drilling 제거 및 Context API(`I18nProvider`) 전환
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

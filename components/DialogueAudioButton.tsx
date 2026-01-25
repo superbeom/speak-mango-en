@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Volume2, Loader2, Square, Pause, Play } from "lucide-react";
 import { trackAudioPlay, trackAudioComplete } from "@/analytics";
+import { useI18n } from "@/context/I18nContext";
 import { useAudio } from "@/context/AudioContext";
 import { AUDIO_PLAYBACK_START } from "@/constants/events";
 import { cn, getStorageUrl } from "@/lib/utils";
@@ -93,6 +94,7 @@ const DialogueAudioButton = forwardRef<
     },
     ref,
   ) => {
+    const { dict } = useI18n();
     const { getAudio } = useAudio();
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
@@ -461,7 +463,7 @@ const DialogueAudioButton = forwardRef<
           className,
         )}
         disabled={isLoading}
-        aria-label={isPlaying ? "Stop audio" : "Play audio"}
+        aria-label={isPlaying ? dict.detail.stopAudio : dict.detail.playAudio}
       >
         <DialogueAudioIcon
           isLoading={isLoading}

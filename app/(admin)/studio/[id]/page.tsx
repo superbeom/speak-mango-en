@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { getI18n } from "@/i18n/server";
 import { getExpressionById } from "@/lib/expressions";
 import StudioClient from "./StudioClient";
 
@@ -17,7 +16,5 @@ export default async function StudioPage({ params }: PageProps) {
     notFound();
   }
 
-  const { locale } = await getI18n();
-
-  return <StudioClient expression={expression} locale={locale} />;
+  return <StudioClient expression={expression} />;
 }

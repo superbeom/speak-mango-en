@@ -2,12 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SERVICE_NAME } from "@/constants";
 
-interface LogoProps {
-  name: string;
-}
-
-export default function Logo({ name }: LogoProps) {
+export default function Logo() {
   const pathname = usePathname();
 
   const handleClick = () => {
@@ -25,7 +22,7 @@ export default function Logo({ name }: LogoProps) {
       onClick={handleClick}
       className="text-xl font-bold tracking-tight text-main cursor-pointer hover:opacity-80 transition-opacity"
     >
-      {name}
+      {SERVICE_NAME}
     </Link>
   );
 }

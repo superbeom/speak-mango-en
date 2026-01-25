@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Share2 } from "lucide-react";
 import { trackShareClick, trackShareComplete } from "@/analytics";
+import { useI18n } from "@/context/I18nContext";
 import { ToastType, TOAST_TYPE } from "@/types/toast";
 import { cn } from "@/lib/utils";
 import { getShareUrl } from "@/lib/utils";
@@ -12,9 +13,6 @@ interface ShareButtonProps {
   expressionId: string;
   expressionText: string;
   meaning: string;
-  shareLabel: string;
-  shareCopiedLabel: string;
-  shareFailedLabel: string;
   variant?: "default" | "compact";
   onClick?: (e: React.MouseEvent) => void;
 }
@@ -23,12 +21,11 @@ export default function ShareButton({
   expressionId,
   expressionText,
   meaning,
-  shareLabel,
-  shareCopiedLabel,
-  shareFailedLabel,
   variant = "default",
   onClick,
 }: ShareButtonProps) {
+  const { dict } = useI18n();
+
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<ToastType>(TOAST_TYPE.SUCCESS);
@@ -72,14 +69,14 @@ export default function ShareButton({
         });
 
         // Show success toast
-        setToastMessage(shareCopiedLabel);
+        setToastMessage(dict.detail.shareCopied);
         setToastType(TOAST_TYPE.SUCCESS);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 1500);
       } catch (error) {
         // User cancelled or error occurred
         if ((error as Error).name !== "AbortError") {
-          setToastMessage(shareFailedLabel);
+          setToastMessage(dict.detail.shareFailed);
           setToastType(TOAST_TYPE.ERROR);
           setShowToast(true);
           setTimeout(() => setShowToast(false), 1500);
@@ -104,12 +101,12 @@ export default function ShareButton({
         });
 
         // Show success toast
-        setToastMessage(shareCopiedLabel);
+        setToastMessage(dict.detail.shareCopied);
         setToastType(TOAST_TYPE.SUCCESS);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 1500);
       } catch (error) {
-        setToastMessage(shareFailedLabel);
+        setToastMessage(dict.detail.shareFailed);
         setToastType(TOAST_TYPE.ERROR);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 1500);
@@ -141,10 +138,10 @@ export default function ShareButton({
                 "shadow-sm hover:shadow-md",
               ],
         )}
-        aria-label={shareLabel}
+        aria-label={dict.detail.share}
       >
         <Share2 className={variant === "compact" ? "w-4 h-4" : "w-4 h-4"} />
-        {variant === "default" && <span>{shareLabel}</span>}
+        {variant === "default" && <span>{dict.detail.share}</span>}
       </button>
 
       <Toast message={toastMessage} type={toastType} isVisible={showToast} />

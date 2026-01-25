@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useI18n } from "@/context/I18nContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
@@ -8,15 +9,14 @@ import { QUIZ_STORAGE_KEYS } from "@/lib/quiz";
 
 interface StudyLinkProps {
   expressionId: string;
-  label: string;
   className?: string;
 }
 
 export default function StudyButton({
   expressionId,
-  label,
   className,
 }: StudyLinkProps) {
+  const { dict } = useI18n();
   const isMobile = useIsMobile();
 
   const handleClick = () => {
@@ -34,7 +34,7 @@ export default function StudyButton({
         className,
       )}
     >
-      {label}
+      {dict.quiz.study}
     </Link>
   );
 }

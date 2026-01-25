@@ -141,6 +141,14 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Helper**: `getI18n()` 함수는 `headers()`에서 `x-locale`을 읽어 해당 언어의 JSON/TS 딕셔너리(`lib/i18n/locales/*.ts`)를 반환합니다.
 - **Benefit**: 클라이언트 사이드 번들 크기를 줄이고, 검색 엔진(SEO)에 최적화된 다국어 콘텐츠를 제공합니다.
 
+### 4.3 Client-Side Data Injection (Context API)
+
+- **File**: `context/I18nContext.tsx`
+- **Mechanism**: 서버 컴포넌트에서 로드된 `dict`와 `locale` 데이터를 클라이언트 컴포넌트 트리 전체에 효율적으로 전파하기 위해 React Context API를 활용합니다.
+- **Provider**: `I18nProvider`는 루트 레이아웃(`layout.tsx`)에서 트리 상단에 위치하여, 모든 말단 컴포넌트에 번역 데이터를 공급합니다.
+- **Hook**: 커스텀 훅 `useI18n()`을 제공하여, 컴포넌트가 부모로부터 Prop을 주입받지 않고도 필요한 시점에 즉시 언어 정보를 참조할 수 있도록 설계했습니다.
+- **Impact**: **Prop Drilling**을 완전히 제거하여 코드 가독성과 유지보수성을 극대화했으며, 말단 컴포넌트(`ShareButton`, `DialogueAudioButton` 등)의 독립적인 재사용성을 확보했습니다.
+
 ## 5. Data Architecture & Optimization
 
 ### 5.1 ISR (Incremental Static Regeneration)
@@ -1401,7 +1409,6 @@ Phase 3에서 구현된 컴포넌트별 이벤트 추적 패턴입니다.
   - `detail.share`: "Share" / "공유" / "共有" 등
   - `detail.shareCopied`: "Link copied!" / "링크 복사됨!" 등
   - `detail.shareFailed`: "Failed to share" / "공유 실패" 등
-  - `card.share`, `card.shareCopied`, `card.shareFailed`: 카드용 동일 텍스트
 
 ## 17. Marketing Asset Generation System (Marketing Studio)
 

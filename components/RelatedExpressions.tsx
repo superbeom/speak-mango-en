@@ -3,13 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trackRelatedClick } from "@/analytics";
+import { useI18n } from "@/context/I18nContext";
 import { Expression } from "@/types/database";
 import ExpressionCard from "@/components/ExpressionCard";
 
 interface RelatedExpressionsProps {
   expressions: Expression[];
-  locale: string;
-  title: string;
   currentExpressionId: string; // 현재 표현 ID (Analytics용)
 }
 
@@ -37,10 +36,10 @@ const itemVariants = {
 
 export default function RelatedExpressions({
   expressions,
-  locale,
-  title,
   currentExpressionId,
 }: RelatedExpressionsProps) {
+  const { dict } = useI18n();
+
   const handleCardClick = (toExpressionId: string) => {
     // Track related expression click
     trackRelatedClick({
@@ -130,11 +129,13 @@ export default function RelatedExpressions({
     <>
       {/* 모바일 뷰: 세로 리스트 */}
       <section className="mt-12 pt-12 block sm:hidden">
-        <h2 className="mb-6 text-xl font-bold text-main">{title}</h2>
+        <h2 className="mb-6 text-xl font-bold text-main">
+          {dict.detail.relatedTitle}
+        </h2>
         <div className="grid grid-cols-1 gap-4">
           {expressions.map((item) => (
             <div key={item.id} onClick={() => handleCardClick(item.id)}>
-              <ExpressionCard item={item} locale={locale} />
+              <ExpressionCard item={item} />
             </div>
           ))}
         </div>
@@ -142,7 +143,9 @@ export default function RelatedExpressions({
 
       {/* 데스크탑 뷰: 가로 자동 스크롤 (Marquee) */}
       <section className="mt-16 pt-16 hidden sm:block">
-        <h2 className="mb-4 px-4 text-2xl font-bold text-main">{title}</h2>
+        <h2 className="mb-4 px-4 text-2xl font-bold text-main">
+          {dict.detail.relatedTitle}
+        </h2>
 
         <div
           className="relative group/scroll"
@@ -168,7 +171,7 @@ export default function RelatedExpressions({
                   className="min-w-72 sm:min-w-80 flex-1"
                   onClick={() => handleCardClick(item.id)}
                 >
-                  <ExpressionCard item={item} locale={locale} />
+                  <ExpressionCard item={item} />
                 </motion.div>
               ))}
             </AnimatePresence>

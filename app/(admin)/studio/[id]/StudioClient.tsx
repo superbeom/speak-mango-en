@@ -11,7 +11,6 @@ import ExpressionCard from "@/components/ExpressionCard";
 
 interface StudioClientProps {
   expression: Expression;
-  locale: string;
 }
 
 const BACKGROUNDS = [
@@ -48,10 +47,7 @@ const RATIOS = [
   { id: "story", name: "Story (9:16)", class: "aspect-[9/16] max-w-[360px]" },
 ];
 
-export default function StudioClient({
-  expression,
-  locale,
-}: StudioClientProps) {
+export default function StudioClient({ expression }: StudioClientProps) {
   const captureRef = useRef<HTMLDivElement>(null);
   const [selectedBg, setSelectedBg] = useState(BACKGROUNDS[0]);
   const [selectedRatio, setSelectedRatio] = useState(RATIOS[0]);
@@ -151,11 +147,7 @@ export default function StudioClient({
 
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full">
-                <ExpressionCard
-                  item={expression}
-                  locale={locale}
-                  isStatic={true}
-                />
+                <ExpressionCard item={expression} isStatic={true} />
               </div>
             </div>
           </div>

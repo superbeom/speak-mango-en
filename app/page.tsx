@@ -50,10 +50,7 @@ export default async function Home({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-layout">
       {/* Header */}
-      <HomeHeader
-        quizText={dict.common.quiz}
-        subHeaderText={dict.home.subHeader}
-      />
+      <HomeHeader />
 
       {/* Main Content */}
       <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">
@@ -85,7 +82,7 @@ export default async function Home({ searchParams }: PageProps) {
             <div className="h-20 bg-zinc-100 animate-pulse rounded-2xl mb-10" />
           }
         >
-          <FilterBar locale={locale} />
+          <FilterBar />
         </Suspense>
 
         {expressions.length === 0 ? (
@@ -104,8 +101,6 @@ export default async function Home({ searchParams }: PageProps) {
             key={cacheKey}
             initialItems={expressions}
             filters={filters}
-            locale={locale}
-            loadMoreText={dict.common.loadMore}
           />
         )}
       </main>

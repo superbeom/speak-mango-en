@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function QuizPage() {
-  const [{ locale, dict }, expressions] = await Promise.all([
+  const [{ dict }, expressions] = await Promise.all([
     getI18n(),
     getRandomExpressions(10),
   ]);
@@ -41,11 +41,7 @@ export default async function QuizPage() {
 
       <main>
         {expressions.length > 0 ? (
-          <QuizGame
-            initialExpressions={expressions}
-            locale={locale}
-            dict={dict}
-          />
+          <QuizGame initialExpressions={expressions} />
         ) : (
           <div className="p-10 text-center text-zinc-500">
             {dict.quiz.failedToLoad}

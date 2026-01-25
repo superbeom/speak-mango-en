@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-24
+**최종 수정일**: 2026-01-25
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -238,7 +238,10 @@ speak-mango-en/
 
 ### Internationalization (i18n)
 
-- **중앙 관리**: 모든 다국어 설정은 `i18n/index.ts`에서 관리합니다. 언어별 코드, 표시명, OG용 로케일 등은 `LOCALE_DETAILS` 상수에 정의되어 있습니다.
+- **중앙 관리**: 모든 다국어 설정은 `i18n/index.ts`에서 관리하며, `LOCALE_DETAILS`에 언어별 메타데이터(언어별 코드, 표시명, OG용 로케일 등)가 정의되어 있습니다.
+- **아키텍처 (Server / Client 분리)**:
+  - **Server Components**: `i18n/server.ts`의 `getI18n()`, `getLocale()` 헬퍼를 사용하여 직접 딕셔너리를 로드합니다.
+  - **Client Components**: `context/I18nContext.tsx`의 `I18nProvider`와 `useI18n()` 훅을 사용합니다. **Prop Drilling을 방지하기 위해 말단 클라이언트 컴포넌트에서는 반드시 Context를 통해 `dict`와 `locale`에 접근해야 합니다.**
 - **지원 언어 (9개 국어)**: EN, KO, JA, ES, FR, DE, RU, ZH, AR.
 - **Type Safety**: `Dictionary` 타입을 `en.ts` 기준으로 추론하여 모든 언어 파일의 키 일관성을 강제합니다. 코드 내에서 'en', 'ko' 등 하드코딩된 문자열 대신 `SupportedLanguage` 상수를 사용해야 합니다.
 - **새로운 언어 추가 시 절차**:

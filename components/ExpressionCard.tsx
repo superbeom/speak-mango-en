@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { trackExpressionClick } from "@/analytics";
+import { useI18n } from "@/context/I18nContext";
 import { Expression } from "@/types/database";
 import { useEnableHover } from "@/hooks/useIsMobile";
-import { getDictionary, SupportedLanguage } from "@/i18n";
+import { SupportedLanguage } from "@/i18n";
 import { SCROLL_RESET_KEY } from "@/constants";
 import { cn } from "@/lib/utils";
 import { ROUTES, getHomeWithFilters } from "@/lib/routes";
@@ -20,7 +21,6 @@ import SaveButton from "@/components/actions/SaveButton";
 
 interface ExpressionCardProps {
   item: Expression;
-  locale: string;
   isStatic?: boolean;
   className?: string;
 }
@@ -39,14 +39,13 @@ const itemVariants = {
 
 const ExpressionCard = memo(function ExpressionCard({
   item,
-  locale,
   isStatic = false,
   className,
 }: ExpressionCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { locale, dict } = useI18n();
   const enableHover = useEnableHover() && !isStatic;
-  const dict = getDictionary(locale);
 
   const content = item.content[locale] || item.content[SupportedLanguage.EN];
   const meaning = item.meaning[locale] || item.meaning[SupportedLanguage.EN];
@@ -163,9 +162,6 @@ const ExpressionCard = memo(function ExpressionCard({
             expressionId={item.id}
             expressionText={item.expression}
             meaning={meaning}
-            shareLabel={dict.card.share}
-            shareCopiedLabel={dict.card.shareCopied}
-            shareFailedLabel={dict.card.shareFailed}
             onClick={(e) => e.stopPropagation()}
           />
         </div>

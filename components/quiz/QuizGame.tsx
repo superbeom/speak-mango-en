@@ -7,25 +7,21 @@ import {
   trackQuizAnswer,
   trackQuizComplete,
 } from "@/analytics";
-import { SupportedLanguage } from "@/i18n";
 import { Expression } from "@/types/database";
 import { formatMessage } from "@/lib/utils";
 import { parseQuizQuestion, QUIZ_STORAGE_KEYS } from "@/lib/quiz";
+import { useI18n } from "@/context/I18nContext";
 import StudyButton from "@/components/quiz/StudyButton";
 
 interface QuizGameProps {
   initialExpressions: Expression[];
-  locale: SupportedLanguage;
-  dict: any; // Dictionary type would be better if imported
 }
 
 type QuizState = "playing" | "summary";
 
-export default function QuizGame({
-  initialExpressions,
-  locale,
-  dict,
-}: QuizGameProps) {
+export default function QuizGame({ initialExpressions }: QuizGameProps) {
+  const { locale, dict } = useI18n();
+
   const [expressions, setExpressions] =
     useState<Expression[]>(initialExpressions);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -193,7 +189,6 @@ export default function QuizGame({
                 </div>
                 <StudyButton
                   expressionId={item.expression.id}
-                  label={dict.quiz.study}
                   className="w-full sm:w-auto px-3 py-1.5 text-xs rounded-lg"
                 />
               </li>
@@ -320,7 +315,6 @@ export default function QuizGame({
                 <div className="flex gap-3 w-full sm:w-auto">
                   <StudyButton
                     expressionId={currentExpression.id}
-                    label={dict.quiz.study}
                     className="flex-1 sm:flex-none py-3 px-6 h-auto"
                   />
                   <button

@@ -2,11 +2,13 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUp } from "lucide-react";
+import { useI18n } from "@/context/I18nContext";
 import { useScroll } from "@/hooks/useScroll";
 import { useEnableHover } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 
 export default function ScrollToTop() {
+  const { dict } = useI18n();
   const isVisible = useScroll(300);
   const enableHover = useEnableHover();
 
@@ -37,7 +39,7 @@ export default function ScrollToTop() {
             enableHover &&
               "hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white",
           )}
-          aria-label="Scroll to top"
+          aria-label={dict.common.scrollToTop}
         >
           <ArrowUp className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
         </motion.button>

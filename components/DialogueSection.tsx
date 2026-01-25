@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { Play, Square, Loader2, Headphones, Eye, EyeOff } from "lucide-react";
 import { trackLearningModeToggle, trackAudioPlay } from "@/analytics";
 import { DialogueItem as DialogueItemType } from "@/types/database";
+import { useI18n } from "@/context/I18nContext";
 import { SupportedLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { DialogueAudioButtonHandle } from "./DialogueAudioButton";
@@ -19,13 +20,8 @@ interface LearningToggleProps {
 }
 
 interface DialogueSectionProps {
-  title: string;
   dialogue: DialogueItemType[];
-  locale: string;
   expressionId: string; // Analytics용 표현 ID
-  playAllLabel?: string;
-  stopLabel?: string;
-  loadingLabel?: string;
 }
 
 function LearningToggle({
@@ -61,14 +57,11 @@ function LearningToggle({
 }
 
 export default function DialogueSection({
-  title,
   dialogue,
-  locale,
   expressionId,
-  playAllLabel = "Play All",
-  stopLabel = "Stop",
-  loadingLabel = "Loading...",
 }: DialogueSectionProps) {
+  const { locale, dict } = useI18n();
+
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const buttonRefs = useRef<(DialogueAudioButtonHandle | null)[]>([]);
@@ -244,7 +237,7 @@ export default function DialogueSection({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-y-2">
         <div className="flex items-center gap-3">
           <h2 className="flex items-center gap-2 text-[11px] sm:text-sm font-bold uppercase tracking-wide text-zinc-400">
-            {title}
+            {dict.detail.dialogueTitle}
           </h2>
           {/* Play All Button */}
           <button
@@ -268,17 +261,17 @@ export default function DialogueSection({
             {isAutoPlaying ? (
               <>
                 <Square className="w-2.5 h-2.5 fill-current" />
-                <span>{stopLabel}</span>
+                <span>{dict.detail.stop}</span>
               </>
             ) : !isAllReady ? (
               <>
                 <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                <span>{loadingLabel}</span>
+                <span>{dict.common.loading}</span>
               </>
             ) : (
               <>
                 <Play className="w-2.5 h-2.5 fill-current" />
-                <span>{playAllLabel}</span>
+                <span>{dict.detail.playAll}</span>
               </>
             )}
           </button>
@@ -325,7 +318,9 @@ export default function DialogueSection({
                 });
               }
             }}
-            title="Blind Listening Mode (Hide Text)"
+            title={
+              viewMode === "blind" ? dict.detail.showText : dict.detail.hideText
+            }
             icon={<Headphones className="w-3.5 h-3.5" />}
           />
 
@@ -335,7 +330,13 @@ export default function DialogueSection({
               // Request 2: "Soft Disabled" look if in Blind/Partial mode
               isSoftDisabled={viewMode !== "exposed"}
               onClick={handleToggleShowAll}
-              title={isAllRevealed ? "Hide Translations" : "Show Translations"}
+              title={
+                viewMode !== "exposed"
+                  ? dict.detail.showText
+                  : isAllRevealed
+                    ? dict.detail.hideTranslations
+                    : dict.detail.showTranslations
+              }
               icon={
                 isAllRevealed ? (
                   <Eye className="w-3.5 h-3.5" />
