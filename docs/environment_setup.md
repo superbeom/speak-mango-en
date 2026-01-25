@@ -189,7 +189,7 @@ Google Cloud Console의 **'승인된 리디렉션 URI'**와 코드에서 사용�
 
 import { signIn } from "next-auth/react";
 
-export function LoginButton() {
+export function AuthButton() {
   const handleLogin = () => {
     // window.location.href를 사용하여 로그인 후 현재 페이지로 돌아가도록 설정
     signIn("google", { callbackUrl: window.location.href });

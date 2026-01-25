@@ -2,12 +2,30 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-25: UI Centralization & Navigation Polishing
+
+### ✅ 진행 사항
+
+1.  **UI Utility Centralization (스타일 중앙화)**:
+    - **`nav-divider`**: 헤더의 구분선(`|`) 스타일(`hidden sm:inline text-sm text-disabled`)을 `globals.css`의 `@utility nav-divider`로 추출하여 중앙 관리 체계를 구축했습니다.
+    - **Auth Skeleton**: Auth 버튼과 스켈레톤의 스타일 불일치를 방지하기 위해 `skeleton-avatar` 유틸리티를 활용하도록 구조화했습니다.
+2.  **Component Extraction (컴포넌트화)**:
+    - **`NavDivider.tsx`**: 반복적으로 사용되던 구분선 코드를 별도의 컴포넌트로 분리하여 가독성과 유지보수성을 높였습니다.
+3.  **Skeleton UI Refinement (로딩 UI 고도화)**:
+    - **`SkeletonNavbar`**: `HomeHeader`에 새롭게 추가된 `AuthButton` 레이아웃에 맞춰 로딩 스켈레톤을 업데이트했습니다 (두 번째 구분선 및 버튼 형태 추가).
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `NavDivider`를 컴포넌트로 분리했나요?**
+
+- **A.** 헤더 내비게이션에서 구분선이 여러 곳에서 반복적으로 사용됩니다. 단순한 `span` 태그와 클래스 조합을 컴포넌트화함으로써, 나중에 구분선의 모양(`|` -> `·`)이나 간격 등을 변경하고 싶을 때 한 곳에서만 수정하면 되기 때문입니다.
+
 ## 2026-01-24: User System Finalization (Hybrid Repo & UI)
 
 ### ✅ 진행 사항
 
 1.  **Interactive UI Components (사용자 인터페이스)**:
-    - **Authentication**: `LoginButton.tsx` (헤더 로그인) 및 `LoginModal.tsx` (가입 유도) 구현. `Framer Motion`을 적용하여 부드러운 진입/퇴장 애니메이션 제공.
+    - **Authentication**: `AuthButton.tsx` (헤더 로그인) 및 `LoginModal.tsx` (가입 유도) 구현. `Framer Motion`을 적용하여 부드러운 진입/퇴장 애니메이션 제공.
     - **Action Buttons**:
       - `LikeButton`: 하트 애니메이션과 함께 좋아요 토글.
       - `SaveButton`: 북마크 저장/취소.

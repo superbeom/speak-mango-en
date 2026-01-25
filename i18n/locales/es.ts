@@ -32,6 +32,12 @@ export const es = {
     notFound: "Datos no encontrados.",
     quiz: "Test 🎲",
   },
+  auth: {
+    signIn: "Iniciar sesión",
+    myAccount: "Mi cuenta",
+    myPage: "Mi página (En preparación)",
+    signOut: "Cerrar sesión",
+  },
   home: {
     title: "Expresiones de Hoy",
     description:

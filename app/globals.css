@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 :root {
   --background: #ffffff;
@@ -96,6 +97,10 @@ body {
   @apply text-zinc-300 dark:text-zinc-600;
 }
 
+@utility nav-divider {
+  @apply hidden sm:inline text-sm text-disabled;
+}
+
 @utility fade-mask-base {
   @apply from-zinc-50 to-transparent dark:from-black z-10 pointer-events-none transition-opacity duration-300;
 }
@@ -150,4 +155,38 @@ body {
   @media (min-width: 1024px) {
     padding-inline: 9rem !important;
   }
+}
+
+/* Auth Utilities */
+
+@utility skeleton-avatar {
+  @apply h-8 w-8 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800;
+}
+
+@utility btn-sign-in {
+  @apply flex h-8 sm:cursor-pointer items-center justify-center rounded-full bg-zinc-900 px-4 text-xs font-medium text-zinc-50 shadow transition-colors hover:bg-zinc-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 dark:focus-visible:ring-zinc-300;
+}
+
+@utility btn-avatar-trigger {
+  @apply relative flex h-8 w-8 sm:cursor-pointer shrink-0 overflow-hidden rounded-full border border-zinc-200 shadow-sm transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-800 dark:focus:ring-zinc-300;
+}
+
+@utility avatar-fallback {
+  @apply flex h-full w-full items-center justify-center bg-zinc-100 text-[10px] font-medium uppercase text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400;
+}
+
+@utility dropdown-content {
+  @apply z-50 min-w-48 overflow-hidden rounded-md border border-zinc-200 bg-white p-1 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:border-zinc-800 dark:bg-zinc-950;
+}
+
+@utility dropdown-item {
+  @apply relative flex sm:cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors sm:focus:bg-zinc-100 sm:focus:text-zinc-900 data-disabled:pointer-events-none data-disabled:opacity-50 sm:dark:focus:bg-zinc-800 sm:dark:focus:text-zinc-50;
+}
+
+@utility dropdown-separator {
+  @apply -mx-1 my-1 h-px bg-zinc-100 dark:bg-zinc-800;
+}
+
+@utility dropdown-item-danger {
+  @apply relative flex sm:cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors text-red-600 sm:focus:bg-red-50 sm:focus:text-red-700 data-disabled:pointer-events-none data-disabled:opacity-50 sm:dark:focus:bg-red-950/20 sm:dark:focus:text-red-400;
 }

@@ -2,6 +2,34 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.2: UI Centralization & Navigation Polishing (2026-01-25)
+
+### 1. Goal (목표)
+
+- 반복되는 UI 스타일과 기능을 중앙 집중화하여 유지보수 효율성을 높이고, 로딩 시 시각적 안정성을 강화합니다.
+
+### 2. Implementation (구현)
+
+#### A. CSS Utility Abstraction (`app/globals.css`)
+
+- **nav-divider**: 내비게이션 요소 사이의 구분선을 나타내는 스타일을 `@utility`로 정의하여, 개별 파일에 Tailwind 클래스가 나열되는 것을 방지했습니다.
+- **skeleton-avatar**: 인증 버튼과 로딩 스켈레톤의 크기를 일치시키기 위해 공통 디자인 토큰을 공유하도록 유틸리티 클래스를 재구성했습니다.
+
+#### B. Component Abstraction (`components/NavDivider.tsx`)
+
+- 시각적 구분선(`|`)을 단순 문자열에서 리액트 컴포넌트로 승격시켰습니다.
+- 이를 통해 `HomeHeader.tsx` 등의 컨테이너 컴포넌트는 레이아웃 구조에만 집중하고, 세부 스타일은 컴포넌트에 위임할 수 있게 되었습니다.
+
+#### C. Layout-Consistent Skeletons (`components/ui/Skeletons.tsx`)
+
+- `SkeletonNavbar`를 수정하여, 실제 로그인 버튼(`AuthButton`)이 렌더링될 위치에 동일한 크기의 원형 스켈레톤을 배치했습니다.
+- 모바일에서 데스크탑으로 전환될 때 사라지는 네비게이션 요소들을 스켈레톤에서도 동일하게 `hidden sm:flex` 클래스로 제어하여 로딩 시 CLS(Layout Shift)를 방지했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Maintainability**: 한 곳의 수정으로 서비스 전체의 네비게이션 UI 변경 가능.
+- ✅ **Visual Stability**: 데이터 로딩 중과 완료 후의 레이아웃이 완벽하게 일치하여 고급스러운 UX 제공.
+
 ## v0.14.1: User System Phase 2 - Hybrid Repository Pattern (2026-01-24)
 
 ### 1. Goal (목표)
@@ -33,7 +61,7 @@
 #### D. Interactive UI Components
 
 - **Login Integration**:
-  - `LoginButton`: 헤더 및 모달 내에서 Google 로그인을 트리거하는 컴포넌트.
+  - `AuthButton`: 헤더 및 모달 내에서 Google 로그인을 트리거하는 컴포넌트.
   - `LoginModal`: 비로그인 사용자가 액션 시도 시 부드럽게 나타나는 가입 유도 모달 (`Framer Motion` 적용).
 - **Responsive Action Buttons**:
   - `LikeButton`, `SaveButton`, `LearnButton`: 각 액션별 아이콘과 상태(Active/Inactive)를 관리.

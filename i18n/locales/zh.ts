@@ -27,6 +27,12 @@ export const zh = {
     notFound: "未找到数据。",
     quiz: "测验 🎲",
   },
+  auth: {
+    signIn: "登录",
+    myAccount: "我的帐户",
+    myPage: "个人主页 (准备中)",
+    signOut: "退出登录",
+  },
   home: {
     title: "今日表达",
     description: "轻松有趣地学习实用的英语表达。",

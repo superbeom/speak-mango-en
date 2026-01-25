@@ -28,6 +28,12 @@ export const ko = {
     notFound: "데이터를 찾을 수 없습니다.",
     quiz: "퀴즈 🎲",
   },
+  auth: {
+    signIn: "로그인",
+    myAccount: "내 계정",
+    myPage: "마이페이지 (준비 중)",
+    signOut: "로그아웃",
+  },
   home: {
     title: "오늘의 영어 표현",
     description: "유용한 영어 표현들을 쉽고 재미있게 배워보세요.",

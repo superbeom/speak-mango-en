@@ -28,6 +28,12 @@ export const ja = {
     notFound: "データが見つかりません。",
     quiz: "クイズ 🎲",
   },
+  auth: {
+    signIn: "ログイン",
+    myAccount: "マイアカウント",
+    myPage: "マイページ (準備中)",
+    signOut: "ログアウト",
+  },
   home: {
     title: "今日の表現",
     description: "便利で楽しい英語表現を簡単に学びましょう。",

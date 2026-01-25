@@ -1,0 +1,67 @@
+"use client";
+
+import { User } from "next-auth";
+import { signOut } from "next-auth/react";
+import { LogOut, User as UserIcon } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as Avatar from "@radix-ui/react-avatar";
+import { useI18n } from "@/context/I18nContext";
+
+interface UserMenuProps {
+  user: User;
+}
+
+export default function UserMenu({ user }: UserMenuProps) {
+  const { dict } = useI18n();
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button className="btn-avatar-trigger">
+          <Avatar.Root>
+            <Avatar.Image
+              className="aspect-square h-full w-full object-cover"
+              src={user.image || undefined}
+              alt={user.name || "User"}
+            />
+            <Avatar.Fallback className="avatar-fallback">
+              {user.name?.[0] || "U"}
+            </Avatar.Fallback>
+          </Avatar.Root>
+        </button>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className="dropdown-content"
+          sideOffset={5}
+          align="end"
+        >
+          <div className="px-2 py-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            {dict.auth.myAccount}
+          </div>
+          <div className="px-2 pb-2 text-xs text-zinc-500 dark:text-zinc-400">
+            {user.email}
+          </div>
+
+          <DropdownMenu.Separator className="dropdown-separator" />
+
+          <DropdownMenu.Item className="dropdown-item group">
+            <UserIcon className="h-4 w-4 transition-transform sm:group-focus:scale-110" />
+            <span>{dict.auth.myPage}</span>
+          </DropdownMenu.Item>
+
+          <DropdownMenu.Separator className="dropdown-separator" />
+
+          <DropdownMenu.Item
+            className="dropdown-item-danger group"
+            onClick={() => signOut()}
+          >
+            <LogOut className="h-4 w-4 transition-transform sm:group-focus:translate-x-0.5" />
+            <span>{dict.auth.signOut}</span>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { SERVICE_NAME } from "@/constants";
 import Header from "@/components/Header";
 import Logo from "@/components/Logo";
-import LoginButton from "@/components/auth/LoginButton";
+import NavDivider from "@/components/NavDivider";
+import AuthButton from "@/components/auth/AuthButton";
 
 interface HomeHeaderProps {
   quizText: string;
@@ -25,12 +26,12 @@ export default function HomeHeader({
             {quizText}
           </Link>
           {/* 모바일이 아닐 때만 구분선과 서브헤더 표시 */}
-          <span className="hidden sm:inline text-sm text-disabled">|</span>
+          <NavDivider />
           <span className="hidden sm:inline text-sm text-zinc-500">
             {subHeaderText}
           </span>
-          <span className="hidden sm:inline text-sm text-disabled">|</span>
-          <LoginButton />
+          <NavDivider />
+          <AuthButton />
         </nav>
       </div>
     </Header>

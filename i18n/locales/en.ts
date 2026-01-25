@@ -28,6 +28,12 @@ export const en = {
     notFound: "Data not found.",
     quiz: "Quiz 🎲",
   },
+  auth: {
+    signIn: "Sign In",
+    myAccount: "My Account",
+    myPage: "My Page (Preparing)",
+    signOut: "Log out",
+  },
   home: {
     title: "Today's Expressions",
     description: "Learn useful English expressions easily and fun.",
@@ -81,3 +87,4 @@ export const en = {
     failedToLoad: "Failed to load quiz data. Please try again.",
   },
 };
+// To be merged later manually if needed, but for now I will use multi_replace to edit all files
