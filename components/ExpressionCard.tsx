@@ -90,10 +90,10 @@ const ExpressionCard = memo(function ExpressionCard({
   const CardContent = (
     <div
       className={cn(
-        "group overflow-hidden rounded-3xl border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",
+        "group overflow-hidden rounded-card border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",
         isStatic ? "h-auto pb-24" : "h-full",
         enableHover &&
-          "hover:border-blue-200/50 hover:shadow-xl dark:hover:border-blue-500/30 dark:hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]",
+          "hover:border-blue-200/50 hover:shadow-lg dark:hover:border-blue-500/20 dark:hover:shadow-[0_0_15px_-5px_rgba(59,130,246,0.2)]",
       )}
     >
       <div className="mb-5">
@@ -186,11 +186,11 @@ const ExpressionCard = memo(function ExpressionCard({
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
       whileHover={enableHover ? { y: -5 } : undefined}
       whileTap={enableHover ? { scale: 0.98 } : undefined}
-      className={cn("h-full", className)}
+      className={cn("h-full rounded-card", className)}
     >
       <Link
         href={ROUTES.EXPRESSION_DETAIL(item.id)}
-        className="relative block h-full"
+        className="relative block h-full rounded-card"
         onClick={() => {
           // Track expression click event
           trackExpressionClick({

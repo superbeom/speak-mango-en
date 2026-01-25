@@ -2,6 +2,31 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.4: Design System Centralization & Logic Refactoring (2026-01-25)
+
+### 1. Goal (목표)
+
+- 산재해 있던 디자인 속성(곡률)과 하드코딩된 상태 문자열을 중앙 집중화하여 코드의 안정성과 일관성을 극대화합니다.
+- 호버링 시 발생하는 시각적 불협화음을 제거하여 사용자 인터페이스의 완성도를 높입니다.
+
+### 2. Implementation (구현)
+
+#### A. Design Token Extraction (`app/globals.css`)
+
+- **Centralized Radius**: 특정 값(`1.5rem`)을 `--radius-card` 변수로 정의했습니다.
+- **Utility Creation**: `rounded-card` 유틸리티 클래스를 생성하여, 개별 컴포넌트(`ExpressionCard`, `QuizGame`, `Skeletons` 등)가 동일한 디자인 토큰을 공유하게 했습니다.
+
+#### B. Logic Refactoring (`components/DialogueSection.tsx`)
+
+- **`VIEW_MODE` Constants**: 대화창 학습 모드의 3단 변화(`BLIND`, `PARTIAL`, `EXPOSED`)를 상수로 정의하여 매직 스트링 사용을 배제했습니다.
+- **Visual Polish**: `ExpressionCard` 내부의 그림자 효과를 부드럽게 조정하고, 상위 레이어의 곡률 불일치 문제를 수정했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Maintainability**: 한 번의 수정으로 앱 전체의 카드 스타일(곡률) 일괄 변경이 가능해짐.
+- ✅ **Stability**: 상수 사용을 통해 상태 전환 로직에서의 휴먼 에러 차단.
+- ✅ **Aesthetics**: 고밀도 UI 디테일 수정을 통해 더욱 견고한 디자인 시스템 구축.
+
 ## v0.14.3: I18n Refactoring - Context-based Localization (2026-01-25)
 
 ### 1. Goal (목표)

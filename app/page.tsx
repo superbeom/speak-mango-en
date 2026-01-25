@@ -86,7 +86,7 @@ export default async function Home({ searchParams }: PageProps) {
         </Suspense>
 
         {expressions.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-main">
+          <div className="flex h-64 flex-col items-center justify-center rounded-card border-2 border-dashed border-main">
             <p className="text-zinc-500 text-lg font-medium">
               {dict.home.emptyState}
             </p>

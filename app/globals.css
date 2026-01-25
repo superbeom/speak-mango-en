@@ -12,6 +12,7 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --header-height: 61px;
+  --radius-card: 1.5rem; /* rounded-3xl */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -155,6 +156,10 @@ body {
   @media (min-width: 1024px) {
     padding-inline: 9rem !important;
   }
+}
+
+@utility rounded-card {
+  border-radius: var(--radius-card);
 }
 
 /* Auth Utilities */

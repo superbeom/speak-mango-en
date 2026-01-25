@@ -2,6 +2,24 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-25: Design System Centralization & Logic Refactoring
+
+### ✅ 진행 사항
+
+1.  **Design Token Centralization (디자인 토큰 중앙화)**:
+    - **`--radius-card` & `rounded-card`**: 프로젝트 전반에 산재해 있던 하드코딩된 `rounded-3xl` 값을 `app/globals.css`의 CSS 변수와 유틸리티 클래스로 중앙 집중화했습니다. 이제 서비스 전체의 카드 곡률을 한 곳에서 제어할 수 있습니다.
+    - **UI 적용**: `ExpressionCard`, `QuizGame`, `Skeletons`, `StudioClient`, 메인 페이지 Empty State 등 주요 카드형 UI에 일괄 적용하여 시각적 일관성을 확보했습니다.
+2.  **Logic Clean-up with Constants (상수 기반 리팩토링)**:
+    - **`VIEW_MODE` Constants**: `DialogueSection.tsx` 내에서 하드코딩된 상태 문자열(`blind`, `partial`, `exposed`)을 `VIEW_MODE` 상수로 대체하여 오타를 방지하고 유지보수성을 높였습니다.
+3.  **Visual Polish**:
+    - `ExpressionCard`의 호버 시 발생하는 각진 잔상 현상을 제거하기 위해 상위 컨테이너 구조에도 곡률을 적용하고, 호버 그림자의 강도를 은은하게 조정했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `rounded-3xl` 대신 커스텀 유틸리티(`rounded-card`)를 사용하나요?**
+
+- **A.** 서비스의 브랜드 아이덴티티가 변경되어 곡률을 `2xl`이나 `full`로 바꾸고 싶을 때, 수십 개의 파일을 일일이 수정하는 대신 `globals.css`의 변수 하나만 바꾸면 되기 때문입니다. 이는 "Single Source of Truth" 원칙을 준수하기 위함입니다.
+
 ## 2026-01-25: Internationalization (i18n) Refactoring
 
 ### ✅ 진행 사항

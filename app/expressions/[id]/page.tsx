@@ -175,7 +175,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             }}
           />
           {/* Main Content Card */}
-          <section className="overflow-hidden rounded-3xl border border-main bg-surface shadow-sm">
+          <section className="overflow-hidden rounded-card border border-main bg-surface shadow-sm">
             <div className="p-6 sm:p-10">
               <div className="mb-6 sm:mb-8 flex items-center justify-between">
                 {/* Domain Tag */}
@@ -246,7 +246,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
           </section>
 
           {/* Quiz Card */}
-          <section className="rounded-3xl border border-zinc-200 bg-linear-to-br from-zinc-900 to-zinc-800 p-6 sm:p-8 text-white shadow-lg dark:border-zinc-700">
+          <section className="rounded-card border border-zinc-200 bg-linear-to-br from-zinc-900 to-zinc-800 p-6 sm:p-8 text-white shadow-lg dark:border-zinc-700">
             <h2 className="mb-4 flex items-center gap-2 text-[11px] sm:text-sm font-bold uppercase tracking-wide text-zinc-400">
               {dict.detail.missionTitle}
             </h2>

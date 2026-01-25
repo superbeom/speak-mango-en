@@ -106,7 +106,7 @@ export default function StudioClient({ expression }: StudioClientProps) {
       {/* Main Workspace */}
       <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl items-start justify-center">
         {/* Preview Area */}
-        <div className="flex-1 w-full flex justify-center items-center bg-zinc-200/50 rounded-3xl p-8 lg:p-12 border border-zinc-200 overflow-auto shadow-inner">
+        <div className="flex-1 w-full flex justify-center items-center bg-zinc-200/50 rounded-card p-8 lg:p-12 border border-zinc-200 overflow-auto shadow-inner">
           <div
             ref={captureRef}
             id="studio-capture-area"

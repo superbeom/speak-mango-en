@@ -91,7 +91,7 @@ export const SkeletonHomeHero = memo(function SkeletonHomeHero() {
  */
 export const SkeletonCard = memo(function SkeletonCard() {
   return (
-    <div className="h-full rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-surface p-7 shadow-sm">
+    <div className="h-full rounded-card border border-zinc-100 dark:border-zinc-800 bg-surface p-7 shadow-sm">
       <div className="mb-5">
         <div className="mb-4 flex items-center justify-between">
           {/* Domain Tag Skeleton */}
@@ -144,7 +144,7 @@ export const SkeletonDetail = memo(function SkeletonDetail() {
   return (
     <article className="mx-auto max-w-3xl space-y-6">
       {/* Main Content Card Skeleton */}
-      <section className="overflow-hidden rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-surface shadow-sm">
+      <section className="overflow-hidden rounded-card border border-zinc-100 dark:border-zinc-800 bg-surface shadow-sm">
         <div className="p-6 sm:p-10">
           <div className="mb-6 sm:mb-8 flex items-center justify-between">
             {/* Domain Tag Skeleton */}
@@ -185,7 +185,7 @@ export const SkeletonDetail = memo(function SkeletonDetail() {
       </section>
 
       {/* Quiz Card Skeleton */}
-      <section className="rounded-3xl bg-zinc-900 p-6 sm:p-8">
+      <section className="rounded-card bg-zinc-900 p-6 sm:p-8">
         <Skeleton className="h-4 w-24 mb-4 bg-zinc-800" />
         <Skeleton className="h-8 w-full mb-6 bg-zinc-800" />
         <Skeleton className="h-10 w-32 rounded-xl bg-zinc-800" />
@@ -230,7 +230,7 @@ export const SkeletonQuiz = memo(function SkeletonQuiz() {
       </div>
 
       {/* Question Card Skeleton */}
-      <section className="rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-surface shadow-lg overflow-hidden p-6 sm:p-8 space-y-6">
+      <section className="rounded-card border border-zinc-100 dark:border-zinc-800 bg-surface shadow-lg overflow-hidden p-6 sm:p-8 space-y-6">
         {/* Question Text Skeleton */}
         <div className="space-y-3">
           <Skeleton className="h-8 w-full" />

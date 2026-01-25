@@ -209,7 +209,11 @@ speak-mango-en/
 - **스타일링**: Tailwind CSS 유틸리티 클래스 사용. 커스텀 CSS 지양.
 - **Global Variables & Utilities**:
   - **Theme Variables (`@theme`)**: 여러 속성에서 재사용되는 디자인 토큰(예: `height`, `top`, `padding` 등에서 쓰이는 `--header-height`)은 `app/globals.css`의 `@theme` 블록에 CSS 변수로 정의하여 사용합니다.
+    - `--header-height`: GNB 높이
+    - `--radius-card`: 전체 서비스 공통 카드 곡률 (현재 `1.5rem` / `3xl` 수준)
   - **Custom Utilities (`@utility`)**: 특정 속성 조합이 반복될 때(예: `max-width` 설정)는 `@utility` 블록에 커스텀 유틸리티 클래스(예: `max-w-layout`)를 정의하여 사용합니다.
+    - `max-w-layout`: 중앙 정렬 컨테이너 최대 너비
+    - `rounded-card`: 서비스 표준 카드 곡률 적용 (`border-radius: var(--radius-card)`)
   - 하드코딩된 값 대신 위에서 정의한 변수와 유틸리티를 사용하여 레이아웃 일관성을 유지합니다.
 - **모바일 최적화 (Mobile Optimization)**: 새로운 페이지나 컴포넌트 추가 시 모바일 환경을 최우선으로 고려합니다. Tailwind의 반응형 유틸리티(`sm:`, `md:` 등)를 활용하여 작은 화면에서도 가독성과 사용성이 확보되도록 패딩, 텍스트 크기, 레이아웃을 최적화합니다.
   - **Hover Effects**: 터치 스크롤 시 의도치 않은 시각적 피드백이나 애니메이션이 발생하는 것을 방지하기 위해 모바일(터치 디바이스)에서는 호버 효과(`hover:` 클래스, `whileHover` 애니메이션 등)를 비활성화해야 합니다. `useIsMobile` 훅 대신 Tailwind의 `sm:hover:` 유틸리티를 사용하여 CSS 레벨에서 데스크탑 전용 호버 효과를 적용하는 것을 권장합니다. 이는 SSR 호환성 및 렌더링 성능에 유리합니다.

@@ -10,6 +10,14 @@ import { cn } from "@/lib/utils";
 import { DialogueAudioButtonHandle } from "./DialogueAudioButton";
 import DialogueItem from "./DialogueItem";
 
+const VIEW_MODE = {
+  BLIND: "blind",
+  PARTIAL: "partial",
+  EXPOSED: "exposed",
+} as const;
+
+type ViewMode = (typeof VIEW_MODE)[keyof typeof VIEW_MODE];
+
 interface LearningToggleProps {
   isActive: boolean;
   isDisabled?: boolean;
@@ -67,9 +75,7 @@ export default function DialogueSection({
   const buttonRefs = useRef<(DialogueAudioButtonHandle | null)[]>([]);
 
   // Learning Mode States: 'blind' (default) | 'partial' (one clicked) | 'exposed' (all shown)
-  const [viewMode, setViewMode] = useState<"blind" | "partial" | "exposed">(
-    "blind",
-  );
+  const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODE.BLIND);
   const [revealedIndices, setRevealedIndices] = useState<Set<number>>(
     new Set(),
   );
@@ -81,7 +87,7 @@ export default function DialogueSection({
 
   // Use saved indices for icon state if we are in blind/partial mode
   const effectiveRevealedIndices =
-    viewMode !== "exposed" && savedRevealedIndices
+    viewMode !== VIEW_MODE.EXPOSED && savedRevealedIndices
       ? savedRevealedIndices
       : revealedIndices;
   const isAllRevealed =
@@ -90,8 +96,8 @@ export default function DialogueSection({
   // Toggle Translation Visibility (Eye Icon)
   const handleToggleShowAll = () => {
     // If we are in blind/partial mode, this button acts as "Exit Blind Mode" first
-    if (viewMode !== "exposed") {
-      setViewMode("exposed");
+    if (viewMode !== VIEW_MODE.EXPOSED) {
+      setViewMode(VIEW_MODE.EXPOSED);
       if (savedRevealedIndices) {
         setRevealedIndices(savedRevealedIndices);
         setSavedRevealedIndices(null);
@@ -121,7 +127,7 @@ export default function DialogueSection({
     (index: number) => {
       // Disable translation click interaction only in strict blind mode
       // (Partial blind mode allows clicking translations)
-      if (viewMode === "blind") return;
+      if (viewMode === VIEW_MODE.BLIND) return;
 
       setRevealedIndices((prev) => {
         const newSet = new Set(prev);
@@ -138,7 +144,7 @@ export default function DialogueSection({
 
   const handleEnglishClick = useCallback(
     (index: number) => {
-      if (viewMode === "exposed") return;
+      if (viewMode === VIEW_MODE.EXPOSED) return;
 
       // Calculate new set immediately to check size
       const newEnglishSet = new Set(revealedEnglishIndices);
@@ -147,10 +153,10 @@ export default function DialogueSection({
 
       // If all English is now revealed, perform "Auto-Exit Blind Mode"
       if (newEnglishSet.size === dialogue.length) {
-        setViewMode("exposed");
+        setViewMode(VIEW_MODE.EXPOSED);
         setSavedRevealedIndices(null); // Discard saved state (user manually overrode context)
-      } else if (viewMode === "blind") {
-        setViewMode("partial");
+      } else if (viewMode === VIEW_MODE.BLIND) {
+        setViewMode(VIEW_MODE.PARTIAL);
       }
     },
     [viewMode, revealedEnglishIndices, dialogue.length],
@@ -280,11 +286,11 @@ export default function DialogueSection({
         {/* Learning Mode Controls */}
         <div className="flex items-center gap-2">
           <LearningToggle
-            isActive={viewMode === "blind"}
+            isActive={viewMode === VIEW_MODE.BLIND}
             onClick={() => {
-              if (viewMode === "blind") {
+              if (viewMode === VIEW_MODE.BLIND) {
                 // Exit Blind Mode -> Restore State
-                setViewMode("exposed");
+                setViewMode(VIEW_MODE.EXPOSED);
                 if (savedRevealedIndices) {
                   setRevealedIndices(savedRevealedIndices);
                   setSavedRevealedIndices(null);
@@ -294,12 +300,12 @@ export default function DialogueSection({
                   mode: "blind_listening",
                   action: "disable",
                 });
-              } else if (viewMode === "exposed") {
+              } else if (viewMode === VIEW_MODE.EXPOSED) {
                 // Enter Blind Mode -> Save State and Clear
                 setSavedRevealedIndices(revealedIndices);
                 setRevealedIndices(new Set());
                 setRevealedEnglishIndices(new Set());
-                setViewMode("blind");
+                setViewMode(VIEW_MODE.BLIND);
                 // Blind Listening 활성화
                 trackLearningModeToggle({
                   mode: "blind_listening",
@@ -310,7 +316,7 @@ export default function DialogueSection({
                 // (Don't overwrite saved indices, keep original save)
                 setRevealedIndices(new Set());
                 setRevealedEnglishIndices(new Set());
-                setViewMode("blind");
+                setViewMode(VIEW_MODE.BLIND);
                 // Blind Listening 재활성화
                 trackLearningModeToggle({
                   mode: "blind_listening",
@@ -319,7 +325,9 @@ export default function DialogueSection({
               }
             }}
             title={
-              viewMode === "blind" ? dict.detail.showText : dict.detail.hideText
+              viewMode === VIEW_MODE.BLIND
+                ? dict.detail.showText
+                : dict.detail.hideText
             }
             icon={<Headphones className="w-3.5 h-3.5" />}
           />
@@ -328,10 +336,10 @@ export default function DialogueSection({
             <LearningToggle
               isActive={isAllRevealed}
               // Request 2: "Soft Disabled" look if in Blind/Partial mode
-              isSoftDisabled={viewMode !== "exposed"}
+              isSoftDisabled={viewMode !== VIEW_MODE.EXPOSED}
               onClick={handleToggleShowAll}
               title={
-                viewMode !== "exposed"
+                viewMode !== VIEW_MODE.EXPOSED
                   ? dict.detail.showText
                   : isAllRevealed
                     ? dict.detail.hideTranslations
@@ -371,13 +379,14 @@ export default function DialogueSection({
                 item={resolvedItem}
                 index={idx}
                 isEnglishBlurred={
-                  viewMode === "blind" ||
-                  (viewMode === "partial" && !revealedEnglishIndices.has(idx))
+                  viewMode === VIEW_MODE.BLIND ||
+                  (viewMode === VIEW_MODE.PARTIAL &&
+                    !revealedEnglishIndices.has(idx))
                 }
                 isTranslationBlurred={
-                  viewMode === "blind" || !revealedIndices.has(idx)
+                  viewMode === VIEW_MODE.BLIND || !revealedIndices.has(idx)
                 }
-                canClickTranslation={viewMode !== "blind"}
+                canClickTranslation={viewMode !== VIEW_MODE.BLIND}
                 onToggleReveal={handleManualToggle}
                 onEnglishClick={handleEnglishClick}
                 variant={idx % 2 === 0 ? "default" : "blue"}
