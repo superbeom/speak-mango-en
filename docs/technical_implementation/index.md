@@ -258,6 +258,17 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - ILIKE 쿼리 성능 향상: 250ms → 15ms (16.6배)
 - **Troubleshooting**: `unstable_cache`와 `cookies()` 충돌로 인해 캐싱 제거, Next.js 기본 캐싱 메커니즘 활용 (Page-level `revalidate = 3600`, Supabase 자체 캐싱, 클라이언트 사이드 중복 방지)
 
+### 6.8 Auth Navigation Loop Handling (인증 네비게이션 루프 처리)
+
+구글 로그인과 같은 외부 OAuth 인증 후 돌아왔을 때, 브라우저의 전용 '뒤로가기' 버튼이나 UI상의 '뒤로가기' 버튼이 인증 페이지로 사용자를 되돌리는 문제를 해결하기 위한 스킵 로직입니다.
+
+- **File**: `components/BackButton.tsx`
+- **Logic**:
+  - **Detection**: `document.referrer`가 `accounts.google.com`을 포함하는지 확인합니다.
+  - **Skipping**: 인증 흐름은 보통 `[이전 페이지] -> [현재 페이지(GUEST)] -> [구글 인증] -> [현재 페이지(USER)]` 순으로 히스토리를 생성합니다.
+  - **Action**: 따라서 `isBackToLogin`이 감지되면 `window.history.go(-3)`을 호출하여 위 과정을 역순으로 건너뛰고 바로 `[이전 페이지]`에 도달하게 합니다.
+  - **Safety**: 히스토리 스택이 부족하여 3단계 이전이 존재하지 않을 경우를 대비해 `window.history.length > 3` 조건을 검사한 후, 실패 시 `router.push('/')`로 안전하게 폴백(Fallback)합니다.
+
 ## 7. Audio Playback System (오디오 재생 시스템)
 
 ### 7.1 Web Audio API & Volume Amplification (볼륨 증폭)

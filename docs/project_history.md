@@ -2,6 +2,15 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-26: Auth Navigation Loop Fix & UX Refinement
+
+### ✅ 진행 사항
+
+1.  **Auth Navigation Loop Fix (로그인 뒤로가기 루프 해결)**:
+    - **Back Button Intelligence**: 구글 로그인 성공 후 상세 페이지에서 '뒤로가기' 클릭 시, 브라우저 히스토리에 남은 구글 계정 선택 화면으로 되돌아가는 UX 결함을 수정했습니다.
+    - **History Jump Logic**: `document.referrer`를 분석하여 구글 인증 페이지(`accounts.google.com`)에서의 진입을 감지하고, `window.history.go(-3)` 명령을 통해 `[현재 페이지(로그인 후) <- 구글 인증 <- 현재 페이지(로그인 전)]` 단계를 한 번에 건너뛰어 실제 '이전 페이지'로 정확히 복귀하도록 구현했습니다.
+    - **Fallback Strategy**: 히스토리가 충분하지 않은 경우(예: 주소창 직접 진입 후 로그인)에는 안전하게 홈 화면(`ROUTES.HOME`)으로 리다이렉트되도록 예외 처리를 추가했습니다.
+
 ## 2026-01-26: User Action High-Touch Improvements (Interaction & Design)
 
 ### ✅ 진행 사항
