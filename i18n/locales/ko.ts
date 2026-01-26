@@ -35,7 +35,8 @@ export const ko = {
     myPage: "마이페이지 (준비 중)",
     signOut: "로그아웃",
     loginModalTitle: "{serviceName} 로그인",
-    loginModalDesc: "학습 기록을 영구적으로 저장하고 모든 기기에서 이용하세요.",
+    loginModalDesc:
+      "마음에 드는 표현을 저장하고, 당신만의 특별한 영어 습관을 만들어보세요.",
     googleLogin: "Google 계정으로 계속하기",
     close: "닫기",
   },

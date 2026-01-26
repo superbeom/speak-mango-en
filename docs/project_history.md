@@ -2,6 +2,24 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-26: Brand Identity & Auth UX Polishing
+
+### ✅ 진행 사항
+
+1.  **Premium Auth UI Design**:
+    - **Login Modal Refinement**: 로그인 모달 타이틀에 브랜드 로고 이미지와 그라데이션 텍스트(`SERVICE_NAME`)를 통합하여 디자인의 일관성과 고급스러움을 강화했습니다.
+    - **Centered Animation**: 모달 오픈 시의 좌우 슬라이드 애니메이션을 제거하고, 화면 중앙 축을 중심으로 부드러운 페이드와 줌 효과만 적용하여 안정적인 UX를 제공합니다.
+    - **Visual Details**: 백드롭 블러 강도 조정(`xs`), 닫기 버튼 포커스 링 제거 및 커서 스타일(`sm:cursor-pointer`) 추가, 다크 모드 로딩 스피너 가시성(`border-current`)을 개선했습니다.
+2.  **Auth Experience Optimization**:
+    - **Logout UX**: 로그아웃 시 즉시 스켈레톤 UI를 보여주고 비동기 작업을 처리하여 사용자에게 즉각적인 피드백을 제공합니다. (`UserMenu.tsx`)
+    - **State Integrity**: 로그아웃 시 로컬 UI 상태(좋아요/저장 등)가 안전하게 초기화되도록 `useEffect` 의존성에 `user` 세션 상태를 명확히 추가했습니다.
+3.  **Global Message Optimization**:
+    - **Habit-Forming Copy**: 로그인 유도 문구를 단순히 기능적인 설명에서 "마음에 드는 표현을 저장하고, 당신만의 특별한 영어 습관을 만들어보세요"라는 더 강력한 동기 부여형 문구로 변경했습니다.
+    - **Localization Expansion**: 이를 9개 국어 모든 언어팩에 타겟 언어별 자연스러운 뉘앙스로 일괄 적용했습니다.
+4.  **Style & Asset Standardization**:
+    - **Text Utility**: 브랜드 전용 그라데이션 스타일을 `text-brand-gradient` 유틸리티 클래스로 정의하여 `globals.css`에서 중앙 관리합니다.
+    - **Next.js Image Adoption**: `LoginModal`의 로고 이미지를 `next/image` 컴포넌트로 교체하여 최적화 및 레이아웃 안정성을 확보했습니다.
+
 ## 2026-01-25: Design System Centralization & Logic Refactoring
 
 ### ✅ 진행 사항

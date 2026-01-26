@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";
 import { LogOut, User as UserIcon } from "lucide-react";
@@ -13,6 +14,16 @@ interface UserMenuProps {
 
 export default function UserMenu({ user }: UserMenuProps) {
   const { dict } = useI18n();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsLoggingOut(true);
+    await signOut({ redirect: false });
+  };
+
+  if (isLoggingOut) {
+    return <div className="skeleton-avatar" />;
+  }
 
   return (
     <DropdownMenu.Root>
@@ -55,7 +66,7 @@ export default function UserMenu({ user }: UserMenuProps) {
 
           <DropdownMenu.Item
             className="dropdown-item-danger group"
-            onClick={() => signOut()}
+            onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4 transition-transform sm:group-focus:translate-x-0.5" />
             <span>{dict.auth.signOut}</span>

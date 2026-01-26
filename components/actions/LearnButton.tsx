@@ -28,11 +28,16 @@ export default function LearnButton({
 
   useEffect(() => {
     const checkStatus = async () => {
+      if (!user) {
+        setIsLearned(false);
+        return;
+      }
+
       const status = await hasAction(expressionId, "learn");
       setIsLearned(status);
     };
     checkStatus();
-  }, [expressionId, hasAction, localActions]);
+  }, [expressionId, hasAction, localActions, user]);
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();

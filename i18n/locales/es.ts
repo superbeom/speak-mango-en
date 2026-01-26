@@ -40,7 +40,7 @@ export const es = {
     signOut: "Cerrar sesión",
     loginModalTitle: "Iniciar sesión en {serviceName}",
     loginModalDesc:
-      "Guarda tu progreso de forma permanente y accede a funciones en cualquier dispositivo.",
+      "Guarda tus expresiones favoritas y crea tu propio hábito especial de inglés.",
     googleLogin: "Continuar con Google",
     close: "Cerrar",
   },

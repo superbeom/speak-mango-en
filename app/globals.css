@@ -82,6 +82,10 @@ body {
   @apply border-zinc-100 dark:border-zinc-800;
 }
 
+@utility text-brand-gradient {
+  @apply bg-linear-to-br from-[#fceca4] via-[#f97316] to-[#15803d] bg-clip-text text-transparent;
+}
+
 @utility text-main {
   @apply text-zinc-900 dark:text-zinc-50;
 }

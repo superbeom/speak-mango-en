@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.5: Brand Identity & Auth UX Polishing (2026-01-26)
+
+### 1. Goal (목표)
+
+- 서비스의 브랜드 정체성을 로그인 과정 전반에 녹여내어 '프리미엄' 이미지를 구축하고, 다국어 유저들을 위한 설득력 있는 문구를 도입합니다.
+- 로그아웃 및 모달 인터랙션의 미세한 불편함을 제거하여 사용자가 느끼는 서비스의 전체적인 완성도를 높입니다.
+
+### 2. Implementation (구현)
+
+#### A. Premium Design Language (`LoginModal.tsx`, `globals.css`)
+
+- **Brand Integration**: `opengraph-image`에서 사용된 로고와 그라데이션 타이포그래피 조합을 로그인 모달 타이틀에 그대로 이식하여 일관된 브랜드 경험을 제공합니다.
+- **`text-brand-gradient`**: 반복되는 스타일 코드를 전역 유틸리티 클래스로 추출하여 유지보수성을 높였습니다.
+- **Optimized Assets**: 전용 자산을 Next.js `Image` 컴포넌트로 렌더링하고, 불필요한 CSS 클래스 중복을 제거하여 렌더링 효율을 높였습니다.
+
+#### B. Interaction Polish
+
+- **Centric Animation**: 기존의 슬라이드 인 애니메이션이 중앙 정렬 로직과 충돌하여 나타나던 어색한 위치 이동 현상을 제거하고 줌/페이드 중심으로 재구성했습니다.
+- **Visibility Fixes**: 다크 모드에서 로딩 스피너의 색상을 `border-current`로 설정하여 가시성을 확보하고, 블러 강도를 미세 조정(`xs`)했습니다.
+- **Focus Style Management**: 닫기 버튼 등의 불필요한 포커스 링을 제거하여 시각적 노이즈를 줄였습니다.
+
+#### C. Localization & UX Improvements
+
+- **Powerful Description**: 기존의 기능 위주 설명에서 '습관 형성'과 '개인적 가치'를 강조하는 매력적인 문구로 9개 국어 전체를 업데이트했습니다.
+- **Logout Responsiveness**: 로그아웃 버튼 클릭 즉시 스켈레톤 상태로 전환하여 비동기 처리 중의 대기 시간을 사용자에게 시각적으로 안내합니다.
+- **Reliable State Clearance**: 세션 종료 시 버튼들의 활성화 상태가 즉각적으로 리셋되도록 로직을 보완했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Brand Cohesion**: 사이트 전반에서 브랜드 이미지가 일관되게 전달되어 서비스 신뢰도 향상.
+- ✅ **Conversion Focus**: 더 나은 문구와 부드러운 UI를 통해 가입 및 로그인 전환율 향상 기대.
+- ✅ **Technical Stability**: 로그아웃 시의 상태 관리 허점을 보완하여 안정적인 멀티 유저 환경 지원.
+
 ## v0.14.4: Design System Centralization & Logic Refactoring (2026-01-25)
 
 ### 1. Goal (목표)

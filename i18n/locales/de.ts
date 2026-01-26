@@ -40,7 +40,7 @@ export const de = {
     signOut: "Abmelden",
     loginModalTitle: "Bei {serviceName} anmelden",
     loginModalDesc:
-      "Speichere deinen Fortschritt dauerhaft und greife von jedem Gerät aus darauf zu.",
+      "Speichere deine Lieblingsausdrücke und entwickle deine ganz persönliche Englisch-Gewohnheit.",
     googleLogin: "Weiter mit Google",
     close: "Schließen",
   },

@@ -28,11 +28,16 @@ export default function SaveButton({
 
   useEffect(() => {
     const checkStatus = async () => {
+      if (!user) {
+        setIsSaved(false);
+        return;
+      }
+
       const status = await hasAction(expressionId, "save");
       setIsSaved(status);
     };
     checkStatus();
-  }, [expressionId, hasAction, localActions]);
+  }, [expressionId, hasAction, localActions, user]);
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();

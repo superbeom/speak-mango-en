@@ -36,7 +36,7 @@ export const en = {
     signOut: "Log out",
     loginModalTitle: "Sign in to {serviceName}",
     loginModalDesc:
-      "Save your progress permanently and access features on any device.",
+      "Save your favorite expressions and build your own unique English habit.",
     googleLogin: "Continue with Google",
     close: "Close",
   },

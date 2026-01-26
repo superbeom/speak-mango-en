@@ -34,7 +34,7 @@ export const zh = {
     myPage: "个人主页 (准备中)",
     signOut: "退出登录",
     loginModalTitle: "登录 {serviceName}",
-    loginModalDesc: "永久保存学习进度，可在任何设备上访问。",
+    loginModalDesc: "保存您喜欢的表达方式，建立您独特的英语学习习惯。",
     googleLogin: "使用 Google 账号继续",
     close: "关闭",
   },

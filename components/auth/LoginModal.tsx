@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { X } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useI18n } from "@/context/I18nContext";
 import { SERVICE_NAME } from "@/constants";
-import { cn, formatMessage } from "@/lib/utils";
-import Logo from "@/components/Logo";
+import { cn } from "@/lib/utils";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -39,16 +39,19 @@ export default function LoginModal({
         <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
       )}
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border border-zinc-200 bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl md:w-full dark:border-zinc-800 dark:bg-zinc-950">
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 grid w-[92vw] max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border border-zinc-200 bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-2xl dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex flex-col items-center gap-2 text-center">
-            <div className="mb-2">
-              <Logo />
-            </div>
-            <DialogPrimitive.Title className="text-lg font-semibold leading-none tracking-tight">
-              {formatMessage(dict.auth.loginModalTitle, {
-                serviceName: SERVICE_NAME,
-              })}
+            <DialogPrimitive.Title className="flex flex-wrap items-center justify-center gap-x-1.5 text-lg font-semibold leading-none tracking-tight">
+              <Image
+                src="/assets/logo.png"
+                alt={SERVICE_NAME}
+                width={24}
+                height={24}
+              />
+              {dict.auth.loginModalTitle.split("{serviceName}")[0]}
+              <span className="text-brand-gradient">{SERVICE_NAME}</span>
+              {dict.auth.loginModalTitle.split("{serviceName}")[1]}
             </DialogPrimitive.Title>
             <DialogPrimitive.Description className="text-sm text-zinc-500 dark:text-zinc-400">
               {dict.auth.loginModalDesc}
@@ -65,7 +68,7 @@ export default function LoginModal({
               )}
             >
               {isLoading ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent dark:border-zinc-50" />
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : (
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <path
@@ -90,7 +93,7 @@ export default function LoginModal({
             </button>
           </div>
 
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-zinc-100 data-[state=open]:text-zinc-500 dark:ring-offset-zinc-950 dark:focus:ring-zinc-300 dark:data-[state=open]:bg-zinc-800 dark:data-[state=open]:text-zinc-400">
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 sm:cursor-pointer focus:outline-none disabled:pointer-events-none data-[state=open]:bg-zinc-100 data-[state=open]:text-zinc-500 dark:ring-offset-zinc-950 dark:data-[state=open]:bg-zinc-800 dark:data-[state=open]:text-zinc-400">
             <X className="h-4 w-4" />
             <span className="sr-only">{dict.auth.close}</span>
           </DialogPrimitive.Close>

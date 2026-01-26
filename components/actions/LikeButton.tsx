@@ -36,11 +36,17 @@ export default function LikeButton({
     const checkStatus = async () => {
       // If free user, syncing with local store is enough (via subscription below)
       // If pro user, we need to check remote via hook (or sync local state too)
+
+      if (!user) {
+        setIsLiked(false);
+        return;
+      }
+
       const status = await hasAction(expressionId, "like");
       setIsLiked(status);
     };
     checkStatus();
-  }, [expressionId, hasAction, localActions]); // Re-run when localActions change (subscription)
+  }, [expressionId, hasAction, localActions, user]); // Added user to dependencies
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();

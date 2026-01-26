@@ -36,7 +36,7 @@ export const ja = {
     signOut: "ログアウト",
     loginModalTitle: "{serviceName} にログイン",
     loginModalDesc:
-      "学習記録を永久に保存し、どのデバイスからでもアクセスできます。",
+      "お気に入りの表現を保存して、あなただけの特別な英語習慣を作りましょう。",
     googleLogin: "Google で続行",
     close: "閉じる",
   },

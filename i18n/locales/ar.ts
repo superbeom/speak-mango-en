@@ -34,7 +34,8 @@ export const ar = {
     myPage: "صفحتي (قيد التحضير)",
     signOut: "تسجيل الخروج",
     loginModalTitle: "تسجيل الدخول إلى {serviceName}",
-    loginModalDesc: "احفظ تقدمك بشكل دائم وقم بالوصول إلى ميزاتنا على أي جهاز.",
+    loginModalDesc:
+      "احفظ تعبيراتك المفضلة وابدأ في بناء عادتك الخاصة لتعلم اللغة الإنجليزية.",
     googleLogin: "المتابعة باستخدام Google",
     close: "إغلاق",
   },
