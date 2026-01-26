@@ -106,3 +106,23 @@ A. 사용자는 "저렴하게 득템하다 영어로" 라고 검색하지, "좋�
 
 **Q. Visible Keyword 섹션이 디자인을 해치지 않나요?**
 A. 이를 위해 `KeywordList` 컴포넌트를 페이지 최하단에 배치하고, 은은한 스타일(회색조 태그)을 적용하여 본문 경험을 방해하지 않으면서 정보로서의 가치를 제공하도록 디자인했습니다.
+
+## 5. Technical SEO Improvements
+
+최근 Google Search Console 및 SEO 분석 도구에서 발견된 기술적 문제들을 해결하기 위해 다음과 같은 조치를 적용했습니다.
+
+### 5.1 Crawling Control (크롤링 제어)
+
+- **Issue**: 관리자 페이지(`(admin)/studio/[id]`)가 검색 엔진에 노출될 위험이 있음.
+- **Solution**:
+  1. **robots.txt**: `/studio`, `/admin` 경로를 명시적으로 `disallow` 처리.
+  2. **Meta Tag**: Studio 페이지의 `generateMetadata`에서 `robots: { index: false, follow: false }`를 반환하여 인덱싱 원천 차단.
+
+### 5.2 International SEO (다국어 SEO)
+
+- **Issue**: "적절한 표준 태그가 포함된 대체 페이지" 오류 발생. 다국어 페이지 간의 관계가 명확하지 않음.
+- **Solution**:
+  - **Canonical Tag**: 모든 페이지에 자기 자신을 가리키는 `canonical` 태그 추가 (중복 콘텐츠 방지).
+  - **Hreflang Tags**: `app/layout.tsx`에서 `SUPPORTED_LANGUAGES`를 기반으로 `alternates.languages`를 동적으로 생성.
+    - 예: `<link rel="alternate" hreflang="ko-KR" href="/ko" />`
+    - 이를 통해 검색 엔진이 사용자 언어에 맞는 적절한 페이지를 제공하도록 유도.

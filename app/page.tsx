@@ -19,7 +19,7 @@ interface PageProps {
 export async function generateMetadata(): Promise<Metadata> {
   return {
     alternates: {
-      canonical: BASE_URL,
+      canonical: "./",
     },
   };
 }

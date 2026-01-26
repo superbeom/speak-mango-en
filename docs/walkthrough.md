@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.6: SEO Logic Finalization & Technical Improvements (2026-01-26)
+
+### 1. Goal (목표)
+
+- 검색 엔진(Google Search Console)에서 제기된 '중복 페이지' 및 '잘못된 표준 태그' 오류를 해결합니다.
+- 다국어 경로(`/ko`, `/ja` 등)가 실제로 작동하도록 라우팅 로직을 수정하고, 각 언어 페이지가 검색 결과에 독립적으로 노출되도록 최적화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Path-based Localization (`proxy.ts`)
+
+- **Problem**: 기존 미들웨어는 쿼리 파라미터(`?lang=`)만 감지했기에 `/ko`와 같은 경로 접근 시 404 에러 발생.
+- **Solution**: 요청 URL의 경로(Pathname)를 파싱하여 지원 언어로 시작하는 경우, 내부적으로 해당 경로를 제거(`Rewrite`)하고 `x-locale` 헤더를 설정하여 서버 컴포넌트에 전달하는 로직 구현.
+
+#### B. Self-referencing Canonical Strategy
+
+- **Problem**: 모든 페이지가 절대 경로(`BASE_URL` = `https://speakmango.com`)를 Canonical로 가리키고 있어, 한국어 페이지도 영어 페이지의 복사본으로 오인받음.
+- **Solution**: `app/layout.tsx`, `page.tsx`, `quiz/page.tsx`, `expressions/[id]/page.tsx` 등 모든 주요 페이지의 `canonical` 및 `openGraph.url` 설정을 상대 경로(`"./"`)로 변경. 이제 각 언어 페이지가 자기 자신을 원본으로 선언함.
+
+#### C. Dynamic Hreflang Tags (`app/layout.tsx`)
+
+- **Implementation**: `SUPPORTED_LANGUAGES` 배열을 순회하며 `alternates.languages` 메타데이터를 동적으로 생성. 검색 엔진에게 "이 페이지의 한국어 버전은 `/ko`에 있다"는 정보를 명확히 제공.
+
+### 3. Result (결과)
+
+- ✅ **Index Coverage**: '사용자가 선택한 표준이 없는 중복 페이지' 오류 해결 및 색인 생성 정상화.
+- ✅ **International SEO**: 각 언어별 검색 결과에 올바른 언어 페이지가 노출됨.
+- ✅ **Clean Code**: 중복된 `manifest` 링크 및 불필요한 인증 태그 제거.
+
 ## v0.14.5: Brand Identity & Auth UX Polishing (2026-01-26)
 
 ### 1. Goal (목표)

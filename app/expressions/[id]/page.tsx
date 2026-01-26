@@ -69,8 +69,6 @@ export async function generateMetadata({
     expression.category,
   );
 
-  const url = CANONICAL_URLS.EXPRESSION_DETAIL(id);
-
   return {
     title,
     description,
@@ -78,11 +76,11 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url,
+      url: "./",
       type: "article",
     },
     alternates: {
-      canonical: url,
+      canonical: "./",
     },
   };
 }
@@ -169,7 +167,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 workTranslation: SUPPORTED_LANGUAGES.map((lang) => ({
                   "@type": "LearningResource",
                   inLanguage: lang,
-                  url: `${url}?lang=${lang}`,
+                  url: `${url}?lang=${lang}`, // Structured Data uses absolute URLs
                 })),
               }),
             }}

@@ -149,6 +149,10 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Hook**: 커스텀 훅 `useI18n()`을 제공하여, 컴포넌트가 부모로부터 Prop을 주입받지 않고도 필요한 시점에 즉시 언어 정보를 참조할 수 있도록 설계했습니다.
 - **Impact**: **Prop Drilling**을 완전히 제거하여 코드 가독성과 유지보수성을 극대화했으며, 말단 컴포넌트(`ShareButton`, `DialogueAudioButton` 등)의 독립적인 재사용성을 확보했습니다.
 
+### 4.4 International SEO Implementation (국제 SEO 구현)
+
+> **Note**: 다국어 URL 구조, Canonical, Hreflang 등 SEO 최적화와 관련된 상세 구현은 [14.3 International SEO Optimization](#143-international-seo-optimization-국제-seo-최적화) 섹션을 참조하십시오.
+
 ## 5. Data Architecture & Optimization
 
 ### 5.1 ISR (Incremental Static Regeneration)
@@ -188,6 +192,7 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
 - **Implementation**:
   - 앱 내의 모든 URL 경로를 `ROUTES` 상수로 관리합니다. (Relative Paths)
   - `CANONICAL_URLS` 객체를 통해 SEO 및 공유에 필수적인 **절대 경로(Canonical URL)** 생성을 중앙화합니다.
+  - **(2026-01-26 업데이트)**: 다국어 SEO 최적화를 위해 메타데이터(`canonical`, `og:url`)에서는 절대 경로 대신 **상대 경로(`"./"`)**를 사용하는 전략으로 변경되었습니다. 다만, 절대 경로가 필수적인 Schema.org(JSON-LD) 생성을 위해 `CANONICAL_URLS` 유틸리티는 여전히 중요하게 사용됩니다.
   - 필터 조합(Category, Tag, Search)을 기반으로 적절한 홈 경로를 생성하는 `getHomeWithFilters()` 헬퍼 함수를 포함합니다.
 - **Benefit**: 하드코딩된 경로 문자열을 제거하여 링크 구조 변경 시 한 곳에서만 수정하면 되므로 유지보수성과 타입 안정성이 크게 향상됩니다.
 
@@ -836,7 +841,53 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **Implementation**: `ImageResponse`를 사용하여 텍스트와 브랜드 아이덴티티(그라데이션 로고, Inter 폰트)가 적용된 고품질 썸네일을 **Request Time에 동적으로 생성**합니다.
   - **Benefit**: 수천 개의 표현 및 퀴즈 페이지에 대해 정적 이미지를 미리 생성할 필요 없이, 강력한 소셜 미디어 미리보기(CTR 증대)를 제공합니다.
 
-### 14.3 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
+### 14.3 International SEO Optimization (국제 SEO 최적화)
+
+SEO(검색 엔진 최적화)는 다국어 사이트의 가장 큰 기술적 난제인 '중복 콘텐츠 이슈'와 '크롤링 경로 최적화'를 해결하기 위한 핵심 전략입니다.
+
+#### A. Path-based Localization Strategy (경로 기반 지역화 전략)
+
+- **Problem**:
+  - 기존 Next.js Middleware나 쿼리 파라미터(`?lang=ko`) 방식은 Googlebot이 크롤링하기 어려운 구조입니다.
+  - `/ko`와 같은 명시적인 언어 경로가 존재하지 않아, 검색 엔진이 각 언어 버전의 페이지를 독립적으로 인식하지 못하고 404 에러를 유발합니다.
+- **Solution (`proxy.ts`)**:
+  - **Path Interception**: Middleware 레벨에서 요청 URL 경로를 가로챕니다.
+  - **Rewrite Logic**: `/ko/quiz`, `/ja/quiz` 등으로 시작하는 요청을 감지하면 `x-locale` 헤더를 설정하고, 내부적으로는 경로를 제거한 원본 URL(`/quiz`)로 `Rewrite`합니다.
+  - **Result**: 사용자와 검색 봇은 명시적인 언어 경로(`/ko/quiz`)로 접근하지만, 서버에서는 단 하나의 페이지 컴포넌트(`/app/quiz/page.tsx`)가 헤더에 따라 적절한 언어 콘텐츠를 렌더링하는 효율적인 구조를 갖게 됩니다.
+
+#### B. Self-referencing Canonical (자기 참조 표준 태그)
+
+- **Problem (Canonical Confusion)**:
+  - 모든 페이지가 디폴트 언어(영어) URL을 Canonical(`https://speakmango.com/...`)로 가리키고 있다면, 한국어/일본어 등 타 언어 페이지는 "나는 원본이 아니다"라고 선언하는 꼴이 됩니다.
+  - 이 경우, 구글은 타 언어 페이지를 '중복 콘텐츠'로 간주하고 색인에서 제외(Drop)합니다.
+- **Solution (Relative Canonical)**:
+  - `metadata` 설정 시 `canonical` 값을 절대 경로(`BASE_URL`)가 아닌 **상대 경로(`"./"`)**로 설정합니다.
+  - **Effect**:
+    - `/ko/expressions/123` 페이지의 Canonical은 `.../ko/expressions/123`이 됩니다.
+    - `/ja/expressions/123` 페이지의 Canonical은 `.../ja/expressions/123`이 됩니다.
+    - 각 언어 페이지가 자기 자신을 원본으로 선언함으로써 독립적인 페이지로 인정받고 색인됩니다.
+
+#### C. Dynamic Hreflang Tags (동적 Hreflang 태그)
+
+- **Mechanism (`app/layout.tsx`)**:
+  - `SUPPORTED_LANGUAGES` 배열을 순회하며 `alternates.languages` 메타데이터를 동적으로 생성합니다.
+  - 예: `<link rel="alternate" hreflang="ko-KR" href="https://speakmango.com/ko/..." />`
+- **Benefit**:
+  - 검색 엔진에게 "이 페이지는 한국어 사용자에게는 이 URL을 보여주라"고 명확히 지시합니다.
+  - 사용자의 언어 및 지역 설정에 맞는 최적의 페이지가 검색 결과 상단에 노출되도록 유도합니다.
+
+#### D. Centralized Canonical Utility (표준 URL 유틸리티)
+
+- **Context (`lib/routes.ts`)**:
+  - **`CANONICAL_URLS`**: 메타데이터 태그(`canonical`, `og`)에서는 상대 경로(`"./"`)를 사용하지만, 절대 경로(`https://...`)가 필수로 요구되는 `Schema.org (JSON-LD)`와 `Sitemap` 생성을 위해 별도의 유틸리티를 중앙화했습니다.
+  - 이중 관리 전략을 통해 메타데이터와 구조화된 데이터(Structured Data) 양쪽의 요구사항을 모두 충족합니다.
+
+#### E. Crawling Control (크롤링 제어)
+
+- **Robots.txt**: `/admin`, `/studio` 등 관리자 전용 경로를 `Disallow` 처리하여 크롤러의 리소스 낭비를 막고 보안을 강화했습니다.
+- **Meta Robots**: 관리자 페이지 컴포넌트(`StudioPage`)에서 `robots: { index: false, follow: false }`를 반환하여, 실수로 페이지가 노출되더라도 색인을 원천 차단했습니다.
+
+### 14.4 Dynamic Keyword Localization Strategy (동적 키워드 현지화 전략)
 
 단순 번역을 넘어, 검색 의도(Search Intent)와 사용자 언어 맥락(Context)에 맞는 키워드를 동적으로 생성하는 전략입니다.
 
@@ -849,7 +900,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 - **Visible Tags (White Hat)**:
   - 메타 태그(`keywords`)뿐만 아니라, `components/KeywordList.tsx`를 통해 페이지 하단에 실제 텍스트로 키워드를 노출합니다. 이는 _Keyword Stuffing_(숨겨진 텍스트로 키워드 남발)으로 오인받지 않으면서 검색 엔진에 페이지의 관련성을 강력하게 어필하는 **White Hat SEO** 기법입니다.
 
-### 14.4 PWA Theme Color (동적 테마 컬러)
+### 14.5 PWA Theme Color (동적 테마 컬러)
 
 - **Problem**: `viewport`의 `themeColor`를 단일 문자열(`#ffffff`)로 설정 시, 다크 모드에서도 상태 표시줄이 흰색으로 유지되어 눈부심 유발.
 - **Solution**: Next.js Viewport API를 활용하여 미디어 쿼리 기반의 동적 색상 배열을 설정했습니다.
@@ -860,7 +911,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   ];
   ```
 
-### 14.5 Type-Safe i18n Architecture (타입 안전 i18n)
+### 14.6 Type-Safe i18n Architecture (타입 안전 i18n)
 
 - **Total 9 Languages**: EN, KO, JA, ES, FR, DE, RU, ZH, AR 지원.
 - **Inference & Maintenance**:

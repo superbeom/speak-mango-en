@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { getI18n } from "@/i18n/server";
-import { CANONICAL_URLS } from "@/lib/routes";
 import { getRandomExpressions } from "@/lib/expressions";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
@@ -8,7 +7,6 @@ import QuizGame from "@/components/quiz/QuizGame";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { dict } = await getI18n();
-  const url = CANONICAL_URLS.QUIZ();
 
   return {
     title: dict.quiz.metaTitle,
@@ -16,10 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: dict.quiz.metaTitle,
       description: dict.quiz.metaDescription,
-      url,
+      url: "./",
     },
     alternates: {
-      canonical: url,
+      canonical: "./",
     },
   };
 }

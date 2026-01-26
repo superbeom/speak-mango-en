@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-26: SEO Logic Finalization & Technical Improvements
+
+### ✅ 진행 사항
+
+1.  **Technical SEO (기술적 SEO)**:
+    - **Path-based Hreflang**: 하위 경로가 존재하지 않는 404 문제를 해결하기 위해 `proxy.ts`에 경로 기반(`path-based`) 언어 감지 및 Rewrite 로직을 추가했습니다. `/ko`, `/ja` 등으로 접근 시 해당 언어 페이지로 정상 연결됩니다.
+    - **Self-referencing Canonical**: 모든 페이지의 `canonical` 및 `og:url` 태그를 절대 경로(`BASE_URL`)에서 상대 경로(`./`)로 변경하여, 다국어 페이지 각각이 원본 페이지로 인정받도록 수정했습니다.
+    - **Robot Control**: `app/robots.ts` 및 관리자 페이지 메타태그를 통해 `/studio`, `/admin` 경로의 크롤링을 원천 차단했습니다.
+2.  **Metadata Optimization**:
+    - **Dynamic Hreflang Generation**: `app/layout.tsx`에서 지원 언어 목록(`SUPPORTED_LANGUAGES`)을 기반으로 `alternates` 태그를 동적으로 생성하여 구글 검색 엔진에 다국어 관계를 명확히 알렸습니다.
+    - **Authentication Verification**: 불필요하거나 중복된 인증 태그(`google-site-verification`, `manifest`)를 정리하여 헤더를 경량화했습니다.
+
 ## 2026-01-26: Brand Identity & Auth UX Polishing
 
 ### ✅ 진행 사항

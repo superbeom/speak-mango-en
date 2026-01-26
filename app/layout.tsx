@@ -9,7 +9,7 @@ import { I18nProvider } from "@/context/I18nContext";
 import { AudioProvider } from "@/context/AudioContext";
 import { ExpressionProvider } from "@/context/ExpressionContext";
 import { getI18n } from "@/i18n/server";
-import { SUPPORTED_LANGUAGES } from "@/i18n";
+import { SUPPORTED_LANGUAGES, LOCALE_DETAILS, defaultLocale } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { formatMessage } from "@/lib/utils";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -44,6 +44,19 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const description = dict.meta.mainDescription;
 
+  // Construct hreflang alternates
+  const languageAlternates = SUPPORTED_LANGUAGES.reduce(
+    (acc, lang) => {
+      // Use full locale tag for hreflang key (e.g., 'en-US', 'ko-KR')
+      const tag = LOCALE_DETAILS[lang].tag;
+      // For default locale (en), point to root '/', otherwise '/[lang]'
+      const path = lang === defaultLocale ? "/" : `/${lang}`;
+      acc[tag] = path;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
   return {
     metadataBase: new URL(BASE_URL),
     title: {
@@ -63,7 +76,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: BASE_URL,
+      url: "./",
       siteName: SERVICE_NAME,
       locale: fullLocale,
       type: "website",
@@ -86,7 +99,10 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-snippet": -1,
       },
     },
-    manifest: "/manifest.ts",
+    alternates: {
+      canonical: "./",
+      languages: languageAlternates,
+    },
     icons: {
       icon: [
         { url: "/assets/favicon-32x32.png", sizes: "32x32", type: "image/png" },

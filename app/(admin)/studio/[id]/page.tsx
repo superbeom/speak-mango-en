@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getExpressionById } from "@/lib/expressions";
 import StudioClient from "./StudioClient";
@@ -7,6 +8,10 @@ interface PageProps {
 }
 
 export const revalidate = 0; // Always fetch fresh data for studio
+
+export async function generateMetadata(): Promise<Metadata> {
+  return { robots: { index: false, follow: false } };
+}
 
 export default async function StudioPage({ params }: PageProps) {
   const { id } = await params;
