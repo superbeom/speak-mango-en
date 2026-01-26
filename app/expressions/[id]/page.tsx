@@ -202,7 +202,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
               {/* Action Buttons */}
               <div className="mt-6 flex items-center gap-4 border-y border-subtle py-4">
-                <LikeButton expressionId={expression.id} size="lg" showCount />
+                <LikeButton expressionId={expression.id} size="lg" />
                 <SaveButton expressionId={expression.id} size="lg" />
                 <div className="ml-auto">
                   <ShareButton
@@ -269,6 +269,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             <LearnButton
               expressionId={expression.id}
               className="w-full sm:w-auto text-base py-4 px-10"
+              scrollToId="related-expressions"
             />
           </div>
 
@@ -297,10 +298,12 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
 
         {/* Related Expressions Section */}
         {relatedExpressions.length > 0 && (
-          <RelatedExpressions
-            expressions={relatedExpressions}
-            currentExpressionId={expression.id}
-          />
+          <div id="related-expressions" className="scroll-mt-12">
+            <RelatedExpressions
+              expressions={relatedExpressions}
+              currentExpressionId={expression.id}
+            />
+          </div>
         )}
       </main>
     </div>

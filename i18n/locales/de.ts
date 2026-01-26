@@ -77,6 +77,12 @@ export const de = {
     hideText: "Text ausblenden",
     showTranslations: "Übersetzungen anzeigen",
     hideTranslations: "Übersetzungen ausblenden",
+    actionLike: "Gefällt mir",
+    actionUnlike: "Gefällt mir nicht mehr",
+    actionSave: "Speichern",
+    actionUnsave: "Speichern aufheben",
+    actionLearned: "Gelernt!",
+    actionLearnThis: "Das habe ich gelernt!",
   },
   card: {
     label: "Ausdruck des Tages",

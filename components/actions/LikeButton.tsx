@@ -1,28 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
+import { useI18n } from "@/context/I18nContext";
+import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useUserActions } from "@/hooks/user/useUserActions";
+import {
+  ActionIconSize,
+  ACTION_ICON_SIZE_CLASSES,
+  DEFAULT_ACTION_ICON_SIZE,
+} from "@/constants/ui";
 import { cn } from "@/lib/utils";
-import { Heart } from "lucide-react";
-import { useEffect, useState } from "react";
 import LoginModal from "@/components/auth/LoginModal";
-import { useLocalActionStore } from "@/store/useLocalActionStore";
 
 interface LikeButtonProps {
   expressionId: string;
-  size?: "sm" | "md" | "lg";
+  size?: ActionIconSize;
   className?: string;
-  showCount?: boolean;
-  count?: number;
 }
 
 export default function LikeButton({
   expressionId,
-  size = "md",
+  size = DEFAULT_ACTION_ICON_SIZE,
   className,
-  showCount = false,
-  count = 0,
 }: LikeButtonProps) {
+  const { dict } = useI18n();
   const { user } = useAuthUser();
   const { toggleAction, hasAction } = useUserActions();
   const [isLiked, setIsLiked] = useState(false);
@@ -71,37 +74,26 @@ export default function LikeButton({
     }
   };
 
-  const sizeClasses = {
-    sm: "h-4 w-4",
-    md: "h-5 w-5",
-    lg: "h-6 w-6",
-  };
-
   return (
     <>
       <button
         onClick={handleToggle}
         className={cn(
-          "group flex items-center gap-1.5 transition-colors focus:outline-none",
+          "group flex items-center gap-1.5 transition-colors focus:outline-none sm:cursor-pointer",
           isLiked
             ? "text-red-500"
             : "text-zinc-400 hover:text-red-400 dark:text-zinc-500 dark:hover:text-red-400",
           className,
         )}
-        aria-label={isLiked ? "Unlike" : "Like"}
+        aria-label={isLiked ? dict.detail.actionUnlike : dict.detail.actionLike}
       >
         <Heart
           className={cn(
-            sizeClasses[size],
+            ACTION_ICON_SIZE_CLASSES[size],
             isLiked && "fill-current",
             "transition-transform active:scale-90",
           )}
         />
-        {showCount && (
-          <span className="text-xs font-medium tabular-nums">
-            {count + (isLiked ? 1 : 0)}
-          </span>
-        )}
       </button>
 
       <LoginModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />

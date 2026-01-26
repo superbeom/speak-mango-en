@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.7: User Action High-Touch Improvements (2026-01-26)
+
+### 1. Goal (목표)
+
+- '학습 완료'라는 핵심 사용자 여정(User Journey)을 매끄럽게 연결하고, 모바일 및 데스크탑 환경 모두에서 시각적으로 완성도 높은 인터랙션을 제공합니다.
+- 단순한 기능 구현을 넘어, 사용자가 "배려받고 있다"고 느낄 수 있는 미세한 디테일(Micro-interactions)을 챙깁니다.
+
+### 2. Implementation (구현)
+
+#### A. Smart Auto-Scroll System (`lib/scroll.ts`, `LearnButton.tsx`)
+
+- **Problem**: 학습 완료 후 사용자는 "이제 뭐 하지?"라고 망설이게 됨. 또한 기본 스크롤은 너무 빠르거나 헤더에 가려지는 문제가 있음.
+- **Solution**:
+  - `smoothScrollTo` 커스텀 훅 구현: `requestAnimationFrame`을 사용하여 1.5초 동안 부드럽게 감속하며 이동하는 애니메이션 적용.
+  - **Dynamic Offset**: `window.getComputedStyle(target).scrollMarginTop`을 읽어와서, CSS(`scroll-mt-24`)에서 설정한 헤더 높이만큼 자동으로 위치를 보정하는 로직 추가.
+  - **Prop Injection**: `LearnButton`에 `scrollToId` Prop을 추가하여, 버튼 컴포넌트가 비즈니스 로직(어디로 갈지)을 몰라도 동작하도록 설계.
+
+#### B. High-Fidelity UI Design (`LearnButton.tsx`)
+
+- **Visibility**: 학습 완료 상태(`isLearned`)를 명확히 인지할 수 있도록 `CheckCircle` 아이콘과 브랜드 컬러(`green-600`)를 적용.
+- **Aesthetics**: 미완료 상태에서는 지저분한 보더를 제거하고 그림자(`shadow-sm`)와 호버 효과로 뎁스(Depth)를 표현하여 모던한 느낌 강조.
+- **Consistency**: 다크 모드에서도 눈이 아프지 않은 톤 앤 매너 유지.
+
+#### C. Detail Polish (`LoginModal.tsx`)
+
+- **Layout**: 타이틀, 설명, 로그인 버튼 사이의 수직 간격을 통일감 있게 조정하여 정보의 위계를 명확히 함.
+
+### 3. Result (결과)
+
+- ✅ **Flow**: 학습 완료 -> 추천 표현으로 이어지는 물 흐르는 듯한 사용자 경험.
+- ✅ **Quality**: 모바일 헤더 가림 현상 등 디테일한 버그 해결.
+- ✅ **Design**: 앱의 전체적인 심미적 완성도 향상.
+
 ## v0.14.6: SEO Logic Finalization & Technical Improvements (2026-01-26)
 
 ### 1. Goal (목표)

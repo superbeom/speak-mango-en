@@ -71,6 +71,12 @@ export const ar = {
     hideText: "إخفاء النص",
     showTranslations: "إظهار الترجمة",
     hideTranslations: "إخفاء الترجمة",
+    actionLike: "أعجبني",
+    actionUnlike: "إلغاء الإعجاب",
+    actionSave: "حفظ",
+    actionUnsave: "إلغاء الحفظ",
+    actionLearned: "تم التعلم!",
+    actionLearnThis: "تعلمت هذا!",
   },
   card: {
     label: "تعبير اليوم",

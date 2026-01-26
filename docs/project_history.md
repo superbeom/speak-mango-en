@@ -2,6 +2,34 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-26: User Action High-Touch Improvements (Interaction & Design)
+
+### ✅ 진행 사항
+
+1.  **High-Level Interaction Refinement (인터랙션 고도화)**:
+    - **Learn Button Auto-Scroll**: '학습 완료(`LearnButton`)' 버튼 클릭 시, 사용자의 시선을 다음 학습 콘텐츠로 자연스럽게 유도하기 위해 하단의 '관련 표현(`RelatedExpressions`)' 섹션으로 부드럽게 자동 스크롤되는 기능을 구현했습니다.
+    - **Smooth Scroll Algorithm**: 브라우저 기본 스크롤(`scrollIntoView`)의 한계(속도 제어 불가, `scroll-margin` 무시 등)를 극복하기 위해, `requestAnimationFrame`과 `easeInOutQuad` 이징(Easing) 함수를 적용한 커스텀 스크롤 유틸리티(`lib/scroll.ts`)를 자체 구현했습니다.
+    - **Mobile-Specific Offset**: 모바일 환경에서 고정 헤더가 콘텐츠를 가리는 문제를 해결하기 위해, 타겟 요소의 `scroll-margin-top` CSS 속성을 동적으로 계산하여 스크롤 오프셋에 반영하는 스마트한 로직을 적용했습니다.
+
+2.  **Visual Design System Polishing (디자인 시스템 개선)**:
+    - **Learn Button Redesign**: 기존의 흐릿한 색상 대비를 개선하여, 학습 완료 상태(`isLearned`)에서 진한 초록색과 흰색 체크 아이콘(`CheckCircle`)을 사용하여 가시성을 극대화했습니다. 미완료 상태에서는 보더(`border`) 대신 그림자(`shadow-sm`)를 활용하여 깔끔하고 모던한 UI를 구현했습니다.
+    - **Dark Mode Consistency**: 다크 모드에서도 눈부심 없이 편안한 경험을 제공하기 위해, 라이트 모드와 동일한 브랜드 컬러(`bg-green-600`)를 유지하되 그림자 심도를 조절하는 방식을 채택했습니다.
+    - **Modal Layout Balance**: 로그인 모달의 타이틀, 설명, 버튼 간의 간격(`gap-4`)을 균일하게 조정하여 시각적 안정감을 주었습니다.
+
+3.  **Code Maintenance & Reusability (코드 재사용성)**:
+    - **`lib/scroll.ts`**: 스크롤 애니메이션 로직을 별도 유틸리티로 분리하여 프로젝트 전반에서 재사용할 수 있도록 구조화했습니다.
+    - **`scrollToId` Prop**: `LearnButton` 컴포넌트가 특정 ID를 알 필요 없이, 외부에서 주입받은 ID로 스크롤할 수 있도록 설계하여 결합도(Coupling)를 낮췄습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 브라우저 기본 스크롤 API를 쓰지 않고 직접 구현했나요?**
+
+- **A.** `scrollIntoView({ behavior: 'smooth' })`는 스크롤 속도를 개발자가 제어할 수 없습니다. 특히 '학습 완료'와 같은 중요한 액션 후에는 사용자가 맥락을 놓치지 않도록 **천천히(1초 이상)** 스크롤되는 경험을 제공하고 싶었습니다. 또한 `scroll-margin` 속성이 일부 상황에서 무시되는 브라우저 호환성 문제를 해결하기 위해 직접 계산 로직을 포함했습니다.
+
+**Q. 모바일에서 스크롤 위치가 왜 중요한가요?**
+
+- **A.** 데스크탑과 달리 모바일은 화면이 좁고 상단 헤더가 고정되어 있는 경우가 많습니다. 스크롤이 정확히 요소의 시작점에 멈추면 헤더에 콘텐츠가 가려지는 현상이 발생합니다. 이를 방지하기 위해 `scroll-mt-*` 클래스와 연동된 오프셋 계산이 필수적입니다.
+
 ## 2026-01-26: SEO Logic Finalization & Technical Improvements
 
 ### ✅ 진행 사항

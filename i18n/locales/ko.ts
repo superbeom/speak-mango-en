@@ -72,6 +72,12 @@ export const ko = {
     hideText: "텍스트 숨기기",
     showTranslations: "해석 보기",
     hideTranslations: "해석 숨기기",
+    actionLike: "좋아요",
+    actionUnlike: "좋아요 취소",
+    actionSave: "저장하기",
+    actionUnsave: "저장 취소",
+    actionLearned: "학습 완료!",
+    actionLearnThis: "학습했어요!",
   },
   card: {
     label: "오늘의 표현",

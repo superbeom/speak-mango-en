@@ -1,24 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Bookmark } from "lucide-react";
+import { useI18n } from "@/context/I18nContext";
+import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useUserActions } from "@/hooks/user/useUserActions";
+import {
+  ActionIconSize,
+  ACTION_ICON_SIZE_CLASSES,
+  DEFAULT_ACTION_ICON_SIZE,
+} from "@/constants/ui";
 import { cn } from "@/lib/utils";
-import { Bookmark } from "lucide-react";
-import { useEffect, useState } from "react";
 import LoginModal from "@/components/auth/LoginModal";
-import { useLocalActionStore } from "@/store/useLocalActionStore";
 
 interface SaveButtonProps {
   expressionId: string;
-  size?: "sm" | "md" | "lg";
+  size?: ActionIconSize;
   className?: string;
 }
 
 export default function SaveButton({
   expressionId,
-  size = "md",
+  size = DEFAULT_ACTION_ICON_SIZE,
   className,
 }: SaveButtonProps) {
+  const { dict } = useI18n();
   const { user } = useAuthUser();
   const { toggleAction, hasAction } = useUserActions();
   const [isSaved, setIsSaved] = useState(false);
@@ -59,28 +66,22 @@ export default function SaveButton({
     }
   };
 
-  const sizeClasses = {
-    sm: "h-4 w-4",
-    md: "h-5 w-5",
-    lg: "h-6 w-6",
-  };
-
   return (
     <>
       <button
         onClick={handleToggle}
         className={cn(
-          "group flex items-center gap-1.5 transition-colors focus:outline-none",
+          "group flex items-center gap-1.5 transition-colors focus:outline-none sm:cursor-pointer",
           isSaved
             ? "text-yellow-500"
             : "text-zinc-400 hover:text-yellow-400 dark:text-zinc-500 dark:hover:text-yellow-400",
           className,
         )}
-        aria-label={isSaved ? "Unsave" : "Save"}
+        aria-label={isSaved ? dict.detail.actionUnsave : dict.detail.actionSave}
       >
         <Bookmark
           className={cn(
-            sizeClasses[size],
+            ACTION_ICON_SIZE_CLASSES[size],
             isSaved && "fill-current",
             "transition-transform active:scale-90",
           )}
