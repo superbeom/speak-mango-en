@@ -129,6 +129,8 @@
   - [x] **Sync**: 무료 -> 유료 전환 시 데이터 마이그레이션 로직 구현
 - [x] **Phase 3: Interactive Features**
   - [x] **Actions**: Like, Save, Learn 버튼 UI 및 상태 연동
+  - [x] **Refactoring**: 공통 액션 바 컴포넌트(`ExpressionActions.tsx`) 추출 및 중복 제거
+  - [x] **Bug Fix**: 로그인 모달 클릭 전파(`stopPropagation`) 해결 및 UX 안정화
   - [x] **UI**: 비로그인 액션 시 브랜드 일관성을 갖춘 로그인 유도 모달(Login Modal) 구현 및 최적화
   - [x] **Refactoring**: AuthButton에서 UserMenu 컴포넌트 분리 (`UserMenu.tsx`) 및 로그아웃 UX 개선
   - [x] **Logic**: '학습 완료' 시 자동 추천 스크롤

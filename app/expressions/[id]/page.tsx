@@ -19,10 +19,8 @@ import Tag from "@/components/Tag";
 import RelatedExpressions from "@/components/RelatedExpressions";
 import BackButton from "@/components/BackButton";
 import DialogueSection from "@/components/DialogueSection";
-import ShareButton from "@/components/ShareButton";
 import KeywordList from "@/components/KeywordList";
-import LikeButton from "@/components/actions/LikeButton";
-import SaveButton from "@/components/actions/SaveButton";
+import ExpressionActions from "@/components/ExpressionActions";
 import LearnButton from "@/components/actions/LearnButton";
 
 interface PageProps {
@@ -200,18 +198,14 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 {meaning}
               </p>
 
-              {/* Action Buttons */}
-              <div className="mt-6 flex items-center gap-4 border-y border-subtle py-4">
-                <LikeButton expressionId={expression.id} size="lg" />
-                <SaveButton expressionId={expression.id} size="lg" />
-                <div className="ml-auto">
-                  <ShareButton
-                    expressionId={expression.id}
-                    expressionText={expression.expression}
-                    meaning={meaning}
-                  />
-                </div>
-              </div>
+              {/* Action Bar */}
+              <ExpressionActions
+                className="mt-6 py-4"
+                expressionId={expression.id}
+                expressionText={expression.expression}
+                meaning={meaning}
+                actionButtonSize="lg"
+              />
 
               <div className="mt-8 sm:mt-10 space-y-6 sm:space-y-8">
                 {/* Situation */}
@@ -273,24 +267,16 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Tags & Share */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
-            <div className="flex flex-wrap gap-2">
-              {expression.tags?.map((tag) => (
-                <Tag
-                  key={tag}
-                  label={tag}
-                  source="detail"
-                  href={getHomeWithFilters({ tag })}
-                />
-              ))}
-            </div>
-
-            <ShareButton
-              expressionId={expression.id}
-              expressionText={expression.expression}
-              meaning={meaning}
-            />
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2">
+            {expression.tags?.map((tag) => (
+              <Tag
+                key={tag}
+                label={tag}
+                source="detail"
+                href={getHomeWithFilters({ tag })}
+              />
+            ))}
           </div>
 
           <KeywordList keywords={seoKeywords} />

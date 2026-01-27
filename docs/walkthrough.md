@@ -2,6 +2,33 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.9: Expression Actions Refactoring & Interaction Bug Fix (2026-01-27)
+
+### 1. Goal (목표)
+
+- `LikeButton`, `SaveButton`, `ShareButton`을 하나의 공통 컴포넌트(`ExpressionActions.tsx`)로 묶어 코드 중복을 제거하고 레이아웃 일관성을 확보합니다.
+- 로그인 모달 내부 클릭 시 부모 요소로 이벤트가 전파되어 상세 페이지로 강제 이동되는 UX 버그를 해결합니다.
+
+### 2. Implementation (구현)
+
+#### A. Unified Action Component (`ExpressionActions.tsx`)
+
+- **Problem**: 리스트 카드와 상세 페이지에서 동일한 액션 버튼 그룹 레이아웃 코드가 중복되어 유지보수가 어려움.
+- **Solution**:
+  - `ExpressionActions` 컴포넌트를 신설하여 버튼들의 배치(`flex`, `justify-between`)와 간격을 캡슐화했습니다.
+  - `onShareClick` 등 이벤트 핸들러를 Props로 전달받아 카드 전용 로직(`stopPropagation`) 등을 유연하게 처리할 수 있도록 설계했습니다.
+
+#### B. Modal Interaction Safety (`LoginModal.tsx`)
+
+- **Problem**: 비로그인 상태에서 카드의 '좋아요' 클릭 시 로그인 모달이 뜨는데, 모달 내부를 클릭해도 카드 자체에 걸린 `Link`나 `onClick` 이벤트가 작동함.
+- **Solution**:
+  - `DialogPrimitive.Overlay`와 `Content`에 `e.stopPropagation()`을 추가하여 이벤트 버블링을 차단했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Reusable**: 액션 버튼 그룹이 필요한 어느 곳에서든 단 한 줄의 코드로 표준 UI 구현 가능.
+- ✅ **UX Integrity**: 모달 사용 중 의도치 않은 페이지 이동을 방지하여 안정적인 인터랙션 제공.
+
 ## v0.14.8: Auth Navigation Loop Fix (2026-01-26)
 
 ### 1. Goal (목표)

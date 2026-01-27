@@ -15,9 +15,7 @@ import { ROUTES, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
-import ShareButton from "@/components/ShareButton";
-import LikeButton from "@/components/actions/LikeButton";
-import SaveButton from "@/components/actions/SaveButton";
+import ExpressionActions from "@/components/ExpressionActions";
 
 interface ExpressionCardProps {
   item: Expression;
@@ -151,20 +149,14 @@ const ExpressionCard = memo(function ExpressionCard({
 
       {/* Action Bar */}
       {!isStatic && (
-        <div className="mt-6 flex items-center justify-between border-t border-subtle pt-4">
-          <div className="flex gap-2">
-            <LikeButton expressionId={item.id} />
-            <SaveButton expressionId={item.id} />
-          </div>
-          {/* Share Button */}
-          <ShareButton
-            variant="compact"
-            expressionId={item.id}
-            expressionText={item.expression}
-            meaning={meaning}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
+        <ExpressionActions
+          className="mt-6 border-t border-subtle pt-4"
+          expressionId={item.id}
+          expressionText={item.expression}
+          meaning={meaning}
+          shareVariant="compact"
+          onShareClick={(e) => e.stopPropagation()}
+        />
       )}
     </div>
   );

@@ -2,6 +2,29 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-27: Component Refactoring & Interaction Bug Fix
+
+### ✅ 진행 사항
+
+1.  **Expression Actions Refactoring (컴포넌트 구조 고도화)**:
+    - **`ExpressionActions.tsx`**: `LikeButton`, `SaveButton`, `ShareButton`을 하나의 독립적인 액션 바 컴포넌트로 통합 리팩토링했습니다.
+    - **Reusability**: 상세 페이지(`app/expressions/[id]/page.tsx`)와 리스트 카드(`components/ExpressionCard.tsx`)에서 중복되던 액션 버튼 레이아웃 코드를 제거하고, 새롭게 생성한 공통 컴포넌트를 적용하여 코드 응집도를 높였습니다.
+    - **Dynamic Sizing**: 사용처에 따라 버튼 크기(`lg` vs `default`)와 공유 버튼의 스타일(`compact` vs `default`)을 Props로 유연하게 제어할 수 있도록 설계했습니다.
+
+2.  **Auth UI Interaction Bug Fix (로그인 모달 클릭 전파 해결)**:
+    - **Event Stop Propagation**: 로그인 모달의 오버레이(`Overlay`)와 컨텐츠(`Content`) 영역 클릭 시 이벤트가 부모 요소(특히 `ExpressionCard`의 클릭 핸들러 등)로 전파되어 의도치 않은 페이지 이동이 발생하는 현상을 `e.stopPropagation()`을 통해 원천 차단했습니다.
+    - **UX Stability**: 비로그인 상태에서 액션 시도 시 모달이 떴을 때, 모달 내부를 클릭해도 배경의 카드가 클릭된 것으로 간주되어 상세 페이지로 이동해버리는 심각한 UX 결함을 수정했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 개별 버튼들을 하나로 묶었나요?**
+
+- **A.** 상세 페이지와 리스트 카드에서 '좋아요-저장-공유'로 이어지는 액션 그룹은 항상 세트로 움직이는 경향이 있습니다. 이를 매번 수동으로 배치하면 간격(`gap`)이나 정렬(`justify-between`) 설정에서 미세한 오차가 발생하기 쉽습니다. 하나로 그룹화함으로써 레이아웃의 일관성을 강제하고 유지보수 포인트를 단일화했습니다.
+
+**Q. 모달 클릭 시 왜 상세 페이지로 이동했었나요?**
+
+- **A.** `ExpressionCard`는 카드 전체가 상세 페이지로 연결되는 `Link` 또는 `onClick` 핸들러를 가지고 있습니다. 로그인 모달은 Radix UI(Dialog)를 사용하지만, 클릭 이벤트는 DOM 트리를 따라 위로 전파(Bubbling)됩니다. 모달의 오버레이나 컨텐츠를 클릭했을 때 이 이벤트가 카드 컨테이너까지 도달하여 "카드가 클릭되었다"고 인식했기 때문입니다. 이를 명시적으로 멈춰주어 모달 내부 인터랙션이 배경 요소에 영향을 주지 않도록 조치했습니다.
+
 ## 2026-01-26: Auth Navigation Loop Fix & UX Refinement
 
 ### ✅ 진행 사항

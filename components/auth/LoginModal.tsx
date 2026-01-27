@@ -39,8 +39,14 @@ export default function LoginModal({
         <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
       )}
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 grid w-[92vw] max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border border-zinc-200 bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-2xl dark:border-zinc-800 dark:bg-zinc-950">
+        <DialogPrimitive.Overlay
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          onClick={(e) => e.stopPropagation()}
+        />
+        <DialogPrimitive.Content
+          className="fixed left-[50%] top-[50%] z-50 grid w-[92vw] max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border border-zinc-200 bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-2xl dark:border-zinc-800 dark:bg-zinc-950"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex flex-col items-center gap-4 text-center">
             <DialogPrimitive.Title className="flex flex-wrap items-center justify-center gap-x-1.5 text-lg font-semibold leading-none tracking-tight">
               <Image

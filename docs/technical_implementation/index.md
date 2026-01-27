@@ -1561,3 +1561,23 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
   - **Logical (`speak_mango_en_next_auth`)**: `camelCase`로 매핑된 Updatable View.
   - **Mapping**: `CREATE VIEW ... SELECT user_id AS "userId" ...`
 - **Benefit**: DB 표준을 준수하면서도 외부 라이브러리와의 호환성을 완벽하게 유지합니다.
+
+## 19. Component Refactoring & Reusability (컴포넌트 리팩토링 및 재사용성)
+
+### 19.1 Unified Action Bar (`ExpressionActions.tsx`)
+
+- **Objective**: '좋아요', '저장', '공유' 등 표현과 관련된 주요 액션 버튼들의 레이아웃과 로직을 단일 컴포넌트로 캡슐화하여 유지보수 효율성을 높입니다.
+- **Implementation**:
+  - `LikeButton`, `SaveButton`, `ShareButton`을 결합한 컨테이너 컴포넌트를 구축했습니다.
+  - **Flexbox Layout**: `justify-between`과 `gap` 설정을 통해 모바일과 데스크탑 환경 모두에서 균형 잡힌 버튼 배치를 보장합니다.
+  - **Prop-driven Styling**:
+    - `actionButtonSize`: `lg` (상세 페이지용) 또는 기본 크기 (카드용)를 주입받아 버튼들의 크기를 일관되게 조정합니다.
+    - `shareVariant`: 공유 버튼의 텍스트 노출 여부(`default` vs `compact`)를 제어합니다.
+- **Benefit**: 상세 페이지(`page.tsx`)와 리스트 카드(`ExpressionCard.tsx`)의 코드가 간결해졌으며, 버튼 간격이나 정렬 방식 변경 시 한 곳에서만 수정하면 전체 UI에 반영됩니다.
+
+### 19.2 Modal Event Isolation (이벤트 격리)
+
+- **Problem**: `Dialog` (Radix UI) 내부의 클릭 이벤트가 DOM 트리를 따라 부모 요소로 전파되어, 모달 아래에 있는 카드나 링크가 클릭되는 현상 발생.
+- **Solution**:
+  - `LoginModal.tsx`의 `Overlay`와 `Content` 컴포넌트에 `onClick={(e) => e.stopPropagation()}`을 적용했습니다.
+  - 이를 통해 모달 내부 인터랙션이 부모의 클릭 핸들러를 트리거하지 않도록 보장하여 UX 안정성을 확보했습니다.
