@@ -1,9 +1,8 @@
 "use client";
 
-import { memo } from "react";
-import Link from "next/link";
+import { memo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { trackExpressionClick } from "@/analytics";
 import { useI18n } from "@/context/I18nContext";
 import { Expression } from "@/types/database";
@@ -15,7 +14,8 @@ import { ROUTES, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
-import ExpressionActions from "@/components/ExpressionActions";
+import ExpressionActions from "@/components/actions/ExpressionActions";
+import InteractiveLink from "@/components/ui/InteractiveLink";
 
 interface ExpressionCardProps {
   item: Expression;
@@ -44,6 +44,11 @@ const ExpressionCard = memo(function ExpressionCard({
   const searchParams = useSearchParams();
   const { locale, dict } = useI18n();
   const enableHover = useEnableHover() && !isStatic;
+  const controls = useAnimation();
+
+  useEffect(() => {
+    controls.start("visible");
+  }, [controls]);
 
   const content = item.content[locale] || item.content[SupportedLanguage.EN];
   const meaning = item.meaning[locale] || item.meaning[SupportedLanguage.EN];
@@ -174,15 +179,16 @@ const ExpressionCard = memo(function ExpressionCard({
       variants={itemVariants}
       layout
       initial="hidden"
-      animate="visible"
+      animate={controls}
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
       whileHover={enableHover ? { y: -5 } : undefined}
-      whileTap={enableHover ? { scale: 0.98 } : undefined}
       className={cn("h-full rounded-card", className)}
     >
-      <Link
+      <InteractiveLink
         href={ROUTES.EXPRESSION_DETAIL(item.id)}
-        className="relative block h-full rounded-card"
+        isStatic={isStatic}
+        enableHover={enableHover}
+        controls={controls}
         onClick={() => {
           // Track expression click event
           trackExpressionClick({
@@ -207,7 +213,7 @@ const ExpressionCard = memo(function ExpressionCard({
         }}
       >
         {CardContent}
-      </Link>
+      </InteractiveLink>
     </motion.div>
   );
 });

@@ -20,7 +20,7 @@ import RelatedExpressions from "@/components/RelatedExpressions";
 import BackButton from "@/components/BackButton";
 import DialogueSection from "@/components/DialogueSection";
 import KeywordList from "@/components/KeywordList";
-import ExpressionActions from "@/components/ExpressionActions";
+import ExpressionActions from "@/components/actions/ExpressionActions";
 import LearnButton from "@/components/actions/LearnButton";
 
 interface PageProps {

@@ -125,6 +125,19 @@ const scrollLeft = offsetLeft - clientWidth / 2 + offsetWidth / 2;
   - 가속시 속도: `4.0` (방향에 따라 `+/-`)
   - `hoverDirection` 상태를 통해 가속 여부와 방향을 결정하고, `requestAnimationFrame` 루프 내에서 `scrollLeft`에 더하는 값을 동적으로 변경합니다.
 
+### 3.3 Manual Animation & Event Delegation (수동 애니메이션 및 이벤트 위임)
+
+Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인터랙션 간의 충돌을 해결하기 위한 전략입니다.
+
+- **Problem**: `ExpressionCard` 전체를 감싸는 `Link`에 `whileTap`을 적용할 경우, 카드 내부에 위치한 '좋아요' 등의 액션 버튼을 클릭해도 카드 전체가 반응(Scale-down)하는 시각적 부적절함이 발생합니다. `e.stopPropagation()`은 네비게이션은 막아주지만, Framer Motion의 제스처 감지는 DOM 트리 전체에 대해 작동하기 때문입니다.
+- **Solution (Manual Control)**:
+  - **`InteractiveLink`**: `whileTap` 대신 `useAnimation` 훅을 통한 명령형 애니메이션 제어를 도입했습니다.
+  - **Event Filtering**: `onPointerDown` 핸들러에서 클릭된 요소가 `data-action-buttons` 속성을 가진 요소 내부에 있는지(`closest`) 확인합니다.
+  - **Conditional Trigger**: 액션 버튼 영역 외부 클릭일 때만 `controls.start({ scale: 0.98 })`을 호출하여 애니메이션을 실행합니다. 이를 통해 "이 영역은 카드 애니메이션에서 제외한다"는 명확한 구분이 가능해졌습니다.
+- **Event Delegation & Isolation**:
+  - **`ActionButtonGroup`**: 개별 버튼들을 감싸는 이 컴포넌트에 `pointer-events-auto`와 `data-action-buttons`를 적용하고, 모든 포인터 이벤트에 `stopPropagation()`을 강제하여 부모의 커스텀 포인터 로직과 완전히 분리했습니다.
+  - **Parent Container**: `ExpressionActions`의 메인 컨테이너에 `pointer-events-none`을 적용하여, 버튼 사이의 빈 공간을 클릭했을 때는 이벤트가 부모인 `InteractiveLink`로 자연스럽게 흘러 들어가 카드 전체의 애니메이션과 네비게이션이 작동하도록 설계했습니다.
+
 ## 4. Internationalization (i18n) Engine
 
 외부 라이브러리(`next-intl` 등) 없이 Next.js Middleware와 Server Components만으로 구현한 경량화된 다국어 시스템입니다.

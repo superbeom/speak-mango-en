@@ -2,9 +2,10 @@
 
 import { ActionIconSize } from "@/constants/ui";
 import { cn } from "@/lib/utils";
+import ActionButtonGroup from "@/components/actions/ActionButtonGroup";
 import LikeButton from "@/components/actions/LikeButton";
 import SaveButton from "@/components/actions/SaveButton";
-import ShareButton from "@/components/ShareButton";
+import ShareButton from "@/components/actions/ShareButton";
 
 interface ExpressionActionsProps {
   expressionId: string;
@@ -30,19 +31,26 @@ export default function ExpressionActions({
   const gapClass = actionButtonSize === "lg" ? "gap-4" : "gap-2";
 
   return (
-    <div className={cn("flex items-center justify-between", className)}>
-      <div className={cn("flex", gapClass)}>
+    <div
+      className={cn(
+        "flex items-center justify-between relative z-10 pointer-events-none",
+        className,
+      )}
+    >
+      <ActionButtonGroup className={cn("flex", gapClass)}>
         <LikeButton expressionId={expressionId} size={actionButtonSize} />
         <SaveButton expressionId={expressionId} size={actionButtonSize} />
-      </div>
+      </ActionButtonGroup>
 
-      <ShareButton
-        variant={shareVariant}
-        expressionId={expressionId}
-        expressionText={expressionText}
-        meaning={meaning}
-        onClick={onShareClick}
-      />
+      <ActionButtonGroup>
+        <ShareButton
+          variant={shareVariant}
+          expressionId={expressionId}
+          expressionText={expressionText}
+          meaning={meaning}
+          onClick={onShareClick}
+        />
+      </ActionButtonGroup>
     </div>
   );
 }

@@ -2,6 +2,57 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.11: Directory Reorganization & Import Optimization (2026-01-27)
+
+### 1. Goal (목표)
+
+- 프로젝트가 성장함에 따라 비대해진 `components/` 폴더를 정리하고, 인터랙션 관련 컴포넌트들을 논리적인 서브디렉토리(`components/actions/`, `components/ui/`)로 이동하여 유지보수성을 높입니다.
+- `project_context.md`에 명시된 설계 지침과 실제 물리적 파일 구조 간의 불일치를 해소합니다.
+
+### 2. Implementation (구현)
+
+#### A. Component Relocation
+
+- **`components/actions/`**: `ExpressionActions.tsx`, `ActionButtonGroup.tsx`, `ShareButton.tsx`를 해당 폴더로 이동. 기존에 존재하던 `LikeButton`, `SaveButton`, `LearnButton`과 함께 액션 그룹으로 통합 관리.
+- **`components/ui/`**: `InteractiveLink.tsx`를 UI 유틸리티 폴더로 이동.
+
+#### B. Global Import Update
+
+- 파일 이동에 맞춰 `app/expressions/[id]/page.tsx`, `components/ExpressionCard.tsx`, `components/actions/ExpressionActions.tsx` 등 관련 모든 파일의 임포트 경로를 최신화했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Architectural Alignment**: 문서와 실제 코드 구조가 완벽히 일치하게 되었습니다.
+- ✅ **Scalability**: 기능별 컴포넌트 그룹화로 향후 UI 요소 추가 시 체계적인 관리가 가능해졌습니다.
+
+## v0.14.10: Standalone Component Extraction & Animation Refinement (2026-01-27)
+
+### 1. Goal (목표)
+
+- `ExpressionCard`와 `ExpressionActions`에 산재해 있던 복잡한 인터랙션 로직을 독립된 컴포넌트로 추출하여 코드 가독성과 재사용성을 높입니다.
+- 액션 버튼(좋아요, 저장 등) 클릭 시 카드 전체의 애니메이션이 트리거되는 시각적 버그를 수동 애니메이션 제어를 통해 근본적으로 해결합니다.
+
+### 2. Implementation (구현)
+
+#### A. InteractiveLink Component (`components/ui/InteractiveLink.tsx`)
+
+- **Role**: `next/link`를 래핑하여 애니메이션 제어 로직을 캡슐화한 컴포넌트입니다.
+- **Manual Animation**: `controls.start({ scale: 0.98 })`와 같이 `useAnimation` 훅을 사용하여 `onPointerDown` 시점에 애니메이션을 직접 트리거합니다.
+- **Exclusion Logic**: 클릭 이벤트 발생 시 `e.target`이 `data-action-buttons` 영역 안에 있는지 체크하여, 버튼 클릭 시에는 애니메이션과 네비게이션이 작동하지 않도록 방어 로직을 적용했습니다.
+
+#### B. ActionButtonGroup Component (`components/actions/ActionButtonGroup.tsx`)
+
+- **Role**: 액션 버튼들을 그룹화하고 이벤트 전파를 차단하는 컨테이너입니다.
+- **Propagation Control**: `onPointerDown`, `onPointerUp`, `onClick` 이벤트에서 `e.stopPropagation()`을 호출하여 부모인 `InteractiveLink`로 이벤트가 전달되지 않도록 합니다.
+
+#### C. Manual Animation Strategy (`ExpressionCard.tsx`)
+
+- **Refactoring**: 기존의 Framer Motion `whileTap` 속성을 제거하고, `InteractiveLink`에 `controls` (AnimationControls)를 전달하여 정밀하게 제어하도록 구조를 변경했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Perfect Interaction**: 버튼 클릭과 카드 클릭이 명확히 구분되어 시각적 결함이 해결되었습니다.
+
 ## v0.14.9: Expression Actions Refactoring & Interaction Bug Fix (2026-01-27)
 
 ### 1. Goal (목표)

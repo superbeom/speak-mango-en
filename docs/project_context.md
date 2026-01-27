@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-25
+**최종 수정일**: 2026-01-27
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -56,7 +56,8 @@ speak-mango-en/
 │   ├── AnalyticsProvider.tsx   # 페이지 뷰 자동 추적 Provider
 │   └── ExpressionViewTracker.tsx # 표현 조회 추적 컴포넌트
 ├── components/          # React 컴포넌트
-│   └── ui/              # 재사용 가능한 UI 컴포넌트 (Card, Button 등)
+│   ├── actions/         # 액션 관련 공통 컴포넌트
+│   ├── ui/              # 재사용 가능한 UI 컴포넌트 (Skeletons, Toast, InteractiveLink 등)
 ├── constants/           # 전역 상수 관리
 │   ├── index.ts         # 일반 상수 (서비스명, DB 스키마 등)
 │   └── events.ts        # 이벤트 상수 (오디오 재생 등)
@@ -203,6 +204,10 @@ speak-mango-en/
   - **적용 대상**: 서버에서 데이터를 가져오는 모든 주요 컴포넌트 및 레이아웃 유지를 위해 필요한 상단 요소(`SearchBar`, `FilterBar`, `ExpressionCard` 등).
   - **구현 원칙**: 새로운 데이터 의존 컴포넌트 생성 시, 해당 컴포넌트의 레이아웃을 모사하는 스켈레톤 컴포넌트를 반드시 세트로 함께 구현합니다.
   - **관리**: `components/ui/Skeletons.tsx`에 재사용 가능한 스켈레톤 컴포넌트들을 모아 관리합니다.
+- **인터랙션 및 애니메이션 제어 (Interaction & Animation Control)**:
+  - **Clickable Link Cards**: 특정 카드 전체가 링크인 경우, 내부의 버튼(좋아요, 저장 등) 클릭 시 카드 전체의 반응(애니메이션)을 차단해야 합니다.
+  - **InteractiveLink**: `whileTap` 대신 `useAnimation`을 사용하는 `InteractiveLink` 컴포넌트를 활용하여 클릭 대상에 따른 조건부 애니메이션을 실행합니다.
+  - **Event Delegation**: 액션 버튼 그룹(`ActionButtonGroup`)은 `data-action-buttons` 마킹과 `e.stopPropagation()`을 통해 부모의 인터랙션 간섭을 원천 차단합니다.
 
 ### Frontend
 

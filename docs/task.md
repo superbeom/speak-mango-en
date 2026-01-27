@@ -130,6 +130,8 @@
 - [x] **Phase 3: Interactive Features**
   - [x] **Actions**: Like, Save, Learn 버튼 UI 및 상태 연동
   - [x] **Refactoring**: 공통 액션 바 컴포넌트(`ExpressionActions.tsx`) 추출 및 중복 제거
+  - [x] **Refactoring**: `InteractiveLink` 및 `ActionButtonGroup` 독립 컴포넌트 추출
+  - [x] **UI/UX**: `InteractiveLink`를 통한 수동 애니메이션 제어 및 액션 버튼 간섭 해결
   - [x] **Bug Fix**: 로그인 모달 클릭 전파(`stopPropagation`) 해결 및 UX 안정화
   - [x] **UI**: 비로그인 액션 시 브랜드 일관성을 갖춘 로그인 유도 모달(Login Modal) 구현 및 최적화
   - [x] **Refactoring**: AuthButton에서 UserMenu 컴포넌트 분리 (`UserMenu.tsx`) 및 로그아웃 UX 개선

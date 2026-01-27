@@ -2,6 +2,35 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-27: Component Reorganization & Advanced Interaction Control
+
+### ✅ 진행 사항
+
+1.  **Directory Structure Optimization (디렉토리 구조 최적화)**:
+    - **`components/actions/`**: `ExpressionActions.tsx`, `ActionButtonGroup.tsx`, `ShareButton.tsx`를 해당 폴더로 이동하여 액션 관련 컴포넌트들을 논리적으로 그룹화했습니다.
+    - **`components/ui/`**: `InteractiveLink.tsx`를 UI 유틸리티 폴더로 이동하여 `project_context.md`의 설계 지침과 실제 구조를 일치시켰습니다.
+    - **Import Path Cleanup**: 파일 이동에 따른 프로젝트 전반의 임포트 경로를 일괄 업데이트하여 참조 오류를 방지했습니다.
+
+2.  **Standalone Component Extraction (컴포넌트 독립화)**:
+    - **`InteractiveLink.tsx`**: `ExpressionCard` 내부에 있던 복잡한 포인터 이벤트 핸들링 및 애니메이션 제어 로직을 독립된 컴포넌트로 분리하여 재사용성을 확보했습니다.
+    - **`ActionButtonGroup.tsx`**: 액션 버튼 그룹의 이벤트 전파 차단(`stopPropagation`)과 포인터 이벤트 제어(`pointer-events-auto`)를 캡슐화했습니다.
+
+3.  **Manual Animation Control (수동 애니메이션 제어)**:
+    - **Precision UX**: Framer Motion의 `whileTap` 대신 `useAnimation` 훅을 도입했습니다. `data-action-buttons` 마킹을 통해 버튼 클릭 시 카드 전체의 눌림 애니메이션이 트리거되는 시각적 버그를 해결했습니다.
+
+4.  **Interaction Bug Fixes**:
+    - **Login Modal Propagation**: 로그인 모달의 오버레이(`Overlay`)와 컨텐츠(`Content`) 클릭 시 이벤트가 부모 요소로 전파되는 현상을 차단하여 의도치 않은 페이지 이동을 막았습니다. (`v0.14.9` 관련)
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 컴포넌트들을 `actions/` 폴더로 옮겼나요?**
+
+- **A.** 프로젝트가 성장함에 따라 `components/` 최상위 폴더가 비대해지는 것을 방지하고, '학습/좋아요/공유' 등 사용자 액션과 관련된 컴포넌트들을 한곳에 모아 관리 효율성을 높이기 위함입니다. 이는 `project_context.md`에 명시된 아키텍처 가이드를 준수하는 조치이기도 합니다.
+
+**Q. 왜 `whileTap` 대신 `useAnimation` 명령형 방식을 사용했나요?**
+
+- **A.** 선언적 애니메이션인 `whileTap`은 하위 요소의 `stopPropagation()`으로 제어할 수 없는 시각적 피드백을 발생시킵니다. 명령형 API(`controls.start`)를 사용하면 클릭 시점의 타겟 요소를 프로그래밍적으로 분석하여, "진짜 카드 클릭"일 때만 애니메이션을 실행하는 정밀한 제어가 가능하기 때문입니다.
+
 ## 2026-01-27: Component Refactoring & Interaction Bug Fix
 
 ### ✅ 진행 사항
