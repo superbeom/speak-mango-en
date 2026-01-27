@@ -19,7 +19,6 @@ export const useLocalActionStore = create<LocalActionState>()(
   persist(
     (set, get) => ({
       actions: {
-        like: new Set(),
         save: new Set(),
         learn: new Set(),
       },
@@ -45,7 +44,6 @@ export const useLocalActionStore = create<LocalActionState>()(
       name: LOCAL_STORAGE_KEYS.USER_ACTIONS,
       partialize: (state) => ({
         actions: {
-          like: Array.from(state.actions.like),
           save: Array.from(state.actions.save),
           learn: Array.from(state.actions.learn),
         },
@@ -55,7 +53,6 @@ export const useLocalActionStore = create<LocalActionState>()(
         return {
           ...currentState,
           actions: {
-            like: new Set(persisted.actions.like || []),
             save: new Set(persisted.actions.save || []),
             learn: new Set(persisted.actions.learn || []),
           },

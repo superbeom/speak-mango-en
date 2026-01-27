@@ -24,7 +24,7 @@ export const remoteUserActionRepository: SyncableRepository = {
   },
 
   async sync(localRepo: UserActionRepository): Promise<void> {
-    const types: ActionType[] = ["like", "save", "learn"];
+    const types: ActionType[] = ["save", "learn"];
     const actionsToSync: { expressionId: string; type: ActionType }[] = [];
 
     for (const type of types) {

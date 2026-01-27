@@ -22,7 +22,7 @@
 > [!NOTE]
 > **Admin 권한**: 관리자 기능이 필요한 경우, 별도의 `admins` 테이블을 생성하여 관리합니다. 일반 사용자 tier에는 포함하지 않습니다.
 
-- **익명(비로그인) 사용자**: 콘텐츠 열람만 가능. 좋아요/저장 등 액션 시 **로그인 모달**을 띄워 가입 유도.
+- **익명(비로그인) 사용자**: 콘텐츠 열람만 가능. 저장 등 액션 시 **로그인 모달**을 띄워 가입 유도.
 - **무료 사용자**: **로그인한 상태**이나 구독하지 않은 사용자. 비용 절감 및 유료 전환 유도를 위해 **로컬 스토리지(Local Storage)** 사용. (기기 연동 불가)
 - **Pro 사용자**: **구독 중인 사용자**. **Supabase DB**를 사용하여 데이터 영구 보존, 멀티 디바이스 동기화, 고급 학습 기능 제공.
 
@@ -60,7 +60,6 @@ Supabase Auth 대신 NextAuth를 사용하여 인증 계층을 직접 제어합�
 ```typescript
 // 인터페이스 정의
 interface ActionRepository {
-  likeEffect(id: string): Promise<void>;
   saveExpression(id: string): Promise<void>;
   markAsLearned(id: string): Promise<void>;
   getHistory(): Promise<UserHistory>;
@@ -80,7 +79,7 @@ interface ActionRepository {
 
 사용자가 **무료 -> 유료**로 전환(구독)하는 즉시 다음 프로세스가 실행됩니다:
 
-1.  `LocalStorage`에 저장된 모든 액션 데이터(좋아요, 저장, 학습 등)를 읽어옵니다.
+1.  `LocalStorage`에 저장된 모든 액션 데이터(저장, 학습 등)를 읽어옵니다.
 2.  Next.js Server Action을 통해 Supabase DB로 **Bulk Insert** 합니다.
 3.  성공 시 로컬 스토리지를 비우고, 이후부터는 `RemoteRepository`를 사용합니다.
 
@@ -127,7 +126,7 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 
 - `user_id` (FK): 사용자 ID
 - `expression_id` (FK): 콘텐츠 ID
-- `action_type` (enum: 'like', 'save', 'learn'): 좋아요, 저장, 학습완료 구분
+- `action_type` (enum: 'save', 'learn'): 저장, 학습완료 구분
 - `created_at` (timestamptz)
 - **Unique Key**: `(user_id, expression_id, action_type)` - 중복 방지
 
@@ -142,7 +141,7 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 
 - **목적**: 표현별 인기도 및 학습 통계 집계 (주간 베스트 등)
 - **갱신 방식**: pg_cron 또는 Edge Function으로 일간/주간 재계산
-- **필드**: `expression_id`, `like_count`, `save_count`, `learn_count` 등
+- **필드**: `expression_id`, `save_count`, `learn_count` 등
 - **참고**: 실제 구현 시 Materialized View 또는 별도 집계 테이블로 생성 (Phase 6 단계에서 구현 예정)
 
 ---
@@ -151,7 +150,6 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 
 ### 5.1 인터랙션 액션
 
-- **Like (좋아요)**: 디자인적 선호도 표현 / 인기 투표.
 - **Save (저장)**: "나중에 다시 공부하고 싶어요". (북마크)
 - **Learn (학습 완료)**: "이 표현은 완전히 익혔어요".
   - **UX 흐름**: 상세 페이지에서 "학습 완료" 클릭 -> 학습 목록에 추가됨 -> 자동으로 하단의 '추천 표현(Related Expressions)'으로 스크롤 이동.
@@ -161,7 +159,6 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 | 기능                  | 익명 (Anonymous) |     무료 (Free)     |         유료 (Pro)         | 비고                                    |
 | :-------------------- | :--------------: | :-----------------: | :------------------------: | :-------------------------------------- |
 | **콘텐츠 탐색**       |        O         |          O          |             O              | 영어 표현 리스트 및 상세 보기           |
-| **좋아요 (Like)**     |     X (모달)     |      O (Local)      |           O (DB)           | 마이페이지에서 모아보기 가능            |
 | **저장 (Save)**       |     X (모달)     |      O (Local)      |           O (DB)           | '나중에 볼 단어' 저장                   |
 | **학습 완료 (Learn)** |     X (모달)     |      O (Local)      |           O (DB)           | 학습한 카드는 리스트에서 숨김 처리 가능 |
 | **오디오 듣기**       |        X         |     △ (체험판)      |         O (무제한)         | Dialogue 전체 듣기 기능                 |
@@ -196,15 +193,14 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 
 새로운 보호된 경로 `@/my` 생성:
 
-- **탭 구성**: 좋아요(Liked) / 저장됨(Saved) / 학습완료(Learned)
+- **탭 구성**: 저장됨(Saved) / 학습완료(Learned)
 - **통계**: "이번 주에 X개의 표현을 학습했어요!"
 - **학습 진입**: "저장한 단어 복습하기" 버튼 (플래시카드 연결)
 
 ### 5.7 랭킹 시스템 ("Hall of Fame")
 
-- **주간 베스트**: 좋아요/저장 수가 가장 많은 상위 5개 표현.
+- **주간 베스트**: 저장 수가 가장 많은 상위 5개 표현.
 - **시각적 차별화**:
-  - **좋아요**: 핑크 테두리 / 하트 아이콘
   - **저장**: 골드 테두리 / 북마크 아이콘
   - **학습됨**: 실버/그린 테마
 
@@ -236,21 +232,21 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 - **통합 훅**:
 - [x] `hooks/user/useUserActions.ts`: 로그인 상태에 따라 Local/Remote 자동 분기 처리.
 - **UI 컴포넌트**:
-  - [x] `components/actions/LikeButton.tsx`, `SaveButton.tsx`, `LearnButton.tsx` 구현.
+  - [x] `components/actions/SaveButton.tsx`, `LearnButton.tsx` 구현.
   - [x] **UI 반응성(Reactivity)**: 현재 `useUserActions`는 비동기 리포지토리를 반환하므로, 버튼 UI는 `useLocalActionStore`를 직접 구독하거나 훅을 개선하여 상태 변경을 즉시 반영해야 함.
   - [x] **Anonymous 제어**: 각 버튼 컴포넌트 내부에서 로그인 여부 체크 후 `LoginModal` 호출 로직 추가.
 
 ### Phase 3: UI 통합
 
 - [x] **Login Modal**: 액션 시도 시 뜨는 가입 유도 모달.
-- [x] **Action Buttons**: Like/Save/Learn 버튼 컴포넌트화 및 훅 연결.
+- [x] **Action Buttons**: Save/Learn 버튼 컴포넌트화 및 훅 연결.
 - [x] **Login Trigger**: 헤더의 로그인 버튼 구현.
 - [ ] **Trial Counter**: 오디오 재생 시 카운트 차감 및 제한 팝업 구현.
 
 ### Phase 4: 마이 페이지 & 랭킹
 
 - **마이 페이지**:
-  - [ ] `app/my/page.tsx`: 탭 UI (좋아요/저장/학습) 및 리스트 뷰 구현.
+  - [ ] `app/my/page.tsx`: 탭 UI (저장/학습) 및 리스트 뷰 구현.
 - **필터링**:
   - [ ] 메인 페이지(`app/page.tsx`)에 "학습한 표현 숨기기/보기" 토글 필터 추가.
 - **랭킹**:

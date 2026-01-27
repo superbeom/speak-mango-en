@@ -6,8 +6,9 @@ import {
   getContentLocale,
   SupportedLanguage,
 } from "@/i18n";
-import { SERVICE_NAME } from "@/constants";
 import { getI18n } from "@/i18n/server";
+import { SERVICE_NAME } from "@/constants";
+import { ACTION_ICON_SIZE } from "@/constants/ui";
 import { generateSeoKeywords } from "@/lib/seo";
 import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { CANONICAL_URLS, getHomeWithFilters } from "@/lib/routes";
@@ -204,7 +205,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
                 expressionId={expression.id}
                 expressionText={expression.expression}
                 meaning={meaning}
-                actionButtonSize="lg"
+                actionButtonSize={ACTION_ICON_SIZE.LG}
               />
 
               <div className="mt-8 sm:mt-10 space-y-6 sm:space-y-8">

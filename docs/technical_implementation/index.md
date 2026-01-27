@@ -1579,9 +1579,9 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 
 ### 19.1 Unified Action Bar (`ExpressionActions.tsx`)
 
-- **Objective**: '좋아요', '저장', '공유' 등 표현과 관련된 주요 액션 버튼들의 레이아웃과 로직을 단일 컴포넌트로 캡슐화하여 유지보수 효율성을 높입니다.
+- **Objective**: '저장', '공유' 등 표현과 관련된 주요 액션 버튼들의 레이아웃과 로직을 단일 컴포넌트로 캡슐화하여 유지보수 효율성을 높입니다.
 - **Implementation**:
-  - `LikeButton`, `SaveButton`, `ShareButton`을 결합한 컨테이너 컴포넌트를 구축했습니다.
+  - `SaveButton`, `ShareButton`을 결합한 컨테이너 컴포넌트를 구축했습니다.
   - **Flexbox Layout**: `justify-between`과 `gap` 설정을 통해 모바일과 데스크탑 환경 모두에서 균형 잡힌 버튼 배치를 보장합니다.
   - **Prop-driven Styling**:
     - `actionButtonSize`: `lg` (상세 페이지용) 또는 기본 크기 (카드용)를 주입받아 버튼들의 크기를 일관되게 조정합니다.

@@ -3,7 +3,6 @@
 import { ActionIconSize } from "@/constants/ui";
 import { cn } from "@/lib/utils";
 import ActionButtonGroup from "@/components/actions/ActionButtonGroup";
-import LikeButton from "@/components/actions/LikeButton";
 import SaveButton from "@/components/actions/SaveButton";
 import ShareButton from "@/components/actions/ShareButton";
 
@@ -26,10 +25,6 @@ export default function ExpressionActions({
   shareVariant = "default",
   onShareClick,
 }: ExpressionActionsProps) {
-  // Determine gap based on size if not explicitly handled via className?
-  // Actually, we group like/save together.
-  const gapClass = actionButtonSize === "lg" ? "gap-4" : "gap-2";
-
   return (
     <div
       className={cn(
@@ -37,8 +32,7 @@ export default function ExpressionActions({
         className,
       )}
     >
-      <ActionButtonGroup className={cn("flex", gapClass)}>
-        <LikeButton expressionId={expressionId} size={actionButtonSize} />
+      <ActionButtonGroup>
         <SaveButton expressionId={expressionId} size={actionButtonSize} />
       </ActionButtonGroup>
 

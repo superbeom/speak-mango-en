@@ -2,6 +2,29 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-27: User Action Streamlining (Like Feature Removal)
+
+### ✅ 진행 사항
+
+1.  **Feature Cleanup (기능 단순화)**:
+    - **Remove Like Button**: 사용성이 낮고 '저장'과 역할이 중복되는 '좋아요(Like)' 기능을 제거했습니다.
+    - **Focus on Save & Learn**: 사용자의 핵심 여정을 '저장(Save)'하여 모아보거나, '학습 완료(Learn)'하여 숨기는 흐름으로 단순화했습니다.
+    - **DB Schema Update**: `user_actions` 테이블의 `action_type` ENUM에서 `like`를 제거하는 마이그레이션을 적용했습니다.
+
+2.  **Code Refactoring (코드 리팩토링)**:
+    - **Action System**: `ExpressionActions` 컴포넌트에서 `LikeButton` 의존성을 제거하고 `SaveButton` 단독 체제로 레이아웃을 최적화했습니다.
+    - **Store Cleanup**: `useLocalActionStore` 및 리포지토리 계층에서 `like` 관련 상태 관리 로직을 모두 삭제하여 메모리 및 코드 복잡도를 줄였습니다.
+    - **Constant Usage**: `actionButtonSize` prop에 하드코딩된 문자열 대신 `ACTION_ICON_SIZE` 상수를 적용하여 타입 안전성을 확보했습니다.
+
+3.  **Migration Strategy**:
+    - `019_update_action_enum.sql`: 기존의 `like` 데이터를 삭제하고 Enum 타입을 갱신하는 마이그레이션 스크립트를 작성했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 좋아요 기능을 삭제했나요?**
+
+- **A.** 초기 기획과 달리 '저장(Save)'과 '좋아요(Like)'의 사용자 가치가 모호하고 중복된다고 판단했습니다. 언어 학습 앱의 본질은 "나중에 다시 공부하기 위해 모아두는 것(Save)"에 있으므로, 모호한 좋아요 기능을 제거하고 저장 기능에 집중하여 UX를 간결하게 만들었습니다.
+
 ## 2026-01-27: Component Reorganization & Advanced Interaction Control
 
 ### ✅ 진행 사항

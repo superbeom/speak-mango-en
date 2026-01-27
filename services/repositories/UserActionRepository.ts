@@ -1,4 +1,4 @@
-export type ActionType = "like" | "save" | "learn";
+export type ActionType = "save" | "learn";
 
 export interface UserActionRepository {
   getActions(type: ActionType): Promise<string[]>;

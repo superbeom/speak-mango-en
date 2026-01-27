@@ -128,7 +128,7 @@
   - [x] **Remote**: Supabase Server Action 기반 Remote 리포지토리 구현
   - [x] **Sync**: 무료 -> 유료 전환 시 데이터 마이그레이션 로직 구현
 - [x] **Phase 3: Interactive Features**
-  - [x] **Actions**: Like, Save, Learn 버튼 UI 및 상태 연동
+  - [x] **Actions**: Save, Learn 버튼 UI 및 상태 연동
   - [x] **Refactoring**: 공통 액션 바 컴포넌트(`ExpressionActions.tsx`) 추출 및 중복 제거
   - [x] **Refactoring**: `InteractiveLink` 및 `ActionButtonGroup` 독립 컴포넌트 추출
   - [x] **UI/UX**: `InteractiveLink`를 통한 수동 애니메이션 제어 및 액션 버튼 간섭 해결

@@ -1,14 +1,14 @@
 --
 -- Name: toggle_user_action(uuid, text); Type: FUNCTION; Schema: speak_mango_en
 --
--- Description: Atomically toggles a user action (like, save, learn) for an expression.
+-- Description: Atomically toggles a user action (save, learn) for an expression.
 --              If the action exists, it is removed (toggle off).
 --              If it does not exist, it is created (toggle on).
 --              This ensures atomicity and reduces network roundtrips.
 --
 -- Parameters:
 -- p_expression_id: The UUID of the expression.
--- p_action_type: The type of action ('like', 'save', 'learn').
+-- p_action_type: The type of action ('save', 'learn').
 --
 -- Returns: void
 --

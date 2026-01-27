@@ -24,7 +24,7 @@ export type ActionIconSize =
 export const DEFAULT_ACTION_ICON_SIZE = ACTION_ICON_SIZE.MD;
 
 export const ACTION_ICON_SIZE_CLASSES: Record<ActionIconSize, string> = {
-  [ACTION_ICON_SIZE.SM]: "h-4 w-4",
-  [ACTION_ICON_SIZE.MD]: "h-5 w-5",
-  [ACTION_ICON_SIZE.LG]: "h-6 w-6",
+  [ACTION_ICON_SIZE.SM]: "h-5 w-5",
+  [ACTION_ICON_SIZE.MD]: "h-6 w-6",
+  [ACTION_ICON_SIZE.LG]: "h-7 w-7",
 };

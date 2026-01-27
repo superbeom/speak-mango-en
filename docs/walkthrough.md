@@ -2,6 +2,31 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.12: Action Streamlining - Like Feature Removal (2026-01-27)
+
+### 1. Goal (목표)
+
+- '좋아요(Like)'와 '저장(Save)' 기능의 중복성을 해소하고, 사용자 여정을 '저장'과 '학습'으로 단순화합니다.
+- 사용되지 않는 코드(`LikeButton`)와 데이터베이스 상태(`like` enum)를 제거하여 시스템을 경량화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Feature Removal
+
+- **Component**: `components/actions/LikeButton.tsx` 파일을 삭제했습니다.
+- **Integration**: `ExpressionActions.tsx`에서 `LikeButton`을 제거하고, `SaveButton`만 남도록 레이아웃을 수정했습니다.
+- **Store & Repo**: `useLocalActionStore`, `UserActionRepository` 등에서 `like` 관련 액션 타입 및 상태 관리 로직을 삭제했습니다.
+
+#### B. Database Schema Update
+
+- **Migration**: `019_update_action_enum.sql`을 통해 `action_type` ENUM에서 `like` 값을 안전하게 제거했습니다.
+- **Cleanup**: 기존 `like` 데이터를 삭제하여 DB 공간을 확보했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Simplified UX**: 액션이 '저장(보관)'과 '학습(완료)'로 명확해져 사용자 혼란이 줄어들었습니다.
+- ✅ **Clean Codebase**: 불필요한 레거시 코드가 제거되어 유지보수성이 향상되었습니다.
+
 ## v0.14.11: Directory Reorganization & Import Optimization (2026-01-27)
 
 ### 1. Goal (목표)
