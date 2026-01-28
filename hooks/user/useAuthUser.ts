@@ -5,17 +5,25 @@ import { useSession } from "next-auth/react";
 /**
  * 클라이언트 컴포넌트에서 사용자 인증 정보를 가져오는 훅
  *
- * @returns {Object} 세션 정보
- * @returns {Object|null} session.user - 사용자 정보 (id, name, email, tier, subscriptionEndDate 포함)
- * @returns {string} session.status - 로딩 상태 ("loading" | "authenticated" | "unauthenticated")
+ * @returns {Object} auth - 인증 정보 객체
+ * @returns {Object|null} auth.user - 사용자 정보 (id, name, email, tier, subscriptionEndDate 포함)
+ * @returns {string} auth.status - 로딩 상태 ("loading" | "authenticated" | "unauthenticated")
+ * @returns {boolean} auth.isLoading - 세션 로딩 중 여부
+ * @returns {boolean} auth.isAuthenticated - 로그인 여부
+ * @returns {boolean} auth.isPro - 유료(Pro) 티어 여부
  *
  * @example
- * const { user, status } = useAuthUser();
+ * const { user, isAuthenticated, isLoading, isPro } = useAuthUser();
  *
- * if (status === "loading") return <div>Loading...</div>;
- * if (status === "unauthenticated") return <div>Please login</div>;
+ * if (isLoading) return <div>Loading...</div>;
+ * if (!isAuthenticated) return <div>Please login</div>;
  *
- * return <div>Welcome {user.name}! Your tier: {user.tier}</div>;
+ * return (
+ *   <div>
+ *     Welcome {user?.name}!
+ *     {isPro ? <span>Premium Member</span> : <span>Free Member</span>}
+ *   </div>
+ * );
  */
 export function useAuthUser() {
   const { data: session, status } = useSession();
@@ -23,7 +31,8 @@ export function useAuthUser() {
   return {
     user: session?.user ?? null,
     status,
-    isAuthenticated: status === "authenticated",
     isLoading: status === "loading",
+    isAuthenticated: status === "authenticated",
+    isPro: session?.user?.tier === "pro",
   };
 }

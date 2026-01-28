@@ -2,6 +2,37 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.13: New Vocabulary List System (2026-01-28)
+
+### 1. Goal (목표)
+
+- 사용자가 자신만의 테마별 단어장을 생성하고, 표현을 자유롭게 분류하여 관리할 수 있는 기능을 제공합니다.
+- 로그인한 모든 사용자(Free/Pro)에게 개인화된 저장 기능을 제공하며, 비로그인 사용자의 경우 데이터 손실 방지를 위해 로그인을 유도합니다.
+
+### 2. Implementation (구현)
+
+#### A. Custom Vocabulary Management
+
+- **Schema**: `vocabulary_lists`와 `vocabulary_items` 테이블을 설계하여 다중 단어장 및 1:N 관계를 구현했습니다.
+- **UI**: 사용자가 표현 저장 시 리스트를 선택할 수 있는 `VocabularyListModal`과 새 리스트를 즉석에서 만드는 `CreateListForm`을 추가했습니다.
+- **Limit Policy**: Pro 사용자는 무제한, 로그인한 Free 사용자는 최대 5개까지 단어장을 생성할 수 있도록 제한 로직을 적용했습니다.
+
+#### B. Hybrid Storage Architecture
+
+- **Hook**: `useVocabularyLists` 훅을 통해 사용자의 티어에 따라 서버 DB(Pro) 또는 브라우저 로컬 스토리지(Free)를 투명하게 사용하도록 구현했습니다.
+- **Zustand Integration**: Free 사용자의 단어장 데이터는 `useLocalActionStore`에서 통합 관리되며, `persist` 미들웨어로 저장됩니다.
+
+#### C. Interaction Logic Refinement
+
+- **Long Press Support**: `SaveButton`에 롱 프레스 감지 로직을 추가하여 단어장 선택 모달을 즉시 열 수 있게 했습니다.
+- **Auto-Sync**: 단어장 선택 해제 시 해당 표현이 더 이상 어느 리스트에도 없으면 마스터 저장 상태(`save` action)가 자동으로 취소되도록 로직을 고도화했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Personalization**: 단순 저장을 넘어 '나만의 학습 그룹'을 만드는 고도화된 기능 제공.
+- ✅ **Smooth UX**: 로딩 없는 로컬 저장과 영구적인 서버 저장을 하나의 인터페이스로 통합.
+- ✅ **Reduced Ambiguity**: '좋아요' 삭제 후 '단어장 저장'으로 사용자 행동 패턴을 명확히 정의.
+
 ## v0.14.12: Action Streamlining - Like Feature Removal (2026-01-27)
 
 ### 1. Goal (목표)

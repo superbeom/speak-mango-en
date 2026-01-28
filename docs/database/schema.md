@@ -84,13 +84,38 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 표현에 대한 사용자의 상호작용(좋아요, 저장, 학습 등)을 저장하는 테이블입니다.
 
-| Column Name     | Type          | Key  | Default             | Description                         |
-| --------------- | ------------- | ---- | ------------------- | ----------------------------------- |
-| `id`            | UUID          | PK   | `gen_random_uuid()` | 고유 식별자                         |
-| `user_id`       | UUID          | FK\* | -                   | `users.id` 참조                     |
-| `expression_id` | UUID          | FK\* | -                   | `expressions.id` 참조               |
-| `action_type`   | `action_type` | UK\* | -                   | 액션 종류 ('like', 'save', 'learn') |
-| `created_at`    | TIMESTAMPTZ   |      | `now()`             | 액션 발생 일시                      |
+| Column Name     | Type          | Key  | Default             | Description                 |
+| --------------- | ------------- | ---- | ------------------- | --------------------------- |
+| `id`            | UUID          | PK   | `gen_random_uuid()` | 고유 식별자                 |
+| `user_id`       | UUID          | FK\* | -                   | `users.id` 참조             |
+| `expression_id` | UUID          | FK\* | -                   | `expressions.id` 참조       |
+| `action_type`   | `action_type` | UK\* | -                   | 액션 종류 ('save', 'learn') |
+| `created_at`    | TIMESTAMPTZ   |      | `now()`             | 액션 발생 일시              |
+
+#### 6. `vocabulary_lists`
+
+사용자가 생성한 단어장(폴더)을 관리하는 테이블입니다.
+
+| Column Name  | Type        | Key | Default             | Description              |
+| ------------ | ----------- | --- | ------------------- | ------------------------ |
+| `id`         | UUID        | PK  | `gen_random_uuid()` | 단어장 고유 식별자       |
+| `user_id`    | UUID        | FK  | -                   | `users.id` 참조 (소유자) |
+| `title`      | TEXT        |     | -                   | 단어장 이름              |
+| `created_at` | TIMESTAMPTZ |     | `now()`             | 생성 일시                |
+| `updated_at` | TIMESTAMPTZ |     | `now()`             | 수정 일시                |
+
+#### 7. `vocabulary_items`
+
+단어장과 표현 간의 다대다(M:N) 관계를 관리하는 매핑 테이블입니다.
+
+| Column Name      | Type        | Key    | Default | Description                       |
+| ---------------- | ----------- | ------ | ------- | --------------------------------- |
+| `list_id`        | UUID        | PK, FK | -       | `vocabulary_lists.id` 참조        |
+| `expression_id`  | UUID        | PK, FK | -       | `expressions.id` 참조 (공식 표현) |
+| `custom_card_id` | UUID        | FK     | -       | (To Be) 커스텀 단어 ID            |
+| `created_at`     | TIMESTAMPTZ |        | `now()` | 단어장에 추가된 일시              |
+
+> **Constraint**: `chk_vocabulary_item_content` - `expression_id`와 `custom_card_id` 중 하나만 값을 가져야 합니다. (지금은 custom_card 미구현으로 expression_id 필수)
 
 ### Index Strategy & Configuration
 
@@ -144,6 +169,20 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 | `idx_user_actions_expression_id` | B-Tree | `expression_id`        | 표현별 액션 통계 조회        |
 | `idx_user_actions_composite`     | B-Tree | `user_id, action_type` | 사용자별 특정 액션 목록 조회 |
 
+##### Table: `vocabulary_lists`
+
+| Index Name                          | Type   | Target                     | Description                 |
+| :---------------------------------- | :----- | :------------------------- | :-------------------------- |
+| `idx_vocabulary_lists_user_id`      | B-Tree | `user_id`                  | 사용자별 단어장 조회        |
+| `idx_vocabulary_lists_user_created` | B-Tree | `user_id, created_at DESC` | 사용자별 단어장 최신순 정렬 |
+
+##### Table: `vocabulary_items`
+
+| Index Name                           | Type   | Target                     | Description                            |
+| :----------------------------------- | :----- | :------------------------- | :------------------------------------- |
+| `idx_vocabulary_items_expression_id` | B-Tree | `expression_id`            | 표현이 포함된 단어장 조회 (Saved 여부) |
+| `idx_vocabulary_items_list_created`  | B-Tree | `list_id, created_at DESC` | 단어장 내 아이템 최신순 정렬           |
+
 #### Future Recommendations
 
 - **Full Text Search (FTS)**: 추후 영어 표현(`expression`)이나 의미(`meaning`)에 대한 자연어 검색이 필요해지면 `tsvector` 기반의 GIN 인덱스 추가 고려.
@@ -167,7 +206,7 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Usage**: 클라이언트에서 더블 클릭 등으로 인한 Race Condition을 방지하고 네트워크 요청을 최적화(1 RTT)하기 위해 사용합니다.
 - **Parameters**:
   - `p_expression_id` (uuid): 대상 표현 ID.
-  - `p_action_type` (text): 액션 타입 ('like', 'save', 'learn').
+  - `p_action_type` (text): 액션 타입 ('save', 'learn').
 - **Returns**: `void`
 - **SQL Definition**: `database/functions/toggle_user_action.sql` 참조.
 
@@ -197,9 +236,10 @@ $$;
 
 #### 2. Triggers
 
-| Trigger Name              | Table   | Event           | Description                                |
-| ------------------------- | ------- | --------------- | ------------------------------------------ |
-| `update_users_updated_at` | `users` | `BEFORE UPDATE` | 사용자 정보 변경 시 `updated_at` 필드 갱신 |
+| Trigger Name              | Table              | Event           | Description                                |
+| ------------------------- | ------------------ | --------------- | ------------------------------------------ |
+| `update_users_updated_at` | `users`            | `BEFORE UPDATE` | 사용자 정보 변경 시 `updated_at` 필드 갱신 |
+| `update_vocab_updated_at` | `vocabulary_lists` | `BEFORE UPDATE` | 단어장 수정 시 `updated_at` 필드 갱신      |
 
 ### Custom Enums
 
@@ -216,7 +256,6 @@ $$;
 
 사용자가 표현에 대해 수행하는 상호작용의 종류를 정의합니다.
 
-- `like`: 좋아요 표시
 - `save`: 저장/북마크 (나중에 공부하기)
 - `learn`: 학습 완료 표시
 

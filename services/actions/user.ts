@@ -1,14 +1,13 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase/server";
-import { auth } from "@/lib/auth/config";
+import { getAuthSession } from "@/lib/auth/utils";
 import { ActionType } from "@/services/repositories/UserActionRepository";
 
 export async function getUserActions(type: ActionType): Promise<string[]> {
-  const session = await auth();
-  const user = session?.user;
+  const { userId, isPro } = await getAuthSession();
 
-  if (!user || user.tier !== "pro") {
+  if (!userId || !isPro) {
     // Only Pro users can use remote actions
     return [];
   }
@@ -17,7 +16,7 @@ export async function getUserActions(type: ActionType): Promise<string[]> {
   const { data } = await supabase
     .from("user_actions")
     .select("expression_id")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .eq("action_type", type);
 
   return data?.map((row) => row.expression_id) || [];
@@ -27,10 +26,9 @@ export async function toggleUserAction(
   expressionId: string,
   type: ActionType,
 ): Promise<void> {
-  const session = await auth();
-  const user = session?.user;
+  const { isPro } = await getAuthSession();
 
-  if (!user || !user.id || user.tier !== "pro") {
+  if (!isPro) {
     throw new Error("Unauthorized or invalid tier");
   }
 
@@ -50,17 +48,15 @@ export async function toggleUserAction(
 export async function syncUserActions(
   actions: { expressionId: string; type: ActionType }[],
 ): Promise<void> {
-  const session = await auth();
-  const user = session?.user;
+  const { userId, isPro } = await getAuthSession();
 
-  if (!user || !user.id || user.tier !== "pro") {
+  if (!userId || !isPro) {
     return;
   }
 
   if (actions.length === 0) return;
 
   const supabase = await createServerSupabase();
-  const userId = user.id;
 
   // Prepare data for bulk insert
   const rows = actions.map((action) => ({

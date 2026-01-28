@@ -77,8 +77,6 @@ export const fr = {
     hideText: "Masquer le texte",
     showTranslations: "Afficher les traductions",
     hideTranslations: "Masquer les traductions",
-    actionLike: "J'aime",
-    actionUnlike: "Je n'aime plus",
     actionSave: "Enregistrer",
     actionUnsave: "Retirer des enregistrements",
     actionLearned: "Appris !",

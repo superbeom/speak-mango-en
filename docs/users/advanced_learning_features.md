@@ -137,12 +137,11 @@
 
 #### 단어장 관리: `vocabulary_lists`
 
-| Column      | Type    | Description                 |
-| :---------- | :------ | :-------------------------- |
-| `id`        | UUID    | PK                          |
-| `user_id`   | UUID    | FK                          |
-| `title`     | TEXT    | 단어장 이름                 |
-| `is_system` | BOOLEAN | 기본 단어장(저장됨 등) 여부 |
+| Column    | Type | Description |
+| :-------- | :--- | :---------- |
+| `id`      | UUID | PK          |
+| `user_id` | UUID | FK          |
+| `title`   | TEXT | 단어장 이름 |
 
 #### 매핑 테이블: `vocabulary_items`
 

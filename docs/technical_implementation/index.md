@@ -796,7 +796,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
       - **2차 (Recheck)**: 압축된 소수의 결과에 대해 `meaning->>locale ILIKE %term%`을 실행하여 정확한 언어 매칭 검증.
       - PostgreSQL 옵티마이저는 인덱스 조건(1차)을 먼저 실행하므로, 느린 JSON 연산(2차)의 오버헤드는 무시할 수 수준이 됨.
 
-### 14.4 Scroll Event Optimization (스크롤 이벤트 최적화)
+### 13.4 Scroll Event Optimization (스크롤 이벤트 최적화)
 
 - **Problem**: `FilterBar`의 스크롤/리사이즈 이벤트 핸들러가 메인 스레드에서 빈번하게 실행되어 레이아웃 스래싱(Layout Thrashing) 및 UI 버벅임 유발 가능성.
 - **Solution**:
@@ -804,7 +804,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **Auto-Cleanup**: `useRef`를 통해 rAF ID를 관리하고, 컴포넌트 언마운트 시 `cancelAnimationFrame`을 호출하여 메모리 누수를 방지합니다.
   - **Referential Stability**: 핸들러 함수를 `useCallback`으로 감싸고 `useEffect` 의존성 배열에 명시하여, 리렌더링 시 불필요한 이벤트 리스너 재등록을 방지합니다.
 
-### 14.5 Database Random Sampling (RPC 기반 랜덤 샘플링)
+### 13.5 Database Random Sampling (RPC 기반 랜덤 샘플링)
 
 - **Problem**:
   - 클라이언트(Node.js)에서 `SELECT id FROM expressions`로 전체 ID를 가져온 후 `JavaScript`로 셔플링하여 N개를 뽑는 방식은 테이블 크기가 커질수록 메모리 사용량과 네트워크 대역폭을 과도하게 점유합니다(O(N)).
@@ -815,7 +815,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - **Constant Complexity**: 데이터가 100건이든 10만 건이든 클라이언트가 받는 부하는 동일합니다.
   - **Memory Efficiency**: Node.js 런타임의 메모리 스파이크를 방지합니다.
 
-### 14.6 Request Deduplication (Server-Side Caching)
+### 13.6 Request Deduplication (Server-Side Caching)
 
 - **Problem**: Next.js App Router 아키텍처에서 `Page` 컴포넌트와 `generateMetadata` 함수가 동일한 데이터를 필요로 할 때, 별도의 조치를 취하지 않으면 동일한 DB 쿼리가 한 요청(Request) 내에서 중복 실행되는 비효율이 발생합니다.
 - **Solution**:
@@ -826,7 +826,7 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   export const getExpressions = cache(async (...) => { ... });
   ```
 
-### 14.7 Data Fetching Strategy (SWR Adoption)
+### 13.7 Data Fetching Strategy (SWR Adoption)
 
 - **Goal**: 클라이언트 사이드 데이터 페칭의 상태 관리 복잡성을 줄이고, UX(빠른 네비게이션, 자동 갱신)를 개선합니다.
 - **Implementation**:
@@ -950,7 +950,7 @@ SEO(검색 엔진 최적화)는 다국어 사이트의 가장 큰 기술적 난�
   - `Locale`: `SupportedLanguage` 타입에서 파생된 유니온 타입.
 - **Benefit**: 새로운 언어 추가 시 컴파일러 레벨에서 누락된 설정이나 오타를 즉시 감지할 수 있어 안정적인 확장이 가능합니다.
 
-### 14.6 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
+### 14.7 i18n Locale Language Consistency Validation (언어팩 일관성 검증)
 
 **File**: `verification/verify_i18n_locales.js`
 
@@ -1575,9 +1575,50 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
   - **Mapping**: `CREATE VIEW ... SELECT user_id AS "userId" ...`
 - **Benefit**: DB 표준을 준수하면서도 외부 라이브러리와의 호환성을 완벽하게 유지합니다.
 
-## 19. Component Refactoring & Reusability (컴포넌트 리팩토링 및 재사용성)
+## 19. Vocabulary System (단어장 시스템)
 
-### 19.1 Unified Action Bar (`ExpressionActions.tsx`)
+사용자가 학습하고자 하는 표현을 테마별로 그룹화하여 관리할 수 있는 시스템입니다.
+
+### 19.1 Component Architecture (컴포넌트 구조)
+
+- **`VocabularyListModal`**:
+  - `SaveButton` 클릭 시 또는 롱 프레스 시 노출되는 메인 인터페이스입니다.
+  - 현재 표현이 담긴 단어장들을 체크박스 형태로 노출하며, 즉각적인 토글 인터랙션을 제공합니다.
+  - 비로그인 사용자가 접근 시 `LoginModal`로 리다이렉션하여 데이터 무결성을 보장합니다.
+- **`CreateListForm`**:
+  - 새로운 단어장을 생성하는 인라인 폼입니다.
+  - Pro 사용자는 무제한, 로그인한 Free 사용자는 최대 5개까지 생성이 가능하도록 정책이 적용되어 있습니다.
+
+### 19.2 Hybrid Repository Workflow (하이브리드 워크플로우)
+
+`useVocabularyLists` 훅은 사용자의 인증 상태와 티어(`isPro`)를 감지하여 데이터 저장소를 동적으로 전환합니다.
+
+- **Pro User**:
+  - `services/actions/vocabulary.ts`의 서버 액션을 통해 Supabase DB와 직접 통신합니다.
+  - `vocabulary_lists`와 `vocabulary_items` 테이블을 사용하여 영구적인 동기화를 제공합니다.
+- **Free User (Logged-in)**:
+  - `useLocalActionStore` (Zustand)를 통해 로컬 환경에서 단어장을 관리합니다.
+  - 브라우저의 `localStorage`에 상태가 보존되며, 서버 비용 없이 즉각적인 반응성을 제공합니다.
+
+### 19.3 Synchronization Logic (`useSaveAction`)
+
+'저장(Save)'이라는 마스터 액션과 개별 '단어장(Vocabulary List)' 간의 상태 일관성을 유지하기 위한 캡슐화 로직입니다.
+
+1.  **Selection Logic**: 사용자가 처음 저장 버튼을 누르면, 리스트가 있을 경우 첫 번째 리스트에 자동으로 담고 `isSaved` 상태를 `true`로 만듭니다. 리스트가 하나도 없다면 단어장 만들기 모달을 띄웁니다.
+2.  **Bidirectional Sync**:
+    - 단어장 모달에서 마지막 남은 리스트의 체크를 해제하면 마스터 저장 상태(`isSaved`)도 `false`로 변경됩니다.
+    - 반대로 마스터 저장 버튼을 눌러 저장을 취소하면, 해당 표현이 담긴 모든 단어장에서 한꺼번에 제거됩니다.
+3.  **Performance Optimization**: Zustand 스토어 구독 시 원본 객체(`raw state`)를 선택하고 가공은 컴포넌트 내에서 수행하도록 설계하여, 불필요한 참조 생성에 의한 무한 루프 렌더링을 방지했습니다.
+
+### 19.4 Database Schema & Triggers
+
+- **`vocabulary_lists`**: 단어장 메타 정보(제목, 소유자)를 저장합니다.
+- **`vocabulary_items`**: 단어장과 표현(`expressions`) 간의 M:N 관계를 정의합니다.
+- **Trigger**: `update_vocab_updated_at` 기능을 통해 단어장 내 아이템 추가/삭제나 제목 변경 시 `updated_at` 컬럼이 자동으로 갱신되어, 정렬 최신성을 유지합니다.
+
+## 20. Component Refactoring & Reusability (컴포넌트 리팩토링 및 재사용성)
+
+### 20.1 Unified Action Bar (`ExpressionActions.tsx`)
 
 - **Objective**: '저장', '공유' 등 표현과 관련된 주요 액션 버튼들의 레이아웃과 로직을 단일 컴포넌트로 캡슐화하여 유지보수 효율성을 높입니다.
 - **Implementation**:
@@ -1588,7 +1629,7 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
     - `shareVariant`: 공유 버튼의 텍스트 노출 여부(`default` vs `compact`)를 제어합니다.
 - **Benefit**: 상세 페이지(`page.tsx`)와 리스트 카드(`ExpressionCard.tsx`)의 코드가 간결해졌으며, 버튼 간격이나 정렬 방식 변경 시 한 곳에서만 수정하면 전체 UI에 반영됩니다.
 
-### 19.2 Modal Event Isolation (이벤트 격리)
+### 20.2 Modal Event Isolation (이벤트 격리)
 
 - **Problem**: `Dialog` (Radix UI) 내부의 클릭 이벤트가 DOM 트리를 따라 부모 요소로 전파되어, 모달 아래에 있는 카드나 링크가 클릭되는 현상 발생.
 - **Solution**:

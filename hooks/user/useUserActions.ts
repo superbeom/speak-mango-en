@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import {
   ActionType,
@@ -8,31 +8,40 @@ import { localUserActionRepository } from "@/services/repositories/LocalUserActi
 import { remoteUserActionRepository } from "@/services/repositories/RemoteUserActionRepository";
 
 export function useUserActions() {
-  const { user } = useAuthUser();
+  const { isPro } = useAuthUser();
 
   const repository: UserActionRepository = useMemo(() => {
-    if (user?.tier === "pro") {
+    if (isPro) {
       return remoteUserActionRepository;
     }
     return localUserActionRepository;
-  }, [user?.tier]);
+  }, [isPro]);
 
-  const getActions = async (type: ActionType) => {
-    return repository.getActions(type);
-  };
+  const getActions = useCallback(
+    async (type: ActionType) => {
+      return repository.getActions(type);
+    },
+    [repository],
+  );
 
-  const toggleAction = async (expressionId: string, type: ActionType) => {
-    return repository.toggleAction(expressionId, type);
-  };
+  const toggleAction = useCallback(
+    async (expressionId: string, type: ActionType) => {
+      return repository.toggleAction(expressionId, type);
+    },
+    [repository],
+  );
 
-  const hasAction = async (expressionId: string, type: ActionType) => {
-    return repository.hasAction(expressionId, type);
-  };
+  const hasAction = useCallback(
+    async (expressionId: string, type: ActionType) => {
+      return repository.hasAction(expressionId, type);
+    },
+    [repository],
+  );
 
   return {
     getActions,
     toggleAction,
     hasAction,
-    isPro: user?.tier === "pro",
+    isPro,
   };
 }

@@ -2,6 +2,34 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-28: Vocabulary List System & Schema Cleanup
+
+### ✅ 진행 사항
+
+1.  **Vocabulary List System (단어장 시스템 구축)**:
+    - **Custom Lists**: 사용자가 자신만의 단어장을 만들고 관리할 수 있는 기능을 구현했습니다 (`vocabulary_lists`, `vocabulary_items` 테이블).
+    - **Anonymous Usage Policy**: 비로그인 사용자는 저장 기능을 사용할 수 없으며, 클릭 시 로그인 모달이 노출되도록 정책을 확정했습니다. (로컬 스토리지 기반 비로그인 저장은 혼선 방지를 위해 배제)
+    - **Hybrid Repository Integration**: `useVocabularyLists` 훅을 통해 Pro 사용자는 서버 DB, Free(로그인) 사용자는 로컬 로직을 타도록 통합했습니다.
+    - **UI implementation**: 단어장 생성 폼(`CreateListForm`), 단어장 선택 모달(`VocabularyListModal`)을 추가했습니다.
+
+2.  **Schema Cleanup (스키마 정제)**:
+    - **Removed `is_system`**: 초기 기획의 '시스템 단어장' 개념을 삭제하고, 모든 단어장을 사용자가 직접 관리하는 구조로 단순화했습니다. 관련 DB 컬럼 및 코드 로직을 전면 제거했습니다.
+    - **Timestamp Triggers**: `vocabulary_lists`의 `updated_at` 자동 갱신을 위한 전용 트리거(`update_vocab_updated_at`)를 생성하고 관리 체계를 정립했습니다.
+
+3.  **Refactoring & Stability**:
+    - **Type Maintenance**: `ActionType`에서 `like`를 완전히 제거하고, `vocabulary` 관련 타입을 별도 파일로 분리하여 관리 효율성을 높였습니다.
+    - **Hook Optimization**: `useSaveAction` 훅을 통해 저장 상태와 단어장 동기화 로직을 캡슐화했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 비로그인 사용자의 로컬 저장을 막았나요?**
+
+- **A.** 비로그인 상태에서 로컬에 저장했다가 나중에 로그인했을 때의 데이터 병합(Merge) 로직이 복잡하고, 사용자에게 데이터 손실 우려(브라우저 캐시 삭제 시)가 있다는 점을 고려했습니다. "저장은 나만의 공간을 만드는 행위"이므로 로그인을 필수 조건으로 설정하여 데이터의 안전성과 연속성을 보장하기로 했습니다.
+
+**Q. `is_system` 컬럼을 왜 삭제했나요?**
+
+- **A.** 시스템이 미리 정해준 단어장보다 사용자가 직접 이름을 붙이고 분류하는 방식이 더 직관적이라고 판단했습니다. 초기 '기타' 혹은 '기본' 단어장은 첫 저장 시 자동으로 생성하거나 사용자가 선택하게 함으로써 시스템 복잡도를 낮췄습니다.
+
 ## 2026-01-27: User Action Streamlining (Like Feature Removal)
 
 ### ✅ 진행 사항

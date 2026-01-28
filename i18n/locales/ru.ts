@@ -75,8 +75,6 @@ export const ru = {
     hideText: "Скрыть текст",
     showTranslations: "Показать перевод",
     hideTranslations: "Скрыть перевод",
-    actionLike: "Нравится",
-    actionUnlike: "Не нравится",
     actionSave: "Сохранить",
     actionUnsave: "Убрать из избранного",
     actionLearned: "Выучено!",

@@ -70,8 +70,6 @@ export const zh = {
     hideText: "隐藏文本",
     showTranslations: "显示翻译",
     hideTranslations: "隐藏翻译",
-    actionLike: "点赞",
-    actionUnlike: "取消点赞",
     actionSave: "收藏",
     actionUnsave: "取消收藏",
     actionLearned: "已学习！",

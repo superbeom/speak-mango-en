@@ -129,6 +129,7 @@
   - [x] **Sync**: 무료 -> 유료 전환 시 데이터 마이그레이션 로직 구현
 - [x] **Phase 3: Interactive Features**
   - [x] **Actions**: Save, Learn 버튼 UI 및 상태 연동
+  - [x] **Refactoring**: 'Like' 액션 완전 제거 및 'Save/Learn' 체계로 단순화
   - [x] **Refactoring**: 공통 액션 바 컴포넌트(`ExpressionActions.tsx`) 추출 및 중복 제거
   - [x] **Refactoring**: `InteractiveLink` 및 `ActionButtonGroup` 독립 컴포넌트 추출
   - [x] **UI/UX**: `InteractiveLink`를 통한 수동 애니메이션 제어 및 액션 버튼 간섭 해결
@@ -136,6 +137,12 @@
   - [x] **UI**: 비로그인 액션 시 브랜드 일관성을 갖춘 로그인 유도 모달(Login Modal) 구현 및 최적화
   - [x] **Refactoring**: AuthButton에서 UserMenu 컴포넌트 분리 (`UserMenu.tsx`) 및 로그아웃 UX 개선
   - [x] **Logic**: '학습 완료' 시 자동 추천 스크롤
+  - [x] **Vocabulary**: 커스텀 단어장(Vocabulary List) 시스템 구현
+    - [x] **DB**: `vocabulary_lists`, `vocabulary_items` 테이블 구축 및 트리거 설정
+    - [x] **Zustand**: 로컬 단어장 관리 로직 통합 (`useLocalActionStore`)
+    - [x] **Hook**: 하이브리드 리포지토리 패턴 (`useVocabularyLists`) 적용
+    - [x] **UI**: 단어장 관리 모달(`VocabularyListModal`) 및 생성 폼(`CreateListForm`) 구현
+    - [x] **Logic**: 마스터 저장(`Save`) 버튼과 개별 단어장 상태 동기화 캡슐화 (`useSaveAction`)
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
 - [ ] **Phase 4: Feature Gating & Trial**
   - [ ] **Audio/Blur**: 사용자 티어별 기능 접근 제어 로직 구현
@@ -144,5 +151,5 @@
 - [ ] **Phase 5: Payments & Pro**
   - [ ] **Payment**: PayPal 정기 결제($9.99/mo) 연동
   - [ ] **Verification**: 결제 성공 시 DB `users.tier` 즉시 업데이트 및 세션 갱신
-  - [ ] **Dashboard**: 마이 페이지 (`/my`) 구현 (Liked, Saved, Learned)
+  - [ ] **Dashboard**: 마이 페이지 (`/my`) 구현 (Saved, Learned)
   - [ ] **Ads**: 무료 사용자용 광고 배너/인피드 컴포넌트 추가

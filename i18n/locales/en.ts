@@ -72,8 +72,6 @@ export const en = {
     hideText: "Hide Text",
     showTranslations: "Show Translations",
     hideTranslations: "Hide Translations",
-    actionLike: "Like",
-    actionUnlike: "Unlike",
     actionSave: "Save",
     actionUnsave: "Unsave",
     actionLearned: "Learned!",

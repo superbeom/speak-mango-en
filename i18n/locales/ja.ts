@@ -72,8 +72,6 @@ export const ja = {
     hideText: "テキストを隠す",
     showTranslations: "和訳を表示",
     hideTranslations: "和訳を隠す",
-    actionLike: "いいね",
-    actionUnlike: "いいね取り消し",
     actionSave: "保存",
     actionUnsave: "保存取り消し",
     actionLearned: "学習完了！",
