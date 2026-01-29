@@ -1,17 +1,6 @@
 // Google Analytics 4 (GA4) 분석 유틸리티 함수
 // 타입 안전한 이벤트 추적 및 페이지 뷰 모니터링 제공
 
-declare global {
-  interface Window {
-    gtag?: {
-      (command: "js", date: Date): void;
-      (command: "config", targetId: string, config?: Record<string, any>): void;
-      (command: "event", eventName: string, params?: Record<string, any>): void;
-    };
-    dataLayer?: any[];
-  }
-}
-
 // GA4 측정 ID (환경별 자동 선택)
 const GA_MEASUREMENT_ID_DEV =
   process.env.NEXT_PUBLIC_DEV_GA_MEASUREMENT_ID || "";
@@ -42,8 +31,8 @@ export const initAnalytics = (): void => {
 
   // dataLayer 초기화
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag() {
-    window.dataLayer?.push(arguments);
+  window.gtag = function gtag(...args: unknown[]) {
+    window.dataLayer?.push(args);
   };
 
   window.gtag("js", new Date());
@@ -84,7 +73,7 @@ export const trackPageView = (
  */
 export const trackEvent = (
   eventName: string,
-  properties?: Record<string, any>,
+  properties?: Record<string, unknown>,
 ): void => {
   if (!isAnalyticsEnabled()) {
     console.log("[Analytics] Event:", eventName, properties);
@@ -103,7 +92,7 @@ export const trackEvent = (
 export const trackConversion = (
   type: string,
   value?: number,
-  properties?: Record<string, any>,
+  properties?: Record<string, unknown>,
 ): void => {
   trackEvent("conversion", {
     conversion_type: type,

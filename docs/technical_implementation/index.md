@@ -137,6 +137,7 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
 - **Event Delegation & Isolation**:
   - **`ActionButtonGroup`**: 개별 버튼들을 감싸는 이 컴포넌트에 `pointer-events-auto`와 `data-action-buttons`를 적용하고, 모든 포인터 이벤트에 `stopPropagation()`을 강제하여 부모의 커스텀 포인터 로직과 완전히 분리했습니다.
   - **Parent Container**: `ExpressionActions`의 메인 컨테이너에 `pointer-events-none`을 적용하여, 버튼 사이의 빈 공간을 클릭했을 때는 이벤트가 부모인 `InteractiveLink`로 자연스럽게 흘러 들어가 카드 전체의 애니메이션과 네비게이션이 작동하도록 설계했습니다.
+- **Type Safety Pattern**: 외부 라이브러리(`framer-motion`)의 복잡한 타입(`AnimationControls`)을 직접 사용하는 대신, 필요한 메서드(`start`)만 포함하는 `SimpleAnimationControls` 인터페이스를 로컬에 정의하여 버전 호환성 문제와 타입 충돌을 방지하는 'Duck Typing' 패턴을 적용했습니다.
 
 ## 4. Internationalization (i18n) Engine
 
@@ -1660,3 +1661,58 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 - **Structure**: `context/ToastContext.tsx`
 - **Role**: 애플리케이션 최상위(`layout.tsx`)에서 `ToastProvider`로 감싸져 있어, 어디서든 `useToast()` 훅을 통해 알림을 띄울 수 있습니다.
 - **Integration**: `useAppErrorHandler`와 긴밀하게 통합되어, 에러 발생 -> 핸들러 호출 -> 토스트 알림으로 이어지는 일관된 파이프라인을 형성합니다.
+
+### 21.4 Custom Hook Pattern with Reducer (`useQuizGame`)
+
+**Problem**: 퀴즈 게임(`QuizGame.tsx`) 컴포넌트에 상태 관리, 비즈니스 로직, 세션 스토리지, 분석 트래킹 로직이 복잡하게 섞여 있어 컴포넌트가 비대해지고 유지보수가 어려웠습니다.
+
+**Solution**: Reducer 패턴을 사용하는 커스텀 훅(`useQuizGame`)으로 로직 추출하여 컴포넌트 간소화 및 재사용성을 확보했습니다.
+
+#### A. Hook 구조 (Structure)
+
+```typescript
+// hooks/quiz/useQuizGame.ts
+export function useQuizGame(initialExpressions: Expression[]) {
+  const [state, dispatch] = useReducer(quizReducer, initialState);
+  
+  return {
+    state,
+    content,
+    parsedQuiz,
+    currentExpression,
+    actions: {
+      handleAnswerSelect,
+      handleNext,
+      handleRestart,
+    },
+  };
+}
+```
+
+#### B. Reducer 패턴 (Reducer Pattern)
+
+- **Action Types**: `RESTORE`, `SUBMIT`, `NEXT`, `FINISH` 등 액션 타입을 명시적으로 정의
+- **Immutability**: Reducer 내에서는 불변성을 유지하며 상태 업데이트
+- **Predictability**: 동일한 상태 변화는 항상 동일한 액션을 통해 수행되어 예측 가능성 확보
+
+#### C. 컴포넌트 간소화 (Component Simplification)
+
+**Before** (`QuizGame.tsx`): ~160 lines
+- 로컬 useState, useEffect, 비즈니스 로직이 혼재
+- 역할이 명확하지 않아 테스트 및 유지보수 어려움
+
+**After** (`QuizGame.tsx`): ~30 lines
+- `useQuizGame` 훅으로부터 상태와 액션만 주입받음
+- UI 렌더링에 집중하고 비즈니스 로직은 훅에 위임
+
+#### D. 장점 (Benefits)
+
+1. **Separation of Concerns**: UI 컴포넌트와 비즈니스 로직이 완전히 분리
+2. **Testability**: 훅을 독립적으로 유닛 테스트 가능
+3. **Reusability**: 다른 컴포넌트에서도 동일한 퀴즈 로직 재사용 가능
+4. **Maintainability**: 상태 전환 로직이 한 곳(Reducer)에 집중되어 디버깅 용이
+
+#### E. 타입 안전성 (Type Safety)
+
+- `QuizState`, `QuizAction` 등 명시적 인터페이스 정의
+- TypeScript의 타입 추론을 활용하여 컴파일 타임 에러 방지

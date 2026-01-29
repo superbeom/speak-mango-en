@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Share2 } from "lucide-react";
 import { trackShareClick, trackShareComplete } from "@/analytics";
 import { useI18n } from "@/context/I18nContext";
+import { useToast } from "@/context/ToastContext";
 import { ToastType, TOAST_TYPE } from "@/types/toast";
 import { cn } from "@/lib/utils";
 import { getShareUrl } from "@/lib/utils";
-import Toast from "@/components/ui/Toast";
 
 interface ShareButtonProps {
   expressionId: string;
@@ -25,10 +24,7 @@ export default function ShareButton({
   onClick,
 }: ShareButtonProps) {
   const { dict } = useI18n();
-
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<ToastType>(TOAST_TYPE.SUCCESS);
+  const { showToast } = useToast();
 
   const handleShare = async (e: React.MouseEvent) => {
     // Prevent event propagation and default behavior (for card integration)
@@ -50,6 +46,11 @@ export default function ShareButton({
       url: shareUrl,
     };
 
+    // Helper for showing toast
+    const triggerToast = (message: string, type: ToastType) => {
+      showToast(message, type);
+    };
+
     // Check if Web Share API is supported
     if (navigator.share) {
       try {
@@ -69,17 +70,11 @@ export default function ShareButton({
         });
 
         // Show success toast
-        setToastMessage(dict.detail.shareCopied);
-        setToastType(TOAST_TYPE.SUCCESS);
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 1500);
+        triggerToast(dict.detail.shareCopied, TOAST_TYPE.SUCCESS);
       } catch (error) {
         // User cancelled or error occurred
         if ((error as Error).name !== "AbortError") {
-          setToastMessage(dict.detail.shareFailed);
-          setToastType(TOAST_TYPE.ERROR);
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 1500);
+          triggerToast(dict.detail.shareFailed, TOAST_TYPE.ERROR);
         }
       }
     } else {
@@ -101,50 +96,40 @@ export default function ShareButton({
         });
 
         // Show success toast
-        setToastMessage(dict.detail.shareCopied);
-        setToastType(TOAST_TYPE.SUCCESS);
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 1500);
+        triggerToast(dict.detail.shareCopied, TOAST_TYPE.SUCCESS);
       } catch (error) {
-        setToastMessage(dict.detail.shareFailed);
-        setToastType(TOAST_TYPE.ERROR);
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 1500);
+        triggerToast(dict.detail.shareFailed, TOAST_TYPE.ERROR);
       }
     }
   };
 
   return (
-    <>
-      <button
-        onClick={handleShare}
-        className={cn(
-          "inline-flex items-center gap-2 rounded-xl font-medium text-sm",
-          "transition-all duration-200 ease-out",
-          "cursor-pointer",
-          variant === "compact"
-            ? [
-                "w-9 h-9 p-2 justify-center",
-                "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                "text-zinc-700 dark:text-zinc-300",
-                "hover:bg-white dark:hover:bg-zinc-800",
-                "active:scale-95",
-                "shadow-sm hover:shadow-md",
-              ]
-            : [
-                "px-4 py-2.5",
-                "blue-btn",
-                "active:scale-95",
-                "shadow-sm hover:shadow-md",
-              ],
-        )}
-        aria-label={dict.detail.share}
-      >
-        <Share2 className={variant === "compact" ? "w-4 h-4" : "w-4 h-4"} />
-        {variant === "default" && <span>{dict.detail.share}</span>}
-      </button>
-
-      <Toast message={toastMessage} type={toastType} isVisible={showToast} />
-    </>
+    <button
+      onClick={handleShare}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-xl font-medium text-sm",
+        "transition-all duration-200 ease-out",
+        "cursor-pointer",
+        variant === "compact"
+          ? [
+              "w-9 h-9 p-2 justify-center",
+              "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm",
+              "text-zinc-700 dark:text-zinc-300",
+              "hover:bg-white dark:hover:bg-zinc-800",
+              "active:scale-95",
+              "shadow-sm hover:shadow-md",
+            ]
+          : [
+              "px-4 py-2.5",
+              "blue-btn",
+              "active:scale-95",
+              "shadow-sm hover:shadow-md",
+            ],
+      )}
+      aria-label={dict.detail.share}
+    >
+      <Share2 className={variant === "compact" ? "w-4 h-4" : "w-4 h-4"} />
+      {variant === "default" && <span>{dict.detail.share}</span>}
+    </button>
   );
 }

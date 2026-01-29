@@ -10,13 +10,6 @@ import {
   useMemo,
 } from "react";
 
-// Webkit 호환성을 위해 Window 인터페이스 확장
-declare global {
-  interface Window {
-    webkitAudioContext: typeof AudioContext;
-  }
-}
-
 interface AudioContextType {
   /**
    * 공유된 AudioContext 인스턴스를 반환합니다.
@@ -26,7 +19,7 @@ interface AudioContextType {
 }
 
 const AudioContextContext = createContext<AudioContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function AudioProvider({ children }: { children: ReactNode }) {
@@ -40,17 +33,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     return () => {
       // 언마운트 시 정리 로직
-      // 주의: 페이지 이동(SPA 네비게이션) 시에는 컨텍스트를 유지하는 것이 좋을 수 있으나,
-      // 앱 전체가 언마운트되거나 새로고침될 때는 브라우저가 알아서 정리합니다.
-      // 명시적으로 close()를 호출하면, 실수로 레이아웃이 리렌더링될 때 오디오가 끊길 수 있습니다.
-      // 따라서 여기서는 명시적 close를 하지 않거나, 정말 필요할 때만 합니다.
     };
   }, []);
 
-  /**
-   * AudioContext를 가져오거나 생성하는 함수입니다.
-   * 이 함수는 여러 컴포넌트에서 동시에 호출될 수 있습니다.
-   */
   const getAudio = useCallback(() => {
     if (typeof window === "undefined") return null;
 
@@ -64,14 +49,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
 
     // 전역 싱글턴 확인 (HMR 대응)
-    if ((window as any).__SHARED_AUDIO_CONTEXT__) {
-      contextRef.current = (window as any).__SHARED_AUDIO_CONTEXT__;
+    if (window.__SHARED_AUDIO_CONTEXT__) {
+      contextRef.current = window.__SHARED_AUDIO_CONTEXT__;
       return contextRef.current;
     }
 
     // 새로운 AudioContext 생성
-    const AudioContextClass =
-      window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 
     if (!AudioContextClass) {
       console.error("이 브라우저는 Web Audio API를 지원하지 않습니다.");
@@ -82,7 +66,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     contextRef.current = ctx;
 
     // 전역 변수에 저장하여 HMR이나 다른 인스턴스에서도 접근 가능하게 함
-    (window as any).__SHARED_AUDIO_CONTEXT__ = ctx;
+    window.__SHARED_AUDIO_CONTEXT__ = ctx;
 
     return ctx;
   }, []);
@@ -91,7 +75,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     () => ({
       getAudio,
     }),
-    [getAudio]
+    [getAudio],
   );
 
   return (

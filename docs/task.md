@@ -95,7 +95,10 @@
   - [x] **Analytics**: 퀴즈 정답/오답 및 완료 이벤트 추적
   - [x] **SEO**: 퀴즈 페이지 메타데이터(i18n) 및 sitemap 등록
 - [x] **Refactoring**: 라우트 로직 중앙화 (`CANONICAL_URLS`) 및 SEO 메타데이터 정제 (OpenGraph)
+- [x] **Refactoring**: 퀴즈 상태 관리 로직 개선 (`useReducer` 도입 및 Custom Hook 분리)
 - [x] **Refactoring**: 다국어(i18n) Prop Drilling 제거 및 Context API(`I18nProvider`) 전환
+- [x] **Refactoring**: 전역 타입 관리 스킴 구축 (`types/*.d.ts` 분리 및 Window 확장 타입 정리)
+- [x] **Refactoring**: 공유 버튼 토스트 시스템 전환 (`ToastContext` 연동)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [ ] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
 

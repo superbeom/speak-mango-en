@@ -2,6 +2,39 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-29: Type Safety Improvements & Quiz Refactoring
+
+### ✅ 진행 사항
+
+1.  **Type Safety Improvements (타입 안정성 강화)**:
+    - **Global Type Declarations**: Window 인터페이스 확장(`declare global`)을 `types/analytics.d.ts`와 `types/global.d.ts`로 분리하여 중앙 관리했습니다.
+    - **Type Safety**: `Record<string, any>` 대신 `Record<string, unknown>`을 사용하여 엄격한 타입 검사를 적용했습니다. (`analytics/index.ts`)
+    - **Clean Separation**: 각 파일의 역할을 명확히 분리하여 유지보수성을 높였습니다.
+
+2.  **Quiz Component Refactoring (퀴즈 컴포넌트 리팩토링)**:
+    - **Custom Hook Extraction**: `components/quiz/QuizGame.tsx`의 복잡한 퀴즈 로직(~160 lines)을 `hooks/quiz/useQuizGame.ts` 커스텀 훅으로 분리했습니다.
+    - **Reducer Pattern**: `useReducer`를 도입하여 퀴즈 상태 관리를 단순화하고 예측 가능한 상태 전환을 보장했습니다.
+    - **Component Simplification**: `QuizGame.tsx`를 ~30 lines로 축소하여 UI 렌더링에 집중하도록 개선했습니다.
+
+3.  **ShareButton Refactoring (공유 버튼 개선)**:
+    - **ToastContext Integration**: 로컬 상태(`useState`)로 토스트를 관리하던 방식을 `useToast()` 훅을 사용하는 `ToastContext` 방식으로 변경했습니다.
+    - **State Management Simplification**: `showToast`, `toastMessage`, `toastType` 상태를 제거하고 중앙화된 컨텍스트를 활용했습니다.
+    - **Consistency**: 모든 UI 알림이 동일한 ToastProvider를 통해 일관된 애니메이션과 디자인으로 제공됩니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 퀴즈 로직을 별도 훅으로 분리했나요?**
+
+- **A.** 퀴즈 상태 관리, 세션 스토리지 복원/지속성, 분석 트래킹 로직이 복잡하게 섞여 있어 컴포넌트의 가독성을 해치고 있었습니다. 이를 커스텀 훅으로 분리함으로써 UI 컴포넌트는 렌더링에만 집중하고, 비즈니스 로직은 훅에서 담당하도록 관심사를 명확히 분리했습니다.
+
+**Q. 왜 `any` 대신 `unknown`을 사용했나요?**
+
+- **A.** TypeScript의 `unknown` 타입은 명시적인 타입 가드(Type Guard)를 강제하므로 런타임 타입 안정성을 보장합니다. `any`는 타입 체크를 우회하여 잠재적인 버그를 야기할 수 있으므로, 엄격한 타입 검사가 필요한 분석 및 상태 관리 코드에는 `unknown`을 사용하도록 표준화했습니다.
+
+**Q. ShareButton에서 왜 ToastContext를 도입했나요?**
+
+- **A.** 기존에는 개별 컴포넌트(`ShareButton`)가 토스트의 표시 여부와 메시지 상태를 직접 들고 있었습니다. 이는 중복된 로직을 야기하고, 다른 컴포넌트에서 발생하는 알림과 시각적/기능적 불일치를 초래할 수 있습니다. `ToastContext`를 도입하여 전역에서 통일된 방식으로 알림을 관리함으로써 코드를 간소화하고 전역 에러 핸들링 시스템과의 연동성을 높였습니다.
+
 ## 2026-01-29: Error Handling Refactoring & Vocabulary Sync Stability
 
 ### ✅ 진행 사항

@@ -2,6 +2,37 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.15: Quiz Refactoring & Global Type Safety (2026-01-29)
+
+### 1. Goal (목표)
+
+- 복잡한 퀴즈 상태 관리 로직을 커스텀 훅으로 분리하여 컴포넌트의 책임을 명확히 하고 유지보수성을 높입니다.
+- 전역 객체(`window`)에 대한 타입 정의를 중앙 집중화하여 타입 안정성을 강화하고, 비표준 API 및 분석 도구 연동 시 발생할 수 있는 런타임 에러를 방지합니다.
+
+### 2. Implementation (구현)
+
+#### A. Quiz Logic Hook Extraction (`useQuizGame`)
+
+- **Pattern**: `useReducer`를 도입하여 퀴즈의 다양한 상태(playing, summary)와 액션(restore, submit, next, finish)을 예측 가능하게 관리합니다.
+- **Persistence**: `sessionStorage` 연동 로직을 훅 내부로 캡슐화하여, 사용자가 학습 후 복귀했을 때 이전 진행 상황을 자동으로 복원합니다.
+- **Analytics**: 퀴즈 시작, 정답 제출, 완료 이벤트를 훅에서 직접 트래킹하여 비즈니스 로직과 분석 로직을 응집시켰습니다.
+
+#### B. Global Type Management (`types/*.d.ts`)
+
+- **Centralization**: `Window` 인터페이스 확장(`declare global`) 코드를 `types/analytics.d.ts`와 `types/global.d.ts`로 분리하여 관리합니다.
+- **Standardization**: `webkitAudioContext`, `gtag`, `dataLayer` 등 비표준 및 외부 라이브러리 전용 객체에 대한 타입을 명시적으로 정의하여 `(window as any)`와 같은 타입 구멍을 제거했습니다.
+
+#### C. Toast-Integrated Share System (`ShareButton.tsx`)
+
+- **Context Integration**: 로컬 상태로 관리하던 토스트 알림을 `useToast()` 훅 기반의 전역 컨텍스트 방식으로 전환했습니다.
+- **Consistency**: 에러 핸들링 시스템(`useAppErrorHandler`)과 디자인 시스템이 일치된 토스트 알림을 제공합니다.
+
+### 3. Result (결과)
+
+- ✅ **Code Quality**: `QuizGame.tsx` 컴포넌트 코드가 약 80% 단축되어 UI 렌더링에만 집중하게 됨.
+- ✅ **Type Safety**: 전역 객체 접근 시 타입 안정성이 확보되어 개발자 경험(DX) 향상.
+- ✅ **Maintenance**: 퀴즈 로직이나 전역 타입 수정 시 영향 범위를 파악하기 용이해짐.
+
 ## v0.14.14: Error Handling Refactoring & Vocabulary Sync Stability (2026-01-29)
 
 ### 1. Goal (목표)
@@ -21,6 +52,12 @@
 
 - **Sync Logic Separation**: `useVocabularySync.ts`를 신설하여, 무료->유료 전환 시 데이터 병합 로직과 단순 UI 토글 로직을 분리했습니다.
 - **Fail-Safe Toggling**: `ACTION_TOGGLE_FAILED` 에러 코드를 추가하여, 네트워크 이슈 등으로 저장/단어장 추가 실패 시 optimistic UI가 롤백되고 적절한 피드백이 제공되도록 했습니다.
+
+#### C. Type Safety Enhancement
+
+- **Problem**: `InteractiveLink` 컴포넌트에서 `framer-motion`의 애니메이션 컨트롤 타입을 `unknown`으로 처리하여 엄격한(Strict) 타입 검사 환경에서 빌드 에러 발생 가능성 존재.
+- **Solution**:
+  - `SimpleAnimationControls` 인터페이스를 명시적으로 정의하여 외부 라이브러리 타입과의 충돌을 피하면서도 필요한 메서드(`start`)의 시그니처를 정확하게 타이핑했습니다.
 
 ### 3. Result (결과)
 

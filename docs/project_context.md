@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-28
+**최종 수정일**: 2026-01-29
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -67,7 +67,8 @@ speak-mango-en/
 │   ├── functions/       # 데이터베이스 함수 (RPC) - 성능 최적화 로직
 │   └── triggers/        # 트리거 함수 및 정의 - 자동화된 데이터 관리
 ├── hooks/               # 커스텀 React 훅
-│   └── user/            # 사용자 및 인증 관련 훅 (useAuthUser, useUserActions)
+│   ├── user/            # 사용자 및 인증 관련 훅 (useAuthUser, useUserActions)
+│   └── quiz/            # 퀴즈 게임 관련 훅 (useQuizGame)
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
 │   ├── auth/            # 인증 설정 및 유틸리티
@@ -138,6 +139,7 @@ speak-mango-en/
 ### General
 
 - **언어**: TypeScript 엄수. `any` 타입 사용을 지양하며, 불가피한 경우 `unknown`과 타입 가드(Type Guard)를 사용하거나 명시적인 인터페이스를 정의해야 합니다. (ESLint `no-explicit-any` 규칙 준수)
+- **Global Type Management**: Window 인터페이스 확장(`declare global`)은 별도의 `.d.ts` 파일(`types/analytics.d.ts`, `types/global.d.ts`)로 중앙 관리하여 코드베이스 전체의 타입 정의를 정리하고 충돌을 방지합니다.
 - **절대 경로**: `@/` alias 사용 (예: `import { createClient } from '@/lib/supabase/server'`).
 
 ### Naming Conventions
@@ -241,6 +243,11 @@ speak-mango-en/
   - **Client-Side Memoization**: 리스트 아이템 등 빈번한 리렌더링이 예상되는 컴포넌트는 `React.memo`를 적용합니다.
   - **Layout Optimization**: 긴 리스트에는 `content-visibility: auto`를 적용하여 렌더링 성능을 개선합니다.
   - **Data Fetching Strategy**: `docs/technical_implementation/use_swr_strategy.md` (useSWR 활용 가이드)
+- **Custom Hook Pattern**: 복잡한 상태 관리와 비즈니스 로직을 컴포넌트로부터 분리하여 재사용 가능한 커스텀 훅으로 추출합니다.
+  - **State Management**: `useReducer`를 활용한 예측 가능한 상태 전환 패턴 (`hooks/quiz/useQuizGame.ts`)
+  - **Separation of Concerns**: UI 컴포넌트는 렌더링에, 커스텀 훅은 비즈니스 로직에 집중하여 관심사 분리
+  - **Reusability**: 훅을 통해 동일한 로직을 여러 컴포넌트에서 재사용
+  - **Type Safety**: 훅의 반환 타입을 명시적으로 정의하여 컴포넌트에서의 타입 추론을 돕습니다.
 
 ### Database
 
