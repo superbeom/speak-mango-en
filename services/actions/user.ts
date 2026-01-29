@@ -1,8 +1,9 @@
 "use server";
 
+import { createAppError, ACTION_ERROR } from "@/types/error";
+import { ActionType } from "@/services/repositories/UserActionRepository";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getAuthSession } from "@/lib/auth/utils";
-import { ActionType } from "@/services/repositories/UserActionRepository";
 
 export async function getUserActions(type: ActionType): Promise<string[]> {
   const { userId, isPro } = await getAuthSession();
@@ -29,7 +30,7 @@ export async function toggleUserAction(
   const { isPro } = await getAuthSession();
 
   if (!isPro) {
-    throw new Error("Unauthorized or invalid tier");
+    throw createAppError(ACTION_ERROR.UNAUTHORIZED);
   }
 
   const supabase = await createServerSupabase();
@@ -41,7 +42,7 @@ export async function toggleUserAction(
 
   if (error) {
     console.error("Failed to toggle action:", error);
-    throw new Error("Failed to toggle action");
+    throw createAppError(ACTION_ERROR.TOGGLE_FAILED);
   }
 }
 
@@ -74,6 +75,6 @@ export async function syncUserActions(
 
   if (error) {
     console.error("Failed to sync user actions:", error);
-    throw new Error("Sync failed");
+    throw createAppError(ACTION_ERROR.SYNC_FAILED);
   }
 }

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
+import { createAppError, VOCABULARY_ERROR } from "@/types/error";
 import {
   getVocabularyLists,
   createVocabularyList,
@@ -62,7 +63,7 @@ export function useVocabularyLists() {
     async (title: string) => {
       if (!isPro) {
         if (lists.length >= 5) {
-          throw new Error("Free users can only create up to 5 lists.");
+          throw createAppError(VOCABULARY_ERROR.LIMIT_REACHED);
         }
         localCreateList(title);
         return;

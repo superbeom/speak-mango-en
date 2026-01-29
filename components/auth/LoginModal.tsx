@@ -101,7 +101,7 @@ export default function LoginModal({
 
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 sm:cursor-pointer focus:outline-none disabled:pointer-events-none data-[state=open]:bg-zinc-100 data-[state=open]:text-zinc-500 dark:ring-offset-zinc-950 dark:data-[state=open]:bg-zinc-800 dark:data-[state=open]:text-zinc-400">
             <X className="h-4 w-4" />
-            <span className="sr-only">{dict.auth.close}</span>
+            <span className="sr-only">{dict.common.close}</span>
           </DialogPrimitive.Close>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

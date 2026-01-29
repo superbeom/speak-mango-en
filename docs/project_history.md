@@ -2,6 +2,26 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-29: Error Handling Refactoring & Vocabulary Sync Stability
+
+### ✅ 진행 사항
+
+1.  **Centralized Error Handling (에러 핸들링 중앙화)**:
+    - **`useAppErrorHandler`**: 산재되어 있던 에러 처리 로직(콘솔 로그, 토스트 알림 등)을 통합 훅으로 중앙화했습니다 (`hooks/useAppErrorHandler.ts`).
+    - **Unified Error Types**: `types/error.ts`를 신설하여 `AppError` 클래스와 `ErrorCode` Enum을 정의하고, 에러 메시지 다국어 처리 기반을 마련했습니다.
+    - **Global Toast**: `ToastContext`를 도입하여 에러 발생 시 사용자에게 즉각적이고 일관된 피드백을 제공합니다.
+
+2.  **Vocabulary Update & Sync (단어장 동기화 안정화)**:
+    - **Hooks Refine**: `hooks/user/useVocabularySync.ts`, `hooks/user/useSaveToggle.ts` 등을 세분화하여 동기화 로직과 UI 토글 로직을 분리했습니다.
+    - **Anonymous Merge**: 로그인 시 로컬(익명) 단어장을 서버 계정으로 병합하는 로직을 고도화했습니다.
+    - **UI Polish**: `VocabularyListItem` 컴포넌트 분리 및 리스트 모달 개선.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `useAppErrorHandler`를 도입했나요?**
+
+- **A.** 기존에는 `try/catch` 블록마다 `console.error`와 `toast.error`를 중복해서 작성해야 했습니다. 이를 `handleError` 함수 하나로 통합하여 코드를 간결하게 만들고, 에러 로그 포맷과 UI 알림 방식을 전역에서 일관되게 제어하기 위함입니다.
+
 ## 2026-01-28: Vocabulary List System & Schema Cleanup
 
 ### ✅ 진행 사항
@@ -438,7 +458,7 @@
   - **Responsive Component (`components/HomeHeader.tsx`)**:
     - `useIsMobile` 훅을 활용하여 모바일 기기에서는 서브헤더 텍스트(`One new expression...`)를 자동으로 숨기는 반응형 헤더 컴포넌트 구현.
     - 클라이언트 사이드 렌더링(CSR)이 필요한 로직을 별도 컴포넌트로 분리하여 메인 페이지의 서버 컴포넌트 이점을 유지.
-  - **Localization**: 9개 언어 전체에 `common.quiz` 키를 추가하여 UI 다국어 지원 완료.
+  - **Localization**: 9개 언어 전체에 `quiz.title` 키를 추가하여 UI 다국어 지원 완료.
 - **Outcome**: 퀴즈 기능 유입 경로 확보 및 작은 화면에서의 UI 가독성 향상.
 
 ### 2026-01-22: Quiz UI Refinement & Localization

@@ -1,20 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Adapter } from "@auth/core/adapters";
 
-export function format<T>(obj: Record<string, any>): T {
-  for (const [key, value] of Object.entries(obj)) {
+export function format<T>(obj: Record<string, unknown> | unknown[]): T {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => format(item as Record<string, unknown>)) as T;
+  }
+  const result = { ...obj };
+  for (const [key, value] of Object.entries(result)) {
     if (value === null) {
-      delete obj[key];
+      delete result[key];
     }
     if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
       const date = new Date(value);
       if (!isNaN(date.getTime())) {
-        // @ts-ignore
-        obj[key] = date;
+        result[key] = date;
       }
     }
   }
-  return obj as T;
+  return result as T;
 }
 
 export interface SupabaseAdapterOptions {

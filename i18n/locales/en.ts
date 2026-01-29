@@ -26,8 +26,24 @@ export const en = {
     loading: "Loading...",
     loadMore: "Load More",
     notFound: "Data not found.",
-    quiz: "Quiz 🎲",
     scrollToTop: "Scroll to top",
+    close: "Close",
+  },
+  error: {
+    title: "Something went wrong!",
+    description: "An unexpected error occurred.",
+    retry: "Try again",
+    codes: {
+      UNAUTHORIZED: "Please sign in to continue.",
+      ACTION_TOGGLE_FAILED: "Failed to update save status.",
+      ACTION_SYNC_FAILED: "Failed to sync data.",
+      VOCABULARY_FETCH_FAILED: "Failed to load lists.",
+      VOCABULARY_CREATE_FAILED: "Failed to create list.",
+      VOCABULARY_PREMIUM_REQUIRED: "This is a premium feature.",
+      VOCABULARY_ADD_FAILED: "Failed to add to list.",
+      VOCABULARY_REMOVE_FAILED: "Failed to remove from list.",
+      VOCABULARY_LIMIT_REACHED: "Free users can create up to 5 lists.",
+    },
   },
   auth: {
     signIn: "Sign In",
@@ -38,7 +54,6 @@ export const en = {
     loginModalDesc:
       "Save your favorite expressions and build your own unique English habit.",
     googleLogin: "Continue with Google",
-    close: "Close",
   },
   home: {
     title: "Today's Expressions",
@@ -83,6 +98,7 @@ export const en = {
     noDescription: "No description available.",
   },
   quiz: {
+    title: "Quiz 🎲",
     metaTitle: `Random Quiz Challenge | ${SERVICE_NAME}`,
     metaDescription: "Test your skills with random English expressions!",
     completeTitle: "Quiz Complete! 🎉",
@@ -100,5 +116,14 @@ export const en = {
     seeResult: "See Result",
     failedToLoad: "Failed to load quiz data. Please try again.",
   },
+  vocabulary: {
+    modalTitle: "Save to...",
+    createNew: "Create new list",
+    placeholder: "List name (e.g., Travel)",
+    add: "Add",
+    cancel: "Cancel",
+    emptyState: "No lists yet. Create one!",
+    freePlanLimit: "Free Plan: {count} / {total} lists used",
+    itemsCount: "{count} items",
+  },
 };
-// To be merged later manually if needed, but for now I will use multi_replace to edit all files

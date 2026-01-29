@@ -30,8 +30,25 @@ export const fr = {
     loading: "Chargement...",
     loadMore: "Voir plus",
     notFound: "Données non trouvées.",
-    quiz: "Quiz 🎲",
     scrollToTop: "Retour en haut",
+    close: "Fermer",
+  },
+  error: {
+    title: "Quelque chose s'est mal passé !",
+    description: "Une erreur inattendue s'est produite.",
+    retry: "Réessayer",
+    codes: {
+      UNAUTHORIZED: "Veuillez vous connecter pour continuer.",
+      ACTION_TOGGLE_FAILED: "Échec de la mise à jour du statut.",
+      ACTION_SYNC_FAILED: "Échec de la synchronisation des données.",
+      VOCABULARY_FETCH_FAILED: "Échec du chargement des listes.",
+      VOCABULARY_CREATE_FAILED: "Échec de la création de la liste.",
+      VOCABULARY_PREMIUM_REQUIRED: "Ceci est une fonctionnalité premium.",
+      VOCABULARY_ADD_FAILED: "Échec de l'ajout à la liste.",
+      VOCABULARY_REMOVE_FAILED: "Échec de la suppression de la liste.",
+      VOCABULARY_LIMIT_REACHED:
+        "Les utilisateurs gratuits peuvent créer jusqu'à 5 listes.",
+    },
   },
   auth: {
     signIn: "Se connecter",
@@ -42,7 +59,6 @@ export const fr = {
     loginModalDesc:
       "Enregistrez vos expressions préférées et créez votre propre habitude d'anglais spéciale.",
     googleLogin: "Continuer avec Google",
-    close: "Fermer",
   },
   home: {
     title: "Expressions d'Aujourd'hui",
@@ -88,6 +104,7 @@ export const fr = {
     noDescription: "Aucune description disponible.",
   },
   quiz: {
+    title: "Quiz 🎲",
     metaTitle: `Défi Quiz Aléatoire | ${SERVICE_NAME}`,
     metaDescription:
       "Testez vos compétences avec des expressions anglaises aléatoires !",
@@ -106,5 +123,15 @@ export const fr = {
     seeResult: "Voir Résultat",
     failedToLoad:
       "Échec du chargement des données du quiz. Veuillez réessayer.",
+  },
+  vocabulary: {
+    modalTitle: "Enregistrer dans...",
+    createNew: "Créer une nouvelle liste",
+    placeholder: "Nom de la liste (ex. Voyage)",
+    add: "Ajouter",
+    cancel: "Annuler",
+    emptyState: "Pas encore de listes. Créez-en une !",
+    freePlanLimit: "Plan gratuit : {count} / {total} listes utilisées",
+    itemsCount: "{count} éléments",
   },
 };

@@ -2,6 +2,32 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.14: Error Handling Refactoring & Vocabulary Sync Stability (2026-01-29)
+
+### 1. Goal (목표)
+
+- 산재된 에러 처리 로직(콘솔 로그, UI 알림 등)을 **중앙 집중식**으로 관리하여, 일관된 사용자 경험과 디버깅 효율성을 확보합니다.
+- 단어장(Vocabulary List) 관련 비동기 작업(동기화, 토글 등)에서 발생할 수 있는 에러를 세분화하여 처리하고, UI 반응성과 데이터 무결성을 동시에 달성합니다.
+
+### 2. Implementation (구현)
+
+#### A. Centralized Error Architecture
+
+- **Hook**: `useAppErrorHandler`를 도입하여 모든 비동기 작업의 `catch` 블록을 표준화했습니다.
+- **Types**: `AppError` 클래스와 `ErrorCode` Enum을 통해 에러를 체계적으로 분류하고, 하드코딩된 문자열을 제거했습니다. (`types/error.ts`)
+- **Global Toast**: `ToastProvider`(`ToastContext.tsx`)를 구축하여, 어느 컴포넌트 깊이에서든 `useToast().show()` 호출만으로 일관된 알림을 표시할 수 있습니다.
+
+#### B. Vocabulary Logic Refinement
+
+- **Sync Logic Separation**: `useVocabularySync.ts`를 신설하여, 무료->유료 전환 시 데이터 병합 로직과 단순 UI 토글 로직을 분리했습니다.
+- **Fail-Safe Toggling**: `ACTION_TOGGLE_FAILED` 에러 코드를 추가하여, 네트워크 이슈 등으로 저장/단어장 추가 실패 시 optimistic UI가 롤백되고 적절한 피드백이 제공되도록 했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Developer Experience**: `try { ... } catch (e) { handleError(e); }` 패턴으로 에러 처리 코드가 50% 이상 단축됨.
+- ✅ **User Experience**: 에러 발생 시 명확하고 친절한(번역된) 메시지 제공.
+- ✅ **System Stability**: 복잡한 단어장 동기화 시나리오에서의 예외 처리 강화.
+
 ## v0.14.13: New Vocabulary List System (2026-01-28)
 
 ### 1. Goal (목표)

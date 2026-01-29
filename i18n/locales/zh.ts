@@ -25,8 +25,24 @@ export const zh = {
     loading: "加载中...",
     loadMore: "加载更多",
     notFound: "未找到数据。",
-    quiz: "测验 🎲",
     scrollToTop: "回到顶部",
+    close: "关闭",
+  },
+  error: {
+    title: "出错了！",
+    description: "发生了意外错误。",
+    retry: "重试",
+    codes: {
+      UNAUTHORIZED: "请登录以继续。",
+      ACTION_TOGGLE_FAILED: "更新状态失败。",
+      ACTION_SYNC_FAILED: "数据同步失败。",
+      VOCABULARY_FETCH_FAILED: "加载列表失败。",
+      VOCABULARY_CREATE_FAILED: "创建列表失败。",
+      VOCABULARY_PREMIUM_REQUIRED: "这是高级功能。",
+      VOCABULARY_ADD_FAILED: "添加到列表失败。",
+      VOCABULARY_REMOVE_FAILED: "从列表中删除失败。",
+      VOCABULARY_LIMIT_REACHED: "免费用户最多可创建 5 个列表。",
+    },
   },
   auth: {
     signIn: "登录",
@@ -36,7 +52,6 @@ export const zh = {
     loginModalTitle: "登录 {serviceName}",
     loginModalDesc: "保存您喜欢的表达方式，建立您独特的英语学习习惯。",
     googleLogin: "使用 Google 账号继续",
-    close: "关闭",
   },
   home: {
     title: "今日表达",
@@ -81,6 +96,7 @@ export const zh = {
     noDescription: "暂无描述。",
   },
   quiz: {
+    title: "测验 🎲",
     metaTitle: `随机测验挑战 | ${SERVICE_NAME}`,
     metaDescription: "通过随机英语表达测试你的英语水平！",
     completeTitle: "测验完成！🎉",
@@ -97,5 +113,15 @@ export const zh = {
     next: "下一题",
     seeResult: "查看结果",
     failedToLoad: "加载测验数据失败。请重试。",
+  },
+  vocabulary: {
+    modalTitle: "保存到...",
+    createNew: "创建新列表",
+    placeholder: "列表名称（如：旅行）",
+    add: "添加",
+    cancel: "取消",
+    emptyState: "尚无列表。创建一个吧！",
+    freePlanLimit: "免费计划：已使用 {count} / {total} 个列表",
+    itemsCount: "{count} 个项目",
   },
 };

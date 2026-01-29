@@ -4,6 +4,13 @@ import React from "react";
 import Link from "next/link";
 
 // Any type used here to avoid version-specific type name conflicts for AnimationControls
+interface SimpleAnimationControls {
+  start: (definition: {
+    scale?: number;
+    transition?: { duration?: number };
+  }) => Promise<void>;
+}
+
 export default function InteractiveLink({
   href,
   children,
@@ -16,7 +23,7 @@ export default function InteractiveLink({
   children: React.ReactNode;
   isStatic: boolean;
   enableHover: boolean;
-  controls: any;
+  controls: SimpleAnimationControls;
   onClick: () => void;
 }) {
   const handlePointerDown = (e: React.PointerEvent) => {

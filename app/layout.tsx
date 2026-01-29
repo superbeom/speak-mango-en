@@ -6,6 +6,7 @@ import { GA_MEASUREMENT_ID } from "@/analytics";
 import AnalyticsProvider from "@/analytics/AnalyticsProvider";
 import SessionProvider from "@/context/SessionProvider";
 import { I18nProvider } from "@/context/I18nContext";
+import { ToastProvider } from "@/context/ToastContext";
 import { AudioProvider } from "@/context/AudioContext";
 import { ExpressionProvider } from "@/context/ExpressionContext";
 import { getI18n } from "@/i18n/server";
@@ -392,12 +393,14 @@ export default async function RootLayout({
         <AnalyticsProvider lang={locale}>
           <SessionProvider>
             <I18nProvider locale={locale} dict={dict}>
-              <AudioProvider>
-                <ExpressionProvider>
-                  {children}
-                  <ScrollToTop />
-                </ExpressionProvider>
-              </AudioProvider>
+              <ToastProvider>
+                <AudioProvider>
+                  <ExpressionProvider>
+                    {children}
+                    <ScrollToTop />
+                  </ExpressionProvider>
+                </AudioProvider>
+              </ToastProvider>
             </I18nProvider>
           </SessionProvider>
         </AnalyticsProvider>

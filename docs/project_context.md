@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-27
+**최종 수정일**: 2026-01-28
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -137,7 +137,7 @@ speak-mango-en/
 
 ### General
 
-- **언어**: TypeScript 엄수. `any` 사용 지양.
+- **언어**: TypeScript 엄수. `any` 타입 사용을 지양하며, 불가피한 경우 `unknown`과 타입 가드(Type Guard)를 사용하거나 명시적인 인터페이스를 정의해야 합니다. (ESLint `no-explicit-any` 규칙 준수)
 - **절대 경로**: `@/` alias 사용 (예: `import { createClient } from '@/lib/supabase/server'`).
 
 ### Naming Conventions
@@ -227,10 +227,13 @@ speak-mango-en/
   - **Responsive Strategy**: 화면 크기에 따른 분기 처리는 다음 규칙을 따릅니다.
     - **Rendering & Styling (Preferred)**: 단순한 보이기/숨기기나 스타일 변경은 **Tailwind 반응형 유틸리티**(`hidden sm:block`, `w-full sm:w-auto`, `sm:hover:`)를 최우선으로 사용합니다. 이는 SSR 호환성을 보장하고 초기 로딩 성능(LCP)을 높입니다.
     - **Logic & Animation (Fallback)**: CSS로 처리가 불가능한 자바스크립트 로직(예: 모바일 전용 터치 이벤트, Framer Motion 애니메이션 값 변경)이 필요한 경우에만 제한적으로 `useIsMobile` 훅을 사용합니다. 이때는 반드시 `useEffect` 등을 통해 클라이언트 사이드에서만 실행되도록 처리하여 Hydration Mismatch를 방지해야 합니다.
-- **Toast Notification System**: 사용자 피드백이 필요한 액션(복사, 저장, 공유 등)에는 `components/ui/Toast.tsx` 컴포넌트를 활용합니다.
+- **Toast Notification System**: 사용자 피드백이 필요한 액션(복사, 저장, 공유 등)에는 `context/ToastContext.tsx`를 통해 제공되는 `useToast()` 훅을 활용합니다.
+  - **Global Context**: 앱 최상위에서 `ToastProvider`가 관리하므로, 개별 컴포넌트에서 `Toast` UI를 직접 렌더링할 필요가 없습니다.
   - **Type Safety**: `types/toast.ts`에 정의된 `ToastType` 및 `TOAST_TYPE` 상수를 사용하여 타입 안정성 확보.
-  - **Consistency**: 모든 Toast 알림은 동일한 디자인과 애니메이션을 사용하여 UX 일관성 유지.
-  - **Reusability**: Toast 컴포넌트는 독립적으로 설계되어 어떤 컴포넌트에서든 재사용 가능.
+  - **Consistency**: 모든 알림은 중앙화된 컨텍스트를 통해 동일한 애니메이션과 디자인으로 제공됩니다.
+- **Error Handling Strategy**:
+  - **Hook**: `hooks/useAppErrorHandler.ts`를 사용하여 에러 처리 로직을 중앙화합니다. `try/catch` 블록 내에서 `handleError(e)`를 호출하면 표준화된 로깅과 UI 알림(Toast)이 자동으로 수행됩니다.
+  - **Types**: `types/error.ts`의 `ErrorCode` Enum을 사용하여 에러 케이스를 정의하고, 하드코딩된 문자열 에러 메시지 사용을 지양합니다.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
 - **성능 최적화 (Performance Optimization)**:

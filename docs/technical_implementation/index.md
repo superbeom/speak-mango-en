@@ -1635,3 +1635,28 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 - **Solution**:
   - `LoginModal.tsx`의 `Overlay`와 `Content` 컴포넌트에 `onClick={(e) => e.stopPropagation()}`을 적용했습니다.
   - 이를 통해 모달 내부 인터랙션이 부모의 클릭 핸들러를 트리거하지 않도록 보장하여 UX 안정성을 확보했습니다.
+
+## 21. Error Handling Architecture (에러 핸들링 아키텍처)
+
+사용자에게 일관된 에러 경험을 제공하고 디버깅 효율성을 높이기 위해 중앙 집중식 에러 관리 시스템을 구축했습니다.
+
+### 21.1 Centralized Error Hook (`useAppErrorHandler`)
+
+- **Objective**: 개별 컴포넌트나 훅에서 `try/catch`와 UI 알림 로직이 중복되는 것을 방지합니다.
+- **Implementation**:
+  - `hooks/useAppErrorHandler.ts`에 정의된 이 훅은 에러 객체를 받아 표준화된 처리를 수행합니다.
+  - **Error Normalization**: `AppError`, `Error`, `string` 등 다양한 형태의 에러를 `AppError` 객체로 통일합니다.
+  - **UI Notification**: `ToastContext`를 사용하여 사용자에게 친화적인 에러 메시지를 표시합니다.
+  - **Logging**: 개발 모드에서는 상세 에러 로그를 콘솔에 출력합니다.
+
+### 21.2 Unified Error Types (`types/error.ts`)
+
+- **Standardization**: 애플리케이션 전반에서 사용되는 에러 코드를 열거형(Enum)으로 관리합니다.
+- **Consolidation**: 기존의 `ACTION_UNAUTHORIZED` 등 파편화된 에러 코드를 `UNAUTHORIZED`와 같이 범용적인 코드로 통합하여 관리 복잡도를 줄였습니다.
+- **i18n Integration**: 에러 코드에 대응하는 다국어 메시지 키를 매핑하여, 에러 발생 시 즉시 번역된 메시지를 제공할 수 있는 기반을 마련했습니다.
+
+### 21.3 Global Toast System (`ToastContext`)
+
+- **Structure**: `context/ToastContext.tsx`
+- **Role**: 애플리케이션 최상위(`layout.tsx`)에서 `ToastProvider`로 감싸져 있어, 어디서든 `useToast()` 훅을 통해 알림을 띄울 수 있습니다.
+- **Integration**: `useAppErrorHandler`와 긴밀하게 통합되어, 에러 발생 -> 핸들러 호출 -> 토스트 알림으로 이어지는 일관된 파이프라인을 형성합니다.

@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Check } from "lucide-react";
+import { X } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { useI18n } from "@/context/I18nContext";
+import { VOCABULARY_ERROR } from "@/types/error";
+import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
+import { formatMessage } from "@/lib/utils";
 import LoginModal from "@/components/auth/LoginModal";
 import CreateListForm from "./CreateListForm";
+import VocabularyListItem from "./VocabularyListItem";
 
 interface VocabularyListModalProps {
   isOpen: boolean;
@@ -31,8 +36,10 @@ export default function VocabularyListModal({
     isLoading,
     isPro,
   } = useVocabularyLists();
-  const [savedListIds, setSavedListIds] = useState<Set<string>>(new Set());
+  const { dict } = useI18n();
+  const { handleError } = useAppErrorHandler();
   const { user } = useAuthUser();
+  const [savedListIds, setSavedListIds] = useState<Set<string>>(new Set());
 
   // Load saved state when modal opens
   useEffect(() => {
@@ -62,17 +69,15 @@ export default function VocabularyListModal({
       console.error("Failed to toggle list:", error);
       // Revert
       setSavedListIds(new Set(savedListIds));
+      handleError(error);
     }
   };
 
   const handleCreate = async (title: string) => {
     try {
       await createList(title);
-    } catch (error: any) {
-      if (error.message?.includes("Free users")) {
-        // Alternatively show toast or alert
-        alert(error.message);
-      }
+    } catch (error: unknown) {
+      handleError(error, VOCABULARY_ERROR.CREATE_FAILED);
     }
   };
 
@@ -105,41 +110,27 @@ export default function VocabularyListModal({
         >
           <div className="flex items-center justify-between">
             <DialogPrimitive.Title className="text-lg font-semibold tracking-tight">
-              Save to...
+              {dict.vocabulary.modalTitle}
             </DialogPrimitive.Title>
             <DialogPrimitive.Close className="rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-zinc-100 data-[state=open]:text-zinc-500 dark:ring-offset-zinc-950 dark:data-[state=open]:bg-zinc-800 dark:data-[state=open]:text-zinc-400 sm:cursor-pointer">
               <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{dict.common.close}</span>
             </DialogPrimitive.Close>
           </div>
 
           <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto py-2">
-            {lists.map((list) => {
-              const isSelected = savedListIds.has(list.id);
-              return (
-                <button
-                  key={list.id}
-                  onClick={() => handleToggle(list.id)}
-                  className="flex w-full items-center justify-between rounded-lg p-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900 sm:cursor-pointer"
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {list.title}
-                    </span>
-                    <span className="text-xs text-zinc-500">
-                      {list.item_count ?? 0} items
-                    </span>
-                  </div>
-                  {isSelected && (
-                    <Check className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  )}
-                </button>
-              );
-            })}
+            {lists.map((list) => (
+              <VocabularyListItem
+                key={list.id}
+                list={list}
+                isSelected={savedListIds.has(list.id)}
+                onToggle={() => handleToggle(list.id)}
+              />
+            ))}
 
             {lists.length === 0 && !isLoading && (
               <div className="py-4 text-center text-sm text-zinc-500">
-                No lists yet. Create one!
+                {dict.vocabulary.emptyState}
               </div>
             )}
           </div>
@@ -148,7 +139,10 @@ export default function VocabularyListModal({
             <CreateListForm onCreate={handleCreate} isLoading={isLoading} />
             {!isPro && (
               <p className="mt-2 text-xs text-zinc-400 text-center">
-                Free Plan: {lists.length} / 5 lists used
+                {formatMessage(dict.vocabulary.freePlanLimit, {
+                  count: lists.length.toString(),
+                  total: "5",
+                })}
               </p>
             )}
           </div>

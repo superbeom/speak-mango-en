@@ -30,8 +30,25 @@ export const es = {
     loading: "Cargando...",
     loadMore: "Cargar más",
     notFound: "Datos no encontrados.",
-    quiz: "Test 🎲",
     scrollToTop: "Volver arriba",
+    close: "Cerrar",
+  },
+  error: {
+    title: "¡Algo salió mal!",
+    description: "Ocurrió un error inesperado.",
+    retry: "Reintentar",
+    codes: {
+      UNAUTHORIZED: "Por favor, inicia sesión para continuar.",
+      ACTION_TOGGLE_FAILED: "Error al actualizar el estado.",
+      ACTION_SYNC_FAILED: "Error al sincronizar los datos.",
+      VOCABULARY_FETCH_FAILED: "Error al cargar las listas.",
+      VOCABULARY_CREATE_FAILED: "Error al crear la lista.",
+      VOCABULARY_PREMIUM_REQUIRED: "Esta es una función premium.",
+      VOCABULARY_ADD_FAILED: "Error al añadir a la lista.",
+      VOCABULARY_REMOVE_FAILED: "Error al eliminar de la lista.",
+      VOCABULARY_LIMIT_REACHED:
+        "Los usuarios gratuitos pueden crear hasta 5 listas.",
+    },
   },
   auth: {
     signIn: "Iniciar sesión",
@@ -42,7 +59,6 @@ export const es = {
     loginModalDesc:
       "Guarda tus expresiones favoritas y crea tu propio hábito especial de inglés.",
     googleLogin: "Continuar con Google",
-    close: "Cerrar",
   },
   home: {
     title: "Expresiones de Hoy",
@@ -88,6 +104,7 @@ export const es = {
     noDescription: "No hay descripción disponible.",
   },
   quiz: {
+    title: "Quiz 🎲",
     metaTitle: `Desafío de Quiz Aleatorio | ${SERVICE_NAME}`,
     metaDescription:
       "¡Pon a prueba tus habilidades con expresiones en inglés aleatorias!",
@@ -106,5 +123,15 @@ export const es = {
     seeResult: "Ver Resultado",
     failedToLoad:
       "Error al cargar los datos del cuestionario. Por favor, inténtalo de nuevo.",
+  },
+  vocabulary: {
+    modalTitle: "Guardar en...",
+    createNew: "Crear nueva lista",
+    placeholder: "Nombre de la lista (ej. Viajes)",
+    add: "Añadir",
+    cancel: "Cancelar",
+    emptyState: "No hay listas aún. ¡Crea una!",
+    freePlanLimit: "Plan gratuito: {count} / {total} listas usadas",
+    itemsCount: "{count} elementos",
   },
 };

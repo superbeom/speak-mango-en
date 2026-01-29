@@ -26,8 +26,24 @@ export const ja = {
     loading: "読み込み中...",
     loadMore: "もっと見る",
     notFound: "データが見つかりません。",
-    quiz: "クイズ 🎲",
     scrollToTop: "トップへ戻る",
+    close: "閉じる",
+  },
+  error: {
+    title: "エラーが発生しました",
+    description: "予期しないエラーが発生しました。",
+    retry: "もう一度試す",
+    codes: {
+      UNAUTHORIZED: "ログインが必要です。",
+      ACTION_TOGGLE_FAILED: "状態の更新に失敗しました。",
+      ACTION_SYNC_FAILED: "データの同期に失敗しました。",
+      VOCABULARY_FETCH_FAILED: "リストの読み込みに失敗しました。",
+      VOCABULARY_CREATE_FAILED: "リストの作成に失敗しました。",
+      VOCABULARY_PREMIUM_REQUIRED: "プレミアム機能です。",
+      VOCABULARY_ADD_FAILED: "リストへの追加に失敗しました。",
+      VOCABULARY_REMOVE_FAILED: "リストからの削除に失敗しました。",
+      VOCABULARY_LIMIT_REACHED: "無料ユーザーは最大5個まで作成できます。",
+    },
   },
   auth: {
     signIn: "ログイン",
@@ -38,7 +54,6 @@ export const ja = {
     loginModalDesc:
       "お気に入りの表現を保存して、あなただけの特別な英語習慣を作りましょう。",
     googleLogin: "Google で続行",
-    close: "閉じる",
   },
   home: {
     title: "今日の表現",
@@ -83,6 +98,7 @@ export const ja = {
     noDescription: "説明がありません。",
   },
   quiz: {
+    title: "クイズ 🎲",
     metaTitle: `ランダムクイズチャレンジ | ${SERVICE_NAME}`,
     metaDescription: "ランダムな英語表現で実力をテストしてみましょう！",
     completeTitle: "クイズ完了！🎉",
@@ -100,5 +116,15 @@ export const ja = {
     seeResult: "結果を見る",
     failedToLoad:
       "クイズデータの読み込みに失敗しました。もう一度お試しください。",
+  },
+  vocabulary: {
+    modalTitle: "保存先...",
+    createNew: "新しいリストを作成",
+    placeholder: "リスト名 (例: 旅行)",
+    add: "追加",
+    cancel: "キャンセル",
+    emptyState: "リストがまだありません。作成しましょう！",
+    freePlanLimit: "無料プラン: {count} / {total} リスト使用中",
+    itemsCount: "{count} 個のアイテム",
   },
 };

@@ -26,8 +26,25 @@ export const ko = {
     loading: "로딩 중...",
     loadMore: "더 보기",
     notFound: "데이터를 찾을 수 없습니다.",
-    quiz: "퀴즈 🎲",
     scrollToTop: "맨 위로 이동",
+    close: "닫기",
+  },
+  error: {
+    title: "문제가 발생했습니다!",
+    description: "예상치 못한 오류가 발생했습니다.",
+    retry: "다시 시도",
+    codes: {
+      UNAUTHORIZED: "로그인이 필요합니다.",
+      ACTION_TOGGLE_FAILED: "상태 변경에 실패했습니다.",
+      ACTION_SYNC_FAILED: "데이터 동기화에 실패했습니다.",
+      VOCABULARY_FETCH_FAILED: "목록을 불러오는데 실패했습니다.",
+      VOCABULARY_CREATE_FAILED: "목록 생성에 실패했습니다.",
+      VOCABULARY_PREMIUM_REQUIRED: "프리미엄 기능입니다.",
+      VOCABULARY_ADD_FAILED: "목록에 추가하는데 실패했습니다.",
+      VOCABULARY_REMOVE_FAILED: "목록에서 제거하는데 실패했습니다.",
+      VOCABULARY_LIMIT_REACHED:
+        "무료 사용자는 최대 5개까지 생성할 수 있습니다.",
+    },
   },
   auth: {
     signIn: "로그인",
@@ -38,7 +55,6 @@ export const ko = {
     loginModalDesc:
       "마음에 드는 표현을 저장하고, 당신만의 특별한 영어 습관을 만들어보세요.",
     googleLogin: "Google 계정으로 계속하기",
-    close: "닫기",
   },
   home: {
     title: "오늘의 영어 표현",
@@ -83,6 +99,7 @@ export const ko = {
     noDescription: "설명이 없습니다.",
   },
   quiz: {
+    title: "퀴즈 🎲",
     metaTitle: `랜덤 퀴즈 챌린지 | ${SERVICE_NAME}`,
     metaDescription: "랜덤으로 나오는 영어 표현으로 실력을 테스트해보세요!",
     completeTitle: "퀴즈 완료! 🎉",
@@ -99,5 +116,15 @@ export const ko = {
     next: "다음",
     seeResult: "결과 보기",
     failedToLoad: "퀴즈 데이터를 불러오는데 실패했습니다. 다시 시도해주세요.",
+  },
+  vocabulary: {
+    modalTitle: "저장하기...",
+    createNew: "새 리스트 만들기",
+    placeholder: "리스트 이름 (예: 여행)",
+    add: "추가",
+    cancel: "취소",
+    emptyState: "리스트가 없습니다. 새로 만들어보세요!",
+    freePlanLimit: "무료 플랜: {count} / {total} 리스트 사용 중",
+    itemsCount: "{count}개 항목",
   },
 };

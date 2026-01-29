@@ -30,8 +30,25 @@ export const de = {
     loading: "Laden...",
     loadMore: "Mehr laden",
     notFound: "Daten nicht gefunden.",
-    quiz: "Quiz 🎲",
     scrollToTop: "Nach oben",
+    close: "Schließen",
+  },
+  error: {
+    title: "Etwas ist schief gelaufen!",
+    description: "Ein unerwarteter Fehler ist aufgetreten.",
+    retry: "Erneut versuchen",
+    codes: {
+      UNAUTHORIZED: "Bitte melden Sie sich an, um fortzufahren.",
+      ACTION_TOGGLE_FAILED: "Statusaktualisierung fehlgeschlagen.",
+      ACTION_SYNC_FAILED: "Fehler beim Synchronisieren der Daten.",
+      VOCABULARY_FETCH_FAILED: "Listen konnten nicht geladen werden.",
+      VOCABULARY_CREATE_FAILED: "Liste konnte nicht erstellt werden.",
+      VOCABULARY_PREMIUM_REQUIRED: "Dies ist eine Premium-Funktion.",
+      VOCABULARY_ADD_FAILED: "Hinzufügen zur Liste fehlgeschlagen.",
+      VOCABULARY_REMOVE_FAILED: "Entfernen aus der Liste fehlgeschlagen.",
+      VOCABULARY_LIMIT_REACHED:
+        "Kostenlose Benutzer können bis zu 5 Listen erstellen.",
+    },
   },
   auth: {
     signIn: "Anmelden",
@@ -42,7 +59,6 @@ export const de = {
     loginModalDesc:
       "Speichere deine Lieblingsausdrücke und entwickle deine ganz persönliche Englisch-Gewohnheit.",
     googleLogin: "Weiter mit Google",
-    close: "Schließen",
   },
   home: {
     title: "Heutige Ausdrücke",
@@ -88,6 +104,7 @@ export const de = {
     noDescription: "Keine Beschreibung verfügbar.",
   },
   quiz: {
+    title: "Quiz 🎲",
     metaTitle: `Zufalls-Quiz-Challenge | ${SERVICE_NAME}`,
     metaDescription:
       "Teste deine Fähigkeiten mit zufälligen englischen Ausdrücken!",
@@ -106,5 +123,15 @@ export const de = {
     seeResult: "Ergebnis Ansehen",
     failedToLoad:
       "Laden der Quizdaten fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  },
+  vocabulary: {
+    modalTitle: "Speichern unter...",
+    createNew: "Neue Liste erstellen",
+    placeholder: "Listenname (z. B. Reise)",
+    add: "Hinzufügen",
+    cancel: "Abbrechen",
+    emptyState: "Noch keine Listen. Erstelle eine!",
+    freePlanLimit: "Kostenloser Plan: {count} / {total} Listen verwendet",
+    itemsCount: "{count} Elemente",
   },
 };

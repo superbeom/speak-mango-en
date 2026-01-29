@@ -19,7 +19,7 @@ export default function HomeHeader() {
             href="/quiz"
             className="text-sm font-bold text-zinc-500 hover:text-main transition-colors"
           >
-            {dict.common.quiz}
+            {dict.quiz.title}
           </Link>
           {/* 모바일이 아닐 때만 구분선과 서브헤더 표시 */}
           <NavDivider />

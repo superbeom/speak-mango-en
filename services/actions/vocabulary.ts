@@ -1,5 +1,6 @@
 "use server";
 
+import { createAppError, VOCABULARY_ERROR } from "@/types/error";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getAuthSession } from "@/lib/auth/utils";
 
@@ -27,7 +28,7 @@ export async function getVocabularyLists(): Promise<VocabularyList[]> {
 
   if (error) {
     console.error("Failed to fetch vocabulary lists:", error);
-    throw new Error("Failed to fetch lists");
+    throw createAppError(VOCABULARY_ERROR.FETCH_FAILED);
   }
 
   return data;
@@ -39,7 +40,7 @@ export async function createVocabularyList(
   const { userId, isPro } = await getAuthSession();
 
   if (!userId || !isPro) {
-    throw new Error("Premium feature");
+    throw createAppError(VOCABULARY_ERROR.PREMIUM_REQUIRED);
   }
 
   const supabase = await createServerSupabase();
@@ -54,7 +55,7 @@ export async function createVocabularyList(
 
   if (error) {
     console.error("Failed to create vocabulary list:", error);
-    throw new Error("Failed to create list");
+    throw createAppError(VOCABULARY_ERROR.CREATE_FAILED);
   }
 
   return data;
@@ -90,7 +91,7 @@ export async function addToVocabularyList(
 ): Promise<void> {
   const { isPro } = await getAuthSession();
 
-  if (!isPro) throw new Error("Unauthorized");
+  if (!isPro) throw createAppError(VOCABULARY_ERROR.UNAUTHORIZED);
 
   const supabase = await createServerSupabase();
   const { error } = await supabase.from("vocabulary_items").insert({
@@ -102,7 +103,7 @@ export async function addToVocabularyList(
     // Ignore duplicate key error (code 23505) gracefully?
     if (error.code === "23505") return;
     console.error("Failed to add to list:", error);
-    throw new Error("Failed to add expression");
+    throw createAppError(VOCABULARY_ERROR.ADD_FAILED);
   }
 }
 
@@ -112,7 +113,7 @@ export async function removeFromVocabularyList(
 ): Promise<void> {
   const { isPro } = await getAuthSession();
 
-  if (!isPro) throw new Error("Unauthorized");
+  if (!isPro) throw createAppError(VOCABULARY_ERROR.UNAUTHORIZED);
 
   const supabase = await createServerSupabase();
   const { error } = await supabase
@@ -123,6 +124,6 @@ export async function removeFromVocabularyList(
 
   if (error) {
     console.error("Failed to remove from list:", error);
-    throw new Error("Failed to remove expression");
+    throw createAppError(VOCABULARY_ERROR.REMOVE_FAILED);
   }
 }
