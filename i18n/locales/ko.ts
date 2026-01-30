@@ -41,6 +41,7 @@ export const ko = {
       VOCABULARY_CREATE_FAILED: "목록 생성에 실패했습니다.",
       VOCABULARY_PREMIUM_REQUIRED: "프리미엄 기능입니다.",
       VOCABULARY_ADD_FAILED: "목록에 추가하는데 실패했습니다.",
+      VOCABULARY_UPDATE_FAILED: "목록을 수정하는데 실패했습니다.",
       VOCABULARY_REMOVE_FAILED: "목록에서 제거하는데 실패했습니다.",
       VOCABULARY_LIMIT_REACHED:
         "무료 사용자는 최대 5개까지 생성할 수 있습니다.",
@@ -125,6 +126,9 @@ export const ko = {
     cancel: "취소",
     emptyState: "리스트가 없습니다. 새로 만들어보세요!",
     freePlanLimit: "무료 플랜: {count} / {total} 리스트 사용 중",
+    planStatus: "{count} / {total} 리스트 사용 중",
+    planHint:
+      "리스트를 더 만들고 싶으신가요? 더 많은 리스트를 추가할 수 있도록 곧 업데이트될 예정입니다.",
     itemsCount: "{count}개 항목",
   },
 };

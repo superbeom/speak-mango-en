@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.19: Vocabulary Plan Status & Limit UX Refinement (2026-01-30)
+
+### 1. Goal (목표)
+
+- 유료 플랜 출시 전 사용자에게 긍정적인 경험을 제공하기 위해 무료 플랜 관련 UI 문구를 정제하고, 리스트 생성 한도에 대한 시각적 피드백을 강화합니다.
+- 다국어 지원을 통해 글로벌 사용자에게 일관된 안내 메시지를 제공합니다.
+
+### 2. Implementation (구현)
+
+#### A. Simplified Status Display (`VocabularyListModal.tsx`)
+
+- **UI Refinement**: "무료 플랜"이라는 명시적 라벨 대신 `{count} / {total}` 형식의 단순 수치와 미래 지향적인 힌트 메시지(`planHint`)를 노출하도록 수정했습니다.
+- **Maintenance**: 향후 유료 플랜 도입 시 즉시 복구할 수 있도록 기존 `freePlanLimit` 키는 유지하고 주석으로 관리 방안을 명시했습니다.
+
+#### B. Creation Limit UX (`CreateListForm.tsx`)
+
+- **Prop Injection**: `CreateListForm`에 `disabled` Prop을 추가하여 외부 상태(리스트 개수 >= 5)에 따라 버튼을 비활성화할 수 있도록 구조화했습니다.
+- **Visual Feedback**: 비활성화 시 `opacity-50`과 `pointer-events-none`을 적용하고, 호버 시 브라우저 기본 커서가 나타나도록 처리하여 인터랙션 불가 상태를 명확히 알렸습니다.
+
+#### C. Localization Scale-up
+
+- **9 Languages**: KO, EN, JA, ZH, FR, DE, ES, RU, AR 모든 언어팩에 `planStatus`, `planHint` 번역을 추가하여 전 세계 사용자에게 동일한 UX를 제공합니다.
+
+### 3. Result (결과)
+
+- ✅ **UX Aesthetics**: 제약 사항을 '안내'와 '기대'의 관점으로 전환하여 앱의 톤앤매너를 긍정적으로 유지.
+- ✅ **Interaction Quality**: 한도 초과 시 에러 팝업 대신 버튼 비활성화를 통해 성숙한 인터페이스 제공.
+- ✅ **Global Readiness**: 모든 지원 언어에 대해 새로운 UI 정책 반영 완료.
+
 ## v0.14.18: Vocabulary Default System & SQL Isolation (2026-01-30)
 
 ### 1. Goal (목표)

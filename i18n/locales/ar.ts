@@ -40,6 +40,7 @@ export const ar = {
       VOCABULARY_CREATE_FAILED: "فشل إنشاء القائمة.",
       VOCABULARY_PREMIUM_REQUIRED: "هذه ميزة مميزة.",
       VOCABULARY_ADD_FAILED: "فشل الإضافة إلى القائمة.",
+      VOCABULARY_UPDATE_FAILED: "فشل تحديث القائمة.",
       VOCABULARY_REMOVE_FAILED: "فشل الإزالة من القائمة.",
       VOCABULARY_LIMIT_REACHED:
         "يمكن للمستخدمين المجانيين إنشاء ما يصل إلى 5 قوائم.",
@@ -124,6 +125,9 @@ export const ar = {
     cancel: "إلغاء",
     emptyState: "لا توجد قوائم بعد. أنشئ واحدة!",
     freePlanLimit: "الخطة المجانية: تم استخدام {count} / {total} من القوائم",
+    planStatus: "{count} / {total} قائمة مستخدمة",
+    planHint:
+      "هل تريد إنشاء المزيد من القوائم؟ نحن نعمل على تحديثات لتتمكن من إضافة المزيد قريبًا.",
     itemsCount: "{count} عناصر",
   },
 };

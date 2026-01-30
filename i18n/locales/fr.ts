@@ -45,6 +45,7 @@ export const fr = {
       VOCABULARY_CREATE_FAILED: "Échec de la création de la liste.",
       VOCABULARY_PREMIUM_REQUIRED: "Ceci est une fonctionnalité premium.",
       VOCABULARY_ADD_FAILED: "Échec de l'ajout à la liste.",
+      VOCABULARY_UPDATE_FAILED: "Échec de la mise à jour de la liste.",
       VOCABULARY_REMOVE_FAILED: "Échec de la suppression de la liste.",
       VOCABULARY_LIMIT_REACHED:
         "Les utilisateurs gratuits peuvent créer jusqu'à 5 listes.",
@@ -132,6 +133,9 @@ export const fr = {
     cancel: "Annuler",
     emptyState: "Pas encore de listes. Créez-en une !",
     freePlanLimit: "Plan gratuit : {count} / {total} listes utilisées",
+    planStatus: "{count} / {total} listes utilisées",
+    planHint:
+      "Vous voulez créer plus de listes ? Nous travaillons sur des mises à jour pour vous permettre d'en ajouter encore plus bientôt.",
     itemsCount: "{count} éléments",
   },
 };

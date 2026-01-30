@@ -34,7 +34,6 @@ export default function VocabularyListModal({
     toggleInList,
     getContainingListIds,
     isLoading,
-    isPro,
     setDefaultList,
   } = useVocabularyLists();
   const { dict } = useI18n();
@@ -139,15 +138,26 @@ export default function VocabularyListModal({
           </div>
 
           <div className="border-t border-zinc-100 pt-4 dark:border-zinc-800">
-            <CreateListForm onCreate={handleCreate} isLoading={isLoading} />
-            {!isPro && (
-              <p className="mt-2 text-xs text-zinc-400 text-center">
-                {formatMessage(dict.vocabulary.freePlanLimit, {
+            <CreateListForm
+              onCreate={handleCreate}
+              isLoading={isLoading}
+              disabled={lists.length >= 5}
+            />
+            {/* 
+              TODO: Currently we don't have a paid version, so we show simple limit status.
+              'vocabulary.freePlanLimit' (e.g., "Free Plan: 3 / 5 lists used") is kept for future use.
+            */}
+            <div className="mt-2 text-center">
+              <p className="text-xs font-medium text-zinc-500">
+                {formatMessage(dict.vocabulary.planStatus, {
                   count: lists.length.toString(),
                   total: "5",
                 })}
               </p>
-            )}
+              <p className="mt-1 text-[10px] text-zinc-400">
+                {dict.vocabulary.planHint}
+              </p>
+            </div>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

@@ -44,6 +44,7 @@ export const ru = {
       VOCABULARY_CREATE_FAILED: "Не удалось создать список.",
       VOCABULARY_PREMIUM_REQUIRED: "Это премиум-функция.",
       VOCABULARY_ADD_FAILED: "Не удалось добавить в список.",
+      VOCABULARY_UPDATE_FAILED: "Не удалось обновить список.",
       VOCABULARY_REMOVE_FAILED: "Не удалось удалить из списка.",
       VOCABULARY_LIMIT_REACHED:
         "Бесплатные пользователи могут создать до 5 списков.",
@@ -130,6 +131,9 @@ export const ru = {
     cancel: "Отмена",
     emptyState: "Списков пока нет. Создайте новый!",
     freePlanLimit: "Бесплатный план: использовано {count} / {total} списков",
+    planStatus: "Использовано списков: {count} / {total}",
+    planHint:
+      "Хотите создать больше списков? Мы работаем над обновлением, чтобы вы могли добавить еще больше в ближайшее время.",
     itemsCount: "{count} элементов",
   },
 };

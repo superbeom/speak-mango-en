@@ -40,6 +40,7 @@ export const zh = {
       VOCABULARY_CREATE_FAILED: "创建列表失败。",
       VOCABULARY_PREMIUM_REQUIRED: "这是高级功能。",
       VOCABULARY_ADD_FAILED: "添加到列表失败。",
+      VOCABULARY_UPDATE_FAILED: "更新列表失败。",
       VOCABULARY_REMOVE_FAILED: "从列表中删除失败。",
       VOCABULARY_LIMIT_REACHED: "免费用户最多可创建 5 个列表。",
     },
@@ -122,6 +123,9 @@ export const zh = {
     cancel: "取消",
     emptyState: "尚无列表。创建一个吧！",
     freePlanLimit: "免费计划：已使用 {count} / {total} 个列表",
+    planStatus: "已使用 {count} / {total} 个列表",
+    planHint:
+      "想创建更多列表吗？我们正在努力进行更新，以便您很快可以添加更多列表。",
     itemsCount: "{count} 个项目",
   },
 };

@@ -10,11 +10,13 @@ import { cn } from "@/lib/utils";
 interface CreateListFormProps {
   onCreate: (title: string) => Promise<void>;
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 export default function CreateListForm({
   onCreate,
   isLoading,
+  disabled,
 }: CreateListFormProps) {
   const { dict } = useI18n();
   const { handleError } = useAppErrorHandler();
@@ -41,7 +43,8 @@ export default function CreateListForm({
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 sm:cursor-pointer"
+        disabled={disabled}
+        className="flex w-full items-center gap-2 rounded-lg border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 focus:outline-none enabled:hover:bg-zinc-50 enabled:hover:text-zinc-900 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:enabled:hover:bg-zinc-800 dark:enabled:hover:text-zinc-50 sm:cursor-pointer disabled:sm:cursor-not-allowed"
       >
         <Plus className="h-4 w-4" />
         {dict.vocabulary.createNew}

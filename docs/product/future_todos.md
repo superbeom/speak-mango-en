@@ -62,6 +62,20 @@
   - **Scenario**: 사용자가 표현 여러 개를 선택하여 다른 리스트로 이동/복사하거나, 하나의 표현에 대해 여러 리스트를 동시에 체크/해제하고 '저장'하는 경우.
   - **RPC Candidate**: `update_expression_lists` (다수 리스트 상태 동기화) 또는 `move_vocabulary_items` (이동 트랜잭션).
   - **Goal**: N번의 API 호출을 1번의 RPC 호출로 줄여 네트워크 비용 절감 및 부분 실패(Partial Failure) 방지.
+- [ ] **Premium Conversion UX**: 무료 리스트 5개 도달 시 '새 리스트 생성' 클릭 시 유료 전환 안내 모달(Upgrade Prompt)을 띄워 수익화 유도. (현재는 단순히 버튼 비활성화 상태)
+  - **Code Note**: 유료 플랜 도입 시 `VocabularyListModal.tsx`에 다음 코드를 복구하여 사용:
+    ```tsx
+    {
+      !isPro && (
+        <p className="mt-2 text-xs text-zinc-400 text-center">
+          {formatMessage(dict.vocabulary.freePlanLimit, {
+            count: lists.length.toString(),
+            total: "5",
+          })}
+        </p>
+      );
+    }
+    ```
 
 ---
 

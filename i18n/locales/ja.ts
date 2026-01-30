@@ -41,6 +41,7 @@ export const ja = {
       VOCABULARY_CREATE_FAILED: "リストの作成に失敗しました。",
       VOCABULARY_PREMIUM_REQUIRED: "プレミアム機能です。",
       VOCABULARY_ADD_FAILED: "リストへの追加に失敗しました。",
+      VOCABULARY_UPDATE_FAILED: "リストの更新に失敗しました。",
       VOCABULARY_REMOVE_FAILED: "リストからの削除に失敗しました。",
       VOCABULARY_LIMIT_REACHED: "無料ユーザーは最大5個まで作成できます。",
     },
@@ -125,6 +126,9 @@ export const ja = {
     cancel: "キャンセル",
     emptyState: "リストがまだありません。作成しましょう！",
     freePlanLimit: "無料プラン: {count} / {total} リスト使用中",
+    planStatus: "{count} / {total} リスト使用中",
+    planHint:
+      "リストをもっと作成したいですか？さらに追加できるようにアップデートを準備中です。",
     itemsCount: "{count} 個のアイテム",
   },
 };
