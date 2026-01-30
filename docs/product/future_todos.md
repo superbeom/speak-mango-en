@@ -56,6 +56,13 @@
 - **Access**: `/quiz` 페이지에서 "랜덤 퀴즈"와 "복습 퀴즈(나의 단어장)" 모드 선택 가능하도록 확장.
 - [ ] **Quiz Summary Save**: QuizState가 `summary`일 때(퀴즈 완료 화면), 결과 리스트에서 각 표현을 바로 '저장(Save)'할 수 있는 버튼/기능 추가.
 
+### Vocabulary Management (단어장 관리 고도화)
+
+- [ ] **Batch Operations (RPC Optimization)**: 추후 리스트 편집 기능 구현 시, 다중 선택 항목의 일괄 처리를 위해 RPC 도입.
+  - **Scenario**: 사용자가 표현 여러 개를 선택하여 다른 리스트로 이동/복사하거나, 하나의 표현에 대해 여러 리스트를 동시에 체크/해제하고 '저장'하는 경우.
+  - **RPC Candidate**: `update_expression_lists` (다수 리스트 상태 동기화) 또는 `move_vocabulary_items` (이동 트랜잭션).
+  - **Goal**: N번의 API 호출을 1번의 RPC 호출로 줄여 네트워크 비용 절감 및 부분 실패(Partial Failure) 방지.
+
 ---
 
 ## Marketing & Analytics (마케팅 및 분석)

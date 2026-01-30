@@ -2,6 +2,16 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-30: Vocabulary RPC & Interaction Fix
+
+### ✅ 진행 사항
+
+1.  **RPC Optimization (단어장 최적화)**:
+    - **Single Query Fetching**: `get_vocabulary_lists_with_counts` RPC를 구현하여 단어장 목록과 각 리스트의 아이템 개수를 단일 네트워크 요청으로 조회하도록 개선했습니다. (N+1 문제 해결)
+
+2.  **Interaction Refinement**:
+    - **Prevent Card Animation**: `ExpressionCard` 내부의 `Tag` 클릭 시 부모 링크 영역의 `onPointerDown` 이벤트가 전파되어 카드가 축소되는 현상을 수정했습니다. (`data-action-buttons` 속성 활용)
+
 ## 2026-01-30: Vercel React Best Practices Optimization
 
 ### ✅ 진행 사항

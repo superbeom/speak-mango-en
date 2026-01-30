@@ -2,6 +2,36 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.17: Vocabulary RPC Optimization & Tag Interaction Fix (2026-01-30)
+
+### 1. Goal (목표)
+
+- 단어장 목록 조회 시 발생하는 N+1 쿼리 문제를 해결하고, 1회의 왕복으로 데이터와 개수를 동시에 가져와 로딩 속도를 개선합니다.
+- 카드 내부의 태그 클릭 시 상세 진입 애니메이션이 발생하는 UX 결함을 수정합니다.
+
+### 2. Implementation (구현)
+
+#### A. RPC-based Data Fetching (`get_vocabulary_lists_with_counts`)
+
+- **Problem**: 기존에는 단어장 목록을 가져온 후, 각 단어장의 아이템 개수를 알기 위해 추가적인 조인이나 연산이 필요했음 (혹은 가져오지 못함).
+- **Solution**:
+  - `database/functions`에 `get_vocabulary_lists_with_counts` RPC 함수를 정의.
+  - `vocabulary_lists`와 `vocabulary_items`를 `LEFT JOIN`하고 `GROUP BY`하여 단 한 번의 쿼리로 목록과 `item_count`를 반환하도록 구현.
+  - `services/actions/vocabulary.ts`에서 이를 호출하고, `any` 타입을 제거하여 타입 안정성(`VocabularyListRow`)을 확보.
+
+#### B. Interaction Refinement (`ExpressionCard.tsx`)
+
+- **Problem**: `Tag` 클릭 시 `stopPropagation`은 동작하지만, `onPointerDown` 이벤트가 부모의 `InteractiveLink`로 전파되어 카드 축소 애니메이션이 실행됨.
+- **Solution**:
+  - 태그 컨테이너에 `data-action-buttons="true"` 속성 추가.
+  - `InteractiveLink`가 해당 속성을 감지하여 애니메이션을 실행하지 않도록 방어 로직 활성화.
+
+### 3. Result (결과)
+
+- ✅ **Efficiency**: 단어장 목록 로딩 시 DB 부하 감소 및 응답 속도 향상.
+- ✅ **UX**: 태그 필터링 시 시각적 거슬림(카드 움찔거림) 제거.
+- ✅ **Type Safety**: 서비스 계층의 타입 정의 강화.
+
 ## v0.14.16: Vercel Best Practices Optimization (2026-01-30)
 
 ### 1. Goal (목표)

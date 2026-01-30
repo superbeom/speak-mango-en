@@ -20,18 +20,24 @@ export async function getVocabularyLists(): Promise<VocabularyList[]> {
   }
 
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase
-    .from("vocabulary_lists")
-    .select("id, title")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: true });
+
+  // Use RPC to get lists with item counts in a single query
+  const { data, error } = await supabase.rpc(
+    "get_vocabulary_lists_with_counts",
+  );
 
   if (error) {
     console.error("Failed to fetch vocabulary lists:", error);
     throw createAppError(VOCABULARY_ERROR.FETCH_FAILED);
   }
 
-  return data;
+  const rows = (data ?? []) as VocabularyList[];
+
+  return rows.map((item) => ({
+    id: item.id,
+    title: item.title,
+    item_count: Number(item.item_count || 0),
+  }));
 }
 
 export async function createVocabularyList(

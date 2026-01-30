@@ -140,7 +140,7 @@ const ExpressionCard = memo(function ExpressionCard({
       </div>
 
       {item.tags && item.tags.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div data-action-buttons className="mt-6 flex flex-wrap gap-2">
           {item.tags.map((tag) => (
             <Tag
               key={tag}
