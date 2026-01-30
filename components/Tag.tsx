@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { trackTagClick } from "@/analytics";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,7 @@ interface TagProps {
   source?: "card" | "detail" | "filter"; // Analytics용 출처
 }
 
-export default function Tag({
+const Tag = memo(function Tag({
   label,
   href,
   onClick,
@@ -56,4 +57,8 @@ export default function Tag({
       #{label}
     </button>
   );
-}
+});
+
+Tag.displayName = "Tag";
+
+export default Tag;

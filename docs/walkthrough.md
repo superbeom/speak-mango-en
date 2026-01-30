@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.16: Vercel Best Practices Optimization (2026-01-30)
+
+### 1. Goal (목표)
+
+- Vercel의 React/Next.js 모범 사례(Best Practices)를 코드베이스 전반에 적용하여, 성능 최적화(Waterfall 제거, 리렌더링 방지) 및 코드 품질(State Logic)을 한 단계 끌어올립니다.
+
+### 2. Implementation (구현)
+
+#### A. Data Fetching Optimization (Waterfall Elimination)
+
+- **Parallel Processing**: `app/expressions/[id]/page.tsx`의 메타데이터 생성(`generateMetadata`) 및 상세 페이지 렌더링 시, 의존성이 없는 데이터 요청(`getExpressionById`, `getI18n`)을 `Promise.all`로 병렬화하여 응답 속도(TTFB)를 개선했습니다.
+- **Fail-Fast Strategy**: 필수 데이터(Content, Meaning) 유효성 검사 후 관련 표현(`relatedExpressions`)을 호출하도록 순서를 조정하여, 에러 상황에서의 불필요한 네트워크 비용을 제거했습니다.
+
+#### B. Component Rendering Optimization
+
+- **List Memoization**: 리스트 내에서 반복 렌더링되는 `Tag` 컴포넌트에 `React.memo`를 적용하여, 부모 컴포넌트(`ExpressionCard`) 리렌더링 시 자식 컴포넌트의 불필요한 연산을 차단했습니다.
+- **Bundle Optimization Check**: Next.js 16의 `optimizePackageImports` 기본 동작을 검증하고, 중복 설정(`next.config.ts`)을 제거하여 빌드 설정을 표준화했습니다.
+
+#### C. State Logic Refinement
+
+- **Stable Callback**: `DialogueSection`의 `handleEnglishClick` 핸들러에서 `Set` 객체 자체를 의존성으로 갖는 비효율적인 구조를 개선했습니다.
+- **Effect Separation**: 함수형 업데이트(`setState(prev => ...)`)를 도입하고, 상태 변경에 따른 모드 전환(Auto-Exit) 로직을 `useEffect`로 분리하여 코드의 안정성과 예측 가능성을 높였습니다.
+
+### 3. Result (결과)
+
+- ✅ **Performance**: 페이지 진입 속도 및 리스트 인터랙션 반응성 향상.
+- ✅ **Stability**: 복잡한 상태 의존성을 제거하여 버그 발생 가능성 원천 차단.
+- ✅ **Standard**: Next.js 최신 버전의 기능을 100% 활용하는 모범적인 코드베이스 확보.
+
 ## v0.14.15: Quiz Refactoring & Global Type Safety (2026-01-29)
 
 ### 1. Goal (목표)

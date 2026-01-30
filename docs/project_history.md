@@ -2,6 +2,29 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-30: Vercel React Best Practices Optimization
+
+### ✅ 진행 사항
+
+1.  **WaterFall Elimination (데이터 페칭 최적화)**:
+    - **Concurrent Fetching**: `generateMetadata`와 `ExpressionDetailPage`에서 `getExpressionById`와 `getI18n`을 `Promise.all`로 병렬 처리하여 초기 로딩 시간을 단축했습니다.
+    - **Optimized Sequence**: 상세 페이지에서 `relatedExpressions` 호출을 유효성 검사 실패 시 건너뛰도록 재배치하여, 에러 케이스에서의 불필요한 네트워크 요청을 제거했습니다.
+
+2.  **Rendering Performance (렌더링 성능 개선)**:
+    - **List Memoization**: `Tag` 컴포넌트 등 반복 렌더링되는 리스트 아이템에 `React.memo`를 적용하여 리렌더링 비용을 최소화했습니다. (`DialogueItem`, `ExpressionCard`는 기 적용 확인)
+
+3.  **State Logic Optimization (상태 관리 최적화)**:
+    - **Stable Callback**: `DialogueSection`의 `handleEnglishClick`에서 `useCallback` 의존성을 최적화했습니다. `Set` 객체 자체를 의존성으로 갖는 대신 함수형 업데이트(`setState(prev => ...)`)를 사용하여 핸들러의 재생성을 방지했습니다.
+    - **Effect Separation**: 상태 변경에 따른 부수 효과(Auto-Exit 로직)를 `useEffect`로 분리하여 코드의 예측 가능성을 높였습니다.
+
+4.  **Bundle Size Check**: `lucide-react` 최적화를 위해 Next.js 설정을 검토했으나, Next.js 16이 기본적으로 `optimizePackageImports`를 지원함을 확인하고 중복 설정을 제거했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 404 에러 상황에서도 `getI18n`을 같이 호출하는 게 낭비 아닌가요?**
+
+- **A.** 404 에러보다 정상 접속(200)의 비율이 압도적으로 높기 때문에, 정상 케이스에서의 로딩 속도(Waterfall 제거)를 우선시하는 것이 사용자 경험상 유리합니다. 따라서 `expression` 확인 전이라도 `i18n` 데이터를 병렬로 가져오는 것이 더 나은 전략이라고 판단했습니다.
+
 ## 2026-01-29: Type Safety Improvements & Quiz Refactoring
 
 ### ✅ 진행 사항

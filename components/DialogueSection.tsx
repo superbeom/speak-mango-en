@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Play, Square, Loader2, Headphones, Eye, EyeOff } from "lucide-react";
 import { trackLearningModeToggle, trackAudioPlay } from "@/analytics";
 import { DialogueItem as DialogueItemType } from "@/types/database";
@@ -146,21 +146,33 @@ export default function DialogueSection({
     (index: number) => {
       if (viewMode === VIEW_MODE.EXPOSED) return;
 
-      // Calculate new set immediately to check size
-      const newEnglishSet = new Set(revealedEnglishIndices);
-      newEnglishSet.add(index);
-      setRevealedEnglishIndices(newEnglishSet);
-
-      // If all English is now revealed, perform "Auto-Exit Blind Mode"
-      if (newEnglishSet.size === dialogue.length) {
-        setViewMode(VIEW_MODE.EXPOSED);
-        setSavedRevealedIndices(null); // Discard saved state (user manually overrode context)
-      } else if (viewMode === VIEW_MODE.BLIND) {
-        setViewMode(VIEW_MODE.PARTIAL);
-      }
+      // Use functional update to remove dependency on revealedEnglishIndices
+      setRevealedEnglishIndices((prev) => {
+        const newEnglishSet = new Set(prev);
+        newEnglishSet.add(index);
+        return newEnglishSet;
+      });
     },
-    [viewMode, revealedEnglishIndices, dialogue.length],
+    [viewMode],
   );
+
+  // Monitor revealedEnglishIndices to automatically switch modes
+  useEffect(() => {
+    // Skip if already exposed
+    if (viewMode === VIEW_MODE.EXPOSED) return;
+
+    const revealedCount = revealedEnglishIndices.size;
+    const totalCount = dialogue.length;
+
+    // If all English is now revealed, perform "Auto-Exit Blind Mode"
+    if (totalCount > 0 && revealedCount === totalCount) {
+      setViewMode(VIEW_MODE.EXPOSED);
+      setSavedRevealedIndices(null); // Discard saved state
+    } else if (viewMode === VIEW_MODE.BLIND && revealedCount > 0) {
+      // If user starts revealing in blind mode, switch to partial
+      setViewMode(VIEW_MODE.PARTIAL);
+    }
+  }, [revealedEnglishIndices, viewMode, dialogue.length]);
 
   // State to track ready status of each audio
   const [readyIndices, setReadyIndices] = useState<Set<number>>(new Set());

@@ -769,19 +769,24 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
 
 ### 13.1 Server-Side Waterfall Removal (서버 측 워터폴 제거)
 
-- **Problem**: `app/page.tsx` 및 `app/quiz/page.tsx`에서 `getI18n()`(헤더 파싱 + 딕셔너리 로딩) 완료 후 DB 조회 함수(`getExpressions`, `getRandomExpressions`)가 실행되는 직렬 구조로 인해 TTFB(Time to First Byte) 지연.
+- **Problem**:
+  - `app/page.tsx` 및 `app/quiz/page.tsx`에서 `getI18n()` 완료 후 DB 조회 함수가 실행되는 직렬 구조.
+  - `app/expressions/[id]/page.tsx`의 `generateMetadata`와 `ExpressionDetailPage`에서 `getExpressionById` 후 `getI18n`을 호출하는 비효율.
 - **Solution**: 의존성이 없는 비동기 작업을 `Promise.all`로 병렬 처리.
   - `getLocale()`을 먼저 호출하여 필요한 로케일 정보를 확보.
-  - `getI18n()`과 `getExpressions()`를 동시에 실행하여 전체 응답 시간을 단축.
+  - `getI18n()`과 `getExpressions()`(또는 `getExpressionById`)를 동시에 실행하여 전체 응답 시간을 단축.
+  - 사용자 유효성 검사(Fail-Fast) 로직과 함께 `Promise.all`을 사용하여 불필요한 네트워크 대기 시간 최소화.
 
 ### 13.2 React Component Rendering Optimization (리렌더링 최적화)
 
-- **Target**: `DialogueSection` 및 `DialogueItem` (오디오 재생 시 빈번한 상태 변경 발생)
-- **Problem**: 오디오 재생 인덱스(`playingIndex`)가 변경될 때마다 섹션 내의 모든 대화 아이템이 리렌더링됨.
+- **Target**: `DialogueSection`, `DialogueItem`, `ExpressionCard`, `Tag`
+- **Problem**:
+  - 오디오 재생 인덱스(`playingIndex`) 변경 시 섹션 내 모든 아이템 리렌더링.
+  - 리스트 내의 작은 컴포넌트(`Tag`)들이 부모 리렌더링 시 불필요하게 같이 렌더링됨.
 - **Solution**:
-  - **Memoization**: `DialogueItem`을 `React.memo`로 감싸 Props 변경이 없는 경우 리렌더링 방지.
-  - **Stable Callbacks**: `DialogueSection`의 이벤트 핸들러(`onPlay`, `onEnded` 등)를 `useCallback`으로 감싸고, `index`를 인자로 받는 형태로 리팩토링하여 함수 참조 안정성 확보.
-  - **State Logic Refactor**: `handleEnglishClick` 내부의 중복된 상태 업데이트 로직을 제거하고, 순수 함수 형태로 개선하여 사이드 이펙트 최소화.
+  - **Memoization**: `DialogueItem`, `ExpressionCard`, `Tag`를 `React.memo`로 감싸 Props 변경이 없는 경우 리렌더링 방지.
+  - **Stable Callbacks**: `DialogueSection`의 이벤트 핸들러를 `useCallback`으로 감싸고, `index`를 인자로 받는 형태로 리팩토링.
+  - **Effect Isolation**: 상태 변경에 따른 부수 효과(Auto-Exit 로직)를 `useEffect`로 분리하여, 핸들러(`handleEnglishClick`)가 불필요한 의존성(`Set` 객체 등)을 갖지 않도록 최적화.
 
 ### 13.3 Database Search Optimization (검색 쿼리 최적화)
 
@@ -1674,7 +1679,7 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 // hooks/quiz/useQuizGame.ts
 export function useQuizGame(initialExpressions: Expression[]) {
   const [state, dispatch] = useReducer(quizReducer, initialState);
-  
+
   return {
     state,
     content,
@@ -1698,10 +1703,12 @@ export function useQuizGame(initialExpressions: Expression[]) {
 #### C. 컴포넌트 간소화 (Component Simplification)
 
 **Before** (`QuizGame.tsx`): ~160 lines
+
 - 로컬 useState, useEffect, 비즈니스 로직이 혼재
 - 역할이 명확하지 않아 테스트 및 유지보수 어려움
 
 **After** (`QuizGame.tsx`): ~30 lines
+
 - `useQuizGame` 훅으로부터 상태와 액션만 주입받음
 - UI 렌더링에 집중하고 비즈니스 로직은 훅에 위임
 

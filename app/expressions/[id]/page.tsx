@@ -36,15 +36,17 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const expression = await getExpressionById(id);
+
+  const [expression, { locale, dict }] = await Promise.all([
+    getExpressionById(id),
+    getI18n(),
+  ]);
 
   if (!expression) {
     return {
       title: "Expression Not Found",
     };
   }
-
-  const { locale, dict } = await getI18n();
   const primaryMeaning =
     expression.meaning[getContentLocale(expression.meaning, locale)] ||
     expression.meaning[SupportedLanguage.EN];
@@ -86,13 +88,15 @@ export async function generateMetadata({
 
 export default async function ExpressionDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const expression = await getExpressionById(id);
+
+  const [expression, { locale, dict }] = await Promise.all([
+    getExpressionById(id),
+    getI18n(),
+  ]);
 
   if (!expression) {
     notFound();
   }
-
-  const { locale, dict } = await getI18n();
 
   // 감지된 언어의 데이터가 있는지 확인, 없으면 영어(en)를 기본값으로 사용
   const content =
