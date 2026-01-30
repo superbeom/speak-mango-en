@@ -2,6 +2,22 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-30: Vocabulary System & Trigger Refactoring
+
+### ✅ 진행 사항
+
+1.  **Default Vocabulary List Implementation**:
+    - **Implicit Default**: 사용자가 첫 번째로 생성한 단어장이 자동으로 '기본 단어장(Default)'으로 설정되도록 트리거(`set_vocabulary_list_first_default`)를 구현했습니다.
+    - **Quick Save UX**: 저장 버튼 클릭 시 기본 단어장에 즉시 저장되는 스마트 로직을 적용했습니다.
+    - **Long Press Interaction**: 단어장 목록에서 특정 리스트를 길게 눌러 기본 단어장을 손쉽게 변경할 수 있는 기능을 추가했습니다.
+
+2.  **SQL Architecture Refinement**:
+    - **Trigger Management**: `database/migrations`에 흩어져 있던 트리거 정의를 `database/functions/on_vocabulary_list_created.sql`로 통합하고 관리 체계를 정비했습니다.
+    - **Schema Isolation**: 모든 SQL 함수 및 트리거에서 `SET search_path = speak_mango_en`을 명시하고 `public` 스키마 참조를 제거하여 데이터베이스 환경을 격리했습니다.
+
+3.  **Documentation Update**:
+    - `schema.md` 및 `technical_implementation/index.md`에 새로운 트리거, RPC(`get_vocabulary_lists_with_counts`), 그리고 `is_default` 모델 변경 사항을 반영했습니다.
+
 ## 2026-01-30: Vocabulary RPC & Interaction Fix
 
 ### ✅ 진행 사항

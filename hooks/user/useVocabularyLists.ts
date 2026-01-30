@@ -10,6 +10,7 @@ import {
   addToVocabularyList,
   removeFromVocabularyList,
   getSavedListIds,
+  setDefaultVocabularyList,
   VocabularyList,
 } from "@/services/actions/vocabulary";
 
@@ -31,6 +32,9 @@ export function useVocabularyLists() {
   const localGetListIds = useLocalActionStore(
     (state) => state.getListIdsForExpression,
   );
+  const localSetDefaultList = useLocalActionStore(
+    (state) => state.setDefaultList,
+  );
 
   const fetchLists = useCallback(async () => {
     setIsLoading(true);
@@ -40,15 +44,18 @@ export function useVocabularyLists() {
         setLists(remoteLists);
       } else {
         // Derive list from stable map
-        const sortedLists = Object.values(vocabularyListsMap).sort((a, b) =>
-          a.created_at.localeCompare(b.created_at),
-        );
+        const sortedLists = Object.values(vocabularyListsMap).sort((a, b) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return a.created_at.localeCompare(b.created_at);
+        });
 
         // Map LocalVocabularyList to compatible type
         const mapped = sortedLists.map((l) => ({
           id: l.id,
           title: l.title,
           item_count: l.itemIds.size,
+          is_default: l.isDefault,
         }));
         setLists(mapped);
       }
@@ -106,6 +113,22 @@ export function useVocabularyLists() {
     [isPro, localGetListIds],
   );
 
+  const setDefaultList = useCallback(
+    async (listId: string) => {
+      if (!isPro) {
+        localSetDefaultList(listId);
+        return;
+      }
+      try {
+        await setDefaultVocabularyList(listId);
+        fetchLists();
+      } catch (error) {
+        console.error("Failed to set default list", error);
+      }
+    },
+    [isPro, localSetDefaultList, fetchLists],
+  );
+
   // Initial fetch
   useEffect(() => {
     fetchLists();
@@ -117,6 +140,7 @@ export function useVocabularyLists() {
     createList,
     toggleInList,
     getContainingListIds,
+    setDefaultList,
     refreshLists: fetchLists,
     isPro,
   };

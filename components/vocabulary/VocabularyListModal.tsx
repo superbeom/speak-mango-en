@@ -35,6 +35,7 @@ export default function VocabularyListModal({
     getContainingListIds,
     isLoading,
     isPro,
+    setDefaultList,
   } = useVocabularyLists();
   const { dict } = useI18n();
   const { handleError } = useAppErrorHandler();
@@ -125,6 +126,8 @@ export default function VocabularyListModal({
                 list={list}
                 isSelected={savedListIds.has(list.id)}
                 onToggle={() => handleToggle(list.id)}
+                isDefault={list.is_default}
+                onSetDefault={() => setDefaultList(list.id)}
               />
             ))}
 

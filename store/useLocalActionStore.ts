@@ -9,6 +9,7 @@ export interface LocalVocabularyList {
   title: string;
   itemIds: Set<string>;
   created_at: string;
+  isDefault?: boolean;
 }
 
 interface LocalActionState {
@@ -26,6 +27,7 @@ interface LocalActionState {
   removeFromList: (listId: string, expressionId: string) => void;
   getLists: () => LocalVocabularyList[];
   getListIdsForExpression: (expressionId: string) => string[];
+  setDefaultList: (listId: string) => void;
 }
 
 // Set persistence helper to serialize/deserialize Set
@@ -38,6 +40,7 @@ type PersistedState = {
       title: string;
       items: string[];
       created_at: string;
+      isDefault?: boolean;
     }
   >;
 };
@@ -74,11 +77,13 @@ export const useLocalActionStore = create<LocalActionState>()(
       // Vocabulary Implementation
       createList: (title) => {
         const id = crypto.randomUUID();
+        const isFirstList = Object.keys(get().vocabularyLists).length === 0;
         const newList: LocalVocabularyList = {
           id,
           title,
           itemIds: new Set(),
           created_at: new Date().toISOString(),
+          isDefault: isFirstList,
         };
         set((state) => ({
           vocabularyLists: { ...state.vocabularyLists, [id]: newList },
@@ -117,13 +122,29 @@ export const useLocalActionStore = create<LocalActionState>()(
           };
         }),
       getLists: () =>
-        Object.values(get().vocabularyLists).sort((a, b) =>
-          a.created_at.localeCompare(b.created_at),
-        ),
+        Object.values(get().vocabularyLists).sort((a, b) => {
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+          return a.created_at.localeCompare(b.created_at);
+        }),
       getListIdsForExpression: (expressionId) =>
         Object.values(get().vocabularyLists)
           .filter((list) => list.itemIds.has(expressionId))
           .map((list) => list.id),
+      setDefaultList: (targetListId: string) =>
+        set((state) => {
+          const newLists = Object.entries(state.vocabularyLists).reduce(
+            (acc, [id, list]) => {
+              acc[id] = {
+                ...list,
+                isDefault: id === targetListId,
+              };
+              return acc;
+            },
+            {} as Record<string, LocalVocabularyList>,
+          );
+          return { vocabularyLists: newLists };
+        }),
     }),
     {
       name: LOCAL_STORAGE_KEYS.USER_ACTIONS,
@@ -135,7 +156,11 @@ export const useLocalActionStore = create<LocalActionState>()(
         vocabularyLists: Object.fromEntries(
           Object.entries(state.vocabularyLists).map(([id, list]) => [
             id,
-            { ...list, items: Array.from(list.itemIds) },
+            {
+              ...list,
+              items: Array.from(list.itemIds),
+              isDefault: list.isDefault,
+            },
           ]),
         ),
       }),
@@ -149,6 +174,7 @@ export const useLocalActionStore = create<LocalActionState>()(
             rehydratedLists[id] = {
               ...list,
               itemIds: new Set(list.items || []),
+              isDefault: list.isDefault,
             };
           });
         }

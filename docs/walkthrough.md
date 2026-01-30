@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.18: Vocabulary Default System & SQL Isolation (2026-01-30)
+
+### 1. Goal (목표)
+
+- 단어장 시스템에 '기본 단어장(Default List)' 개념을 도입하여 저장 과정을 최소화(One-tap Save)하고, 데이터베이스 개체들의 보안 및 관리 편의성을 위해 스키마 격리(Isolation)를 강화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Smart Default Logic (`on_vocabulary_list_created`)
+
+- **Automatic Assignment**: 사용자가 처음으로 단어장을 만드는 순간, 데이터베이스 트리거가 이를 감지하여 `is_default = true`로 자동 설정합니다.
+- **Transaction Safety**: `set_default_vocabulary_list` RPC를 통해 기존 기본값을 해제하고 새로운 기본값을 설정하는 과정을 원자적(Atomic)으로 처리합니다.
+
+#### B. SQL Environment Isolation
+
+- **Search Path Lockdown**: 모든 사용자 정의 함수(UDF)에 `SET search_path = speak_mango_en` 옵션을 강제하여 `public` 스키마의 오염이나 간섭을 원천 차단했습니다.
+- **Explicit Schema References**: 트리거 정의 및 함수 호출 시 `speak_mango_en.` 접두사를 명시하여 코드의 명확성을 높였습니다.
+
+#### C. interaction Enhancement (`VocabularyListItem.tsx`)
+
+- **Long Press interaction**: 모바일 사용성을 고려하여 길게 누르기(Long Press)로 기본 단어장을 변경하는 직관적인 UX를 제공합니다.
+- **Visual Feedback**: 기본 단어장 옆에 전용 아이콘(⭐️)을 배치하여 현재 설정을 명확히 인지하게 했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Speed**: "저장 -> 리스트 선택" 과정이 "저장" 한 번으로 단축되어 사용자 리텐션 향상 기대.
+- ✅ **Manageability**: 트리거와 함수가 논리적 폴더 구조(`database/functions`)에 따라 정돈됨.
+- ✅ **Security**: DB 스키마 격리를 통해 확장성과 유지보수 안정성 확보.
+
 ## v0.14.17: Vocabulary RPC Optimization & Tag Interaction Fix (2026-01-30)
 
 ### 1. Goal (목표)

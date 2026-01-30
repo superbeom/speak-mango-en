@@ -96,13 +96,17 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 사용자가 생성한 단어장(폴더)을 관리하는 테이블입니다.
 
-| Column Name  | Type        | Key | Default             | Description              |
-| ------------ | ----------- | --- | ------------------- | ------------------------ |
-| `id`         | UUID        | PK  | `gen_random_uuid()` | 단어장 고유 식별자       |
-| `user_id`    | UUID        | FK  | -                   | `users.id` 참조 (소유자) |
-| `title`      | TEXT        |     | -                   | 단어장 이름              |
-| `created_at` | TIMESTAMPTZ |     | `now()`             | 생성 일시                |
-| `updated_at` | TIMESTAMPTZ |     | `now()`             | 수정 일시                |
+| Column Name  | Type        | Key | Default             | Description                 |
+| ------------ | ----------- | --- | ------------------- | --------------------------- |
+| `id`         | UUID        | PK  | `gen_random_uuid()` | 단어장 고유 식별자          |
+| `user_id`    | UUID        | FK  | -                   | `users.id` 참조 (소유자)    |
+| `title`      | TEXT        |     | -                   | 단어장 이름                 |
+| `created_at` | TIMESTAMPTZ |     | `now()`             | 생성 일시                   |
+| `updated_at` | TIMESTAMPTZ |     | `now()`             | 수정 일시                   |
+| `is_default` | BOOLEAN     |     | `false`             | 기본 단어장 여부 (One-True) |
+
+> **Trigger**: `set_vocabulary_list_first_default` - 사용자가 첫 단어장을 생성하면 자동으로 `is_default`를 `true`로 설정합니다.
+> **Constraint**: 사용자당 하나의 `is_default=true` 리스트만 존재하도록 관리합니다(Application Level / Partial Index).
 
 #### 7. `vocabulary_items`
 
@@ -171,10 +175,11 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 ##### Table: `vocabulary_lists`
 
-| Index Name                          | Type   | Target                     | Description                 |
-| :---------------------------------- | :----- | :------------------------- | :-------------------------- |
-| `idx_vocabulary_lists_user_id`      | B-Tree | `user_id`                  | 사용자별 단어장 조회        |
-| `idx_vocabulary_lists_user_created` | B-Tree | `user_id, created_at DESC` | 사용자별 단어장 최신순 정렬 |
+| Index Name                          | Type             | Target                       | Description                      |
+| :---------------------------------- | :--------------- | :--------------------------- | :------------------------------- |
+| `idx_vocabulary_lists_user_id`      | B-Tree           | `user_id`                    | 사용자별 단어장 조회             |
+| `idx_vocabulary_lists_user_created` | B-Tree           | `user_id, created_at DESC`   | 사용자별 단어장 최신순 정렬      |
+| `idx_vocabulary_lists_user_default` | Special (Unique) | `user_id` where `is_default` | 사용자당 기본 단어장 유일성 보장 |
 
 ##### Table: `vocabulary_items`
 
@@ -210,6 +215,23 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Returns**: `void`
 - **SQL Definition**: `database/functions/toggle_user_action.sql` 참조.
 
+#### 3. `get_vocabulary_lists_with_counts`
+
+- **Description**: 사용자(인증됨)의 모든 단어장 목록을 조회하며, 각 단어장에 포함된 아이템 개수(`item_count`)와 기본 여부(`is_default`)를 반환합니다.
+- **Usage**: 단어장 목록 페이지 및 저장 모달에서 사용.
+- **Parameters**: None (Uses `auth.uid()`)
+- **Returns**: `Table (id uuid, title text, item_count bigint, is_default boolean)`
+- **SQL Definition**: `database/functions/get_vocabulary_lists_with_counts.sql` 참조.
+
+#### 4. `set_default_vocabulary_list`
+
+- **Description**: 특정 단어장을 기본(Default) 단어장으로 설정합니다. 기존의 기본 단어장은 자동으로 해제됩니다 (Transactional).
+- **Usage**: 단어장 목록에서 Long Press 등으로 기본 단어장을 변경할 때 사용.
+- **Parameters**:
+  - `p_list_id` (uuid): 대상 단어장 ID.
+- **Returns**: `void`
+- **SQL Definition**: `database/functions/set_default_vocabulary_list.sql` 참조.
+
 ### Database Triggers
 
 트리거는 데이터 변경 시 자동으로 실행되는 로직을 정의합니다.
@@ -236,10 +258,11 @@ $$;
 
 #### 2. Triggers
 
-| Trigger Name              | Table              | Event           | Description                                |
-| ------------------------- | ------------------ | --------------- | ------------------------------------------ |
-| `update_users_updated_at` | `users`            | `BEFORE UPDATE` | 사용자 정보 변경 시 `updated_at` 필드 갱신 |
-| `update_vocab_updated_at` | `vocabulary_lists` | `BEFORE UPDATE` | 단어장 수정 시 `updated_at` 필드 갱신      |
+| Trigger Name                        | Table              | Event           | Description                                                                                          |
+| ----------------------------------- | ------------------ | --------------- | ---------------------------------------------------------------------------------------------------- |
+| `update_users_updated_at`           | `users`            | `BEFORE UPDATE` | 사용자 정보 변경 시 `updated_at` 필드 갱신                                                           |
+| `update_vocab_updated_at`           | `vocabulary_lists` | `BEFORE UPDATE` | 단어장 수정 시 `updated_at` 필드 갱신                                                                |
+| `set_vocabulary_list_first_default` | `vocabulary_lists` | `AFTER INSERT`  | 첫 단어장 생성 시 `is_default=true` 설정 (File: `database/functions/on_vocabulary_list_created.sql`) |
 
 ### Custom Enums
 

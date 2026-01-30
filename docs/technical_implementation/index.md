@@ -1583,9 +1583,17 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 
 ## 19. Vocabulary System (단어장 시스템)
 
-사용자가 학습하고자 하는 표현을 테마별로 그룹화하여 관리할 수 있는 시스템입니다.
+단일 '저장' 버튼을 넘어, 사용자가 직접 분류하고 관리할 수 있는 폴더 구조의 단어장 시스템입니다.
 
-### 19.1 Component Architecture (컴포넌트 구조)
+### 19.1 Design Philosophy (Implicit Default)
+
+- **Problem**: 사용자가 매번 저장할 폴더를 선택하는 것은 번거롭습니다. (Friction)
+- **Solution (Quick Save)**:
+  - **Single Tap**: '저장(Bookmark)' 버튼 클릭 시, 묻지 않고 즉시 **기본(Default) 단어장**에 저장됩니다.
+  - **Implicit Default**: 별도의 설정이 없다면, 사용자가 **가장 처음 만든 단어장**이 자동으로 기본 단어장이 됩니다.
+  - **Visual Feedback**: 기본 단어장은 목록에서 별(⭐️) 아이콘으로 구분됩니다.
+
+### 19.2 Component Architecture (컴포넌트 구조)
 
 - **`VocabularyListModal`**:
   - `SaveButton` 클릭 시 또는 롱 프레스 시 노출되는 메인 인터페이스입니다.
@@ -1595,7 +1603,7 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
   - 새로운 단어장을 생성하는 인라인 폼입니다.
   - Pro 사용자는 무제한, 로그인한 Free 사용자는 최대 5개까지 생성이 가능하도록 정책이 적용되어 있습니다.
 
-### 19.2 Hybrid Repository Workflow (하이브리드 워크플로우)
+### 19.3 Hybrid Repository Workflow (하이브리드 워크플로우)
 
 `useVocabularyLists` 훅은 사용자의 인증 상태와 티어(`isPro`)를 감지하여 데이터 저장소를 동적으로 전환합니다.
 
@@ -1605,22 +1613,36 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 - **Free User (Logged-in)**:
   - `useLocalActionStore` (Zustand)를 통해 로컬 환경에서 단어장을 관리합니다.
   - 브라우저의 `localStorage`에 상태가 보존되며, 서버 비용 없이 즉각적인 반응성을 제공합니다.
+- **Unified Interface**: `useVocabularyLists.ts` 훅은 `isPro` 여부를 내부적으로 처리하여, 상위 컴포넌트에 통일된 메서드(`setDefaultList`, `createList` 등)를 제공합니다.
 
-### 19.3 Synchronization Logic (`useSaveAction`)
+### 19.4 Long Press Interaction (기본 단어장 변경)
 
-'저장(Save)'이라는 마스터 액션과 개별 '단어장(Vocabulary List)' 간의 상태 일관성을 유지하기 위한 캡슐화 로직입니다.
+- **Context**: 별도의 설정 페이지 진입 없이 목록에서 즉시 기본(Default) 단어장을 변경할 수 있는 UX가 필요합니다.
+- **Implementation**:
+  - `VocabularyListItem` 컴포넌트에서 `useRef`와 `setTimeout`을 이용한 커스텀 롱 프레스 감지 로직 구현.
+  - 600ms 이상 유지 시 `setDefaultList` 액션을 트리거합니다.
+  - **Mobile Optimization**: 모바일 브라우저의 전역 컨텍스트 메뉴(`onContextMenu`)를 차단하여 시스템 메뉴와 충돌하지 않도록 처리했습니다.
 
-1.  **Selection Logic**: 사용자가 처음 저장 버튼을 누르면, 리스트가 있을 경우 첫 번째 리스트에 자동으로 담고 `isSaved` 상태를 `true`로 만듭니다. 리스트가 하나도 없다면 단어장 만들기 모달을 띄웁니다.
+### 19.5 Synchronization & Selection Logic
+
+'저장(Save)' 마스터 버튼과 개별 '단어장' 간의 상태 일관성을 유지하기 위한 캡슐화 로직입니다.
+
+1.  **Selection Logic**: 사용자가 처음 저장 버튼을 누르면, 리스트가 있을 경우 디폴트 리스트에 자동으로 담고 `isSaved` 상태를 `true`로 만듭니다. 리스트가 하나도 없다면 단어장 만들기 모달을 띄웁니다.
 2.  **Bidirectional Sync**:
     - 단어장 모달에서 마지막 남은 리스트의 체크를 해제하면 마스터 저장 상태(`isSaved`)도 `false`로 변경됩니다.
     - 반대로 마스터 저장 버튼을 눌러 저장을 취소하면, 해당 표현이 담긴 모든 단어장에서 한꺼번에 제거됩니다.
 3.  **Performance Optimization**: Zustand 스토어 구독 시 원본 객체(`raw state`)를 선택하고 가공은 컴포넌트 내에서 수행하도록 설계하여, 불필요한 참조 생성에 의한 무한 루프 렌더링을 방지했습니다.
 
-### 19.4 Database Schema & Triggers
+### 19.6 Database Schema & Triggers
 
-- **`vocabulary_lists`**: 단어장 메타 정보(제목, 소유자)를 저장합니다.
+- **`vocabulary_lists`**: 단어장 메타 정보(제목, 기본값 여부)를 저장합니다.
 - **`vocabulary_items`**: 단어장과 표현(`expressions`) 간의 M:N 관계를 정의합니다.
 - **Trigger**: `update_vocab_updated_at` 기능을 통해 단어장 내 아이템 추가/삭제나 제목 변경 시 `updated_at` 컬럼이 자동으로 갱신되어, 정렬 최신성을 유지합니다.
+- **Trigger (Timestamp)**: `update_vocab_updated_at`을 통해 변경 발생 시 `updated_at` 상시 갱신.
+- **Trigger (First List)**: `set_vocabulary_list_first_default` 트리거를 통해 사용자의 첫 단어장 생성 시 자동으로 `is_default = true`를 부여합니다. (File: `database/functions/on_vocabulary_list_created.sql`)
+- **RPC Functions**:
+  - `get_vocabulary_lists_with_counts`: 한 번의 JOIN 쿼리로 아이템 수와 기본 여부를 포함한 목록 조회.
+  - `set_default_vocabulary_list`: 트랜잭션을 통해 기존 기본값 해제와 신규 설정을 원자적으로 수행.
 
 ## 20. Component Refactoring & Reusability (컴포넌트 리팩토링 및 재사용성)
 

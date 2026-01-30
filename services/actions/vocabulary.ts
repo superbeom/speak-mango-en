@@ -8,6 +8,7 @@ export interface VocabularyList {
   id: string;
   title: string;
   item_count?: number; // Optional count for UI
+  is_default?: boolean;
 }
 
 export async function getVocabularyLists(): Promise<VocabularyList[]> {
@@ -37,6 +38,7 @@ export async function getVocabularyLists(): Promise<VocabularyList[]> {
     id: item.id,
     title: item.title,
     item_count: Number(item.item_count || 0),
+    is_default: item.is_default,
   }));
 }
 
@@ -131,5 +133,21 @@ export async function removeFromVocabularyList(
   if (error) {
     console.error("Failed to remove from list:", error);
     throw createAppError(VOCABULARY_ERROR.REMOVE_FAILED);
+  }
+}
+
+export async function setDefaultVocabularyList(listId: string): Promise<void> {
+  const { isPro } = await getAuthSession();
+
+  if (!isPro) throw createAppError(VOCABULARY_ERROR.UNAUTHORIZED);
+
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.rpc("set_default_vocabulary_list", {
+    p_list_id: listId,
+  });
+
+  if (error) {
+    console.error("Failed to set default list:", error);
+    throw createAppError(VOCABULARY_ERROR.UPDATE_FAILED);
   }
 }

@@ -151,6 +151,7 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
   - `title`: TEXT (단어장 이름)
   - `created_at`: TIMESTAMPTZ
   - `updated_at`: TIMESTAMPTZ
+  - `is_default`: BOOLEAN (기본 단어장 여부)
 
 **7. `vocabulary_items` (단어장 매핑)**
 
@@ -260,8 +261,9 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
   - **무료 사용자**: 최대 **5개**까지 폴더 생성 가능.
   - **Pro 사용자**: 제한 없이 생성 가능.
 - **스마트 저장 UX**:
-  1.  **디폴트 저장**: 설정된 기본 폴더로 즉시 저장 후 Toast로 알림.
-  2.  **폴더 선택**: 길게 누르기(Long Press) 시 저장 위치 선택 모달 노출 (멀티 셀렉트 및 즉시 생성 지원).
+  1.  **디폴트 저장 (Quick Save)**: 설정된 기본 폴더(⭐️)로 즉시 저장. 첫 생성 폴더가 자동으로 기본값이 됨.
+  2.  **폴더 선택**: 저장 버튼 길게 누르기(Long Press) 시 저장 위치 선택 모달 노출 (멀티 셀렉트 및 즉시 생성 지원).
+  3.  **기본 변경**: 단어장 목록에서 리스트를 길게 눌러(Long Press) 즉시 기본 단어장 변경 가능.
 
 ### 5.11 커스텀 단어 추가 (Custom Cards)
 
@@ -325,8 +327,9 @@ Pro 사용자가 외부 표현을 직접 등록하여 Speak Mango의 학습 도�
 ### Phase 6: 단어장 및 심화 학습
 
 - **단어장 시스템**:
-  - [ ] `vocabulary_lists`, `vocabulary_items` 테이블 마이그레이션.
-  - [ ] 단어장 생성/관리 UI 및 스마트 저장 UX (`SaveButton` 개편).
+  - [x] `vocabulary_lists`, `vocabulary_items` 테이블 마이그레이션 (`is_default` 포함).
+  - [x] 단어장 생성/관리 UI 및 스마트 저장 UX (`SaveButton` 개편).
+  - [x] 기본 단어장(Default List) 자동 설정 및 변경 로직 (Long Press) 구현.
 - **심화 학습**:
   - [ ] 강화 학습(Marking) 기능 및 플래시카드 고도화.
   - [ ] 리스닝 모드 및 심화 퀴즈(문장 완성, 받아쓰기) UI 구현.
