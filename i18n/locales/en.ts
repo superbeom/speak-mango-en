@@ -49,7 +49,7 @@ export const en = {
   auth: {
     signIn: "Sign In",
     myAccount: "My Account",
-    myPage: "My Page (Preparing)",
+    myPage: "My Page",
     signOut: "Log out",
     loginModalTitle: "Sign in to {serviceName}",
     loginModalDesc:
@@ -100,7 +100,7 @@ export const en = {
   },
   quiz: {
     title: "Quiz 🎲",
-    metaTitle: `Random Quiz Challenge | ${SERVICE_NAME}`,
+    metaTitle: "Random Quiz Challenge",
     metaDescription: "Test your skills with random English expressions!",
     completeTitle: "Quiz Complete! 🎉",
     score: "Score:",
@@ -129,5 +129,25 @@ export const en = {
     planHint:
       "Want to create more lists? We're working on updates to let you add even more soon.",
     itemsCount: "{count} items",
+  },
+  me: {
+    studyModes: "Study Modes",
+    flashcards: "Flashcards",
+    flashcardsDesc: "Flip cards to memorize",
+    listening: "Listening",
+    listeningDesc: "Master pronunciation",
+    quiz: "Quiz",
+    quizDesc: "Test your knowledge",
+    reinforce: "Weak Points",
+    reinforceDesc: "Focus on hard items",
+    myLists: "My Lists",
+    emptyState: "No lists created yet. Start by saving expressions!",
+    noSavedWords: "No saved words yet",
+    saveExpressionsToSee: "Save expressions to see them here.",
+    proMember: "Pro Member",
+    userAlt: "User",
+    metaTitle: "My Page",
+    metaDescription:
+      "Check your saved expressions and practice them with personalized vocabulary lists and study modes.",
   },
 };

@@ -14,6 +14,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === "" ? 1 : 0.7,
   }));
 
+  // Note: Private routes like /me are intentionally excluded from the sitemap
+  // to ensure user privacy and security.
+
   // 2. Dynamic Routes (Expressions)
   const expressionIds = await getAllExpressionIds();
   const expressionRoutes = expressionIds.map((id) => ({

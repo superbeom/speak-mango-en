@@ -156,5 +156,5 @@
 - [ ] **Phase 5: Payments & Pro**
   - [ ] **Payment**: PayPal 정기 결제($9.99/mo) 연동
   - [ ] **Verification**: 결제 성공 시 DB `users.tier` 즉시 업데이트 및 세션 갱신
-  - [ ] **Dashboard**: 마이 페이지 (`/my`) 구현 (Saved, Learned)
+  - [x] **Dashboard**: 마이 페이지 (`/me`) 구현 (Saved, Study Modes)
   - [ ] **Ads**: 무료 사용자용 광고 배너/인피드 컴포넌트 추가

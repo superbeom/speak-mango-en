@@ -177,7 +177,7 @@ body {
 }
 
 @utility btn-avatar-trigger {
-  @apply relative flex h-8 w-8 sm:cursor-pointer shrink-0 overflow-hidden rounded-full border border-zinc-200 shadow-sm transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-800 dark:focus:ring-zinc-300;
+  @apply relative flex h-8 w-8 sm:cursor-pointer shrink-0 overflow-hidden rounded-full focus:outline-none;
 }
 
 @utility avatar-fallback {

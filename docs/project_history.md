@@ -2,6 +2,35 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-31: My Page Implementation & Personalized Study Experience
+
+### ✅ 진행 사항
+
+1.  **My Page (`/me`) Dashboard**:
+    - **User Profile**: 구글 프로필 이미지( lh3.googleusercontent.com 도메인 허용) 및 사용자 정보를 표시하는 헤더 섹션을 구현했습니다.
+    - **Study Mode Grid**: Flashcards(암기), Listening(리스닝), Quiz(퀴즈), Reinforce(약점 보완) 등 4가지 학습 모드를 한눈에 보고 바로 진입할 수 있는 인터페이스를 제공합니다.
+    - **Vocabulary Management**: 기존의 단어장 목록을 사이드바가 아닌 메인 컨텐츠 영역에서 카드 형태로 직관적으로 관리할 수 있도록 배치했습니다.
+
+2.  **Vocabulary Logic & UI Refinement**:
+    - **Terminology Standardization**: "List"라는 표현을 각 언어별로 "Vocabulary", "Wordbook", "단어장" 등 학습 서비스에 더 적합한 용어로 통일했습니다.
+    - **Empty State UX**: 저장된 항목이 없을 때 사용자에게 동기를 부여하는 일러스트(아이콘)와 안내 문구를 보강했습니다.
+    - **I18n Expansion**: 마이페이지 및 단어장 관리와 관련된 수십 개의 새로운 다국어 키를 7개 주요 언어(EN, KO, ES, JA, FR, RU, ZH)에 대해 추가했습니다.
+
+3.  **Technical SEO & Infrastructure**:
+    - **Metadata Standardization**: 페이지별 `generateMetadata`에서 서비스명 중복 노출을 제거하여 검색 결과에서의 가독성을 높였습니다.
+    - **Path Refinement**: `/me` (마이페이지), `/me/[id]` (개별 단어장) 등 개인화된 경로 체계를 수립했습니다.
+    - **Remote Image Support**: Next.js `images` 설정에 Google 유저 프로필 도메인을 추가하여 프로필 이미지가 정상적으로 출력되도록 조치했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 단어장 관리와 학습 모드를 한 페이지에 모았나요?**
+
+- **A.** 사용자가 저장한 내용을 '확인'하는 행위는 자연스럽게 '복습'으로 이어져야 합니다. 한 화면에서 나의 자산(단어장)을 확인하고 즉시 다양한 학습 모드를 선택할 수 있게 함으로써 학습 루프 완성도를 높였습니다.
+
+**Q. 왜 "List"를 "단어장"으로 이름을 바꾸었나요?**
+
+- **A.** "List"는 기술적으로는 정확하지만, 사용자에게는 단순한 목록으로 느껴질 수 있습니다. "단어장(Vocabulary)"이라는 학습 도메인 전용 용어를 사용함으로써 서비스의 본질인 '어학 학습'의 느낌을 강화하고자 했습니다.
+
 ## 2026-01-30: Vocabulary Plan Status & Limit UX Refinement
 
 ### ✅ 진행 사항
@@ -346,7 +375,7 @@
 2.  **Component Extraction (컴포넌트화)**:
     - **`NavDivider.tsx`**: 반복적으로 사용되던 구분선 코드를 별도의 컴포넌트로 분리하여 가독성과 유지보수성을 높였습니다.
 3.  **Skeleton UI Refinement (로딩 UI 고도화)**:
-    - **`SkeletonNavbar`**: `HomeHeader`에 새롭게 추가된 `AuthButton` 레이아웃에 맞춰 로딩 스켈레톤을 업데이트했습니다 (두 번째 구분선 및 버튼 형태 추가).
+    - **`SkeletonNavbar`**: `MainHeader`에 새롭게 추가된 `AuthButton` 레이아웃에 맞춰 로딩 스켈레톤을 업데이트했습니다 (두 번째 구분선 및 버튼 형태 추가).
 
 ### 💬 주요 Q&A 및 의사결정
 
@@ -505,7 +534,7 @@
 ### ✅ 진행 사항
 
 - **헤더 스타일링 유연성 개선(Header Utility Refactoring)**: 특정 페이지(홈)에서 헤더와 FilterBar를 시각적으로 자연스럽게 연결하기 위해 `scrolledClassName` prop 도입.
-- **의사결정**: 상위 컴포넌트(`HomeHeader`)가 하위의 특정 모드(`home` variant)를 아는 대신, 필요한 스타일을 직접 주입하는 방식(Prop Injection)을 채택하여 결합도를 낮추고 재사용성을 높임.
+- **의사결정**: 상위 컴포넌트(`MainHeader`)가 하위의 특정 모드(`home` variant)를 아는 대신, 필요한 스타일을 직접 주입하는 방식(Prop Injection)을 채택하여 결합도를 낮추고 재사용성을 높임.
 - **문법 최적화**: `isScrolled && scrolledClassName` 패턴을 사용하여 `cn` 유틸리티 내에서 안전하게 조건부 클래스를 적용하도록 구현.
 
 ## 2026-01-23: 퀴즈 상태 유지 및 모바일 UX 개선
@@ -547,7 +576,7 @@
 
 - **Goal**: 모바일 환경에서 헤더 텍스트가 깜빡이는(Flicker) 현상을 제거하고, 스켈레톤 UI의 로직을 상수로 중앙화하여 안정성을 높입니다.
 - **Actions**:
-  - **Mobile Optimization (`components/HomeHeader.tsx`)**:
+  - **Mobile Optimization (`components/MainHeader.tsx`)**:
     - `useIsMobile` 훅(JS) 기반의 조건부 렌더링을 CSS(`hidden sm:block`) 반응형 클래스로 교체.
     - 초기 로딩 시점의 UI 불일치(Hydration Mismatch) 및 깜빡임 현상 원천 차단.
     - Client Component(`"use client"`)에서 Server Component로 전환하여 번들 사이즈 감소.
@@ -562,7 +591,7 @@
 - **Goal**: 퀴즈 기능의 접근성을 높이고, 모바일 환경에서 헤더 영역의 공간 효율성을 개선합니다.
 - **Actions**:
   - **Global Navigation (`app/page.tsx`)**: 헤더 네비게이션에 'Quiz 🎲' 링크를 추가하여 모든 페이지에서의 접근성을 확보했습니다.
-  - **Responsive Component (`components/HomeHeader.tsx`)**:
+  - **Responsive Component (`components/MainHeader.tsx`)**:
     - `useIsMobile` 훅을 활용하여 모바일 기기에서는 서브헤더 텍스트(`One new expression...`)를 자동으로 숨기는 반응형 헤더 컴포넌트 구현.
     - 클라이언트 사이드 렌더링(CSR)이 필요한 로직을 별도 컴포넌트로 분리하여 메인 페이지의 서버 컴포넌트 이점을 유지.
   - **Localization**: 9개 언어 전체에 `quiz.title` 키를 추가하여 UI 다국어 지원 완료.

@@ -53,7 +53,6 @@ export async function generateMetadata({
 
   const title = formatMessage(dict.meta.expressionTitle, {
     expression: expression.expression,
-    serviceName: SERVICE_NAME,
   });
 
   const description = formatMessage(dict.meta.expressionDesc, {

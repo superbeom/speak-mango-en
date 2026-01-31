@@ -4,7 +4,7 @@ import { getI18n, getLocale } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
 import { getExpressions } from "@/lib/expressions";
-import HomeHeader from "@/components/HomeHeader";
+import MainHeader from "@/components/MainHeader";
 import FilterBar from "@/components/FilterBar";
 import ExpressionList from "@/components/ExpressionList";
 
@@ -50,7 +50,7 @@ export default async function Home({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-layout">
       {/* Header */}
-      <HomeHeader />
+      <MainHeader transparentOnScroll showSubHeader />
 
       {/* Main Content */}
       <main className="mx-auto max-w-layout px-4 py-8 sm:px-6 lg:px-8">

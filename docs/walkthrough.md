@@ -2,6 +2,38 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.20: My Page & Personalized Study Experience (2026-01-31)
+
+### 1. Goal (목표)
+
+- 사용자가 저장한 표현들을 체계적으로 관리하고, 개인화된 학습 모드로 진입할 수 있는 중앙 허브인 '마이페이지'를 구축합니다.
+- 사용자 프로필 관리부터 단어장 운영까지 이어지는 완성도 높은 사용자 경험을 제공합니다.
+
+### 2. Implementation (구현)
+
+#### A. Centralized Dashboard (`app/me/page.tsx`)
+
+- **Profile Section**: `UserProfile` 컴포넌트를 통해 사용자의 이름, 이메일, 프로필 사진을 고급스럽게 표시합니다. 프레스토 모드(Pro Member) 배지를 통해 멤버십 상태를 시각화합니다.
+- **Study Modes Grid**: `StudyModeGrid` 컴포넌트를 사용하여 Flashcards, Listening, Quiz, Reinforce 등 주요 학습 기능을 카드 형태로 제공합니다. Lucide 아이콘과 부드러운 호버 애니메이션을 적용했습니다.
+
+#### B. Advanced Vocabulary Management (`VocabularyListManager.tsx`)
+
+- **Grid Layout**: 단어장을 카드 형태(`VocabularyListCard`)로 배치하여 한눈에 들어오도록 설계했습니다.
+- **Interaction**: 단어장 생성, 개수 확인, 그리고 개별 단어장 상세 페이지로의 매끄러운 수평 이동을 지원합니다.
+- **Empty States**: 저장된 내용이 없을 때 사용자 가이드 문구를 노출하여 자연스러운 기능 사용을 유도합니다.
+
+#### C. Technical Refinement & SEO
+
+- **Image Optimization**: Google 프로필 이미지 로딩을 위해 `next.config.ts`의 `images.remotePatterns`를 업데이트했습니다.
+- **Metadata Cleaning**: `generateMetadata`에서 수동으로 `SERVICE_NAME`을 붙이던 로직을 제거하고, `layout.tsx`의 템플릿 기능을 활용하여 깔끔한 페이지 타이틀을 구현했습니다.
+- **Internationalization**: `me` 네임스페이스를 신설하여 7개 이상의 언어로 마이페이지 전용 문구를 번역 완료했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Engagement**: 사용자가 저장한 표현을 다시 찾고 공부할 수 있는 명확한 여정(Journey) 확보.
+- ✅ **Aesthetics**: 글래스모피즘(Glassmorphism)과 그라데이션을 활용한 현대적이고 고급스러운 대시보드 UI.
+- ✅ **Product Integrity**: 단순한 표현 피드를 넘어 '개인화된 암기 도구'로서의 서비스 가치 증명.
+
 ## v0.14.19: Vocabulary Plan Status & Limit UX Refinement (2026-01-30)
 
 ### 1. Goal (목표)
@@ -505,7 +537,7 @@
 #### B. Component Abstraction (`components/NavDivider.tsx`)
 
 - 시각적 구분선(`|`)을 단순 문자열에서 리액트 컴포넌트로 승격시켰습니다.
-- 이를 통해 `HomeHeader.tsx` 등의 컨테이너 컴포넌트는 레이아웃 구조에만 집중하고, 세부 스타일은 컴포넌트에 위임할 수 있게 되었습니다.
+- 이를 통해 `MainHeader.tsx` 등의 컨테이너 컴포넌트는 레이아웃 구조에만 집중하고, 세부 스타일은 컴포넌트에 위임할 수 있게 되었습니다.
 
 #### C. Layout-Consistent Skeletons (`components/ui/Skeletons.tsx`)
 
@@ -645,9 +677,9 @@
   - 스크롤 발생 시(`isScrolled`) 주입받은 클래스를 기존 스타일 뒤에 병합(`cn`)하도록 수정.
   - 이로써 `Header`는 "스크롤 시 클래스를 추가한다"는 기능만 담당하고, 실제 스타일은 사용하는 곳에서 결정함.
 
-#### B. Seamless Home Layout (`components/HomeHeader.tsx`)
+#### B. Seamless Home Layout (`components/MainHeader.tsx`)
 
-- **Action**: `HomeHeader`에서 `scrolledClassName="bg-layout-transparent border-none-layout"`을 전달.
+- **Action**: `MainHeader`에서 `scrolledClassName="bg-layout-transparent border-none-layout"`을 전달.
 - **Result**: 스크롤 시 배경이 회색조(`bg-layout`)로 변하고 테두리가 사라지면서 하단의 `FilterBar`와 완벽하게 연결됨.
 
 ### 3. Result (결과)
@@ -745,7 +777,7 @@
 
 ### 2. Implementation (구현)
 
-#### A. Zero-Runtime Responsiveness (`components/HomeHeader.tsx`)
+#### A. Zero-Runtime Responsiveness (`components/MainHeader.tsx`)
 
 - **Problem**: `useIsMobile` 훅은 클라이언트 사이드 마운트 후 실행되므로, 찰나의 순간에 데스크탑 UI가 보였다가 사라지는 플리커링 발생.
 - **Solution**:
@@ -773,11 +805,11 @@
 
 ### 2. Implementation (구현)
 
-#### A. Responsive Logic Extraction (`components/HomeHeader.tsx`)
+#### A. Responsive Logic Extraction (`components/MainHeader.tsx`)
 
 - **Problem**: `window.matchMedia`를 사용하는 `useIsMobile` 훅은 클라이언트 사이드에서만 동작하므로, 서버 컴포넌트인 `app/page.tsx`에서 직접 사용할 수 없음.
 - **Solution**:
-  - 헤더 UI를 전담하는 `HomeHeader` 클라이언트 컴포넌트("use client")를 신규 생성.
+  - 헤더 UI를 전담하는 `MainHeader` 클라이언트 컴포넌트("use client")를 신규 생성.
   - 모바일 감지 시 서브헤더 텍스트와 구분선(`|`)을 조건부 렌더링으로 숨김 처리.
 
 #### B. Global Entry Point (`app/page.tsx`)

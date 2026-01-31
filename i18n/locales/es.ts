@@ -54,7 +54,7 @@ export const es = {
   auth: {
     signIn: "Iniciar sesión",
     myAccount: "Mi cuenta",
-    myPage: "Mi página (En preparación)",
+    myPage: "Mi página",
     signOut: "Cerrar sesión",
     loginModalTitle: "Iniciar sesión en {serviceName}",
     loginModalDesc:
@@ -106,7 +106,7 @@ export const es = {
   },
   quiz: {
     title: "Quiz 🎲",
-    metaTitle: `Desafío de Quiz Aleatorio | ${SERVICE_NAME}`,
+    metaTitle: "Desafío de Quiz Aleatorio",
     metaDescription:
       "¡Pon a prueba tus habilidades con expresiones en inglés aleatorias!",
     completeTitle: "¡Prueba Completada! 🎉",
@@ -126,16 +126,36 @@ export const es = {
       "Error al cargar los datos del cuestionario. Por favor, inténtalo de nuevo.",
   },
   vocabulary: {
-    modalTitle: "Guardar en...",
-    createNew: "Crear nueva lista",
-    placeholder: "Nombre de la lista (ej. Viajes)",
+    modalTitle: "Seleccionar cuaderno",
+    createNew: "Crear nuevo cuaderno",
+    placeholder: "Nombre del cuaderno (ej. Viajes)",
     add: "Añadir",
     cancel: "Cancelar",
-    emptyState: "No hay listas aún. ¡Crea una!",
-    freePlanLimit: "Plan gratuito: {count} / {total} listas usadas",
-    planStatus: "{count} / {total} listas usadas",
+    emptyState: "Aún no hay cuadernos. ¡Crea uno!",
+    freePlanLimit: "Plan gratuito: {count} / {total} cuadernos usados",
+    planStatus: "{count} / {total} cuadernos usados",
     planHint:
-      "¿Quieres crear más listas? Estamos trabajando en actualizaciones para que puedas añadir aún más pronto.",
+      "¿Quieres crear más cuadernos? Estamos trabajando en actualizaciones para que puedas añadir aún más pronto.",
     itemsCount: "{count} elementos",
+  },
+  me: {
+    studyModes: "Modos de estudio",
+    flashcards: "Tarjetas",
+    flashcardsDesc: "Gira las tarjetas para memorizar",
+    listening: "Escucha",
+    listeningDesc: "Domina la pronunciación nativa",
+    quiz: "Quiz",
+    quizDesc: "Pon a prueba tus conocimientos",
+    reinforce: "Puntos débiles",
+    reinforceDesc: "Céntrate en lo más difícil",
+    myLists: "Mi Vocabulario",
+    emptyState: "Aún no has creado cuadernos. ¡Empieza guardando expresiones!",
+    noSavedWords: "No hay palabras guardadas",
+    saveExpressionsToSee: "Guarda expresiones para verlas aquí.",
+    proMember: "Miembro Pro",
+    userAlt: "Usuario",
+    metaTitle: "Mi Perfil",
+    metaDescription:
+      "Revisa tus expresiones guardadas y practica con tus cuadernos y modos de estudio.",
   },
 };

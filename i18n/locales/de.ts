@@ -54,7 +54,7 @@ export const de = {
   auth: {
     signIn: "Anmelden",
     myAccount: "Mein Konto",
-    myPage: "Meine Seite (In Vorbereitung)",
+    myPage: "Meine Seite",
     signOut: "Abmelden",
     loginModalTitle: "Bei {serviceName} anmelden",
     loginModalDesc:
@@ -106,7 +106,7 @@ export const de = {
   },
   quiz: {
     title: "Quiz 🎲",
-    metaTitle: `Zufalls-Quiz-Challenge | ${SERVICE_NAME}`,
+    metaTitle: "Zufalls-Quiz-Challenge",
     metaDescription:
       "Teste deine Fähigkeiten mit zufälligen englischen Ausdrücken!",
     completeTitle: "Quiz Beendet! 🎉",
@@ -126,16 +126,36 @@ export const de = {
       "Laden der Quizdaten fehlgeschlagen. Bitte versuchen Sie es erneut.",
   },
   vocabulary: {
-    modalTitle: "Speichern unter...",
-    createNew: "Neue Liste erstellen",
-    placeholder: "Listenname (z. B. Reise)",
+    modalTitle: "Vokabelheft wählen",
+    createNew: "Neues Vokabelheft erstellen",
+    placeholder: "Name des Hefts (z. B. Reise)",
     add: "Hinzufügen",
     cancel: "Abbrechen",
-    emptyState: "Noch keine Listen. Erstelle eine!",
-    freePlanLimit: "Kostenloser Plan: {count} / {total} Listen verwendet",
-    planStatus: "{count} / {total} Listen verwendet",
+    emptyState: "Noch keine Vokabelhefte. Erstelle eins!",
+    freePlanLimit: "Kostenloser Plan: {count} / {total} Vokabelhefte verwendet",
+    planStatus: "{count} / {total} Vokabelhefte verwendet",
     planHint:
-      "Möchten Sie mehr Listen erstellen? Wir arbeiten an Updates, damit Sie bald noch mehr hinzufügen können.",
+      "Möchten Sie mehr Vokabelhefte erstellen? Wir arbeiten an Updates, damit Sie bald noch mehr hinzufügen können.",
     itemsCount: "{count} Elemente",
+  },
+  me: {
+    studyModes: "Lernmodi",
+    flashcards: "Karteikarten",
+    flashcardsDesc: "Karten umdrehen zum Einprägen",
+    listening: "Hören",
+    listeningDesc: "Muttersprachliche Aussprache meistern",
+    quiz: "Quiz",
+    quizDesc: "Wissen testen",
+    reinforce: "Schwachstellen",
+    reinforceDesc: "Fokus auf schwierige Ausdrücke",
+    myLists: "Mein Wortschatz",
+    emptyState: "Noch keine Vokabelhefte erstellt. Speichere zuerst Ausdrücke!",
+    noSavedWords: "Keine Wörter gespeichert",
+    saveExpressionsToSee: "Speichere Ausdrücke, um sie hier zu sehen.",
+    proMember: "Pro-Mitglied",
+    userAlt: "Benutzer",
+    metaTitle: "Mein Profil",
+    metaDescription:
+      "Überprüfe deine gespeicherten Ausdrücke und übe mit deinen Vokabelheften und Lernmodi.",
   },
 };

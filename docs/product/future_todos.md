@@ -62,8 +62,40 @@
   - **Scenario**: 사용자가 표현 여러 개를 선택하여 다른 리스트로 이동/복사하거나, 하나의 표현에 대해 여러 리스트를 동시에 체크/해제하고 '저장'하는 경우.
   - **RPC Candidate**: `update_expression_lists` (다수 리스트 상태 동기화) 또는 `move_vocabulary_items` (이동 트랜잭션).
   - **Goal**: N번의 API 호출을 1번의 RPC 호출로 줄여 네트워크 비용 절감 및 부분 실패(Partial Failure) 방지.
-- [ ] **Premium Conversion UX**: 무료 리스트 5개 도달 시 '새 리스트 생성' 클릭 시 유료 전환 안내 모달(Upgrade Prompt)을 띄워 수익화 유도. (현재는 단순히 버튼 비활성화 상태)
-  - **Code Note**: 유료 플랜 도입 시 `VocabularyListModal.tsx`에 다음 코드를 복구하여 사용:
+- [ ] **Premium Conversion UX**: 유료 플랜 도입 시 수익성 극대화를 위한 UI 요소들 활성화.
+  - **ProfileHeader (Membership Badge)**:
+    ```tsx
+    <div
+      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border transition-colors ${
+        isPro
+          ? "bg-linear-to-r from-purple-500/10 to-indigo-500/10 text-purple-700 border-purple-200/50 dark:from-purple-900/30 dark:to-indigo-900/30 dark:text-purple-300 dark:border-purple-500/30"
+          : "bg-zinc-100/80 text-zinc-600 border-zinc-200/80 dark:bg-zinc-800/80 dark:text-zinc-400 dark:border-zinc-700/80"
+      }`}
+    >
+      {isPro && <Crown size={12} className="fill-current" />}
+      {isPro ? "Pro Member" : "Free Member"}
+    </div>;
+    {
+      !isPro && (
+        <Link
+          href={ROUTES.PRICING}
+          className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline decoration-2 underline-offset-2 transition-colors"
+        >
+          Upgrade &rarr;
+        </Link>
+      );
+    }
+    ```
+  - **VocabularyListManager (Empty State Upgrade)**:
+    ```tsx
+    <Link
+      href={ROUTES.PRICING}
+      className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline decoration-2 underline-offset-2 transition-colors"
+    >
+      Upgrade to Pro for more lists
+    </Link>
+    ```
+  - **VocabularyListModal (Plan Limit Prompt)**: 무료 리스트 5개 도달 시 '새 리스트 생성' 클릭 시 유료 전환 안내 모달(Upgrade Prompt)을 띄워 수익화 유도. (현재는 단순히 버튼 비활성화 상태)
     ```tsx
     {
       !isPro && (

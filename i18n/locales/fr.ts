@@ -54,7 +54,7 @@ export const fr = {
   auth: {
     signIn: "Se connecter",
     myAccount: "Mon compte",
-    myPage: "Ma page (En préparation)",
+    myPage: "Ma page",
     signOut: "Se déconnecter",
     loginModalTitle: "Se connecter à {serviceName}",
     loginModalDesc:
@@ -106,7 +106,7 @@ export const fr = {
   },
   quiz: {
     title: "Quiz 🎲",
-    metaTitle: `Défi Quiz Aléatoire | ${SERVICE_NAME}`,
+    metaTitle: "Défi Quiz Aléatoire",
     metaDescription:
       "Testez vos compétences avec des expressions anglaises aléatoires !",
     completeTitle: "Quiz Terminé ! 🎉",
@@ -126,16 +126,37 @@ export const fr = {
       "Échec du chargement des données du quiz. Veuillez réessayer.",
   },
   vocabulary: {
-    modalTitle: "Enregistrer dans...",
-    createNew: "Créer une nouvelle liste",
-    placeholder: "Nom de la liste (ex. Voyage)",
+    modalTitle: "Choisir un carnet",
+    createNew: "Créer un nouveau carnet",
+    placeholder: "Nom du carnet (ex. Voyage)",
     add: "Ajouter",
     cancel: "Annuler",
-    emptyState: "Pas encore de listes. Créez-en une !",
-    freePlanLimit: "Plan gratuit : {count} / {total} listes utilisées",
-    planStatus: "{count} / {total} listes utilisées",
+    emptyState: "Pas encore de carnets. Créez-en un !",
+    freePlanLimit: "Plan gratuit : {count} / {total} carnets utilisés",
+    planStatus: "{count} / {total} carnets utilisés",
     planHint:
-      "Vous voulez créer plus de listes ? Nous travaillons sur des mises à jour pour vous permettre d'en ajouter encore plus bientôt.",
+      "Vous voulez créer plus de carnets ? Nous travaillons sur des mises à jour pour vous permettre d'en ajouter encore plus bientôt.",
     itemsCount: "{count} éléments",
+  },
+  me: {
+    studyModes: "Modes d'étude",
+    flashcards: "Cartes",
+    flashcardsDesc: "Retournez les cartes pour mémoriser",
+    listening: "Écoute",
+    listeningDesc: "Maîtrisez la prononciation native",
+    quiz: "Quiz",
+    quizDesc: "Testez vos connaissances",
+    reinforce: "Points faibles",
+    reinforceDesc: "Concentrez-vous sur les points difficiles",
+    myLists: "Mon Vocabulaire",
+    emptyState:
+      "Aucun carnet créé. Commencez par enregistrer des expressions !",
+    noSavedWords: "Aucun mot enregistré",
+    saveExpressionsToSee: "Enregistrez des expressions pour les voir ici.",
+    proMember: "Membre Pro",
+    userAlt: "Utilisateur",
+    metaTitle: "Mon Profil",
+    metaDescription:
+      "Consultez vos expressions enregistrées et entraînez-vous avec vos carnets et modes d'étude.",
   },
 };

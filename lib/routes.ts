@@ -8,6 +8,8 @@ export const ROUTES = {
   EXPRESSION_DETAIL: (id: string) => `/expressions/${id}`,
   STUDIO: "/studio",
   QUIZ: "/quiz",
+  MY_PAGE: "/me",
+  VOCABULARY_LIST: (id: string) => `/me/${id}`,
 } as const;
 
 /**

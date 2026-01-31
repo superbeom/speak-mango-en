@@ -59,13 +59,13 @@ const VocabularyListItem = memo(function VocabularyListItem({
       onContextMenu={(e) => e.preventDefault()}
       className="flex w-full items-center justify-between rounded-lg p-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900 sm:cursor-pointer touch-manipulation transition-colors active:bg-zinc-100 dark:active:bg-zinc-800"
     >
-      <div className="flex flex-col">
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+      <div className="flex flex-col min-w-0 flex-1 mr-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
             {list.title}
           </span>
           {isDefault && (
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />
           )}
         </div>
         <span className="text-xs text-zinc-500">
