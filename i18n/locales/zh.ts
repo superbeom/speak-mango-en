@@ -33,6 +33,9 @@ export const zh = {
     title: "出错了！",
     description: "发生了意外错误。",
     retry: "重试",
+    notFoundTitle: "找不到页面",
+    notFoundDescription: "您访问的页面不存在或已移除。",
+    goHome: "返回首页",
     codes: {
       UNAUTHORIZED: "请登录以继续。",
       ACTION_TOGGLE_FAILED: "更新状态失败。",

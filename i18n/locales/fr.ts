@@ -38,6 +38,10 @@ export const fr = {
     title: "Quelque chose s'est mal passé !",
     description: "Une erreur inattendue s'est produite.",
     retry: "Réessayer",
+    notFoundTitle: "Page non trouvée",
+    notFoundDescription:
+      "La page que vous recherchez n'existe pas ou a été déplacée.",
+    goHome: "Retour à l'accueil",
     codes: {
       UNAUTHORIZED: "Veuillez vous connecter pour continuer.",
       ACTION_TOGGLE_FAILED: "Échec de la mise à jour du statut.",

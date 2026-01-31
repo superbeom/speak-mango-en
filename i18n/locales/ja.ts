@@ -34,6 +34,10 @@ export const ja = {
     title: "エラーが発生しました",
     description: "予期しないエラーが発生しました。",
     retry: "もう一度試す",
+    notFoundTitle: "ページが見つかりません",
+    notFoundDescription:
+      "お探しのページは存在しないか、移動した可能性があります。",
+    goHome: "ホームに戻る",
     codes: {
       UNAUTHORIZED: "ログインが必要です。",
       ACTION_TOGGLE_FAILED: "状態の更新に失敗しました。",

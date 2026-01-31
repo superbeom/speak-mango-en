@@ -43,9 +43,9 @@ export default function Error({
       </p>
       <button
         onClick={() => reset()}
-        className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 rounded-xl font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all active:scale-95 sm:cursor-pointer"
+        className="group inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 rounded-xl font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all active:scale-95 sm:cursor-pointer"
       >
-        <RefreshCcw className="w-4 h-4" />
+        <RefreshCcw className="w-4 h-4 transition-transform duration-500 group-hover:rotate-180" />
         {dict.error.retry}
       </button>
     </div>

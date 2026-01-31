@@ -34,6 +34,9 @@ export const ko = {
     title: "문제가 발생했습니다!",
     description: "예상치 못한 오류가 발생했습니다.",
     retry: "다시 시도",
+    notFoundTitle: "페이지를 찾을 수 없습니다",
+    notFoundDescription: "존재하지 않는 페이지거나 페이지가 이동되었습니다.",
+    goHome: "홈으로 돌아가기",
     codes: {
       UNAUTHORIZED: "로그인이 필요합니다.",
       ACTION_TOGGLE_FAILED: "상태 변경에 실패했습니다.",

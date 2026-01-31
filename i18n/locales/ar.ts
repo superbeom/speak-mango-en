@@ -33,6 +33,9 @@ export const ar = {
     title: "حدث خطأ ما!",
     description: "حدث خطأ غير متوقع.",
     retry: "إعادة المحاولة",
+    notFoundTitle: "الصفحة غير موجودة",
+    notFoundDescription: "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    goHome: "العودة للرئيسية",
     codes: {
       UNAUTHORIZED: "يرجى تسجيل الدخول للمتابعة.",
       ACTION_TOGGLE_FAILED: "فشل تحديث الحالة.",

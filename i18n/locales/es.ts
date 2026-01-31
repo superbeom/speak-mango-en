@@ -38,6 +38,9 @@ export const es = {
     title: "¡Algo salió mal!",
     description: "Ocurrió un error inesperado.",
     retry: "Reintentar",
+    notFoundTitle: "Página no encontrada",
+    notFoundDescription: "La página que buscas no existe o ha sido movida.",
+    goHome: "Volver al inicio",
     codes: {
       UNAUTHORIZED: "Por favor, inicia sesión para continuar.",
       ACTION_TOGGLE_FAILED: "Error al actualizar el estado.",

@@ -38,6 +38,10 @@ export const de = {
     title: "Etwas ist schief gelaufen!",
     description: "Ein unerwarteter Fehler ist aufgetreten.",
     retry: "Erneut versuchen",
+    notFoundTitle: "Seite nicht gefunden",
+    notFoundDescription:
+      "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    goHome: "Zur Startseite",
     codes: {
       UNAUTHORIZED: "Bitte melden Sie sich an, um fortzufahren.",
       ACTION_TOGGLE_FAILED: "Statusaktualisierung fehlgeschlagen.",

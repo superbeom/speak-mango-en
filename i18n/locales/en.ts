@@ -34,6 +34,10 @@ export const en = {
     title: "Something went wrong!",
     description: "An unexpected error occurred.",
     retry: "Try again",
+    notFoundTitle: "Page Not Found",
+    notFoundDescription:
+      "The page you are looking for doesn't exist or has been moved.",
+    goHome: "Go back home",
     codes: {
       UNAUTHORIZED: "Please sign in to continue.",
       ACTION_TOGGLE_FAILED: "Failed to update save status.",

@@ -2,6 +2,33 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.22: Premium 404 & Interactive Error UI (2026-01-31)
+
+### 1. Goal (목표)
+
+- 서비스 브랜드에 걸맞은 고급스러운 404 페이지를 구현하여 사용자 이탈을 최소화합니다.
+- 에러 복구 과정에 위트 있는 애니메이션을 추가하여 심리적인 긴장감을 완화합니다.
+
+### 2. Implementation (구현)
+
+#### A. Premium 404 View (`app/not-found.tsx`)
+
+- **UX Logic**: `Search` 아이콘에 핑(Ping) 애니메이션과 느낌표 배지를 조합하여 시각적으로 주의를 끌면서도 세련된 느낌을 제공합니다.
+- **Navigation Hub**: 사용자가 막다른 길(Dead-end)에 도달했을 때 당황하지 않도록 ‘홈으로 가기’와 ‘이전으로 가기’ 옵션을 명확히 제시합니다.
+
+#### B. Refined Error Page (`app/error.tsx`)
+
+- **Iterative Feedback**: 버튼에 `group` 클래스를 부여하고 내부 아이콘에 `group-hover:rotate-180`과 `duration-500`을 적용하여, 사용자가 '다시 시도' 버튼을 누르기 전 긍정적인 기대감을 가질 수 있도록 유도했습니다.
+
+#### C. Context-Aware Internationalization
+
+- `useI18n`을 활용하여 404 페이지에서도 사용자가 설정한 언어로 안내 메시지가 노출되도록 구현했습니다.
+
+### 3. Result (결과)
+
+- ✅ **Brand Identity**: 오류 페이지에서도 유지되는 일관된 디자인 톤앤매너.
+- ✅ **Interaction Quality**: 작은 애니메이션 하나로 느껴지는 서비스의 디테일과 완성도 차별화.
+
 ## v0.14.21: Study Mode 'Coming Soon' UI & Type-Safe Refinement (2026-01-31)
 
 ### 1. Goal (목표)
