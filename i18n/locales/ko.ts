@@ -28,6 +28,7 @@ export const ko = {
     notFound: "데이터를 찾을 수 없습니다.",
     scrollToTop: "맨 위로 이동",
     close: "닫기",
+    comingSoon: "준비 중",
   },
   error: {
     title: "문제가 발생했습니다!",

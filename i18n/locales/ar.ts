@@ -27,6 +27,7 @@ export const ar = {
     notFound: "لم يتم العثور على بيانات.",
     scrollToTop: "العودة إلى الأعلى",
     close: "إغلاق",
+    comingSoon: "قريباً",
   },
   error: {
     title: "حدث خطأ ما!",

@@ -27,6 +27,7 @@ export const zh = {
     notFound: "未找到数据。",
     scrollToTop: "回到顶部",
     close: "关闭",
+    comingSoon: "敬请期待",
   },
   error: {
     title: "出错了！",

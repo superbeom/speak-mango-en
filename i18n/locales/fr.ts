@@ -32,6 +32,7 @@ export const fr = {
     notFound: "Données non trouvées.",
     scrollToTop: "Retour en haut",
     close: "Fermer",
+    comingSoon: "Bientôt",
   },
   error: {
     title: "Quelque chose s'est mal passé !",

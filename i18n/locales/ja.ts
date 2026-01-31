@@ -28,6 +28,7 @@ export const ja = {
     notFound: "データが見つかりません。",
     scrollToTop: "トップへ戻る",
     close: "閉じる",
+    comingSoon: "準備中",
   },
   error: {
     title: "エラーが発生しました",

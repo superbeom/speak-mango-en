@@ -28,6 +28,7 @@ export const en = {
     notFound: "Data not found.",
     scrollToTop: "Scroll to top",
     close: "Close",
+    comingSoon: "Coming soon",
   },
   error: {
     title: "Something went wrong!",

@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 // Any type used here to avoid version-specific type name conflicts for AnimationControls
 interface SimpleAnimationControls {
@@ -18,6 +19,7 @@ export default function InteractiveLink({
   enableHover,
   controls,
   onClick,
+  className,
 }: {
   href: string;
   children: React.ReactNode;
@@ -25,6 +27,7 @@ export default function InteractiveLink({
   enableHover: boolean;
   controls: SimpleAnimationControls;
   onClick: () => void;
+  className?: string;
 }) {
   const handlePointerDown = (e: React.PointerEvent) => {
     if (isStatic) return;
@@ -63,7 +66,7 @@ export default function InteractiveLink({
   return (
     <Link
       href={href}
-      className="relative block h-full rounded-card"
+      className={cn("relative block h-full rounded-card", className)}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerLeave}

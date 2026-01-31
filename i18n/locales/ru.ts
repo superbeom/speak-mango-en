@@ -31,6 +31,7 @@ export const ru = {
     notFound: "Данные не найдены.",
     scrollToTop: "Наверх",
     close: "Закрыть",
+    comingSoon: "Скоро",
   },
   error: {
     title: "Что-то пошло не так!",

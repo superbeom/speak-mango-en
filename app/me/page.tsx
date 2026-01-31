@@ -42,8 +42,11 @@ export default async function MyPage() {
         </section>
 
         <section>
-          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4 px-1 flex items-center gap-2">
+          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4 px-1 flex items-center gap-2 opacity-60 grayscale-[0.5]">
             {dict.me.studyModes}
+            <span className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-tighter border border-zinc-200 dark:border-zinc-700">
+              {dict.common.comingSoon}
+            </span>
           </h3>
           <StudyModesGrid />
         </section>

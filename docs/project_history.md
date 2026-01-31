@@ -2,6 +2,31 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-31: Study Mode Refinement & Technical Debt Resolution
+
+### ✅ 진행 사항
+
+1.  **Study Mode UX Refinement**:
+    - **Coming Soon Strategy**: 아직 구현되지 않은 암기(Flashcards), 리스닝(Listening) 등의 학습 모드에 '준비 중' 상징을 부여했습니다. 그레이스케일 필터와 투명도 조절, 그리고 배지(Coming Soon)를 통해 사용자에게 명확한 상태를 전달합니다.
+    - **Visual Consistency**: 개별 카드뿐만 아니라 '학습 모드' 타이틀 섹션 전체에도 통일된 비활성 스타일을 적용하여 디자인 완성도를 높였습니다.
+
+2.  **Type-Safe Architecture Refactoring**:
+    - **Centralized Types**: `types/study.ts`를 신설하여 `StudyMode` 인터페이스와 `StudyModeId` 유니온 타입을 정의했습니다. 이를 통해 기존의 `@ts-ignore` 편법을 제거하고 100% 타입 안전성을 확보했습니다.
+    - **Component Flexibility**: `InteractiveLink`가 커스텀 `className`과 선택적 `onClick` 핸들러를 지원하도록 개선하여 다른 영역에서도 활용 가능한 범용성을 갖추었습니다.
+
+3.  **Global i18n Expansion**:
+    - 9개 국어(AR, DE, EN, ES, FR, JA, KO, RU, ZH) 전체에 대해 '준비 중(comingSoon)' 번역 구문을 추가하여 글로벌 사용자 대응을 완료했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 구현되지 않은 기능을 미리 마이페이지에 노출하나요?**
+
+- **A.** 사용자에게 서비스가 앞으로 확장될 방향성(Roadmap)을 시각적으로 보여줌으로써 기대감을 형성하기 위함입니다. 버튼이 단순히 작동하지 않는 것보다 '준비 중'임을 명확히 알리는 것이 UX 측면에서도 정직하고 친절합니다.
+
+**Q. @ts-ignore를 제거한 이유는 무엇인가요?**
+
+- **A.** `@ts-ignore`는 개발 과정에서 일시적인 방편이 될 수 있지만, 장기적으로는 런타임 에러의 원인이 됩니다. 명시적인 인터페이스 정의를 통해 IDE의 자동 완성 기능을 활용하고, 데이터 구조 변경 시 컴파일 단계에서 오류를 잡아낼 수 있도록 설계했습니다.
+
 ## 2026-01-31: My Page Implementation & Personalized Study Experience
 
 ### ✅ 진행 사항

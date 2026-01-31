@@ -2,6 +2,36 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.21: Study Mode 'Coming Soon' UI & Type-Safe Refinement (2026-01-31)
+
+### 1. Goal (목표)
+
+- 향후 출시될 학습 모드들에 대한 시각적 피드백('준비 중')을 제공하여 사용자 기대감을 관리하고 UI 일관성을 확보합니다.
+- 하드코딩된 상수 구조를 명시적인 타입 시스템으로 전환하여 코드 유지보수성을 극대화합니다.
+
+### 2. Implementation (구현)
+
+#### A. 'Coming Soon' UX State (`StudyModesGrid.tsx`)
+
+- **Visual Feedback**: 비활성 모드에 `grayscale-[0.5]` 필터와 `opacity-60`을 적용하여 시각적으로 구현되지 않았음을 명확히 표시했습니다.
+- **Badge UI**: 각 카드와 섹션 헤더에 `dict.common.comingSoon` 텍스트가 담긴 배지를 추가하여 정보 전달력을 강화했습니다.
+- **Safety**: `InteractiveLink` 내부에서 `preventDefault`와 `pointer-events-none`을 조합하여 의도치 않은 탐색을 차단했습니다.
+
+#### B. Type Architecture Refactoring (`types/study.ts`, `constants/study.ts`)
+
+- **Explicit Interface**: `StudyMode` 인터페이스를 정의하고 `STUDY_MODES` 상수에 적용하여 `@ts-ignore` 주석 없이도 `disabled` 속성을 안전하게 참조할 수 있게 수정했습니다.
+- **Generic Link Component**: `InteractiveLink`가 `className` 속성을 전달받아 병합할 수 있도록 확장하여 스타일링 자유도를 높였습니다.
+
+#### C. Full Localization Support
+
+- 서비스가 지원하는 모든 9개 언어의 로캘 파일에 `comingSoon` 번역 구문을 추가하여 글로벌 사용자 모두에게 일관된 메시지를 제공합니다.
+
+### 3. Result (결과)
+
+- ✅ **UX Consistency**: 구현된 기능(단어장 관리)과 구현 예정 기능(학습 모드) 사이의 시각적 위계 확립.
+- ✅ **Code Quality**: 타입 정의 강화를 통한 잠재적 버그 제거 및 개발 효율성 증대.
+- ✅ **Global Reliability**: 전 언어권에 대한 완벽한 번역 대응.
+
 ## v0.14.20: My Page & Personalized Study Experience (2026-01-31)
 
 ### 1. Goal (목표)

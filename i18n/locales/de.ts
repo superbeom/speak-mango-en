@@ -32,6 +32,7 @@ export const de = {
     notFound: "Daten nicht gefunden.",
     scrollToTop: "Nach oben",
     close: "Schließen",
+    comingSoon: "Demnächst",
   },
   error: {
     title: "Etwas ist schief gelaufen!",

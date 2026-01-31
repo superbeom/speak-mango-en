@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
+import { StudyMode } from "@/types/study";
 import { useEnableHover } from "@/hooks/useIsMobile";
 import { STUDY_MODES } from "@/constants/study";
 import { cn } from "@/lib/utils";
@@ -14,44 +15,60 @@ const StudyModeCard = memo(function StudyModeCard({
   name,
   description,
 }: {
-  mode: (typeof STUDY_MODES)[number];
+  mode: StudyMode;
   enableHover: boolean;
   name: string;
   description: string;
 }) {
   const controls = useAnimation();
+  const { dict } = useI18n();
+  const isDisabled = mode.disabled;
 
   return (
     <motion.div
       animate={controls}
-      whileHover={enableHover ? { y: -4 } : undefined}
+      whileHover={enableHover && !isDisabled ? { y: -4 } : undefined}
       transition={{ duration: 0.2 }}
       className="h-full"
     >
       <InteractiveLink
-        href={mode.href}
+        href={isDisabled ? "#" : mode.href}
         isStatic={false}
-        enableHover={enableHover}
+        enableHover={enableHover && !isDisabled}
         controls={controls as any}
         onClick={() => {}}
+        className={cn(isDisabled && "cursor-default pointer-events-none")}
       >
         <div
           className={cn(
-            "group flex flex-col h-full p-5 rounded-2xl border bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 shadow-sm",
-            mode.borderColor,
-            "dark:border-zinc-800",
-            enableHover &&
-              cn(
-                "hover:bg-white/80 dark:hover:bg-zinc-800/50 hover:shadow-md dark:hover:border-zinc-700",
-                mode.shadowColor,
-              ),
+            "group relative flex flex-col h-full p-5 rounded-2xl border bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 shadow-sm",
+            isDisabled
+              ? "border-zinc-200 dark:border-zinc-800 opacity-60 grayscale-[0.5]"
+              : cn(
+                  mode.borderColor,
+                  "dark:border-zinc-800",
+                  enableHover &&
+                    cn(
+                      "hover:bg-white/80 dark:hover:bg-zinc-800/50 hover:shadow-md dark:hover:border-zinc-700",
+                      mode.shadowColor,
+                    ),
+                ),
           )}
         >
+          {isDisabled && (
+            <div className="absolute top-3 right-3">
+              <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+                {dict.common.comingSoon}
+              </span>
+            </div>
+          )}
           <div
             className={cn(
               "p-3.5 w-fit rounded-xl mb-3 transition-transform duration-300",
-              enableHover && "group-hover:scale-110",
-              mode.color,
+              enableHover && !isDisabled && "group-hover:scale-110",
+              isDisabled
+                ? "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+                : mode.color,
             )}
           >
             <mode.icon size={24} strokeWidth={2.5} />
