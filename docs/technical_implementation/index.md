@@ -193,6 +193,16 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
   - `store/useLocalActionStore.ts`: 실제 상태를 관리하는 Zustand 스토어.
   - `services/repositories/LocalUserActionRepository.ts`: 스토어에 접근하는 비동기 어댑터 (Repository Pattern 유지).
 
+### 5.4 Vocabulary List Optimization & Request Deduplication
+
+- **Problem**: 단어장 상세 페이지 진입 시, 단어장 메타데이터와 그에 속한 표현 리스트를 각각 별도로 조회하여 N+1 형태의 네트워크 오버헤드가 발생함.
+- **Solution (Nested Data RPC)**:
+  - `get_vocabulary_list_details` 데이터베이스 RPC 함수를 구현하여, 리스트 정보와 표현 목록을 단일 JSON 구조로 반환하도록 설계했습니다.
+  - 이를 통해 클라이언트 사이드에서의 복잡한 데이터 조인 로직을 제거하고, 의미 있는 첫 페인팅(FMP) 시간을 단축했습니다.
+- **Optimization (Request Deduplication)**:
+  - `services/actions/vocabulary.ts`에서 서버 액션 함수들에 React `cache`를 적용했습니다.
+  - 이를 통해 페이지의 여러 컴포넌트(Header, Manager 등)에서 동일한 단어장 정보를 필요로 하더라도, 실제 DB 쿼리는 단 1회만 실행되도록 보장합니다.
+
 ## 6. Search & Navigation Logic
 
 ### 6.1 URL Query Parameter State

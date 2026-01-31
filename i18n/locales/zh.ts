@@ -47,6 +47,7 @@ export const zh = {
       VOCABULARY_UPDATE_FAILED: "更新列表失败。",
       VOCABULARY_REMOVE_FAILED: "从列表中删除失败。",
       VOCABULARY_LIMIT_REACHED: "免费用户最多可创建 5 个列表。",
+      VOCABULARY_NOT_FOUND: "找不到单词本。",
     },
   },
   auth: {
@@ -144,7 +145,7 @@ export const zh = {
     reinforceDesc: "集中学习难点表达",
     myLists: "我的生词本",
     emptyState: "尚无生词本。快来收藏表达吧！",
-    noSavedWords: "暂无收藏表达",
+    noSavedExpressions: "暂无收藏表达",
     saveExpressionsToSee: "收藏表达后将显示在这里。",
     proMember: "高级会员",
     userAlt: "用户",

@@ -2,12 +2,29 @@
  * Vocabulary List related types
  */
 
+import { Expression } from "@/types/expression";
+
 export interface VocabularyList {
   id: string;
   user_id: string;
   title: string;
+  is_default: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface VocabularyListWithCount extends Pick<
+  VocabularyList,
+  "id" | "title" | "is_default"
+> {
+  item_count: number;
+}
+
+export interface VocabularyListDetails extends Pick<
+  VocabularyList,
+  "id" | "title" | "is_default" | "created_at"
+> {
+  items: Expression[];
 }
 
 export interface VocabularyItem {

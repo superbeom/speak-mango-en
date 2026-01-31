@@ -54,6 +54,7 @@ export const fr = {
       VOCABULARY_REMOVE_FAILED: "Échec de la suppression de la liste.",
       VOCABULARY_LIMIT_REACHED:
         "Les utilisateurs gratuits peuvent créer jusqu'à 5 listes.",
+      VOCABULARY_NOT_FOUND: "Liste de vocabulaire non trouvée.",
     },
   },
   auth: {
@@ -156,7 +157,7 @@ export const fr = {
     myLists: "Mon Vocabulaire",
     emptyState:
       "Aucun carnet créé. Commencez par enregistrer des expressions !",
-    noSavedWords: "Aucun mot enregistré",
+    noSavedExpressions: "Aucune expression enregistrée",
     saveExpressionsToSee: "Enregistrez des expressions pour les voir ici.",
     proMember: "Membre Pro",
     userAlt: "Utilisateur",

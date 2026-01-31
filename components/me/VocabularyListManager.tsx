@@ -4,15 +4,16 @@ import { useEffect, useState, useMemo, memo } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { Folder, Plus, MoreVertical, Star } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
+import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useEnableHover } from "@/hooks/useIsMobile";
-import { VocabularyList as VocabularyListType } from "@/services/actions/vocabulary";
 import { ROUTES } from "@/lib/routes";
 import { cn, formatMessage } from "@/lib/utils";
 import InteractiveLink from "@/components/ui/InteractiveLink";
+import VocabularyEmptyState from "@/components/me/VocabularyEmptyState";
 
 interface VocabularyListManagerProps {
-  lists: VocabularyListType[];
+  lists: VocabularyListWithCount[];
   isPro: boolean;
 }
 
@@ -21,7 +22,7 @@ const VocabularyListCard = memo(function VocabularyListCard({
   isPro,
   enableHover,
 }: {
-  list: VocabularyListType;
+  list: VocabularyListWithCount;
   isPro: boolean;
   enableHover: boolean;
 }) {
@@ -39,7 +40,7 @@ const VocabularyListCard = memo(function VocabularyListCard({
         href={ROUTES.VOCABULARY_LIST(list.id)}
         isStatic={false}
         enableHover={enableHover}
-        controls={controls as any}
+        controls={controls}
         onClick={() => {}}
       >
         <div
@@ -100,14 +101,13 @@ const VocabularyListManager = memo(function VocabularyListManager({
     setIsMounted(true);
   }, []);
 
-  // Map local store lists to the expected VocabularyListType format
-  const localLists: VocabularyListType[] = useMemo(() => {
+  // Map local store lists to the expected VocabularyListWithCount format
+  const localLists: VocabularyListWithCount[] = useMemo(() => {
     return Object.values(vocabularyLists).map((list) => ({
       id: list.id,
       title: list.title,
       item_count: list.itemIds.size,
       is_default: list.isDefault || false,
-      created_at: list.created_at,
     }));
   }, [vocabularyLists]);
 
@@ -116,25 +116,6 @@ const VocabularyListManager = memo(function VocabularyListManager({
   // If not mounted yet (for hydration safety), render null or skeleton
   if (!isPro && !isMounted) {
     return null;
-  }
-
-  // If no lists (empty state)
-  if (displayLists.length === 0) {
-    if (!isPro) {
-      return (
-        <div className="flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-sm">
-          <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-full mb-3 shadow-inner">
-            <Star className="w-6 h-6 text-zinc-400" />
-          </div>
-          <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
-            {dict.me.noSavedWords}
-          </h3>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs leading-relaxed">
-            {dict.me.saveExpressionsToSee}
-          </p>
-        </div>
-      );
-    }
   }
 
   return (
@@ -151,9 +132,7 @@ const VocabularyListManager = memo(function VocabularyListManager({
       </div>
 
       {displayLists.length === 0 ? (
-        <div className="text-center py-12 text-zinc-500 text-sm border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50/30 dark:bg-zinc-900/30">
-          {dict.me.emptyState}
-        </div>
+        <VocabularyEmptyState description={dict.me.emptyState} />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {displayLists.map((list) => (

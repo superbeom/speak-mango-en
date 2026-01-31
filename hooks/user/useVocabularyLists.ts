@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { createAppError, VOCABULARY_ERROR } from "@/types/error";
+import { VocabularyListWithCount } from "@/types/vocabulary";
 import {
   getVocabularyLists,
   createVocabularyList,
@@ -11,12 +12,11 @@ import {
   removeFromVocabularyList,
   getSavedListIds,
   setDefaultVocabularyList,
-  VocabularyList,
 } from "@/services/actions/vocabulary";
 
 export function useVocabularyLists() {
   const { isPro } = useAuthUser();
-  const [lists, setLists] = useState<VocabularyList[]>([]);
+  const [lists, setLists] = useState<VocabularyListWithCount[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Local Store Selectors
@@ -47,15 +47,15 @@ export function useVocabularyLists() {
         const sortedLists = Object.values(vocabularyListsMap).sort((a, b) => {
           if (a.isDefault && !b.isDefault) return -1;
           if (!a.isDefault && b.isDefault) return 1;
-          return a.created_at.localeCompare(b.created_at);
+          return a.createdAt.localeCompare(b.createdAt);
         });
 
         // Map LocalVocabularyList to compatible type
-        const mapped = sortedLists.map((l) => ({
+        const mapped: VocabularyListWithCount[] = sortedLists.map((l) => ({
           id: l.id,
           title: l.title,
           item_count: l.itemIds.size,
-          is_default: l.isDefault,
+          is_default: l.isDefault || false,
         }));
         setLists(mapped);
       }

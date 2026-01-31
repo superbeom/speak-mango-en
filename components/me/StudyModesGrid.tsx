@@ -35,7 +35,7 @@ const StudyModeCard = memo(function StudyModeCard({
         href={isDisabled ? "#" : mode.href}
         isStatic={false}
         enableHover={enableHover && !isDisabled}
-        controls={controls as any}
+        controls={controls}
         onClick={() => {}}
         className={cn(isDisabled && "cursor-default pointer-events-none")}
       >

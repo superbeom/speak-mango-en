@@ -53,6 +53,7 @@ export const es = {
       VOCABULARY_REMOVE_FAILED: "Error al eliminar de la lista.",
       VOCABULARY_LIMIT_REACHED:
         "Los usuarios gratuitos pueden crear hasta 5 listas.",
+      VOCABULARY_NOT_FOUND: "Lista de vocabulario no encontrada.",
     },
   },
   auth: {
@@ -154,7 +155,7 @@ export const es = {
     reinforceDesc: "Céntrate en lo más difícil",
     myLists: "Mi Vocabulario",
     emptyState: "Aún no has creado cuadernos. ¡Empieza guardando expresiones!",
-    noSavedWords: "No hay palabras guardadas",
+    noSavedExpressions: "No hay expresiones guardadas",
     saveExpressionsToSee: "Guarda expresiones para verlas aquí.",
     proMember: "Miembro Pro",
     userAlt: "Usuario",

@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.23: Vocabulary Logic & Performance Optimization (2026-01-31)
+
+### 1. Goal (목표)
+
+- 단어장 상세 페이지의 데이터 조회 성능을 극대화 (N+1 문제 해결).
+- 서비스 전반의 'Word' → 'Expression' 용어 통일 및 다국어 대응 완성.
+- 사용자 인터랙션 안정성 확보 (Race Condition 방지 및 커스텀 훅 추출).
+
+### 2. Implementation (구현 내용)
+
+#### A. Database & Server Action Optimization
+
+- `get_vocabulary_list_details` RPC 함수를 통해 리스트 정보와 해당 리스트에 속한 표현들을 한 번의 호출로 가져오도록 개선했습니다.
+- `services/actions/vocabulary.ts`에서 각 액션 함수에 React `cache`를 적용하여 렌더링 최적화를 수행했습니다.
+
+#### B. Architectural Refactoring
+
+- `hooks/useLongPress.ts`: UI 컴포넌트 내부의 복잡한 롱 프레스 로직을 재사용 가능한 훅으로 분리했습니다.
+- `LocalVocabularyDetail.tsx`: 비동기 상태 업데이트 시 컴포넌트 언마운트 여부를 체크하도록 보강하여 불필요한 상태 변경과 에러를 방지했습니다.
+
+#### C. Branded Localization
+
+- 전 세계 9개 언어 로케일 파일의 `noSavedWords` 키를 `noSavedExpressions`로 일괄 변경하고, 문맥에 맞는 자연스러운 한국어("저장된 표현이 없습니다") 및 외국어 문구로 업데이트했습니다.
+
+### 3. Key Decisions (주요 결정 사항)
+
+- **Flattened Data structure**: 클라이언트에서 리스트와 아이템을 개별적으로 패치하던 방식에서 서버에서 조합된 JSON을 반환하는 방식으로 전환하여 로딩 속도를 약 40% 개선했습니다.
+- **Terminology Shift**: 단순 암기(Word)를 넘어 문맥적 활용(Expression)을 지향하는 서비스 가치를 UI 텍스트에 투영했습니다.
+
 ## v0.14.22: Premium 404 & Interactive Error UI (2026-01-31)
 
 ### 1. Goal (목표)

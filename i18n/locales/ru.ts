@@ -53,6 +53,7 @@ export const ru = {
       VOCABULARY_REMOVE_FAILED: "Не удалось удалить из списка.",
       VOCABULARY_LIMIT_REACHED:
         "Бесплатные пользователи могут создать до 5 списков.",
+      VOCABULARY_NOT_FOUND: "Список слов не найден.",
     },
   },
   auth: {
@@ -153,7 +154,7 @@ export const ru = {
     reinforceDesc: "Сосредоточьтесь на сложных выражениях",
     myLists: "Мой Словарный Запас",
     emptyState: "Словари еще не созданы. Начните с сохранения выражений!",
-    noSavedWords: "Нет сохраненных слов",
+    noSavedExpressions: "Нет сохраненных выражений",
     saveExpressionsToSee: "Сохраняйте выражения, чтобы увидеть их здесь.",
     proMember: "Премиум-аккаунт",
     userAlt: "Пользователь",

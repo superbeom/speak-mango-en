@@ -203,7 +203,7 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Parameters**:
   - `limit_cnt` (int): 반환할 행의 최대 개수.
 - **Returns**: `setof speak_mango_en.expressions`
-- **SQL Definition**: `database/functions/get_random_expressions.sql` 참조.
+- **SQL Definition**: [`database/functions/get_random_expressions.sql`](../../database/functions/get_random_expressions.sql) 참조.
 
 #### 2. `toggle_user_action`
 
@@ -213,7 +213,7 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
   - `p_expression_id` (uuid): 대상 표현 ID.
   - `p_action_type` (text): 액션 타입 ('save', 'learn').
 - **Returns**: `void`
-- **SQL Definition**: `database/functions/toggle_user_action.sql` 참조.
+- **SQL Definition**: [`database/functions/toggle_user_action.sql`](../../database/functions/toggle_user_action.sql) 참조.
 
 #### 3. `get_vocabulary_lists_with_counts`
 
@@ -221,7 +221,7 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Usage**: 단어장 목록 페이지 및 저장 모달에서 사용.
 - **Parameters**: None (Uses `auth.uid()`)
 - **Returns**: `Table (id uuid, title text, item_count bigint, is_default boolean)`
-- **SQL Definition**: `database/functions/get_vocabulary_lists_with_counts.sql` 참조.
+- **SQL Definition**: [`database/functions/get_vocabulary_lists_with_counts.sql`](../../database/functions/get_vocabulary_lists_with_counts.sql) 참조.
 
 #### 4. `set_default_vocabulary_list`
 
@@ -230,7 +230,16 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Parameters**:
   - `p_list_id` (uuid): 대상 단어장 ID.
 - **Returns**: `void`
-- **SQL Definition**: `database/functions/set_default_vocabulary_list.sql` 참조.
+- **SQL Definition**: [`database/functions/set_default_vocabulary_list.sql`](../../database/functions/set_default_vocabulary_list.sql) 참조.
+
+#### 5. `get_vocabulary_list_details`
+
+- **Description**: 특정 단어장의 상세 정보와 포함된 모든 표현(Expression) 데이터를 하나의 JSON 객체로 조회합니다. 소유권 체크(`auth.uid()`)가 내장되어 있습니다.
+- **Usage**: 단어장 상세 페이지에서 사용.
+- **Parameters**:
+  - `p_list_id` (uuid): 조회할 단어장 ID.
+- **Returns**: `json` (단어장 정보 및 items 배열 포함)
+- **SQL Definition**: [`database/functions/get_vocabulary_list_details.sql`](../../database/functions/get_vocabulary_list_details.sql) 참조.
 
 ### Database Triggers
 

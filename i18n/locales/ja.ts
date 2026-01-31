@@ -49,6 +49,7 @@ export const ja = {
       VOCABULARY_UPDATE_FAILED: "リストの更新に失敗しました。",
       VOCABULARY_REMOVE_FAILED: "リストからの削除に失敗しました。",
       VOCABULARY_LIMIT_REACHED: "無料ユーザーは最大5個まで作成できます。",
+      VOCABULARY_NOT_FOUND: "単語帳が見つかりませんでした。",
     },
   },
   auth: {
@@ -148,7 +149,7 @@ export const ja = {
     reinforceDesc: "苦手な表現に集中",
     myLists: "マイ単語帳",
     emptyState: "単語帳がありません。表現を保存してみましょう！",
-    noSavedWords: "保存した単語がありません",
+    noSavedExpressions: "保存された表現がありません",
     saveExpressionsToSee: "表現を保存するとここに表示されます。",
     proMember: "プロメンバー",
     userAlt: "ユーザー",

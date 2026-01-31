@@ -54,6 +54,7 @@ export const de = {
       VOCABULARY_REMOVE_FAILED: "Entfernen aus der Liste fehlgeschlagen.",
       VOCABULARY_LIMIT_REACHED:
         "Kostenlose Benutzer können bis zu 5 Listen erstellen.",
+      VOCABULARY_NOT_FOUND: "Vokabelliste nicht gefunden.",
     },
   },
   auth: {
@@ -155,7 +156,7 @@ export const de = {
     reinforceDesc: "Fokus auf schwierige Ausdrücke",
     myLists: "Mein Wortschatz",
     emptyState: "Noch keine Vokabelhefte erstellt. Speichere zuerst Ausdrücke!",
-    noSavedWords: "Keine Wörter gespeichert",
+    noSavedExpressions: "Keine Ausdrücke gespeichert",
     saveExpressionsToSee: "Speichere Ausdrücke, um sie hier zu sehen.",
     proMember: "Pro-Mitglied",
     userAlt: "Benutzer",

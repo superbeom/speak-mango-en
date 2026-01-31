@@ -49,6 +49,7 @@ export const en = {
       VOCABULARY_UPDATE_FAILED: "Failed to update list.",
       VOCABULARY_REMOVE_FAILED: "Failed to remove from list.",
       VOCABULARY_LIMIT_REACHED: "Free users can create up to 5 lists.",
+      VOCABULARY_NOT_FOUND: "Vocabulary list not found.",
     },
   },
   auth: {
@@ -147,7 +148,7 @@ export const en = {
     reinforceDesc: "Focus on hard items",
     myLists: "My Lists",
     emptyState: "No lists created yet. Start by saving expressions!",
-    noSavedWords: "No saved words yet",
+    noSavedExpressions: "No saved expressions yet",
     saveExpressionsToSee: "Save expressions to see them here.",
     proMember: "Pro Member",
     userAlt: "User",

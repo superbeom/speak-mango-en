@@ -146,6 +146,7 @@
     - [x] **Hook**: 하이브리드 리포지토리 패턴 (`useVocabularyLists`) 적용
     - [x] **UI**: 단어장 관리 모달(`VocabularyListModal`) 및 생성 폼(`CreateListForm`) 구현
     - [x] **Logic**: 마스터 저장(`Save`) 버튼과 개별 단어장 상태 동기화 캡슐화 (`useSaveAction`)
+    - [x] **Stabilization**: `useLongPress` 추출 및 `LocalVocabularyDetail` Race Condition 해결
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
   - [x] **Logic**: 단어장 동기화(`useVocabularySync`) 및 익명/로그인 데이터 병합 정책 안정화

@@ -49,6 +49,7 @@ export const ko = {
       VOCABULARY_REMOVE_FAILED: "목록에서 제거하는데 실패했습니다.",
       VOCABULARY_LIMIT_REACHED:
         "무료 사용자는 최대 5개까지 생성할 수 있습니다.",
+      VOCABULARY_NOT_FOUND: "단어장을 찾을 수 없습니다.",
     },
   },
   auth: {
@@ -147,7 +148,7 @@ export const ko = {
     reinforceDesc: "어려운 표현 집중 학습",
     myLists: "내 단어장",
     emptyState: "생성된 단어장이 없습니다. 표현을 저장해 보세요!",
-    noSavedWords: "아직 저장한 단어가 없습니다",
+    noSavedExpressions: "저장된 표현이 없습니다",
     saveExpressionsToSee: "표현을 저장하면 여기에 나타납니다.",
     proMember: "프로 멤버",
     userAlt: "사용자",

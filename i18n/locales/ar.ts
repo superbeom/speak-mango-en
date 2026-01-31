@@ -48,6 +48,7 @@ export const ar = {
       VOCABULARY_REMOVE_FAILED: "فشل الإزالة من القائمة.",
       VOCABULARY_LIMIT_REACHED:
         "يمكن للمستخدمين المجانيين إنشاء ما يصل إلى 5 قوائم.",
+      VOCABULARY_NOT_FOUND: "لم يتم العثور على قائمة الكلمات.",
     },
   },
   auth: {
@@ -146,7 +147,7 @@ export const ar = {
     reinforceDesc: "ركز على التعبيرات الصعبة",
     myLists: "مفرداتي",
     emptyState: "لم يتم إنشاء قاموس بعد. ابدأ بحفظ التعبيرات!",
-    noSavedWords: "لا توجد كلمات محفوظة",
+    noSavedExpressions: "لا توجد تعبيرات محفوظة",
     saveExpressionsToSee: "احفظ التعبيرات لتراها هنا.",
     proMember: "عضو برو",
     userAlt: "مستخدم",

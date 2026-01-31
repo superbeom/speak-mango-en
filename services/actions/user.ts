@@ -5,6 +5,12 @@ import { ActionType } from "@/services/repositories/UserActionRepository";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getAuthSession } from "@/lib/auth/utils";
 
+/**
+ * 특정 액션 타입(예: 'learned')에 해당하는 사용자의 표현 ID 목록을 가져옵니다.
+ *
+ * @param type - 조회할 액션 타입입니다.
+ * @returns 해당 액션이 적용된 표현 ID 배열을 반환합니다.
+ */
 export async function getUserActions(type: ActionType): Promise<string[]> {
   const { userId, isPro } = await getAuthSession();
 
@@ -23,6 +29,12 @@ export async function getUserActions(type: ActionType): Promise<string[]> {
   return data?.map((row) => row.expression_id) || [];
 }
 
+/**
+ * 특정 표현에 대한 사용자의 액션(예: 학습 완료 상태)을 토글합니다.
+ *
+ * @param expressionId - 대상 표현의 ID입니다.
+ * @param type - 토글할 액션 타입입니다.
+ */
 export async function toggleUserAction(
   expressionId: string,
   type: ActionType,
@@ -46,6 +58,12 @@ export async function toggleUserAction(
   }
 }
 
+/**
+ * 로컬 스토리지의 액션 데이터를 서버와 동기화합니다.
+ * 무료 사용자로 작업한 내용을 프로 사용자로 전환 후, 서버에 반영할 때 사용됩니다.
+ *
+ * @param actions - 동기화할 액션 데이터 배열입니다.
+ */
 export async function syncUserActions(
   actions: { expressionId: string; type: ActionType }[],
 ): Promise<void> {

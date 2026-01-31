@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback } from "react";
+import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import {
   addToVocabularyList,
   getVocabularyLists,
-  VocabularyList,
 } from "@/services/actions/vocabulary";
 
 export function useVocabularySync(expressionId: string) {
@@ -18,7 +18,9 @@ export function useVocabularySync(expressionId: string) {
   const localAddToList = useLocalActionStore((state) => state.addToList);
   const getLocalLists = useLocalActionStore((state) => state.getLists);
 
-  const getActiveLists = useCallback(async (): Promise<VocabularyList[]> => {
+  const getActiveLists = useCallback(async (): Promise<
+    VocabularyListWithCount[]
+  > => {
     if (lists.length > 0) return lists;
 
     if (isPro) {
@@ -36,12 +38,13 @@ export function useVocabularySync(expressionId: string) {
         id: l.id,
         title: l.title,
         item_count: l.itemIds.size,
+        is_default: l.isDefault || false,
       }));
     }
   }, [isPro, lists, refreshLists, getLocalLists]);
 
   const syncOnSave = useCallback(
-    async (availableLists: VocabularyList[]) => {
+    async (availableLists: VocabularyListWithCount[]) => {
       if (availableLists.length === 0) return;
 
       const firstList = availableLists[0];

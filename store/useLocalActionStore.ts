@@ -8,7 +8,7 @@ export interface LocalVocabularyList {
   id: string;
   title: string;
   itemIds: Set<string>;
-  created_at: string;
+  createdAt: string;
   isDefault?: boolean;
 }
 
@@ -39,7 +39,7 @@ type PersistedState = {
       id: string;
       title: string;
       items: string[];
-      created_at: string;
+      createdAt: string;
       isDefault?: boolean;
     }
   >;
@@ -82,7 +82,7 @@ export const useLocalActionStore = create<LocalActionState>()(
           id,
           title,
           itemIds: new Set(),
-          created_at: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
           isDefault: isFirstList,
         };
         set((state) => ({
@@ -125,7 +125,7 @@ export const useLocalActionStore = create<LocalActionState>()(
         Object.values(get().vocabularyLists).sort((a, b) => {
           if (a.isDefault && !b.isDefault) return -1;
           if (!a.isDefault && b.isDefault) return 1;
-          return a.created_at.localeCompare(b.created_at);
+          return a.createdAt.localeCompare(b.createdAt);
         }),
       getListIdsForExpression: (expressionId) =>
         Object.values(get().vocabularyLists)
@@ -175,6 +175,7 @@ export const useLocalActionStore = create<LocalActionState>()(
               ...list,
               itemIds: new Set(list.items || []),
               isDefault: list.isDefault,
+              createdAt: list.createdAt,
             };
           });
         }

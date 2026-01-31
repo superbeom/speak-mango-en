@@ -2,6 +2,36 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-01-31: Vocabulary Logic Refactoring & Performance Polish
+
+### ✅ 진행 사항
+
+1.  **Server-Side Logic Optimization**:
+    - **Nested Data RPC**: `get_vocabulary_list_details` RPC를 신설하여, 단어장 상세 정보와 포함된 표현들을 단일 JSON 구조로 가져오도록 최적화했습니다 (N+1 문제 및 클라이언트 가공 로직 제거).
+    - **Request Deduplication**: `services/actions/` 하위의 데이터 조회 함수들에 React `cache`를 적용하여, 한 번의 렌더링 사이클 내 중복 요청을 방지했습니다.
+
+2.  **Interaction & Architecture Refinement**:
+    - **Custom Hook Extraction**: `VocabularyListItem`에 산재해 있던 롱 프레스 로직을 `useLongPress` 커스텀 훅으로 추상화하여 코드 재사용성을 높였습니다.
+    - **Stability Enhancement**: `LocalVocabularyDetail`에서 비동기 처리 중 발생할 수 있는 Race Condition과 메모리 누수 문제를 `isMounted` 패턴과 조기 반환(`early return`)으로 해결했습니다.
+
+3.  **Terminology Standardization**:
+    - **Word → Expression**: 브랜드 아이덴티티 강화를 위해 서비스 전반의 '단어(Word)' 표현을 '표현(Expression)'으로 통일했습니다.
+    - **Multilingual Consistency**: 9개 언어 로케일 파일 전체에 대해 `noSavedWords`를 `noSavedExpressions`로 변경하고 자연스러운 현지화 문구로 수정했습니다.
+
+4.  **UI/UX Polishing**:
+    - **Empty State Consolidation**: `VocabularyListManager`에서 산재해 있던 빈 상태(Empty State) 디자인을 `VocabularyEmptyState` 컴포넌트로 일원화했습니다.
+    - **Motion Feedback**: 상세 페이지 진입 시 컨텐츠가 부드럽게 나타나도록 `framer-motion` 애니메이션을 보강했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 "단어"를 "표현"으로 바꾸었나요?**
+
+- **A.** 'Speak Mango'는 단순 단어 암기가 아닌 실전 문장과 뉘앙스를 배우는 서비스입니다. "단어장"이라는 명칭은 유지하되, 그 안의 알맹이는 "표현"임을 강조함으로써 사용자에게 서비스의 가치를 더 정확히 전달하고자 했습니다.
+
+**Q. Server Action에 React `cache`를 왜 사용했나요?**
+
+- **A.** 마이페이지나 상세 페이지처럼 여러 컴포넌트가 동일한 리스트 정보를 필요로 할 때, 각각 호출하더라도 실제 DB 쿼리는 한 번만 실행되도록 하여 서버 부하를 줄이고 데이터 일관성을 보장하기 위함입니다.
+
 ## 2026-01-31: Premium 404 Page & Error UX Enhancement
 
 ### ✅ 진행 사항
