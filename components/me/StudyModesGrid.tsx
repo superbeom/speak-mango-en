@@ -41,23 +41,19 @@ const StudyModeCard = memo(function StudyModeCard({
       >
         <div
           className={cn(
-            "group relative flex flex-col h-full p-5 rounded-2xl border bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm transition-all duration-300 shadow-sm",
+            "group relative flex flex-col h-full p-5 rounded-2xl glass-panel",
             isDisabled
-              ? "border-zinc-200 dark:border-zinc-800 opacity-60 grayscale-[0.5]"
+              ? "opacity-60 grayscale-[0.5]"
               : cn(
                   mode.borderColor,
                   "dark:border-zinc-800",
-                  enableHover &&
-                    cn(
-                      "hover:bg-white/80 dark:hover:bg-zinc-800/50 hover:shadow-md dark:hover:border-zinc-700",
-                      mode.shadowColor,
-                    ),
+                  enableHover && cn("glass-panel-hover", mode.shadowColor),
                 ),
           )}
         >
           {isDisabled && (
             <div className="absolute top-3 right-3">
-              <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider border border-zinc-200 dark:border-zinc-700">
+              <span className="px-2 py-0.5 rounded-full text-[10px] tracking-wider coming-soon-badge">
                 {dict.common.comingSoon}
               </span>
             </div>

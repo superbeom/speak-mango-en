@@ -136,6 +136,13 @@ export const ja = {
     planHint:
       "単語帳をもっと作成したいですか？さらに追加できるようにアップデートを準備中です。",
     itemsCount: "{count} 個のアイテム",
+    select: "選択",
+    selectedCount: "{count}個選択中",
+    modeCard: "カード",
+    modeCompact: "コンパクト",
+    copy: "コピー",
+    move: "移動",
+    delete: "削除",
   },
   me: {
     studyModes: "学習モード",
@@ -148,6 +155,7 @@ export const ja = {
     reinforce: "弱点克服",
     reinforceDesc: "苦手な表現に集中",
     myLists: "マイ単語帳",
+    learned: "学習完了",
     emptyState: "単語帳がありません。表現を保存してみましょう！",
     noSavedExpressions: "保存された表現がありません",
     saveExpressionsToSee: "表現を保存するとここに表示されます。",

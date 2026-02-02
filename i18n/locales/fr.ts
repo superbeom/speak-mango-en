@@ -143,6 +143,13 @@ export const fr = {
     planHint:
       "Vous voulez créer plus de carnets ? Nous travaillons sur des mises à jour pour vous permettre d'en ajouter encore plus bientôt.",
     itemsCount: "{count} éléments",
+    select: "Sélectionner",
+    selectedCount: "{count} sélectionnés",
+    modeCard: "Carte",
+    modeCompact: "Compact",
+    copy: "Copier",
+    move: "Déplacer",
+    delete: "Supprimer",
   },
   me: {
     studyModes: "Modes d'étude",
@@ -155,6 +162,7 @@ export const fr = {
     reinforce: "Points faibles",
     reinforceDesc: "Concentrez-vous sur les points difficiles",
     myLists: "Mon Vocabulaire",
+    learned: "Appris",
     emptyState:
       "Aucun carnet créé. Commencez par enregistrer des expressions !",
     noSavedExpressions: "Aucune expression enregistrée",

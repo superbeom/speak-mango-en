@@ -134,6 +134,13 @@ export const ar = {
     planHint:
       "هل تريد إنشاء المزيد من القواميس؟ نحن نعمل على تحديثات لتتمكن من إضافة المزيد قريبًا.",
     itemsCount: "{count} عناصر",
+    select: "تحديد",
+    selectedCount: "تم تحديد {count}",
+    modeCard: "بطاقة",
+    modeCompact: "مدمج",
+    copy: "نسخ",
+    move: "نقل",
+    delete: "حذف",
   },
   me: {
     studyModes: "أوضاع الدراسة",
@@ -146,6 +153,7 @@ export const ar = {
     reinforce: "نقاط الضعف",
     reinforceDesc: "ركز على التعبيرات الصعبة",
     myLists: "مفرداتي",
+    learned: "تم تعلمه",
     emptyState: "لم يتم إنشاء قاموس بعد. ابدأ بحفظ التعبيرات!",
     noSavedExpressions: "لا توجد تعبيرات محفوظة",
     saveExpressionsToSee: "احفظ التعبيرات لتراها هنا.",

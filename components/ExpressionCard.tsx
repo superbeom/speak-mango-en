@@ -93,8 +93,7 @@ const ExpressionCard = memo(function ExpressionCard({
   const CardContent = (
     <div
       className={cn(
-        "group overflow-hidden rounded-card border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out",
-        isStatic ? "h-auto pb-24" : "h-full",
+        "group overflow-hidden rounded-card border border-main bg-surface p-7 shadow-sm transition-all duration-300 ease-out h-full",
         enableHover &&
           "hover:border-blue-200/50 hover:shadow-lg dark:hover:border-blue-500/20 dark:hover:shadow-[0_0_15px_-5px_rgba(59,130,246,0.2)]",
       )}
@@ -105,7 +104,12 @@ const ExpressionCard = memo(function ExpressionCard({
           <span
             className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${domain.styles}`}
           >
-            <domain.icon className="w-3.5 h-3.5 mr-2 transition-transform duration-300 group-hover:scale-110" />
+            <domain.icon
+              className={cn(
+                "w-3.5 h-3.5 mr-2 transition-transform duration-300",
+                enableHover && "group-hover:scale-110",
+              )}
+            />
             {domain.label}
           </span>
           {/* Category Label with Icon */}
@@ -153,26 +157,19 @@ const ExpressionCard = memo(function ExpressionCard({
       )}
 
       {/* Action Bar */}
-      {!isStatic && (
-        <ExpressionActions
-          className="mt-6 border-t border-subtle pt-4"
-          expressionId={item.id}
-          expressionText={item.expression}
-          meaning={meaning}
-          shareVariant="compact"
-          onShareClick={(e) => e.stopPropagation()}
-        />
-      )}
+      <ExpressionActions
+        className={cn(
+          "mt-6 border-t border-subtle pt-4 transition-opacity duration-300",
+          isStatic && "invisible pointer-events-none opacity-0",
+        )}
+        expressionId={item.id}
+        expressionText={item.expression}
+        meaning={meaning}
+        shareVariant="compact"
+        onShareClick={(e) => e.stopPropagation()}
+      />
     </div>
   );
-
-  if (isStatic) {
-    return (
-      <div className={cn("w-full relative block", className)}>
-        {CardContent}
-      </div>
-    );
-  }
 
   return (
     <motion.div

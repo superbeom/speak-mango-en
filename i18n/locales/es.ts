@@ -142,6 +142,13 @@ export const es = {
     planHint:
       "¿Quieres crear más cuadernos? Estamos trabajando en actualizaciones para que puedas añadir aún más pronto.",
     itemsCount: "{count} elementos",
+    select: "Seleccionar",
+    selectedCount: "{count} seleccionados",
+    modeCard: "Tarjeta",
+    modeCompact: "Compacto",
+    copy: "Copiar",
+    move: "Mover",
+    delete: "Eliminar",
   },
   me: {
     studyModes: "Modos de estudio",
@@ -154,6 +161,7 @@ export const es = {
     reinforce: "Puntos débiles",
     reinforceDesc: "Céntrate en lo más difícil",
     myLists: "Mi Vocabulario",
+    learned: "Aprendido",
     emptyState: "Aún no has creado cuadernos. ¡Empieza guardando expresiones!",
     noSavedExpressions: "No hay expresiones guardadas",
     saveExpressionsToSee: "Guarda expresiones para verlas aquí.",

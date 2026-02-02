@@ -2,6 +2,37 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-02-02: Vocabulary UI Architecture Refinement & Unified Infrastructure
+
+### ✅ 진행 사항
+
+1.  **Standalone `VocabularyToolbar` Component**:
+    - `VocabularyItemsGrid` 내부에 산재해 있던 툴바 로직을 독립된 `VocabularyToolbar.tsx`로 추출하여 응집도를 높였습니다.
+    - **Sticky Behavior Polish**: 헤더와 결합하여 고정될 때 백드롭 블러(`backdrop-blur`)와 적절한 패딩(`pt-2 pb-6`)을 적용하여 카드가 툴바 아래로 자연스럽게 지나가는 프리미엄 시각 효과를 구현했습니다.
+    - **Consistent Shadow**: 홈 화면의 검색바와 일치하는 `shadow-sm`을 적용하여 서비스 전반의 디자인 일관성을 확보했습니다.
+
+2.  **State Management Hook (`useVocabularyView`)**:
+    - 선택 모드(`isSelectionMode`), 뷰 모드(`viewMode`), 선택 항목(`selectedIds`) 관리 로직을 `hooks/user/useVocabularyView.ts`로 중앙화했습니다.
+    - 이로써 로컬 단어장과 서버 단어장 페이지가 동일한 뷰 상태 제어 로직을 공유하게 되었습니다.
+
+3.  **Unified Layout & Semantic Markup**:
+    - **`VocabularyDetailLayout`**: 모든 단어장 상세 페이지의 공통 껍데기(`MainHeader`, `<main>` 태그 등)를 레이아웃 컴포넌트로 분리하여 SRP(단일 책임 원칙)를 실현했습니다.
+    - **`RemoteVocabularyDetail`**: 서버(DB)에서 데이터를 가져오는 사용자를 위해 로컬 단어장과 완벽히 동일한 UX를 제공하는 클라이언트 컴포넌트를 신설했습니다.
+    - **`app/me/[listId]/page.tsx` 리팩토링**: 데이터 출처(로컬/서버)에 상관없이 일관된 레이아웃 구조를 사용하도록 마크업을 단순화했습니다.
+
+4.  **Prop Drilling Elimination**:
+    - `VocabularyItemsGrid`를 내부 상태가 없는 제어 컴포넌트(Controlled Component)로 변경하여 부모로부터 전달받은 상태에 따라 렌더링하도록 정규화했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 툴바를 그리드 밖으로 꺼냈나요?**
+
+- **A.** 툴바가 그리드 내부에 있으면 스티키 고정 시 레이아웃 계산이 복잡해지고, 그리드 전체의 여백 조절이 부자연스러워집니다. 툴바를 형제 요소로 올림으로써 독립적인 공간 확보(`mb-10`)와 안정적인 스티키 동작을 구현할 수 있었습니다.
+
+**Q. 왜 `RemoteVocabularyDetail`과 `LocalVocabularyDetail`을 나누었나요?**
+
+- **A.** 로컬 데이터는 유즈 스테이트 등으로 즉시 동기화되는 반면, 원격 데이터는 서버 액션과 DB 동기화가 필요합니다. 하지만 사용자에게는 두 경험이 동일해야 하므로, 복잡한 데이터 동기화 로직은 각각의 컴포넌트가 담당하되 시각적인 UI(`Toolbar`, `Grid`)는 공통 컴포넌트를 재사용하도록 설계했습니다.
+
 ## 2026-01-31: Vocabulary Logic Refactoring & Performance Polish
 
 ### ✅ 진행 사항

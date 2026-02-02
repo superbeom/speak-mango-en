@@ -143,6 +143,13 @@ export const de = {
     planHint:
       "Möchten Sie mehr Vokabelhefte erstellen? Wir arbeiten an Updates, damit Sie bald noch mehr hinzufügen können.",
     itemsCount: "{count} Elemente",
+    select: "Auswählen",
+    selectedCount: "{count} ausgewählt",
+    modeCard: "Karte",
+    modeCompact: "Kompakt",
+    copy: "Kopieren",
+    move: "Verschieben",
+    delete: "Löschen",
   },
   me: {
     studyModes: "Lernmodi",
@@ -155,6 +162,7 @@ export const de = {
     reinforce: "Schwachstellen",
     reinforceDesc: "Fokus auf schwierige Ausdrücke",
     myLists: "Mein Wortschatz",
+    learned: "Gelernt",
     emptyState: "Noch keine Vokabelhefte erstellt. Speichere zuerst Ausdrücke!",
     noSavedExpressions: "Keine Ausdrücke gespeichert",
     saveExpressionsToSee: "Speichere Ausdrücke, um sie hier zu sehen.",

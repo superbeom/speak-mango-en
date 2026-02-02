@@ -147,6 +147,10 @@
     - [x] **UI**: 단어장 관리 모달(`VocabularyListModal`) 및 생성 폼(`CreateListForm`) 구현
     - [x] **Logic**: 마스터 저장(`Save`) 버튼과 개별 단어장 상태 동기화 캡슐화 (`useSaveAction`)
     - [x] **Stabilization**: `useLongPress` 추출 및 `LocalVocabularyDetail` Race Condition 해결
+    - [x] **Architecture**: 단어장 상세 UI 리팩토링 및 통합 인프라 구축
+      - [x] 독립형 `VocabularyToolbar` 및 `useVocabularyView` 훅 추출
+      - [x] `VocabularyDetailLayout`을 통한 레이아웃 중복 제거 및 시맨틱 마크업 강화
+      - [x] 원격(Pro) 및 로컬(Free) 단어장 상세 페이지 UI/UX 통일
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
   - [x] **Logic**: 단어장 동기화(`useVocabularySync`) 및 익명/로그인 데이터 병합 정책 안정화

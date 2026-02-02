@@ -2,6 +2,36 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.24: Vocabulary UI Architecture Refinement (2026-02-02)
+
+### 1. Goal (목표)
+
+- `VocabularyItemsGrid`의 복잡한 내부 로직을 관심사 분리(SoC) 원칙에 따라 리팩토링합니다.
+- 로컬 및 서버 데이터 기반의 단어장 상세 페이지 UI/UX를 완벽히 통일합니다.
+- 디자인 일관성을 위해 툴바의 시각 요소(그림자, 스티키 동작)를 정교하게 조정합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Component Decoupling
+
+- **`VocabularyToolbar.tsx`**: 그리드 내부에 종속되어 있던 툴바를 독립 컴포넌트로 분리했습니다. 헤더와 매끄럽게 연결되는 스티키 애니메이션과 백드롭 블러 효과를 적용했습니다.
+- **`VocabularyItemsGrid.tsx`**: 상태 관리를 제거하고 순수하게 데이터 렌더링만 담당하는 제어 컴포넌트(Controlled Component)로 변환했습니다.
+
+#### B. Unified State Management
+
+- **`hooks/user/useVocabularyView.ts`**: 선택 모드, 뷰 모드(Card/Compact), 선택된 아이템 관리를 위한 비즈니스 로직을 커스텀 훅으로 중앙화했습니다.
+
+#### C. Layout Consolidation
+
+- **`VocabularyDetailLayout.tsx`**: `MainHeader`와 페이지 기본 구조를 담당하는 공통 레이아웃을 생성하여 코드 중복을 제거했습니다.
+- **`RemoteVocabularyDetail.tsx`**: Pro 사용자를 위한 클라이언트 컴포넌트를 신설하여 로컬 리스트와 동일한 툴바/그리드 기능을 제공합니다.
+- **`app/me/[listId]/page.tsx`**: 데이터 타입에 따라 적절한 상세 컴포넌트를 렌더링하되, 공통 레이아웃을 사용하여 구조적 대칭을 맞췄습니다.
+
+### 3. Key Decisions (주요 결정 사항)
+
+- **UI Symmetry**: 무료 사용자와 유료 사용자가 데이터 출처에 상관없이 동일한 프리미엄 UI 기능을 누릴 수 있도록 코드를 구조화했습니다.
+- **Premium Sticky Feel**: 툴바가 고정되었을 때 상단 여백(`pt-2`)과 하단 여백(`pb-6`)을 미세하게 조정하여 콘텐츠와의 시각적 간격을 최적화했습니다.
+
 ## v0.14.23: Vocabulary Logic & Performance Optimization (2026-01-31)
 
 ### 1. Goal (목표)

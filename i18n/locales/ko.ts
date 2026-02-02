@@ -135,6 +135,13 @@ export const ko = {
     planHint:
       "단어장을 더 만들고 싶으신가요? 더 많은 단어장을 추가할 수 있도록 곧 업데이트될 예정입니다.",
     itemsCount: "{count}개 항목",
+    select: "선택",
+    selectedCount: "{count}개 선택됨",
+    modeCard: "카드형",
+    modeCompact: "목록형",
+    copy: "복사",
+    move: "이동",
+    delete: "삭제",
   },
   me: {
     studyModes: "학습 모드",
@@ -147,6 +154,7 @@ export const ko = {
     reinforce: "약점 보완",
     reinforceDesc: "어려운 표현 집중 학습",
     myLists: "내 단어장",
+    learned: "학습 완료",
     emptyState: "생성된 단어장이 없습니다. 표현을 저장해 보세요!",
     noSavedExpressions: "저장된 표현이 없습니다",
     saveExpressionsToSee: "표현을 저장하면 여기에 나타납니다.",

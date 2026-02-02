@@ -5,7 +5,7 @@ import MainHeader from "@/components/MainHeader";
 import LoginRequiredView from "@/components/me/LoginRequiredView";
 import ProfileHeader from "@/components/me/ProfileHeader";
 import StudyModesGrid from "@/components/me/StudyModesGrid";
-import VocabularyListContainer from "@/components/me/VocabularyListContainer";
+import VocabularyListContainer from "@/components/me/vocabulary/VocabularyListContainer";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { dict } = await getI18n();
@@ -44,7 +44,7 @@ export default async function MyPage() {
         <section>
           <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4 px-1 flex items-center gap-2 opacity-60 grayscale-[0.5]">
             {dict.me.studyModes}
-            <span className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-tighter border border-zinc-200 dark:border-zinc-700">
+            <span className="px-1.5 py-0.5 rounded-md text-[9px] tracking-tighter coming-soon-badge">
               {dict.common.comingSoon}
             </span>
           </h3>

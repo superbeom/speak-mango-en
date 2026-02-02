@@ -135,6 +135,13 @@ export const en = {
     planHint:
       "Want to create more lists? We're working on updates to let you add even more soon.",
     itemsCount: "{count} items",
+    select: "Select",
+    selectedCount: "{count} selected",
+    modeCard: "Card",
+    modeCompact: "Compact",
+    copy: "Copy",
+    move: "Move",
+    delete: "Delete",
   },
   me: {
     studyModes: "Study Modes",
@@ -147,6 +154,7 @@ export const en = {
     reinforce: "Weak Points",
     reinforceDesc: "Focus on hard items",
     myLists: "My Lists",
+    learned: "Learned",
     emptyState: "No lists created yet. Start by saving expressions!",
     noSavedExpressions: "No saved expressions yet",
     saveExpressionsToSee: "Save expressions to see them here.",

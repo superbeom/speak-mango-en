@@ -132,6 +132,13 @@ export const zh = {
     planHint:
       "想创建更多生词本吗？我们正在努力进行更新，以便您很快可以添加更多生词本。",
     itemsCount: "{count} 个项目",
+    select: "选择",
+    selectedCount: "已选择 {count} 个",
+    modeCard: "卡片",
+    modeCompact: "紧凑",
+    copy: "复制",
+    move: "移动",
+    delete: "删除",
   },
   me: {
     studyModes: "学习模式",
@@ -144,6 +151,7 @@ export const zh = {
     reinforce: "重点强化",
     reinforceDesc: "集中学习难点表达",
     myLists: "我的生词本",
+    learned: "已掌握",
     emptyState: "尚无生词本。快来收藏表达吧！",
     noSavedExpressions: "暂无收藏表达",
     saveExpressionsToSee: "收藏表达后将显示在这里。",

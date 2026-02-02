@@ -28,3 +28,13 @@ export const ACTION_ICON_SIZE_CLASSES: Record<ActionIconSize, string> = {
   [ACTION_ICON_SIZE.MD]: "h-6 w-6",
   [ACTION_ICON_SIZE.LG]: "h-7 w-7",
 };
+
+/**
+ * 뷰 모드 타입 (리스트/그리드)
+ */
+export const VIEW_MODE = {
+  COMPACT: "compact",
+  FULL: "full",
+} as const;
+
+export type ViewMode = (typeof VIEW_MODE)[keyof typeof VIEW_MODE];

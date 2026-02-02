@@ -17,7 +17,7 @@ export default async function ProfileHeader({
   const { dict } = await getI18n();
 
   return (
-    <div className="flex items-center gap-5 p-6 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl shadow-sm">
+    <div className="flex items-center gap-5 p-6 rounded-2xl glass-panel">
       <div className="relative h-18 w-18 shrink-0 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border-2 border-white dark:border-zinc-700 shadow-sm ring-1 ring-zinc-200/50 dark:ring-zinc-700/50">
         {user.image ? (
           <Image
