@@ -154,6 +154,7 @@
       - [x] 독립형 `VocabularyToolbar` 및 `useVocabularyView` 훅 추출
       - [x] `VocabularyDetailLayout`을 통한 레이아웃 중복 제거 및 시맨틱 마크업 강화
       - [x] 원격(Pro) 및 로컬(Free) 단어장 상세 페이지 UI/UX 통일
+      - [x] **UI/UX**: `VocabularyToolbar` 모바일 최적화 (2단 레이아웃) 및 리팩토링 (Sub-components)
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
   - [x] **Logic**: 단어장 동기화(`useVocabularySync`) 및 익명/로그인 데이터 병합 정책 안정화

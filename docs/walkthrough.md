@@ -2,6 +2,32 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.27: Vocabulary UI Optimization & Refactoring (2026-02-02)
+
+### 1. Goal (목표)
+
+- 모바일과 데스크탑 각각에 최적화된 사용자 경험(UX)을 제공하고, 유지보수가 용이한 컴포넌트 구조로 리팩토링합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Framework & Performance
+
+- **Vercel Best Practices**: 렌더링 안정성을 위해 삼항 연산자(`? : null`) 중심의 조건부 렌더링을 적용하고, `tabular-nums`로 수치 표시 안정성을 확보했습니다.
+
+#### B. Component Refactoring (`VocabularyToolbar.tsx`)
+
+- **Internal Decoupling**: 중복되는 UI 요소인 `SelectionCount`(선택 수 표시)와 `ToggleAllButton`(전체 선택 토글)을 내부 서브 컴포넌트로 분리하여 관리를 일원화했습니다.
+- **Order Polish**: 사용자의 요청에 따라 '취소' 버튼을 가장 앞으로 배치하고 그 뒤를 '뷰 모드 전환' 버튼이 따르도록 순서를 조정하여 시선 흐름을 자연스럽게 유도했습니다.
+
+#### C. Responsive Strategy
+
+- **2-Row Mobile UI**: 모바일 환경에서 툴바를 상/하 2단으로 구성하여, 설정 영역(취소/뷰)과 실행 영역(전체 선택/카운트)을 명확히 분리하고 터치 타겟을 확보했습니다.
+- **Touch Hover Patch**: 모바일 브라우저의 고질적인 'Sticky Hover' 문제 해결을 위해 `sm:hover` 접두사를 사용하여 데스크탑에서만 호버 효과가 트리거되도록 수정했습니다.
+
+### 3. Key Decisions (주요 결정 사항)
+
+- **Accessibility vs Density**: 모바일에서 모든 기능을 한 줄에 넣는 대신 2단 레이아웃을 선택함으로써 정보 밀도를 낮추고 조작 정확도를 높이는 결정을 내렸습니다.
+
 ## v0.14.26: Vocabulary Bulk Actions (2026-02-02)
 
 ### 1. Goal (목표)

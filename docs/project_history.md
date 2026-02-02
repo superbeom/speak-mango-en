@@ -2,6 +2,32 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-02-02: Vocabulary UI Optimization & Refactoring
+
+### ✅ 진행 사항
+
+1.  **Mobile-First UI Optimization**:
+    - **2-Row Mobile Layout**: 좁은 모바일 화면을 고려하여 툴바를 2단 구조로 변경했습니다. 1단에는 '취소/선택' 및 '뷰 모드'를, 2단에는 '전체 선택'과 '선택 수'를 배치하여 조작 편의성을 높였습니다.
+    - **Touch Logic Refinement**: 모바일에서 터치 시 호버 배경색이 남는 현상을 방지하기 위해 `sm:hover` 접두사를 적용하여 데스크탑에서만 호버 효과가 나타나도록 수정했습니다.
+
+2.  **Vocabulary Toolbar Refactoring**:
+    - **Component Decoupling**: 툴바 내부의 중복 로직을 `SelectionCount`와 `ToggleAllButton`이라는 내부 서브 컴포넌트로 분리하여 가독성과 유지보수성을 극대화했습니다.
+    - **Layout Order Polish**: 사용자의 요청에 따라 '취소' 버튼을 가장 앞으로 배치하고, 그 뒤를 '뷰 모드 전환' 버튼이 따르도록 순서를 조정했습니다.
+
+3.  **Vercel & Web Design Best Practices**:
+    - **Ternary Conditionals**: 렌더링 성능과 안전성을 위해 `&&` 대신 삼항 연산자(`? : null`)를 사용하여 조건부 렌더링을 수행하도록 표준화했습니다.
+    - **Stable Visuals**: 선택 수 표시 부분에 `tabular-nums`를 적용하여 숫자가 바뀔 때의 미세한 흔들림을 제거했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 모바일에서만 2단 레이아웃을 사용하나요?**
+
+- **A.** 1단에 모든 버튼을 넣을 경우 버튼 크기가 너무 작아져 터치 오류가 발생하거나 텍스트가 잘리는 문제가 있었습니다. 논리적으로 '설정(취소/뷰)'과 '동작(전체선택/수)'을 구분하여 2단으로 배치함으로써 훨씬 쾌적한 모바일 경험을 제공할 수 있게 되었습니다.
+
+**Q. 왜 `&&` 연산자 대신 삼항 연산자를 사용했나요?**
+
+- **A.** Vercel React Best Practices 가이드라인에 따른 조치입니다. `&&` 연산자는 `0`과 같은 숫자를 의도치 않게 렌더링할 위험이 있지만, 삼항 연산자는 명시적으로 `null`을 반환하므로 더 안전하고 명확합니다.
+
 ## 2026-02-02: Vocabulary Bulk Selection
 
 ### ✅ 진행 사항

@@ -308,6 +308,30 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
   - `StudyModeGrid`: 사용자의 '저장된 표현(Saved)' 데이터를 기반으로 직접적인 학습 가치를 전달하는 4대 모드(Flashcards, Listening, Quiz, Reinforce) 진입점을 제공합니다.
   - `VocabularyListManager`: 하이브리드 리포지토리 패턴(`useVocabularyLists`)을 통해 동적으로 단어장 목록을 렌더링하고, 생성/삭제 등의 상태 변화를 즉시 반영합니다.
 
+### 7.3 Vocabulary Toolbar Optimization (툴바 최적화)
+
+사용자가 단어장 내 항목을 효율적으로 관리할 수 있도록, 기기별 특성에 맞춘 동적 레이아웃과 고성능 컴포넌트 구조를 설계했습니다.
+
+#### A. 2-Row Mobile Strategy (모바일 2단 레이아웃)
+
+- **Problem**: 모바일의 좁은 가로 폭에 모든 컨트롤(취소, 뷰 모드, 전체 선택, 카운트)을 배치할 경우 터치 타겟이 너무 작아지거나 가독성이 저하되는 문제 발생.
+- **Solution**: 논리적 역할에 따라 인터페이스를 2단으로 분리했습니다.
+  - **1단 (Settings)**: '취소/선택' 토글 및 '뷰 모드(Card/Compact)' 전환 버튼 배치.
+  - **2단 (Selection Info & Action)**: '전체 선택' 버튼과 '선택된 항목 수' 표시.
+- **Benefit**: 각 버튼의 충분한 터치 영역을 확보하면서도 조작의 흐름(설정 후 실행)을 시각적으로 명확히 전달합니다.
+
+#### B. Component Decoupling (컴포넌트 분리 및 재사용)
+
+- **Internal Pattern**: 툴바 내부에서 중복 사용되는 로직을 내부 서브 컴포넌트로 추출하여 응집도를 높였습니다.
+  - **`SelectionCount`**: `tabular-nums` 속성을 통해 숫자가 변할 때 레이아웃이 미세하게 떨리는 현상을 방지하고, 다국어(`formatMessage`) 처리를 캡슐화한 수치 표시 전용 컴포넌트.
+  - **`ToggleAllButton`**: 전체 선택/해제 상태에 따른 아이콘 및 텍스트 전환 로직을 담당하는 공통 버튼 컴포넌트.
+- **Impact**: 데스크탑(1단)과 모바일(2단) 뷰에서 동일한 비즈니스 로직을 공유하면서도 레이아웃만 다르게 적용할 수 있는 유연한 구조를 확보했습니다.
+
+#### C. Touch-First Styling (`sm:hover`)
+
+- **Interaction Bug**: 모바일 기기에서 버튼 터치 시 `:hover` 스타일이 해제되지 않고 남아있는 'Sticky Hover' 현상을 해결했습니다.
+- **Implementation**: 모든 UI 피드백에 `sm:hover:` 접두사를 적용하여, 호버 배경색 등의 시각 효과가 마우스가 연결된 데스크탑(sm 이상)에서만 작동하도록 제한했습니다. 모바일에서는 `whileTap` 애니메이션만으로 간결한 인터랙션 피드백을 제공합니다.
+
 ## 8. Audio Playback System (오디오 재생 시스템)
 
 ### 8.1 Web Audio API & Volume Amplification (볼륨 증폭)
