@@ -2,6 +2,29 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-02-02: Unified Navigation & Vocabulary UI Refinement
+
+### ✅ 진행 사항
+
+1.  **Unified Navigation (Consolidated Header)**:
+    - `expressions/[id]/page.tsx`에서 개별 `Header` + `BackButton` 조합을 제거하고, `MainHeader`로 통합했습니다.
+    - `showBackButton` prop을 통해 로고 영역을 '뒤로가기' 버튼으로 전환하여 네비게이션 동선을 일원화했습니다.
+    - **Skeleton Synchronization**: `SkeletonNavbar`를 업데이트하여 상세 페이지 로딩 시에도 실제 헤더와 동일한 레이아웃(우측 내비 아이콘 포함)을 미리 볼 수 있도록 개선했습니다.
+
+2.  **UI Component Stability (`InteractiveLink`)**:
+    - 컴포넌트가 언마운트된 후 `controls.start()`가 실행되어 발생하는 런타임 에러를 방지하기 위해 `isMounted` 체크 로직(`safeStart`)을 도입했습니다.
+    - `VocabularyItemsGrid` 등 빠른 페이지 전환이 일어나는 환경에서의 안정성을 확보했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 상세 페이지 헤더를 `MainHeader` 하나로 통합했나요?**
+
+- **A.** 기존에는 `Header`와 `BackButton`을 각각 관리하여 코드 중복이 발생하고, 페이지별로 로고/뒤로가기 버튼의 스타일이나 위치가 미세하게 달라지는 이슈가 있었습니다. `MainHeader`로 일원화하여 유지보수성을 높이고 시각적 일관성을 확보했습니다.
+
+**Q. `InteractiveLink`에 `safeStart` 로직을 도입한 이유는?**
+
+- **A.** 페이지를 빠르게 이동할 때 언마운트된 컴포넌트에서 애니메이션이 뒤늦게 실행되면서 발생하는 런타임 에러를 방지하기 위함입니다. `isMounted` 체크를 통해 안정적인 환경을 제공합니다.
+
 ## 2026-02-02: Vocabulary UI Architecture Refinement & Unified Infrastructure
 
 ### ✅ 진행 사항

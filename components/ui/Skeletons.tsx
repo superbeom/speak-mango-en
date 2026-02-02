@@ -37,7 +37,8 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
       <div
         className={cn(
           "mx-auto max-w-layout px-4 py-4 sm:px-6 lg:px-8 flex items-center",
-          page === SKELETON_PAGE.HOME && "justify-between",
+          (page === SKELETON_PAGE.HOME || page === SKELETON_PAGE.DETAIL) &&
+            "justify-between",
           className,
         )}
       >
@@ -48,9 +49,6 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
             {/* Page Title Skeleton */}
             <Skeleton className="h-7 w-24" />
           </>
-        ) : page === SKELETON_PAGE.DETAIL ? (
-          /* Back Button Skeleton */
-          <Skeleton className="h-4 w-16" />
         ) : (
           <>
             {/* Logo Skeleton */}
@@ -61,8 +59,12 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
               {/* Nav/SubHeader Skeleton (Desktop only) */}
               <div className="hidden sm:flex items-center gap-4">
                 <Skeleton className="h-4 w-1" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-1" />
+                {page === SKELETON_PAGE.HOME && (
+                  <>
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-1" />
+                  </>
+                )}
               </div>
               {/* Auth Button Skeleton */}
               <div className="skeleton-avatar" />

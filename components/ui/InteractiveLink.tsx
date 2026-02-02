@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,23 @@ export default function InteractiveLink({
   onClick: () => void;
   className?: string;
 }) {
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const safeStart = (
+    definition: Parameters<SimpleAnimationControls["start"]>[0],
+  ) => {
+    if (isMounted.current) {
+      controls.start(definition);
+    }
+  };
+
   const handlePointerDown = (e: React.PointerEvent) => {
     if (isStatic) return;
 
@@ -39,18 +56,18 @@ export default function InteractiveLink({
     }
 
     if (enableHover) {
-      controls.start({ scale: 0.98, transition: { duration: 0.1 } });
+      safeStart({ scale: 0.98, transition: { duration: 0.1 } });
     }
   };
 
   const handlePointerUp = () => {
     if (isStatic) return;
-    controls.start({ scale: 1, transition: { duration: 0.1 } });
+    safeStart({ scale: 1, transition: { duration: 0.1 } });
   };
 
   const handlePointerLeave = () => {
     if (isStatic) return;
-    controls.start({ scale: 1, transition: { duration: 0.1 } });
+    safeStart({ scale: 1, transition: { duration: 0.1 } });
   };
 
   const handleClick = (e: React.MouseEvent) => {

@@ -7,17 +7,21 @@ import Header from "@/components/Header";
 import NavDivider from "@/components/NavDivider";
 import Logo from "@/components/Logo";
 import AuthButton from "@/components/auth/AuthButton";
+import BackButton from "@/components/BackButton";
 
 interface MainHeaderProps {
   /** 홈페이지처럼 스크롤 시 배경이 사라지는 효과를 줄지 여부 */
   transparentOnScroll?: boolean;
   /** 홈 특유의 서브헤더(슬로건) 노출 여부 */
   showSubHeader?: boolean;
+  /** 로고 대신 뒤로가기 버튼 노출 여부 */
+  showBackButton?: boolean;
 }
 
 export default function MainHeader({
   transparentOnScroll = false,
   showSubHeader = false,
+  showBackButton = false,
 }: MainHeaderProps) {
   const { dict } = useI18n();
 
@@ -30,7 +34,7 @@ export default function MainHeader({
       }
     >
       <div className="flex items-center justify-between">
-        <Logo />
+        {showBackButton ? <BackButton label={dict.common.back} /> : <Logo />}
         <nav className="flex items-center gap-4">
           <Link
             href={ROUTES.QUIZ}

@@ -1,9 +1,4 @@
-"use client";
-
-import { memo } from "react";
-import { useI18n } from "@/context/I18nContext";
 import { cn } from "@/lib/utils";
-import BackButton from "@/components/BackButton";
 
 interface VocabularyDetailHeaderProps {
   title: string;
@@ -11,16 +6,13 @@ interface VocabularyDetailHeaderProps {
   className?: string;
 }
 
-const VocabularyDetailHeader = memo(function VocabularyDetailHeader({
+export default function VocabularyDetailHeader({
   title,
   itemCount,
   className,
 }: VocabularyDetailHeaderProps) {
-  const { dict } = useI18n();
-
   return (
     <div className={cn("mb-8", className)}>
-      <BackButton label={dict.common.back} className="mb-4" />
       <div className="flex items-end gap-3 min-w-0">
         <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 truncate">
           {title}
@@ -31,8 +23,4 @@ const VocabularyDetailHeader = memo(function VocabularyDetailHeader({
       </div>
     </div>
   );
-});
-
-VocabularyDetailHeader.displayName = "VocabularyDetailHeader";
-
-export default VocabularyDetailHeader;
+}

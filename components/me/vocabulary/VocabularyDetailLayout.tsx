@@ -9,7 +9,7 @@ export default function VocabularyDetailLayout({
 }: VocabularyDetailLayoutProps) {
   return (
     <div className="min-h-screen bg-layout pb-24">
-      <MainHeader transparentOnScroll />
+      <MainHeader transparentOnScroll showBackButton />
       <main>{children}</main>
     </div>
   );

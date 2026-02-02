@@ -2,6 +2,30 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.25: Unified Navigation & UI Stability (2026-02-02)
+
+### 1. Goal (목표)
+
+- 개별적으로 존재하던 헤더와 뒤로가기 버튼을 `MainHeader`로 통합하여 일관된 내비게이션 경험을 제공합니다.
+- `InteractiveLink`의 애니메이션 제어 로직을 보강하여 컴포넌트 언마운트 시의 안정성을 확보합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Unified Header Strategy
+
+- **`app/expressions/[id]/page.tsx`**: 기존 `Header`와 `BackButton`을 제거하고 `MainHeader`에 `showBackButton={true}`를 적용했습니다.
+- **`components/MainHeader.tsx`**: 로고와 뒤로가기 버튼을 조건부로 스위칭하는 로직을 강화했습니다.
+- **`components/ui/Skeletons.tsx`**: `SkeletonNavbar`가 상세 페이지 모드에서도 전체 헤더 레이아웃(내비 메뉴 포함)을 유지하도록 수정했습니다.
+
+#### B. Animation Mount Safety
+
+- **`components/ui/InteractiveLink.tsx`**: `useEffect`와 `useRef`를 사용하여 컴포넌트의 마운트 상태를 추적합니다.
+- **`safeStart`**: 마운트된 상태에서만 `framer-motion`의 `controls.start()`를 호출하도록 래핑하여 에러를 원천 차단했습니다.
+
+### 3. Key Decisions (주요 결정 사항)
+
+- **Visual Continuity**: 로딩 스켈레톤부터 실제 렌더링까지 상단 영역의 레이아웃 시프트(CLS)를 최소화하기 위해 헤더 구조를 완벽히 동기화했습니다.
+
 ## v0.14.24: Vocabulary UI Architecture Refinement (2026-02-02)
 
 ### 1. Goal (목표)

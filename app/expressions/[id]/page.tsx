@@ -14,11 +14,10 @@ import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
 import { CANONICAL_URLS, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import { formatMessage } from "@/lib/utils";
-import Header from "@/components/Header";
+import MainHeader from "@/components/MainHeader";
 import CategoryLabel from "@/components/CategoryLabel";
 import Tag from "@/components/Tag";
 import RelatedExpressions from "@/components/RelatedExpressions";
-import BackButton from "@/components/BackButton";
 import DialogueSection from "@/components/DialogueSection";
 import KeywordList from "@/components/KeywordList";
 import ExpressionActions from "@/components/actions/ExpressionActions";
@@ -137,11 +136,7 @@ export default async function ExpressionDetailPage({ params }: PageProps) {
       {/* Track expression view */}
       <ExpressionViewTracker expressionId={id} category={expression.category} />
 
-      <Header>
-        <div className="flex items-center">
-          <BackButton label={dict.common.back} />
-        </div>
-      </Header>
+      <MainHeader showBackButton />
 
       <main className="mx-auto max-w-layout px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
         <article className="mx-auto max-w-3xl space-y-6">
