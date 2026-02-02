@@ -142,6 +142,8 @@ export const en = {
     copy: "Copy",
     move: "Move",
     delete: "Delete",
+    selectAll: "Select All",
+    deselectAll: "Deselect All",
   },
   me: {
     studyModes: "Study Modes",

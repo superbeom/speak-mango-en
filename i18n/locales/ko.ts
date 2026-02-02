@@ -142,6 +142,8 @@ export const ko = {
     copy: "복사",
     move: "이동",
     delete: "삭제",
+    selectAll: "전체 선택",
+    deselectAll: "선택 해제",
   },
   me: {
     studyModes: "학습 모드",

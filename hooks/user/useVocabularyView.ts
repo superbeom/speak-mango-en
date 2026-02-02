@@ -28,6 +28,14 @@ export function useVocabularyView() {
     });
   }, []);
 
+  const selectAll = useCallback((ids: string[]) => {
+    setSelectedIds(new Set(ids));
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
   const setMode = useCallback((mode: ViewMode) => {
     setViewMode(mode);
   }, []);
@@ -38,6 +46,8 @@ export function useVocabularyView() {
     selectedIds,
     toggleSelectionMode,
     toggleItem,
+    selectAll,
+    clearSelection,
     setViewMode: setMode,
   };
 }

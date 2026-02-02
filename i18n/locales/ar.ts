@@ -141,6 +141,8 @@ export const ar = {
     copy: "نسخ",
     move: "نقل",
     delete: "حذف",
+    selectAll: "تحديد الكل",
+    deselectAll: "إلغاء تحديد الكل",
   },
   me: {
     studyModes: "أوضاع الدراسة",

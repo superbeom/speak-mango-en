@@ -21,8 +21,18 @@ export default function RemoteVocabularyDetail({
     selectedIds,
     toggleSelectionMode,
     toggleItem,
+    selectAll,
+    clearSelection,
     setViewMode,
   } = useVocabularyView();
+
+  const handleToggleAll = () => {
+    if (selectedIds.size === items.length) {
+      clearSelection();
+    } else {
+      selectAll(items.map((item) => item.id));
+    }
+  };
 
   return (
     <div className="py-8">
@@ -37,6 +47,8 @@ export default function RemoteVocabularyDetail({
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           selectedCount={selectedIds.size}
+          totalCount={items.length}
+          onToggleAll={handleToggleAll}
         />
 
         <VocabularyItemsGrid

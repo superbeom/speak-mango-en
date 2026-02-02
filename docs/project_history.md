@@ -2,6 +2,27 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-02-02: Vocabulary Bulk Selection
+
+### ✅ 진행 사항
+
+1.  **Vocabulary Bulk Operations**:
+    - `useVocabularyView` 훅에 `selectAll` 및 `clearSelection` 기능을 추가하여 단어장 항목의 일괄 선택/해제를 구현했습니다.
+    - `VocabularyToolbar`에 "전체 선택" / "선택 해제" 버튼을 추가했습니다.
+    - 모든 항목이 선택 되었을 때 아이콘과 텍스트가 동적으로 변하는 토글 로직을 적용했습니다.
+
+2.  **Global i18n Support for Bulk Actions**:
+    - 9개 언어 전체 로케일 파일에 `selectAll` 및 `deselectAll` 번역을 추가하여 글로벌 일관성을 확보했습니다.
+
+3.  **Server Component Best Practices**:
+    - `app/me/[listId]/page.tsx`에서 데이터 페칭 로직을 IIFE로 래핑하여 JSX 생성 로직과 분리함으로써 에러 발생 시의 안전성을 강화했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. `selectAll` 구현 시 `totalCount > 0` 체크를 넣은 이유는?**
+
+- **A.** 빈 리스트에서 전체 선택 버튼을 누를 경우, 불필요한 상태 변경이나 의도치 않은 UI 표시를 방지하기 위함입니다. 데이터가 확실히 존재할 때만 기능이 작동하도록 방어적으로 설계했습니다.
+
 ## 2026-02-02: Unified Navigation & Vocabulary UI Refinement
 
 ### ✅ 진행 사항

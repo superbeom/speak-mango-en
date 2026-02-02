@@ -33,21 +33,22 @@ export default async function VocabularyListPage({ params }: PageProps) {
     content = <LocalVocabularyDetail listId={listId} />;
   } else {
     /** Pro User: Use Server Component for DB Data */
-    try {
-      const list = await getVocabularyListDetails(listId);
-      content = (
-        <RemoteVocabularyDetail title={list.title} items={list.items} />
-      );
-    } catch (error) {
-      if (
-        isAppError(error) &&
-        (error.code === VOCABULARY_ERROR.NOT_FOUND ||
-          error.code === VOCABULARY_ERROR.UNAUTHORIZED)
-      ) {
-        notFound();
+    const list = await (async () => {
+      try {
+        return await getVocabularyListDetails(listId);
+      } catch (error) {
+        if (
+          isAppError(error) &&
+          (error.code === VOCABULARY_ERROR.NOT_FOUND ||
+            error.code === VOCABULARY_ERROR.UNAUTHORIZED)
+        ) {
+          notFound();
+        }
+        throw error;
       }
-      throw error;
-    }
+    })();
+
+    content = <RemoteVocabularyDetail title={list.title} items={list.items} />;
   }
 
   return <VocabularyDetailLayout>{content}</VocabularyDetailLayout>;

@@ -139,6 +139,8 @@ export const zh = {
     copy: "复制",
     move: "移动",
     delete: "删除",
+    selectAll: "全选",
+    deselectAll: "取消全选",
   },
   me: {
     studyModes: "学习模式",

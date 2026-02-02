@@ -148,6 +148,8 @@ export const ru = {
     copy: "Копировать",
     move: "Переместить",
     delete: "Удалить",
+    selectAll: "Выбрать все",
+    deselectAll: "Снять выделение",
   },
   me: {
     studyModes: "Режимы обучения",

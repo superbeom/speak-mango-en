@@ -2,6 +2,21 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.14.26: Vocabulary Bulk Actions (2026-02-02)
+
+### 1. Goal (목표)
+
+- 단어장 내 여러 표현을 한꺼번에 관리할 수 있는 일괄 선택 기능을 구현합니다.
+
+### 2. Implementation (구현 내용)
+
+- **`useVocabularyView`**: 모든 아이템 ID를 `Set`에 넣거나 비우는 `selectAll`, `clearSelection` 함수 도입.
+- **`VocabularyToolbar`**: 선택 개수와 전체 개수를 비교하여 '전체 선택' 모드와 '선택 해제' 모드를 스위칭하는 동적 버튼 구현.
+
+### 3. Key Decisions (주요 결정 사항)
+
+- **State Guard**: 데이터 로딩 중이거나 리스트가 비어있는 예외 상황(`totalCount > 0`)을 체크하여 '전체 선택' 버튼의 오동작을 방지했습니다.
+
 ## v0.14.25: Unified Navigation & UI Stability (2026-02-02)
 
 ### 1. Goal (목표)

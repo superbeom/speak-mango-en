@@ -150,6 +150,8 @@ export const fr = {
     copy: "Copier",
     move: "Déplacer",
     delete: "Supprimer",
+    selectAll: "Tout sélectionner",
+    deselectAll: "Tout désélectionner",
   },
   me: {
     studyModes: "Modes d'étude",

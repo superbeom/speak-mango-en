@@ -2,7 +2,14 @@
 
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { ListChecks, X, LayoutGrid, List } from "lucide-react";
+import {
+  ListChecks,
+  X,
+  LayoutGrid,
+  List,
+  CheckSquare,
+  Square,
+} from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 import { useScroll } from "@/hooks/useScroll";
 import { VIEW_MODE, ViewMode } from "@/constants/ui";
@@ -15,6 +22,8 @@ interface VocabularyToolbarProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   selectedCount: number;
+  totalCount: number;
+  onToggleAll: () => void;
 }
 
 const VocabularyToolbar = memo(function VocabularyToolbar({
@@ -23,9 +32,12 @@ const VocabularyToolbar = memo(function VocabularyToolbar({
   viewMode,
   onViewModeChange,
   selectedCount,
+  totalCount,
+  onToggleAll,
 }: VocabularyToolbarProps) {
   const { dict } = useI18n();
   const isStuck = useScroll(80);
+  const isAllSelected = selectedCount === totalCount && totalCount > 0;
 
   return (
     <div
@@ -59,6 +71,27 @@ const VocabularyToolbar = memo(function VocabularyToolbar({
                 </>
               )}
             </motion.button>
+
+            {isSelectionMode && (
+              <>
+                <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-700 mx-2" />
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onToggleAll}
+                  className="px-4 py-2 text-sm font-medium rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-zinc-400 outline-hidden"
+                >
+                  {isAllSelected ? (
+                    <>
+                      <Square size={16} /> {dict.vocabulary.deselectAll}
+                    </>
+                  ) : (
+                    <>
+                      <CheckSquare size={16} /> {dict.vocabulary.selectAll}
+                    </>
+                  )}
+                </motion.button>
+              </>
+            )}
 
             {isSelectionMode && (
               <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-700 mx-2" />

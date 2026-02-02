@@ -143,6 +143,8 @@ export const ja = {
     copy: "コピー",
     move: "移動",
     delete: "削除",
+    selectAll: "すべて選択",
+    deselectAll: "選択解除",
   },
   me: {
     studyModes: "学習モード",

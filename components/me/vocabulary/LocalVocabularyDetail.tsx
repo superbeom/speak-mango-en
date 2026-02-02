@@ -25,6 +25,8 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     selectedIds,
     toggleSelectionMode,
     toggleItem,
+    selectAll,
+    clearSelection,
     setViewMode,
   } = useVocabularyView();
 
@@ -32,6 +34,14 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   const [items, setItems] = useState<Expression[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const handleToggleAll = () => {
+    if (selectedIds.size === items.length) {
+      clearSelection();
+    } else {
+      selectAll(items.map((item) => item.id));
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -118,6 +128,8 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           selectedCount={selectedIds.size}
+          totalCount={items.length}
+          onToggleAll={handleToggleAll}
         />
 
         <VocabularyItemsGrid
