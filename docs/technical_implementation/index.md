@@ -181,6 +181,39 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
 - **Reason**: Next.js 환경에서 쿠키 접근 방식이 다르기 때문에, 브라우저 환경(`createBrowserClient`)과 서버 환경(`createServerClient`)용 유틸리티를 분리하여 구현했습니다.
 - **Multi-Schema**: `createBrowserSupabase(schema?)`와 같이 스키마를 인자로 받아 다국어 확장에 유연하게 대응하도록 설계되었습니다.
 
+### 5.2.1 Secure Authentication Bridge (Custom JWT)
+
+**NextAuth**의 인증 상태를 **Supabase RLS**가 인식할 수 있도록 연결하는 핵심 메커니즘입니다.
+
+- **File**: `lib/supabase/server.ts`
+- **Context**:
+  - 일반적으로 Supabase Auth를 사용하면 로그인이 자동으로 처리되고 RLS(`auth.uid()`)도 작동합니다.
+  - 하지만 본 프로젝트는 **NextAuth**를 메인 인증으로 사용하며, 사용자 데이터도 `auth.users`가 아닌 별도의 `speak_mango_en.users` 테이블에서 관리합니다.
+  - 이로 인해 Supabase는 기본적으로 로그인한 사용자를 식별할 수 없어 RLS가 무용지물이 되는 문제가 발생합니다.
+- **Solution**: "NextAuth가 보증하는 사용자 ID"를 담은 **Custom JWT**를 직접 발급하여 Supabase에 "인증된 상태"임을 강제로 알리는 방식을 사용합니다.
+
+- **Implementation Details**:
+  1. **Env Setup**: Supabase 프로젝트 설정에서 서명용 비밀키를 가져옵니다.
+     - **Path**: Dashboard > Project Settings > JWT Keys > **Legacy JWT Secret**
+     - **Env**: `SUPABASE_JWT_SECRET` 환경 변수에 저장.
+  2. **Session Check**: `getAuthSession()`을 통해 현재 NextAuth 세션과 `userId`를 확보합니다.
+  3. **JWT Signing**: `SUPABASE_JWT_SECRET`을 사용하여 Supabase 규격에 맞는 JWT를 직접 생성합니다.
+     ```typescript
+     const payload = {
+       aud: "authenticated", // 필수: Supabase가 이 토큰을 '인증된 사용자'로 인식하게 함
+       role: "authenticated", // 필수: Postgres 내부 Role
+       sub: userId, // 핵심: 이 값이 DB 내의 auth.uid()로 변환됨
+       exp: Math.floor(Date.now() / 1000) + 3600, // 1시간 유효
+     };
+     const token = jwt.sign(payload, process.env.SUPABASE_JWT_SECRET!);
+     ```
+  4. **Header Injection**: 생성된 토큰을 `Authorization: Bearer <token>` 헤더에 실어 `createServerClient`를 초기화합니다.
+
+- **Benefit**:
+  - **보안**: 강력한 권한을 가진 "Service Role Key" 대신 제한된 권한의 JWT를 사용합니다.
+  - **호환성**: NextAuth의 편리함과 Supabase RLS의 보안성을 동시에 누릴 수 있습니다.
+  - **격리**: 사용자별 데이터 접근 제어를 애플리케이션 코드가 아닌 DB 정책 레벨에서 안전하게 수행합니다.
+
 ### 5.3 Client-Side State Management (Zustand)
 
 - **Library**: `zustand` + `persist` middleware.

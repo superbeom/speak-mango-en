@@ -2,6 +2,31 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.2: Authentication & RLS Security Hardening (2026-02-04)
+
+### ✅ 진행 사항
+
+1.  **Custom JWT Integration (인증 연동)**:
+    - **Backdrop**: NextAuth와 Supabase Auth의 유저 시스템 분리로 인해 RLS 정책에서 `auth.uid()`를 사용할 수 없는 문제가 있었습니다.
+    - **Solution**: `createServerSupabase` 클라이언트 초기화 시, NextAuth 세션의 사용자 ID로 서명된 **Custom JWT**를 생성하여 Supabase에 전달하도록 구현했습니다. 이로써 Supabase가 요청을 인증된 사용자(`authenticated`)로 인식하고 `auth.uid()`를 올바르게 매핑합니다.
+
+2.  **Database Permission & Integrity (DB 권한 및 무결성)**:
+    - **Grant Permissions**: `025_grant_permissions_speak_mango.sql`을 통해 `speak_mango_en` 스키마에 대한 접근 권한(`USAGE`, `SELECT` 등)을 명확히 부여했습니다.
+    - **Foreign Key Correction**: `vocabulary_lists`가 잘못된 참조(`auth.users`)를 하고 있던 것을 `speak_mango_en.users`로 수정하여 참조 무결성 에러(`23503`)를 해결했습니다 (`026_fix_vocabulary_fk.sql`).
+
+3.  **RLS Security Hardening (보안 강화)**:
+    - **Strict Policies**: 개발 편의를 위해 풀어두었던 임시 정책(`using (true)`)을 제거하고, `auth.uid() = user_id` 조건의 엄격한 RLS 정책으로 교체하여 데이터 보안을 확보했습니다 (`027_secure_rls.sql`).
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 Custom JWT 방식을 도입했나요?**
+
+- **A.** Supabase Service Role Key를 사용하면 모든 권한이 뚫리기 때문에 보안상 매우 취약합니다. RLS(행 수준 보안)를 데이터베이스 레벨에서 강제하기 위해서는 Supabase가 "현재 요청자가 누구인지"를 알아야 하므로, NextAuth의 신원을 보증하는 Custom JWT가 필수적이었습니다.
+
+**Q. 기존의 RLS 완화 마이그레이션(023, 024)은 불필요했나요?**
+
+- **A.** 결과적으로는 그렇습니다. 처음부터 Custom JWT 전략을 채택했다면 RLS를 풀 필요가 없었습니다. 하지만 이는 인증 연동 문제를 해결해가는 과정에서의 시행착오였으며, `027`번 마이그레이션을 통해 다시 정상적인 보안 수준으로 복구되었습니다. 반면, 권한 부여(`025`)와 외래 키 수정(`026`)은 아키텍처상 반드시 필요한 작업이었습니다.
+
 ## 2026-02-04: UI Responsiveness & Async Optimization
 
 ### ✅ 진행 사항

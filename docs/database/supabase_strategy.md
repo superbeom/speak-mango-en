@@ -153,6 +153,37 @@ GRANT ALL ON ALL TABLES IN SCHEMA speak_mango_en_next_auth TO service_role;
 
 이 전략을 통해 **"DB는 DB답게, 코드는 코드답게"** 유지할 수 있습니다.
 
+### 5.3 Custom JWT Strategy (RLS Enforcement)
+
+#### 5.3.1 왜 Custom JWT가 필요한가요? (Why?)
+
+보통 Supabase를 사용하면 `Supabase Auth` (GoTrue)가 제공하는 `auth.users` 테이블과 로그인 기능을 사용합니다. 이 경우 RLS(`auth.uid()`)가 자동으로 작동합니다.
+
+하지만 우리 프로젝트는 다음과 같은 구조적 이유로 **Supabase Auth를 사용하지 않습니다**:
+
+1.  **자체 User Schema**: 모든 사용자 정보는 `speak_mango_en.users` 테이블에서 직접 관리합니다.
+2.  **NextAuth 의존성**: 인증 흐름(로그인/세션)을 NextAuth.js가 전담합니다.
+
+**문제점**: NextAuth로 로그인해도, Supabase DB 입장에서는 클라이언트가 보낸 요청이 "누구"인지 알 수 있는 수단이 없습니다 (익명 `anon` 취급). 따라서 `auth.uid()`를 사용하는 보안 정책(RLS)을 적용할 수 없게 됩니다.
+
+**해결책**:
+NextAuth 세션의 사용자 ID(`sub`)를 담은 **"Supabase 호환 신분증(JWT)"**을 서버에서 직접 발급하여 Supabase에 제출합니다. 이를 통해 Supabase는 비로소 "아, 이 요청은 ID가 `xyz`인 사용자가 보낸 것이군!" 하고 인식하게 됩니다.
+
+#### 5.3.2 Implementation Steps
+
+1.  **Secret 확보**: 서명을 위한 비밀키(`SUPABASE_JWT_SECRET`)를 확보합니다.
+    - **위치**: Supabase Dashboard -> **Project Settings** (톱니바퀴 아이콘) -> **JWT Keys** -> **Legacy JWT Secret**
+    - **주의**: 이 값은 절대 클라이언트에 노출되면 안 됩니다 (`.env` 관리 필수).
+
+2.  **Server Signing**:
+    - `createServerSupabase` 호출 시 `NextAuth` 세션에서 `userId`를 추출합니다.
+    - `jsonwebtoken` 라이브러리를 사용해 `SUPABASE_JWT_SECRET`으로 서명된 토큰을 생성합니다.
+    - Payload에는 Supabase가 요구하는 필수 클레임(`aud`, `exp`, `sub`, `role`)을 포함합니다.
+
+3.  **Client Injection**: 생성된 토큰을 `global.headers.Authorization`에 `Bearer {token}` 형태로 주입하여 Supabase 클라이언트를 초기화합니다.
+
+**Result**: 이제 Supabase는 요청을 보낸 주체가 누구인지(`auth.uid()`) 명확히 인식하며, 강력한 RLS 정책(`using (auth.uid() = user_id)`)을 적용할 수 있습니다.
+
 ## 6. 구현 가이드 (Implementation Guide)
 
 ### 6.1. 스키마 생성 및 설정

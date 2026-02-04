@@ -2,6 +2,37 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.2: Authentication & RLS Security Hardening (2026-02-04)
+
+### 1. Goal (목표)
+
+- NextAuth(애플리케이션 인증)와 Supabase(데이터베이스 보안) 사이의 연결 고리를 완성하여, `auth.uid()` 기반의 강력한 Row Level Security(RLS)를 구현합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Custom JWT Strategy (`lib/supabase/server.ts`)
+
+- **Problem**: NextAuth로 로그인해도 Supabase DB 입장에서는 `anon`(익명) 사용자로 취급되어 RLS가 작동하지 않음.
+- **Solution**:
+  - `getAuthSession`으로 NextAuth 사용자 ID(`sub`)를 가져옵니다.
+  - `jsonwebtoken` 라이브러리와 `SUPABASE_JWT_SECRET`을 사용하여 Supabase 호환 JWT를 직접 서명(Sign)합니다.
+  - `createServerClient`의 `global.headers.Authorization`에 이 토큰을 실어 보냄으로써, Supabase가 해당 요청을 "인증된 사용자"의 것으로 처리하게 만듭니다.
+
+#### B. Database Integrity Fixes
+
+- **Schema Permission (`025`)**: 커스텀 스키마(`speak_mango_en`)에 대해 `anon`, `authenticated` 역할이 접근할 수 있도록 `GRANT` 권한을 명시적으로 부여했습니다.
+- **Foreign Key Correction (`026`)**: `vocabulary_lists` 테이블의 `user_id` 외래 키가 Supabase 내부 테이블(`auth.users`)을 잘못 참조하던 것을 수정하여, 실제 사용자 정보가 있는 `speak_mango_en.users`를 가리키도록 바로잡았습니다.
+
+#### C. RLS Re-enforcement (`027`)
+
+- **Secure Policies**: 개발 도중 임시로 허용했던 `using (true)` 류의 개방형 정책을 전량 폐기하고, `user_id = auth.uid()` 조건을 검사하는 소유자 기반의 엄격한 보안 정책을 다시 적용했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Seamless Auth**: 별도의 Supabase 로그인 없이 NextAuth 세션만으로 DB 보안 연동 완료.
+- ✅ **Security**: Service Role(관리자 권한) 남용을 막고, DB 레벨에서 사용자 데이터 격리 구현.
+- ✅ **Stability**: 잘못된 외래 키 참조로 인한 데이터 생성 오류(`23503`) 원천 해결.
+
 ## v0.15.1: UI Responsiveness & Async Optimization (2026-02-04)
 
 ### 1. Goal (목표)
