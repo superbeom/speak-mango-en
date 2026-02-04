@@ -2,6 +2,32 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-02-04: UI Responsiveness & Async Optimization
+
+### ✅ 진행 사항
+
+1.  **SWR Optimistic Updates**:
+    - `useUserActions` 훅에 SWR의 낙관적 업데이트(Optimistic Update) 패턴을 도입했습니다. 서버 응답을 기다리지 않고 UI를 즉시 갱신하며, 실패 시에만 롤백하여 네트워크 지연 없는 쾌적한 인터랙션을 구현했습니다.
+
+2.  **Waterfall Elimination in Save Logic**:
+    - `useSaveAction`에서 저장 상태 변경(`toggleSaveState`)과 단어장 동기화(`syncOnSave/syncOnUnsave`)를 `Promise.all`을 사용하여 병렬로 처리하도록 개선했습니다. 이를 통해 불필요한 직렬 대기(Waterfall)를 제거하고 응답 속도를 높였습니다.
+
+3.  **Loading State & Flash Prevention**:
+    - `SaveButton`과 `LearnButton`에 `isInitialLoading` 상태를 정교하게 적용했습니다. 초기 데이터 페칭 중에는 로딩 스피너를 보여주고 버튼을 비활성화하여, 데이터 부족으로 인한 UI 깜빡임(Flash)과 중복 클릭을 방지했습니다.
+
+4.  **Timer Cleanup & Stability**:
+    - 버튼 컴포넌트 언마운트 시 `setTimeout` 타이머가 해제되도록 `useEffect` 클린업 로직을 추가했습니다. 또한 NodeJS와 Browser 간의 타이머 타입 혼선을 방지하기 위해 `ReturnType<typeof setTimeout>`을 사용하도록 타입을 정규화했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 SWR 낙관적 업데이트를 도입했나요?**
+
+- **A.** Pro 사용자의 경우 서버 액션을 호출하므로 응답까지 수백 ms의 지연이 발생합니다. 낙관적 업데이트를 통해 사용자는 즉각적인 버튼 상태 변화를 체감할 수 있으며, 이는 앱의 전반적인 반응성(Responsiveness)을 크게 향상시킵니다.
+
+**Q. `Promise.all`을 사용한 이유는?**
+
+- **A.** 비즈니스 로직상 저장 상태 변경과 단어장 동기화는 서로 의존성이 없는 독립적인 비동기 작업입니다. 이를 순차적으로 실행하면 전체 소요 시간이 각 작업의 합만큼 늘어나게 되므로, 병렬 실행을 통해 전체 지연 시간을 최소화했습니다.
+
 ## 2026-02-04: Pro Tier Integration & Advanced Vocabulary Management
 
 ### ✅ 진행 사항

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useMemo } from "react";
+import useSWR from "swr";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { createAppError, VOCABULARY_ERROR } from "@/types/error";
@@ -16,11 +17,24 @@ import {
 
 export function useVocabularyLists() {
   const { isPro } = useAuthUser();
-  const [lists, setLists] = useState<VocabularyListWithCount[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // SWR for Pro Users
+  // Key must be null if not pro to disable fetching
+  const {
+    data: remoteLists,
+    isLoading: isRemoteLoading,
+    mutate,
+  } = useSWR<VocabularyListWithCount[]>(
+    isPro ? "vocabulary_lists" : null,
+    () => getVocabularyLists(),
+    {
+      dedupingInterval: 5000,
+      revalidateOnFocus: false,
+      fallbackData: [],
+    },
+  );
 
   // Local Store Selectors
-  // Fix: Select raw state to avoid "getSnapshot" infinite loop from new array references
   const vocabularyListsMap = useLocalActionStore(
     (state) => state.vocabularyLists,
   );
@@ -36,35 +50,25 @@ export function useVocabularyLists() {
     (state) => state.setDefaultList,
   );
 
-  const fetchLists = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      if (isPro) {
-        const remoteLists = await getVocabularyLists();
-        setLists(remoteLists);
-      } else {
-        // Derive list from stable map
-        const sortedLists = Object.values(vocabularyListsMap).sort((a, b) => {
-          if (a.isDefault && !b.isDefault) return -1;
-          if (!a.isDefault && b.isDefault) return 1;
-          return a.createdAt.localeCompare(b.createdAt);
-        });
-
-        // Map LocalVocabularyList to compatible type
-        const mapped: VocabularyListWithCount[] = sortedLists.map((l) => ({
-          id: l.id,
-          title: l.title,
-          item_count: l.itemIds.size,
-          is_default: l.isDefault || false,
-        }));
-        setLists(mapped);
-      }
-    } catch (error) {
-      console.error("Failed to fetch lists", error);
-    } finally {
-      setIsLoading(false);
+  // Computed Lists (Memoized)
+  const lists = useMemo(() => {
+    if (isPro) {
+      return remoteLists || [];
     }
-  }, [isPro, vocabularyListsMap]);
+
+    const sortedLists = Object.values(vocabularyListsMap).sort((a, b) => {
+      if (a.isDefault && !b.isDefault) return -1;
+      if (!a.isDefault && b.isDefault) return 1;
+      return a.createdAt.localeCompare(b.createdAt);
+    });
+
+    return sortedLists.map((l) => ({
+      id: l.id,
+      title: l.title,
+      item_count: l.itemIds.size,
+      is_default: l.isDefault || false,
+    }));
+  }, [isPro, remoteLists, vocabularyListsMap]);
 
   const createList = useCallback(
     async (title: string) => {
@@ -76,9 +80,9 @@ export function useVocabularyLists() {
         return;
       }
       await createVocabularyList(title);
-      fetchLists(); // Refresh
+      mutate(); // Refresh SWR cache
     },
-    [isPro, lists.length, localCreateList, fetchLists],
+    [isPro, lists.length, localCreateList, mutate],
   );
 
   const toggleInList = useCallback(
@@ -97,9 +101,9 @@ export function useVocabularyLists() {
       } else {
         await addToVocabularyList(listId, expressionId);
       }
-      // No need to refetch all lists, but we might want to update UI state
+      mutate(); // Refresh SWR cache to update counts
     },
-    [isPro, localRemoveFromList, localAddToList],
+    [isPro, localRemoveFromList, localAddToList, mutate],
   );
 
   // Helper to get which lists contain the expression
@@ -121,27 +125,26 @@ export function useVocabularyLists() {
       }
       try {
         await setDefaultVocabularyList(listId);
-        fetchLists();
+        mutate();
       } catch (error) {
         console.error("Failed to set default list", error);
       }
     },
-    [isPro, localSetDefaultList, fetchLists],
+    [isPro, localSetDefaultList, mutate],
   );
 
-  // Initial fetch
-  useEffect(() => {
-    fetchLists();
-  }, [fetchLists]);
+  const refreshLists = useCallback(async () => {
+    await mutate();
+  }, [mutate]);
 
   return {
     lists,
-    isLoading,
+    isLoading: isPro ? isRemoteLoading : false,
     createList,
     toggleInList,
     getContainingListIds,
     setDefaultList,
-    refreshLists: fetchLists,
+    refreshLists,
     isPro,
   };
 }

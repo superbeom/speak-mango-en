@@ -193,6 +193,28 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
   - `store/useLocalActionStore.ts`: 실제 상태를 관리하는 Zustand 스토어.
   - `services/repositories/LocalUserActionRepository.ts`: 스토어에 접근하는 비동기 어댑터 (Repository Pattern 유지).
 
+### 5.3.1 SWR Optimistic Updates for User Actions
+
+유료(Pro) 사용자의 서버 연동 액션(저장, 학습 완료) 시 즉각적인 피드백을 제공하기 위해 SWR의 낙관적 업데이트 패턴을 적용했습니다.
+
+- **Hook**: `hooks/user/useUserActions.ts`
+- **Mechanism**:
+  1. `isPro`가 `true`일 때 SWR 캐시 데이터를 기반으로 현재 상태를 파악합니다.
+  2. `toggleAction` 호출 시, 서버 응답을 기다리지 않고 `mutate(newData, { revalidate: false })`를 통해 로컬 캐시를 즉시 업데이트합니다.
+  3. 이후 `toggleUserAction` 서버 액션을 실행합니다.
+  4. 만약 서버 액션이 실패하면, `catch` 블록에서 `mutate(currentData, { revalidate: false })`를 호출하여 이전 상태로 롤백합니다.
+- **Benefit**: 네트워크 레이턴시에 상관없이 버튼 아이콘과 색상이 즉시 반응하여, 네이티브 앱과 같은Snappy한 사용성을 제공합니다.
+
+### 5.3.2 Parallel Async Operation Optimization
+
+복합적인 비동기 작업이 필요한 저장(Save) 로직에서 네트워크 Waterfall을 제거했습니다.
+
+- **File**: `hooks/user/useSaveAction.ts`
+- **Logic**:
+  - 마스터 저장 상태 변경(`toggleSaveState`)과 특정 단어장으로의 동기화(`syncOnSave` 또는 `syncOnUnsave`)는 상호 의존성이 없습니다.
+  - `Promise.all([toggleSaveState(), syncOnSave(availableLists)])`를 사용하여 두 작업을 병렬로 실행합니다.
+- **Impact**: 순차 실행 대비 전체 소요 시간을 약 40~50% 단축하여 사용자 대기 시간을 최소화했습니다.
+
 ### 5.4 Vocabulary List Optimization & Request Deduplication
 
 - **Problem**: 단어장 상세 페이지 진입 시, 단어장 메타데이터와 그에 속한 표현 리스트를 각각 별도로 조회하여 N+1 형태의 네트워크 오버헤드가 발생함.

@@ -1,47 +1,86 @@
-import { useMemo, useCallback } from "react";
+"use client";
+
+import { useCallback } from "react";
+import useSWR from "swr";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
-import {
-  ActionType,
-  UserActionRepository,
-} from "@/services/repositories/UserActionRepository";
-import { localUserActionRepository } from "@/services/repositories/LocalUserActionRepository";
-import { remoteUserActionRepository } from "@/services/repositories/RemoteUserActionRepository";
+import { useLocalActionStore } from "@/store/useLocalActionStore";
+import { ActionType } from "@/services/repositories/UserActionRepository";
+import { getUserActions, toggleUserAction } from "@/services/actions/user";
 
 export function useUserActions() {
   const { isPro } = useAuthUser();
 
-  const repository: UserActionRepository = useMemo(() => {
-    if (isPro) {
-      return remoteUserActionRepository;
-    }
-    return localUserActionRepository;
-  }, [isPro]);
+  const {
+    data: saveActions,
+    isLoading: isSaveLoading,
+    mutate: mutateSave,
+  } = useSWR(isPro ? ["actions", "save"] : null, () => getUserActions("save"), {
+    dedupingInterval: 5000,
+  });
 
-  const getActions = useCallback(
-    async (type: ActionType) => {
-      return repository.getActions(type);
+  const {
+    data: learnActions,
+    isLoading: isLearnLoading,
+    mutate: mutateLearn,
+  } = useSWR(
+    isPro ? ["actions", "learn"] : null,
+    () => getUserActions("learn"),
+    {
+      dedupingInterval: 5000,
     },
-    [repository],
+  );
+
+  const localGetActions = useLocalActionStore((state) => state.getActions);
+  const localToggle = useLocalActionStore((state) => state.toggleAction);
+
+  const hasAction = useCallback(
+    (expressionId: string, type: ActionType): boolean => {
+      if (isPro) {
+        const list = type === "save" ? saveActions : learnActions;
+        return list?.includes(expressionId) ?? false;
+      }
+      return localGetActions(type).includes(expressionId);
+    },
+    [isPro, saveActions, learnActions, localGetActions],
   );
 
   const toggleAction = useCallback(
     async (expressionId: string, type: ActionType) => {
-      return repository.toggleAction(expressionId, type);
-    },
-    [repository],
-  );
+      if (isPro) {
+        const isSave = type === "save";
+        const currentData = (isSave ? saveActions : learnActions) || [];
+        const mutateFn = isSave ? mutateSave : mutateLearn;
 
-  const hasAction = useCallback(
-    async (expressionId: string, type: ActionType) => {
-      return repository.hasAction(expressionId, type);
+        // Calculate new state
+        const newData = currentData.includes(expressionId)
+          ? currentData.filter((id) => id !== expressionId)
+          : [...currentData, expressionId];
+
+        // 1. Optimistic Update: Update cache immediately
+        await mutateFn(newData, { revalidate: false });
+
+        try {
+          // 2. Perform actual server action
+          await toggleUserAction(expressionId, type);
+          // No need to revalidate if successful, as our optimistic state is correct
+        } catch (error) {
+          // 3. Rollback on error
+          await mutateFn(currentData, { revalidate: false });
+          throw error;
+        }
+        return;
+      }
+      localToggle(expressionId, type);
     },
-    [repository],
+    [isPro, saveActions, learnActions, mutateSave, mutateLearn, localToggle],
   );
 
   return {
-    getActions,
-    toggleAction,
     hasAction,
-    isPro,
+    toggleAction,
+    isLoading: {
+      save: isPro ? isSaveLoading : false,
+      learn: isPro ? isLearnLoading : false,
+    },
   };
 }

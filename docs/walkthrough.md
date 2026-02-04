@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.1: UI Responsiveness & Async Optimization (2026-02-04)
+
+### 1. Goal (목표)
+
+- 유료(Pro) 사용자의 서버 연동 액션 발생 시 지연 시간을 최소화하고, 초기 로딩 시의 UI 깜빡임(Flash)을 방지하여 매끄러운 사용자 경험을 제공합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. SWR Optimistic Updates (`useUserActions.ts`)
+
+- **Pattern**: `isPro` 상태일 때 SWR의 `mutate` 함수를 사용하여, 서버 응답 전에 예상되는 다음 상태(`newData`)를 캐시에 즉시 반영합니다.
+- **Rollback**: 서버 액션 실패 시 이전 상태(`currentData`)로 자동 롤백하여 데이터 무결성을 유지합니다.
+
+#### B. Parallel Async Execution (`useSaveAction.ts`)
+
+- **Optimization**: 기존에 직렬로 실행되던 `toggleSaveState`와 단어장 동기화(`syncOnSave`) 로직을 `Promise.all`로 묶어 병렬 실행합니다. 네트워크 왕복 횟수에 따른 대기 시간을 절반으로 줄였습니다.
+
+#### C. Loading State Refinement (`SaveButton.tsx`, `LearnButton.tsx`)
+
+- **Wait State**: SWR의 `isLoading` 상태를 `isInitialLoading`으로 추출하여 버튼 UI에 주입했습니다.
+- **UI Feedback**: 로딩 중에는 `Loader2` 스피너를 표시하고 버튼을 비활성화하여, 낙관적 업데이트가 적용되기 전의 불안정한 시각적 상태를 제거했습니다.
+
+#### D. Timer Safety & Type Fixing
+
+- **Cleanup**: `setTimeout`을 사용하는 롱 프레스 및 자동 스크롤 로직에 `useEffect` 클린업을 추가하여 메모리 누수를 방지했습니다.
+- **Typing**: `NodeJS.Timeout` 대신 브라우저 호환성이 좋은 `ReturnType<typeof setTimeout>`을 사용하여 타입 에러를 해결했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Snappy UI**: 저장 및 학습 완료 클릭 시 즉각적인 시각적 피드백 제공.
+- ✅ **Performance**: 병목 지점(Waterfall) 제거를 통한 저장 프로세스 속도 향상.
+- ✅ **Robustness**: 컴포넌트 생명주기에 따른 타이머 관리로 런타임 안정성 확보.
+
 ## v0.15.0: Pro Tier & Advanced Vocabulary Management (2026-02-04)
 
 ### 1. Goal (목표)

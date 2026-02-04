@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckCircle, Circle } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { CheckCircle, Circle, Loader2 } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
-import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useUserActions } from "@/hooks/user/useUserActions";
 import { cn } from "@/lib/utils";
@@ -25,53 +24,54 @@ export default function LearnButton({
 }: LearnButtonProps) {
   const { dict } = useI18n();
   const { user } = useAuthUser();
-  const { toggleAction, hasAction } = useUserActions();
-  const [isLearned, setIsLearned] = useState(false);
+  const { toggleAction, hasAction, isLoading } = useUserActions();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const localActions = useLocalActionStore((state) => state.actions.learn);
+  // Timer Ref for cleanup
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Cleanup on unmount
   useEffect(() => {
-    const checkStatus = async () => {
-      if (!user) {
-        setIsLearned(false);
-        return;
+    return () => {
+      if (scrollTimerRef.current) {
+        clearTimeout(scrollTimerRef.current);
       }
-
-      const status = await hasAction(expressionId, "learn");
-      setIsLearned(status);
     };
-    checkStatus();
-  }, [expressionId, hasAction, localActions, user]);
+  }, []);
+
+  const isLearned = hasAction(expressionId, "learn");
+  const isInitialLoading = isLoading.learn;
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (isInitialLoading) return;
 
     if (!user) {
       setIsModalOpen(true);
       return;
     }
 
+    // Toggle Action triggers Optimistic Update in useUserActions
     const newStatus = !isLearned;
-    setIsLearned(newStatus);
 
     try {
       await toggleAction(expressionId, "learn");
+
       if (newStatus && onLearnComplete) {
         onLearnComplete();
       }
 
       // Auto-scroll to target section if provided
       if (newStatus && scrollToId) {
-        // Slight delay to allow state updates and provide better UX
-        setTimeout(() => {
-          smoothScrollTo(scrollToId, 1000); // 1초 동안 부드럽게 스크롤
+        scrollTimerRef.current = setTimeout(() => {
+          smoothScrollTo(scrollToId, 1000);
         }, 100);
       }
     } catch (error) {
       console.error("Failed to toggle learn:", error);
-      setIsLearned(!newStatus);
+      // Rollback is handled by SWR inside useUserActions
     }
   };
 
@@ -79,15 +79,20 @@ export default function LearnButton({
     <>
       <button
         onClick={handleToggle}
+        disabled={isInitialLoading}
         className={cn(
           "group flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all sm:active:scale-95 focus:outline-none sm:cursor-pointer",
-          isLearned
-            ? "bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-500/20"
-            : "bg-white text-zinc-700 shadow-sm hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700",
+          isInitialLoading
+            ? "bg-zinc-100 text-zinc-400 cursor-wait dark:bg-zinc-800"
+            : isLearned
+              ? "bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-500/20"
+              : "bg-white text-zinc-700 shadow-sm hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700",
           className,
         )}
       >
-        {isLearned ? (
+        {isInitialLoading ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : isLearned ? (
           <CheckCircle className="h-5 w-5" />
         ) : (
           <Circle className="h-5 w-5 text-zinc-400 group-hover:text-zinc-500 dark:text-zinc-500 dark:group-hover:text-zinc-400" />

@@ -17,45 +17,44 @@ export function useSaveAction(expressionId: string) {
   const { user } = useAuthUser();
   const { toggleAction } = useUserActions();
   const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false); // Loading feedback for sync operations
 
-  const { isSaved, toggleSaveState, setIsSaved } = useSaveToggle(expressionId);
+  const { isSaved, toggleSaveState, isInitialLoading } =
+    useSaveToggle(expressionId);
   const { getActiveLists, syncOnSave, syncOnUnsave, getContainingListIds } =
     useVocabularySync(expressionId);
 
-  /**
-   * Main logic for Save button click
-   */
   const handleSaveToggle = useCallback(async () => {
-    // 1. Check Auth
     if (!user) return { shouldOpenLoginModal: true };
+    if (isSyncing) return { shouldOpenLoginModal: false }; // Prevent race conditions
 
     const willSave = !isSaved;
 
     if (willSave) {
-      // 2. [SAVE ON] - Find available lists
-      const availableLists = await getActiveLists();
-
-      // If no lists exist, open modal to create first list
-      if (availableLists.length === 0) {
-        setIsListModalOpen(true);
-        return { shouldOpenLoginModal: false };
-      }
-
-      // 3. Toggle Action and Sync with default list
+      setIsSyncing(true);
       try {
-        await toggleSaveState();
-        await syncOnSave(availableLists);
+        const availableLists = await getActiveLists();
+
+        if (availableLists.length === 0) {
+          setIsListModalOpen(true);
+          setIsSyncing(false);
+          return { shouldOpenLoginModal: false };
+        }
+
+        await Promise.all([toggleSaveState(), syncOnSave(availableLists)]);
       } catch (error) {
-        // Rollback already handled in toggleSaveState
         console.error("Save sync failed:", error);
+      } finally {
+        setIsSyncing(false);
       }
     } else {
-      // [SAVE OFF]
+      setIsSyncing(true);
       try {
-        await toggleSaveState();
-        await syncOnUnsave();
+        await Promise.all([toggleSaveState(), syncOnUnsave()]);
       } catch (error) {
         console.error("Unsave sync failed:", error);
+      } finally {
+        setIsSyncing(false);
       }
     }
 
@@ -63,45 +62,40 @@ export function useSaveAction(expressionId: string) {
   }, [
     user,
     isSaved,
+    isSyncing,
     getActiveLists,
     toggleSaveState,
     syncOnSave,
     syncOnUnsave,
   ]);
 
-  /**
-   * Sync save state based on list modal actions
-   */
   const handleListActionSync = useCallback(
     async (_listId: string, added: boolean) => {
       if (added) {
         if (!isSaved) {
-          setIsSaved(true);
           try {
             await toggleAction(expressionId, "save");
           } catch (e) {
             console.error("Sync save failed", e);
-            setIsSaved(false);
           }
         }
       } else {
         const containing = await getContainingListIds(expressionId);
         if (containing.length === 0 && isSaved) {
-          setIsSaved(false);
           try {
             await toggleAction(expressionId, "save");
           } catch (e) {
             console.error("Sync unsave failed", e);
-            setIsSaved(true);
           }
         }
       }
     },
-    [isSaved, expressionId, toggleAction, getContainingListIds, setIsSaved],
+    [isSaved, expressionId, toggleAction, getContainingListIds],
   );
 
   return {
     isSaved,
+    isInitialLoading: isInitialLoading || isSyncing,
     isListModalOpen,
     setIsListModalOpen,
     handleSaveToggle,

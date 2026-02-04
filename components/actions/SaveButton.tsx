@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Bookmark } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Bookmark, Loader2 } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useSaveAction } from "@/hooks/user/useSaveAction";
@@ -27,6 +27,7 @@ export default function SaveButton({
 }: SaveButtonProps) {
   const {
     isSaved,
+    isInitialLoading,
     isListModalOpen,
     setIsListModalOpen,
     handleSaveToggle,
@@ -38,10 +39,19 @@ export default function SaveButton({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Long Press Logic
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLongPress = useRef(false);
 
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
   const handlePressStart = () => {
+    if (isInitialLoading) return;
     isLongPress.current = false;
     timerRef.current = setTimeout(() => {
       isLongPress.current = true;
@@ -61,7 +71,7 @@ export default function SaveButton({
     e.preventDefault();
     e.stopPropagation();
 
-    if (isLongPress.current) return; // Handled by timer
+    if (isLongPress.current || isInitialLoading) return; // Handled by timer or loading
 
     const { shouldOpenLoginModal } = await handleSaveToggle();
     if (shouldOpenLoginModal) {
@@ -78,22 +88,34 @@ export default function SaveButton({
         onTouchStart={handlePressStart}
         onTouchEnd={handlePressEnd}
         onClick={handleClick}
+        disabled={isInitialLoading}
         className={cn(
-          "group flex items-center gap-1.5 transition-colors focus:outline-none sm:cursor-pointer touch-manipulation", // touch-manipulation for better mobile handling
-          isSaved
-            ? "text-yellow-500"
-            : "text-zinc-400 hover:text-yellow-400 dark:text-zinc-500 dark:hover:text-yellow-400",
+          "group flex items-center gap-1.5 transition-colors focus:outline-none sm:cursor-pointer touch-manipulation",
+          isInitialLoading
+            ? "cursor-wait opacity-70"
+            : isSaved
+              ? "text-yellow-500"
+              : "text-zinc-400 hover:text-yellow-400 dark:text-zinc-500 dark:hover:text-yellow-400",
           className,
         )}
         aria-label={isSaved ? dict.detail.actionUnsave : dict.detail.actionSave}
       >
-        <Bookmark
-          className={cn(
-            ACTION_ICON_SIZE_CLASSES[size],
-            isSaved && "fill-current",
-            "transition-transform active:scale-90",
-          )}
-        />
+        {isInitialLoading ? (
+          <Loader2
+            className={cn(
+              ACTION_ICON_SIZE_CLASSES[size],
+              "animate-spin text-zinc-300 dark:text-zinc-600",
+            )}
+          />
+        ) : (
+          <Bookmark
+            className={cn(
+              ACTION_ICON_SIZE_CLASSES[size],
+              isSaved && "fill-current",
+              "transition-transform active:scale-90",
+            )}
+          />
+        )}
       </button>
 
       <LoginModal

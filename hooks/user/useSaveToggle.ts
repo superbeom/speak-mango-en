@@ -1,58 +1,40 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useUserActions } from "@/hooks/user/useUserActions";
 
+/**
+ * useSaveToggle
+ *
+ * 이 훅은 "저장(Save)" 액션의 상태를 관리하고 토글하는 로직을 캡슐화합니다.
+ * - 저장 상태 확인: 사용자가 해당 표현식을 저장했는지 여부를 확인합니다.
+ * - 저장 토글: 저장 상태를 토글하는 비동기 함수를 제공합니다.
+ * - 로딩 상태: 액션의 초기 로딩 상태를 추적합니다.
+ */
 export function useSaveToggle(expressionId: string) {
   const { handleError } = useAppErrorHandler();
   const { user } = useAuthUser();
-  const { toggleAction, hasAction } = useUserActions();
-  const [isSaved, setIsSaved] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const { toggleAction, hasAction, isLoading } = useUserActions();
 
-  // Load initial status
-  useEffect(() => {
-    let isMounted = true;
-    const checkStatus = async () => {
-      if (!user) {
-        setIsSaved(false);
-        setIsInitialLoading(false);
-        return;
-      }
-      try {
-        const status = await hasAction(expressionId, "save");
-        if (isMounted) {
-          setIsSaved(status);
-        }
-      } catch (error) {
-        console.error("Failed to check save status:", error);
-      } finally {
-        if (isMounted) setIsInitialLoading(false);
-      }
-    };
-    checkStatus();
-    return () => {
-      isMounted = false;
-    };
-  }, [expressionId, hasAction, user]);
+  const isSaved = hasAction(expressionId, "save");
 
   const toggleSaveState = useCallback(async () => {
     if (!user) return { shouldOpenLoginModal: true };
-
-    const willSave = !isSaved;
-    setIsSaved(willSave);
 
     try {
       await toggleAction(expressionId, "save");
       return { shouldOpenLoginModal: false };
     } catch (error) {
-      setIsSaved(!willSave); // Rollback
       handleError(error);
-      throw error; // Let the caller decide
+      throw error;
     }
-  }, [user, isSaved, expressionId, toggleAction, handleError]);
+  }, [user, expressionId, toggleAction, handleError]);
 
-  return { isSaved, toggleSaveState, setIsSaved, isInitialLoading };
+  return {
+    isSaved,
+    toggleSaveState,
+    isInitialLoading: isLoading.save,
+  };
 }

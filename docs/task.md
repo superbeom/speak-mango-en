@@ -161,6 +161,7 @@
   - [x] **Refactoring**: 공통 서버 액션 보안 HOF 도입 (`withPro`)
   - [x] **UI/UX**: 전역 확인 모달 시스템 구현 (`ConfirmDialog`)
   - [x] **Logic**: 단어장 동기화(`useVocabularySync`) 및 익명/로그인 데이터 병합 정책 안정화
+  - [x] **Performance**: 액션(Save/Learn) 실행 시 SWR 낙관적 업데이트(Optimistic Update) 도입
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입
   - [ ] **Audio/Blur**: 사용자 티어별 기능 접근 제어 로직 구현
