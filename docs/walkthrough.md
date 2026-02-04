@@ -2,6 +2,40 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.0: Pro Tier & Advanced Vocabulary Management (2026-02-04)
+
+### 1. Goal (목표)
+
+- 사용자 티어(Free/Pro) 연동의 기초가 되는 서버 측 인프라를 구축하고, 단어장 관리 기능을 완성합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Authorization & Security (`withPro` HOF)
+
+- **Purpose**: 서버 액션 실행 시 세션과 Pro 티어 여부를 일관되게 확인합니다.
+- **Logic**: `lib/server/actionUtils.ts`에 정의된 `withPro` 래퍼를 통해 중복되는 인증 로직을 제거하고, 권한이 없을 경우 즉시 적절한 `AppError`를 던집니다.
+
+#### B. Advanced Vocabulary Management
+
+- **Edit/Delete Actions**: 서버 액션(`updateVocabularyListTitle`, `deleteVocabularyList`)을 통해 단어장 정보를 수정하거나 삭제할 수 있습니다.
+- **Default List Setting**: `set_default_vocabulary_list` RPC를 호출하여 사용자가 선호하는 기본 저장 장소를 지정할 수 있습니다.
+- **UI Refinement**: `VocabularyDetailHeader.tsx`에 드롭다운 메뉴를 도입하여 부가적인 액션들을 그룹화했습니다.
+
+#### C. Global Confirmation UI
+
+- **`ConfirmContext`**: `useConfirm` 훅을 통해 앱 어디서든 프로미스 기반으로 확인 창을 호출할 수 있습니다.
+- **Aesthetics**: Framer Motion을 사용하여 고급스러운 페이드 및 스케일 애니메이션을 적용하고, 배경 블러(Backdrop blur) 효과를 통해 모던함을 강조했습니다.
+
+#### D. Data Revalidation Strategy
+
+- **`revalidate.ts`**: `revalidatePath` 호출을 추상화하여, 서버 액션 완료 후 클라이언트 사이드의 데이터가 즉각 현행화되도록 설계했습니다. (`/me` 및 `/me/[listId]` 경로 중심)
+
+### 3. Key Achievements (주요 성과)
+
+- 중복되는 인증 체계를 중앙 집중화하여 보안성과 생산성 향상
+- 복잡한 삭제 프로세스를 범용적인 Confirmation 시스템으로 사용자 친화적으로 해결
+- 다국어(9개 언어) 지원을 통한 글로벌 확장성 유지
+
 ## v0.14.27: Vocabulary UI Optimization & Refactoring (2026-02-02)
 
 ### 1. Goal (목표)

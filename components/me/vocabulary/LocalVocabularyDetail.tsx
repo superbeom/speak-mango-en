@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState, memo } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useI18n } from "@/context/I18nContext";
+import { useToast } from "@/context/ToastContext";
 import { Expression } from "@/types/expression";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { getExpressionsByIds } from "@/services/actions/expressions";
+import { ROUTES } from "@/lib/routes";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
@@ -18,7 +21,11 @@ interface LocalVocabularyDetailProps {
 const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   listId,
 }: LocalVocabularyDetailProps) {
-  const { vocabularyLists } = useLocalActionStore();
+  const router = useRouter();
+  const { dict } = useI18n();
+  const { showToast } = useToast();
+  const { vocabularyLists, updateListTitle, deleteList, setDefaultList } =
+    useLocalActionStore();
   const {
     isSelectionMode,
     viewMode,
@@ -34,6 +41,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   const [items, setItems] = useState<Expression[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false); // 404 방지용 삭제 상태
 
   const handleToggleAll = () => {
     if (selectedIds.size === items.length) {
@@ -89,7 +97,8 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     };
   }, [listId, vocabularyLists]);
 
-  if (error) {
+  // 삭제 중일 때는 에러(NotFound)를 무시함
+  if (error && !isDeleting) {
     notFound();
     return null;
   }
@@ -118,7 +127,30 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
       className="py-8"
     >
       <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
-        <VocabularyDetailHeader title={listTitle} itemCount={items.length} />
+        <VocabularyDetailHeader
+          title={listTitle}
+          itemCount={items.length}
+          isDefault={vocabularyLists[listId]?.isDefault}
+          onTitleSave={(newTitle) => {
+            setListTitle(newTitle);
+            updateListTitle(listId, newTitle);
+            showToast(dict.vocabulary.saveSuccess);
+          }}
+          onListDelete={() => {
+            setIsDeleting(true);
+            router.replace(ROUTES.MY_PAGE);
+
+            // Optimistic Navigation: 먼저 이동하고, 삭제는 나중에 처리하여 404 플리커링 방지
+            setTimeout(() => {
+              deleteList(listId);
+              showToast(dict.vocabulary.deleteSuccess);
+            }, 100);
+          }}
+          onSetDefault={() => {
+            setDefaultList(listId);
+            showToast(dict.vocabulary.setDefaultSuccess);
+          }}
+        />
       </div>
 
       <div className="mt-8 space-y-10">

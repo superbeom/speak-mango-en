@@ -155,10 +155,14 @@
       - [x] `VocabularyDetailLayout`을 통한 레이아웃 중복 제거 및 시맨틱 마크업 강화
       - [x] 원격(Pro) 및 로컬(Free) 단어장 상세 페이지 UI/UX 통일
       - [x] **UI/UX**: `VocabularyToolbar` 모바일 최적화 (2단 레이아웃) 및 리팩토링 (Sub-components)
+      - [x] **Logic**: 단어장 이름 변경, 삭제 및 기본값 설정 기능 완료
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
+  - [x] **Refactoring**: 공통 서버 액션 보안 HOF 도입 (`withPro`)
+  - [x] **UI/UX**: 전역 확인 모달 시스템 구현 (`ConfirmDialog`)
   - [x] **Logic**: 단어장 동기화(`useVocabularySync`) 및 익명/로그인 데이터 병합 정책 안정화
-- [ ] **Phase 4: Feature Gating & Trial**
+- [/] **Phase 4: Feature Gating & Trial**
+  - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입
   - [ ] **Audio/Blur**: 사용자 티어별 기능 접근 제어 로직 구현
   - [ ] **Trial**: 무료 사용자용 사용 횟수 제한(Trial Counter) 구현
   - [ ] **Upsell**: 체험 종료 시 결제 안내 및 업그레이드 모달 구현

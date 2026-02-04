@@ -1,5 +1,7 @@
+import type { User } from "next-auth";
 import { createClient } from "@supabase/supabase-js";
 import type { Adapter } from "@auth/core/adapters";
+import { DATABASE_SCHEMA } from "@/constants";
 
 export function format<T>(obj: Record<string, unknown> | unknown[]): T {
   if (Array.isArray(obj)) {
@@ -29,10 +31,16 @@ export interface SupabaseAdapterOptions {
 export function CustomSupabaseAdapter(
   options: SupabaseAdapterOptions,
 ): Adapter {
-  const { url, secret, schema = "speak_mango_en" } = options;
+  const { url, secret, schema } = options;
   const supabase = createClient(url, secret, {
     db: { schema },
     global: { headers: { "X-Client-Info": "speak-mango-custom-adapter" } },
+    auth: { persistSession: false },
+  });
+
+  // Client for querying business data (RPCs) in the main schema
+  const dataSupabase = createClient(url, secret, {
+    db: { schema: DATABASE_SCHEMA },
     auth: { persistSession: false },
   });
 
@@ -125,6 +133,22 @@ export function CustomSupabaseAdapter(
       if (error) throw error;
       if (!data) return null;
       const { users: user, ...session } = data;
+
+      // Enhance user object with Tier info via RPC (bypassing Auth Schema limitations)
+      // We check if user exists (it should, due to FK)
+      if (user && typeof user === "object" && "id" in user) {
+        const { data: tierData } = await dataSupabase.rpc("get_user_tier", {
+          p_user_id: user.id,
+        });
+
+        if (tierData && tierData.length > 0) {
+          const info = tierData[0];
+          const typedUser = user as User;
+          typedUser.tier = info.tier;
+          typedUser.subscription_end_date = info.subscription_end_date;
+        }
+      }
+
       return {
         user: format(user),
         session: format(session),

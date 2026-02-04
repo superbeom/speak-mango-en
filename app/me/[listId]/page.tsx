@@ -48,7 +48,14 @@ export default async function VocabularyListPage({ params }: PageProps) {
       }
     })();
 
-    content = <RemoteVocabularyDetail title={list.title} items={list.items} />;
+    content = (
+      <RemoteVocabularyDetail
+        listId={listId}
+        title={list.title}
+        items={list.items}
+        isDefault={list.is_default}
+      />
+    );
   }
 
   return <VocabularyDetailLayout>{content}</VocabularyDetailLayout>;

@@ -28,6 +28,7 @@ interface LocalActionState {
   getLists: () => LocalVocabularyList[];
   getListIdsForExpression: (expressionId: string) => string[];
   setDefaultList: (listId: string) => void;
+  updateListTitle: (id: string, newTitle: string) => void;
 }
 
 // Set persistence helper to serialize/deserialize Set
@@ -144,6 +145,17 @@ export const useLocalActionStore = create<LocalActionState>()(
             {} as Record<string, LocalVocabularyList>,
           );
           return { vocabularyLists: newLists };
+        }),
+      updateListTitle: (id, newTitle) =>
+        set((state) => {
+          const list = state.vocabularyLists[id];
+          if (!list) return {};
+          return {
+            vocabularyLists: {
+              ...state.vocabularyLists,
+              [id]: { ...list, title: newTitle },
+            },
+          };
         }),
     }),
     {

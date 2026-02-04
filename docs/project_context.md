@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-01-29
+**최종 수정일**: 2026-02-04
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -210,6 +210,10 @@ speak-mango-en/
   - **Clickable Link Cards**: 특정 카드 전체가 링크인 경우, 내부의 버튼(좋아요, 저장 등) 클릭 시 카드 전체의 반응(애니메이션)을 차단해야 합니다.
   - **InteractiveLink**: `whileTap` 대신 `useAnimation`을 사용하는 `InteractiveLink` 컴포넌트를 활용하여 클릭 대상에 따른 조건부 애니메이션을 실행합니다.
   - **Event Delegation**: 액션 버튼 그룹(`ActionButtonGroup`)은 `data-action-buttons` 마킹과 `e.stopPropagation()`을 통해 부모의 인터랙션 간섭을 원천 차단합니다.
+- **범용 확인 시스템 (Global Confirmation Strategy)**:
+  - 삭제나 중요 설정 변경 등 되돌리기 어려운 작업 전에는 반드시 `useConfirm` 훅을 통한 사용자 확인 과정을 거쳐야 합니다.
+  - **Usage**: `const confirmed = await confirm({ title: "...", message: "..." })`
+  - **Consistency**: 개별 컴포넌트에서 브라우저의 `window.confirm()`을 사용하지 않고, 앱 디자인 가이드라인을 따르는 전역 `ConfirmDialog`를 사용합니다.
 
 ### Frontend
 
@@ -235,6 +239,7 @@ speak-mango-en/
   - **Consistency**: 모든 알림은 중앙화된 컨텍스트를 통해 동일한 애니메이션과 디자인으로 제공됩니다.
 - **Error Handling Strategy**:
   - **Hook**: `hooks/useAppErrorHandler.ts`를 사용하여 에러 처리 로직을 중앙화합니다. `try/catch` 블록 내에서 `handleError(e)`를 호출하면 표준화된 로깅과 UI 알림(Toast)이 자동으로 수행됩니다.
+  - **Server Action Wrapper (`withPro`)**: `lib/server/actionUtils.ts`의 `withPro` 고차 함수를 사용하여 서버 액션의 세션 인증 및 Pro 티어 검증을 일원화합니다. 보안이 필요한 모든 원격 액션은 이 래퍼를 통해 보호되어야 합니다.
   - **Types**: `types/error.ts`의 `ErrorCode` Enum을 사용하여 에러 케이스를 정의하고, 하드코딩된 문자열 에러 메시지 사용을 지양합니다.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.

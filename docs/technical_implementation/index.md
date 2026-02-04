@@ -1825,3 +1825,33 @@ export function useQuizGame(initialExpressions: Expression[]) {
 
 - `QuizState`, `QuizAction` 등 명시적 인터페이스 정의
 - TypeScript의 타입 추론을 활용하여 컴파일 타임 에러 방지
+
+## 25. Pro Tier Infrastructure & Advanced Vocabulary Management
+
+### 25.1 Server Action Security HOF (`withPro`)
+
+- **Objective**: 서버 액션 실행 시 세션 인증과 유저 티어(Pro) 검증을 중앙에서 관리하여 중복을 제거하고 보안 오류를 방지합니다.
+- **Implementation**:
+  - `lib/server/actionUtils.ts`에 정의된 `withPro` 고차 함수는 원본 액션 함수를 인자로 받아 유효성 검사 계층을 추가합니다.
+  - **Auth Enforcement**: 유효한 세션이 없거나 유저 티어가 `FREE`인 경우 즉시 에러를 발생시킵니다.
+  - **Type Safety**: 래핑된 함수에 유저 ID 및 티어 정보를 주입하여 내부 로직에서 세션을 다시 조회할 필요가 없도록 설계했습니다.
+
+### 25.2 Server-side Revalidation Strategy
+
+- **Objective**: 데이터 변경(생성, 수정, 삭제) 후 클라이언트 사이드 캐시를 즉시 갱신하여 최신 상태를 유지합니다.
+- **Implementation**:
+  - `lib/server/revalidate.ts`에 범용적인 유틸리티 함수를 정의했습니다.
+  - **Scoped Revalidation**: `revalidateMyPage()` ( `/me` 경로) 및 `revalidateVocabularyInfo(listId)` (`/me/[id]` 경로 및 태그 캐시)와 같이 영향 범위를 최소화하여 성능 최적화를 도모했습니다.
+
+### 25.3 Global Confirmation Dialog (`useConfirm`)
+
+- **Objective**: 삭제와 같은 파괴적인 액션 전 사용자 확인을 받는 프로세스를 표준화하고 UX를 개선합니다.
+- **Architecture**:
+  - **Promise-based API**: `const confirmed = await confirm({...})` 방식을 사용하여 명령형(imperative) 스타일로 직관적인 코드 작성이 가능합니다.
+  - **Centralized State**: `ConfirmContext`를 통해 모달의 열림 상태와 파라미터를 관리하며, `layout.tsx`에 배치된 단일 모달 인스턴스를 공유합니다.
+- **Visual Design**: Framer Motion의 `AnimatePresence`를 활용하여 매끄러운 진입/이탈 애니메이션과 Backdrop blur 효과를 적용했습니다.
+
+### 25.4 Database Tier Management
+
+- **User Tier SQL**: `database/functions/get_user_tier.sql`에 정의된 `get_user_tier` 함수는 JWT 세션 정보를 기반으로 유저의 최신 상태를 DB 레벨에서 안전하게 반환합니다.
+- **Default List RPC**: `set_default_vocabulary_list`를 통해 복잡한 `is_default` 플래그 전환 로직을 원자적(Atomic)으로 처리합니다.

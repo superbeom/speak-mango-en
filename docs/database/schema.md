@@ -241,6 +241,15 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Returns**: `json` (단어장 정보 및 items 배열 포함)
 - **SQL Definition**: [`database/functions/get_vocabulary_list_details.sql`](../../database/functions/get_vocabulary_list_details.sql) 참조.
 
+#### 6. `get_user_tier`
+
+- **Description**: 특정 사용자의 `tier`와 `subscription_end_date`를 조회합니다. `SECURITY DEFINER` 옵션을 사용하여 RLS 정책이나 스키마 권한 제약을 우회하고 안전하게 데이터를 가져옵니다.
+- **Usage**: NextAuth Adapter에서 세션 생성 시 최신 User 정보를 보강하기 위해 사용합니다. (Cross-Schema Access)
+- **Parameters**:
+  - `p_user_id` (uuid): 대상 사용자 ID.
+- **Returns**: `Table (tier user_tier, subscription_end_date timestamptz)`
+- **SQL Definition**: [`database/functions/get_user_tier.sql`](../../database/functions/get_user_tier.sql) 참조.
+
 ### Database Triggers
 
 트리거는 데이터 변경 시 자동으로 실행되는 로직을 정의합니다.

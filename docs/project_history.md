@@ -2,6 +2,25 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## 2026-02-04: Pro Tier Integration & Advanced Vocabulary Management
+
+### ✅ 진행 사항
+
+1.  **Pro Tier Infrastructure**:
+    - **`get_user_tier` SQL Function**: 유저의 현재 티어(Free/Pro)를 즉각 확인하기 위한 DB 함수를 추가했습니다.
+    - **`withPro` Server Action HOF**: 모든 서버 액션에서 Pro 티어 권한을 중앙 집중식으로 확인하고 에러를 처리하는 고차 함수(HOF)를 도입했습니다.
+
+2.  **Vocabulary Management Expansion**:
+    - **Advanced Actions**: 단어장 이름 수정(`Rename`), 삭제(`Delete`), 기본 단어장 설정(`Set Default`) 기능을 추가했습니다.
+    - **Enhanced Header UI**: `VocabularyDetailHeader`에 '더 보기(More)' 메뉴를 도입하여 복잡한 액션들을 깔끔하게 정리했습니다.
+
+3.  **Global Confirmation System**:
+    - **`ConfirmDialog` & `ConfirmContext`**: 삭제 등 민감한 작업 시 사용할 수 있는 범용적인 모달 시스템을 구축했습니다.
+
+4.  **Stability & Performance**:
+    - **Server-side Revalidation**: `revalidatePath` 및 `revalidateTag`를 래핑한 유틸리티를 사용하여 데이터 변경 후 즉각적으로 UI가 갱신되도록 보장했습니다.
+    - **I18n Expansion**: 새로운 관리 기능들을 위해 9개 언어에 대한 번역 문자열을 업데이트했습니다.
+
 ## 2026-02-02: Vocabulary UI Optimization & Refactoring
 
 ### ✅ 진행 사항

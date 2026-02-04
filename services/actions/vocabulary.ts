@@ -3,6 +3,11 @@
 import { cache } from "react";
 import { createAppError, VOCABULARY_ERROR } from "@/types/error";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { withPro } from "@/lib/server/actionUtils";
+import {
+  revalidateMyPage,
+  revalidateVocabularyInfo,
+} from "@/lib/server/revalidate";
 import { getAuthSession } from "@/lib/auth/utils";
 import {
   VocabularyList,
@@ -18,6 +23,10 @@ import {
  */
 export const getVocabularyLists = cache(
   async function getVocabularyLists(): Promise<VocabularyListWithCount[]> {
+    /**
+     * Note: This function doesn't use withPro because cache() doesn't play well with HOFs directly within the export.
+     * Also, it handles the !isPro case by returning empty array instead of throwing.
+     */
     const { userId, isPro } = await getAuthSession();
 
     if (!userId || !isPro) {
@@ -55,32 +64,31 @@ export const getVocabularyLists = cache(
  * @param title - 생성할 단어장의 이름입니다.
  * @returns 생성된 단어장의 ID와 제목을 포함한 객체를 반환합니다.
  */
-export async function createVocabularyList(
-  title: string,
-): Promise<Pick<VocabularyList, "id" | "title">> {
-  const { userId, isPro } = await getAuthSession();
+export const createVocabularyList = withPro(
+  async (
+    userId,
+    _isPro,
+    title: string,
+  ): Promise<Pick<VocabularyList, "id" | "title">> => {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase
+      .from("vocabulary_lists")
+      .insert({
+        user_id: userId,
+        title: title.trim(),
+      })
+      .select("id, title")
+      .single();
 
-  if (!userId || !isPro) {
-    throw createAppError(VOCABULARY_ERROR.PREMIUM_REQUIRED);
-  }
+    if (error) {
+      console.error("Failed to create vocabulary list:", error);
+      throw createAppError(VOCABULARY_ERROR.CREATE_FAILED);
+    }
 
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase
-    .from("vocabulary_lists")
-    .insert({
-      user_id: userId,
-      title: title.trim(),
-    })
-    .select("id, title")
-    .single();
-
-  if (error) {
-    console.error("Failed to create vocabulary list:", error);
-    throw createAppError(VOCABULARY_ERROR.CREATE_FAILED);
-  }
-
-  return data;
-}
+    revalidateMyPage();
+    return data;
+  },
+);
 
 /**
  * 특정 표현이 저장되어 있는 단어장 ID 목록을 가져옵니다.
@@ -90,6 +98,10 @@ export async function createVocabularyList(
  * @returns 해당 표현이 포함된 단어장 ID들의 배열을 반환합니다.
  */
 export async function getSavedListIds(expressionId: string): Promise<string[]> {
+  /**
+   * Note: This function manually handles auth to return essential data (or empty)
+   * instead of throwing, ensuring UI resilience for non-Pro users.
+   */
   const { isPro } = await getAuthSession();
 
   if (!isPro) return [];
@@ -118,27 +130,30 @@ export async function getSavedListIds(expressionId: string): Promise<string[]> {
  * @param listId - 대상 단어장 ID입니다.
  * @param expressionId - 추가할 표현의 ID입니다.
  */
-export async function addToVocabularyList(
-  listId: string,
-  expressionId: string,
-): Promise<void> {
-  const { isPro } = await getAuthSession();
+export const addToVocabularyList = withPro(
+  async (
+    _userId,
+    _isPro,
+    listId: string,
+    expressionId: string,
+  ): Promise<void> => {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase.from("vocabulary_items").insert({
+      list_id: listId,
+      expression_id: expressionId,
+    }); // Constraints will handle duplicates
 
-  if (!isPro) throw createAppError(VOCABULARY_ERROR.UNAUTHORIZED);
+    if (error) {
+      // Ignore duplicate key error (code 23505) gracefully?
+      if (error.code === "23505") return;
+      console.error("Failed to add to list:", error);
+      throw createAppError(VOCABULARY_ERROR.ADD_FAILED);
+    }
 
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.from("vocabulary_items").insert({
-    list_id: listId,
-    expression_id: expressionId,
-  }); // Constraints will handle duplicates
-
-  if (error) {
-    // Ignore duplicate key error (code 23505) gracefully?
-    if (error.code === "23505") return;
-    console.error("Failed to add to list:", error);
-    throw createAppError(VOCABULARY_ERROR.ADD_FAILED);
-  }
-}
+    revalidateMyPage(); // To update counts
+    revalidateVocabularyInfo(listId);
+  },
+);
 
 /**
  * 특정 단어장에서 표현을 제거합니다.
@@ -146,47 +161,51 @@ export async function addToVocabularyList(
  * @param listId - 대상 단어장 ID입니다.
  * @param expressionId - 제거할 표현의 ID입니다.
  */
-export async function removeFromVocabularyList(
-  listId: string,
-  expressionId: string,
-): Promise<void> {
-  const { isPro } = await getAuthSession();
+export const removeFromVocabularyList = withPro(
+  async (
+    _userId,
+    _isPro,
+    listId: string,
+    expressionId: string,
+  ): Promise<void> => {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("vocabulary_items")
+      .delete()
+      .eq("list_id", listId)
+      .eq("expression_id", expressionId);
 
-  if (!isPro) throw createAppError(VOCABULARY_ERROR.UNAUTHORIZED);
+    if (error) {
+      console.error("Failed to remove from list:", error);
+      throw createAppError(VOCABULARY_ERROR.REMOVE_FAILED);
+    }
 
-  const supabase = await createServerSupabase();
-  const { error } = await supabase
-    .from("vocabulary_items")
-    .delete()
-    .eq("list_id", listId)
-    .eq("expression_id", expressionId);
-
-  if (error) {
-    console.error("Failed to remove from list:", error);
-    throw createAppError(VOCABULARY_ERROR.REMOVE_FAILED);
-  }
-}
+    revalidateMyPage();
+    revalidateVocabularyInfo(listId);
+  },
+);
 
 /**
  * 특정 단어장을 기본 단어장으로 설정합니다.
  *
  * @param listId - 기본값으로 설정할 단어장 ID입니다.
  */
-export async function setDefaultVocabularyList(listId: string): Promise<void> {
-  const { isPro } = await getAuthSession();
+export const setDefaultVocabularyList = withPro(
+  async (_userId, _isPro, listId: string): Promise<void> => {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase.rpc("set_default_vocabulary_list", {
+      p_list_id: listId,
+    });
 
-  if (!isPro) throw createAppError(VOCABULARY_ERROR.UNAUTHORIZED);
+    if (error) {
+      console.error("Failed to set default list:", error);
+      throw createAppError(VOCABULARY_ERROR.UPDATE_FAILED);
+    }
 
-  const supabase = await createServerSupabase();
-  const { error } = await supabase.rpc("set_default_vocabulary_list", {
-    p_list_id: listId,
-  });
-
-  if (error) {
-    console.error("Failed to set default list:", error);
-    throw createAppError(VOCABULARY_ERROR.UPDATE_FAILED);
-  }
-}
+    revalidateMyPage();
+    revalidateVocabularyInfo(listId);
+  },
+);
 
 /**
  * 특정 단어장의 상세 정보와 포함된 모든 표현 데이터를 가져옵니다.
@@ -198,6 +217,9 @@ export const getVocabularyListDetails = cache(
   async function getVocabularyListDetails(
     listId: string,
   ): Promise<VocabularyListDetails> {
+    /**
+     * Note: This function doesn't use withPro because cache() doesn't play well with HOFs directly within the export.
+     */
     const { userId, isPro } = await getAuthSession();
 
     if (!userId || !isPro) {
@@ -220,5 +242,52 @@ export const getVocabularyListDetails = cache(
     }
 
     return data as VocabularyListDetails;
+  },
+);
+
+/**
+ * 단어장의 이름을 수정합니다.
+ *
+ * @param listId - 이름을 수정할 단어장 ID입니다.
+ * @param title - 새로운 단어장 이름입니다.
+ */
+export const updateVocabularyListTitle = withPro(
+  async (_userId, _isPro, listId: string, title: string): Promise<void> => {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("vocabulary_lists")
+      .update({ title: title.trim() })
+      .eq("id", listId);
+
+    if (error) {
+      console.error("Failed to update vocabulary list title:", error);
+      throw createAppError(VOCABULARY_ERROR.UPDATE_FAILED);
+    }
+
+    revalidateMyPage();
+    revalidateVocabularyInfo(listId);
+  },
+);
+
+/**
+ * 특정 단어장을 삭제합니다.
+ *
+ * @param listId - 삭제할 단어장 ID입니다.
+ */
+export const deleteVocabularyList = withPro(
+  async (_userId, _isPro, listId: string): Promise<void> => {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("vocabulary_lists")
+      .delete()
+      .eq("id", listId);
+
+    if (error) {
+      console.error("Failed to delete vocabulary list:", error);
+      throw createAppError(VOCABULARY_ERROR.DELETE_FAILED);
+    }
+
+    revalidateMyPage();
+    // No need to revalidate /me/[listId] as it will 404
   },
 );
