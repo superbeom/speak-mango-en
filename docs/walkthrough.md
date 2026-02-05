@@ -2,6 +2,34 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.6: My Page Dedicated Skeleton & Component Composition (2026-02-05)
+
+### 1. Goal (목표)
+
+- 마이페이지 전용 스켈레톤을 도입하여 시각적 일관성을 확보하고, 스켈레톤 컴포넌트들을 조립 가능한 형태로 리팩토링하여 유지보수성과 재사용성을 극대화합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Dedicated Skeleton Components (`Skeletons.tsx`)
+
+- **`SkeletonProfileHeader`**: 실제 프로필 섹션의 레이아웃(아바타 너비, 타이틀 높이 등)을 정교하게 모사했습니다.
+- **`SkeletonStudyModesGrid`**: 실제 학습 모드 카드의 아이콘 사이즈(`h-14 w-14`)와 그리드 간격을 반영했습니다.
+- **`SkeletonVocabularyListSection`**: 제목과 2단 그리드 구조를 캡슐화하여 여러 도메인에서 공유 가능하도록 했습니다.
+- **`SkeletonVocabularyDetailHeader` & `SkeletonVocabularyToolbar`**: 단어장 상세 페이지 전용으로, 실제 헤더 및 툴바와 동일한 레이아웃을 제공합니다.
+
+#### B. Component Composition Patterns
+
+- **Page Loading (`app/me/loading.tsx`)**: 개별 스켈레톤 조각들을 조합하여 마이페이지 전체 레이아웃을 구성했습니다.
+- **Suspense Integration (`VocabularyListContainer.tsx`)**: 공용 스켈레톤 섹션을 `Suspense`의 `fallback`으로 적용하여 중복 코드를 제거했습니다.
+- **Contextual Navbar**: `SKELETON_PAGE.MY_PAGE` 상수를 추가하고, `SkeletonNavbar`에서 불필요한 홈 서브헤더 스켈레톤이 노출되지 않도록 최적화했습니다.
+- **Unified Loading UX**: `LocalVocabularyDetail.tsx`(Free)의 내부 로딩 UI를 `app/me/[listId]/loading.tsx`와 동일한 스켈레톤 컴포넌트(Header + Toolbar + List) 조합으로 교체하여, 유저 타입에 관계없이 매끄러운 로딩 경험을 보장했습니다.
+- **Animation Control**: `VocabularyItemsGrid`와 `VocabularyItem`에서 초기 마운트 시 `visible` 상태를 즉시 적용하고, `ExpressionCard`의 진입 애니메이션을 조건부로 비활성화하여 스켈레톤-콘텐츠 전환 시의 깜빡임을 제거했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Optimized First Paint**: 마이페이지 진입 시 실제 UI와 거의 일치하는 윤곽을 즉시 제공.
+- ✅ **Improved Maintainability**: 스켈레톤 코드 중복 제거 및 조합형 아키텍처 구축.
+
 ## v0.15.5: UX Loading States & Form Stability (2026-02-05)
 
 ### 1. Goal (목표)

@@ -37,7 +37,9 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
       <div
         className={cn(
           "mx-auto max-w-layout px-4 py-4 sm:px-6 lg:px-8 flex items-center",
-          (page === SKELETON_PAGE.HOME || page === SKELETON_PAGE.DETAIL) &&
+          (page === SKELETON_PAGE.HOME ||
+            page === SKELETON_PAGE.DETAIL ||
+            page === SKELETON_PAGE.MY_PAGE) &&
             "justify-between",
           className,
         )}
@@ -277,3 +279,89 @@ export const SkeletonVocabularyList = memo(function SkeletonVocabularyList() {
     </div>
   );
 });
+
+/**
+ * 마이 페이지 - 프로필 헤더 스켈레톤
+ */
+export const SkeletonProfileHeader = memo(function SkeletonProfileHeader() {
+  return (
+    <div className="flex items-center gap-5 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-surface shadow-sm">
+      <Skeleton className="h-18 w-18 rounded-full shrink-0" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-5 w-20 rounded-full" />
+      </div>
+    </div>
+  );
+});
+
+/**
+ * 마이 페이지 - 학습 모드 그리드 스켈레톤
+ */
+export const SkeletonStudyModesGrid = memo(function SkeletonStudyModesGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      {[1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="h-40 rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-surface p-5 space-y-3"
+        >
+          <Skeleton className="h-14 w-14 rounded-xl" />
+          <div className="pt-2 space-y-1.5">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-3 w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+/**
+ * 마이 페이지 - 단어장 목록 섹션 스켈레톤
+ */
+export const SkeletonVocabularyListSection = memo(
+  function SkeletonVocabularyListSection() {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-7 w-24 rounded-lg mb-6 opacity-30" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="h-32 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
+          <div className="h-32 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
+        </div>
+      </div>
+    );
+  },
+);
+
+/**
+ * 단어장 상세 페이지 - 헤더 스켈레톤
+ */
+export const SkeletonVocabularyDetailHeader = memo(
+  function SkeletonVocabularyDetailHeader() {
+    return (
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-48 sm:h-9 sm:w-64" />
+          <Skeleton className="h-6 w-12 rounded-md" />
+        </div>
+        <Skeleton className="h-10 w-10 rounded-lg" />
+      </div>
+    );
+  },
+);
+
+/**
+ * 단어장 상세 페이지 - 툴바 스켈레톤
+ */
+export const SkeletonVocabularyToolbar = memo(
+  function SkeletonVocabularyToolbar() {
+    return (
+      <div className="sticky-toolbar flex items-center justify-between p-2 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-surface">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-24 rounded-lg" />
+        </div>
+      </div>
+    );
+  },
+);

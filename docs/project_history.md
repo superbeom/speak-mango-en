@@ -2,6 +2,25 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.6: My Page Dedicated Skeleton & Component Composition (2026-02-05)
+
+### ✅ 진행 사항
+
+1.  **My Page Dedicated Skeleton**:
+    - **Problem**: 마이페이지(`/me`) 진입 시 홈 피드와 동일한 스켈레톤이 노출되어 시각적 불일치가 발생하고 사용자 경험이 저해되었습니다.
+    - **Solution**:
+      - `SkeletonProfileHeader` (Avatar+Header), `SkeletonStudyModesGrid` (2x2 모드 카드)를 새롭게 구현했습니다.
+      - `app/me/loading.tsx`를 생성하여 위 컴포넌트들과 네비게이션 스켈레톤을 조합한 전용 로딩 화면을 적용했습니다.
+      - **Vocabulary Detail Loading**: `app/me/[listId]/loading.tsx`를 생성하여 단어장 상세 페이지 전용 로딩 스켈레톤을 구현했습니다. `SkeletonVocabularyDetailHeader`, `SkeletonVocabularyToolbar`, `SkeletonExpressionList`를 조합하여 사용합니다.
+
+2.  **Skeleton Component Composition Pattern**:
+    - **Problem**: 로딩 스켈레톤 코드가 여러 컴포넌트(`loading.tsx`, `VocabularyListContainer` 등)에서 중복 정의되어 유지보수가 어려웠습니다.
+    - **Solution**:
+      - `SkeletonVocabularyListSection`을 별도 컴포넌트로 분리하여 공용화했습니다.
+      - 거대한 페이지 단위 스켈레톤 대신 작은 단위의 스켈레톤 조각들을 조합하는 방식을 채택하여 재사용성을 높였습니다.
+      - `SkeletonNavbar`에 `MY_PAGE` 타입을 추가하여 페이지 컨텍스트에 맞는 헤더 스켈레톤을 노출하도록 개선했습니다.
+      - **Client/Server Consistency**: `LocalVocabularyDetail.tsx`(Free User)의 클라이언트 로딩 상태에서도 `loading.tsx`(Server)와 동일한 스켈레톤 컴포넌트 조합을 사용하여 유저 타입에 관계없이 일관된 로딩 경험을 제공하고 깜빡임을 제거했습니다.
+
 ## v0.15.5: UX Loading States & Form Stability (2026-02-05)
 
 ### ✅ 진행 사항

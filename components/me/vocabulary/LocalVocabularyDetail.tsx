@@ -10,6 +10,11 @@ import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { getExpressionsByIds } from "@/services/actions/expressions";
 import { ROUTES } from "@/lib/routes";
+import {
+  SkeletonExpressionList,
+  SkeletonVocabularyDetailHeader,
+  SkeletonVocabularyToolbar,
+} from "@/components/ui/Skeletons";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
@@ -105,15 +110,14 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
 
   if (loading) {
     return (
-      <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="h-10 w-48 bg-zinc-100 dark:bg-zinc-800 rounded-lg animate-pulse mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="h-40 bg-zinc-100 dark:bg-zinc-800 rounded-2xl animate-pulse"
-            />
-          ))}
+      <div className="py-8 animate-pulse">
+        <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+          <SkeletonVocabularyDetailHeader />
+        </div>
+
+        <div className="mt-8 space-y-10 max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+          <SkeletonVocabularyToolbar />
+          <SkeletonExpressionList />
         </div>
       </div>
     );

@@ -5,6 +5,7 @@ export const SKELETON_PAGE = {
   HOME: "home",
   DETAIL: "detail",
   QUIZ: "quiz",
+  MY_PAGE: "my_page",
 } as const;
 
 export type SkeletonPage = (typeof SKELETON_PAGE)[keyof typeof SKELETON_PAGE];
