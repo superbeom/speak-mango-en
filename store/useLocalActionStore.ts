@@ -29,6 +29,10 @@ interface LocalActionState {
   getListIdsForExpression: (expressionId: string) => string[];
   setDefaultList: (listId: string) => void;
   updateListTitle: (id: string, newTitle: string) => void;
+
+  // Hydration State
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
 // Set persistence helper to serialize/deserialize Set
@@ -49,6 +53,7 @@ type PersistedState = {
 export const useLocalActionStore = create<LocalActionState>()(
   persist(
     (set, get) => ({
+      _hasHydrated: false,
       actions: {
         save: new Set(),
         learn: new Set(),
@@ -171,9 +176,13 @@ export const useLocalActionStore = create<LocalActionState>()(
             },
           };
         }),
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: LOCAL_STORAGE_KEYS.USER_ACTIONS,
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       partialize: (state) => ({
         actions: {
           save: Array.from(state.actions.save),
@@ -213,6 +222,7 @@ export const useLocalActionStore = create<LocalActionState>()(
             learn: new Set(persisted.actions.learn || []),
           },
           vocabularyLists: rehydratedLists,
+          _hasHydrated: true,
         };
       },
     },

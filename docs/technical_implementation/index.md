@@ -599,7 +599,7 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
   - **`SkeletonVocabularyDetailHeader` & `SkeletonVocabularyToolbar`**: 단어장 상세 페이지의 헤더(제목, 액션)와 툴바(필터, 선택)를 위한 전용 컴포넌트입니다.
 - **Implementation Pattern (Composition)**:
   - 거대한 단일 페이지 스켈레톤 대신, 작은 단위의 스켈레톤 컴포넌트들을 조합(Composition)하여 페이지 단위 로딩(`loading.tsx`)과 컴포넌트 단위 로딩(`Suspense fallback`)을 유연하게 처리합니다.
-  - **Client-Side Loading Sync**: Free 유저용 로컬 컴포넌트(`LocalVocabularyDetail`)의 내부 로딩 상태에도 동일한 스켈레톤 조합을 적용하여 SSR/CSR 간 시각적 이질감을 제거합니다.
+  - **Client-Side Loading Sync**: Free 유저용 로컬 컴포넌트(`LocalVocabularyDetail`)의 경우, Zustand Persist의 하이드레이션 상태(`_hasHydrated`)와 연동하여 데이터 복원이 완료될 때까지 서버 사이드 스켈레톤과 동일한 UI를 유지함으로써 SSR/CSR 간 시각적 단절을 제거합니다.
 - **Integration**: `app/loading.tsx`를 통해 Next.js App Router의 스트리밍 기능을 활용하며, 첫 번째 바이트(TTFB)가 도달하자마자 레이아웃 윤곽을 표시합니다.
 
 ## 10. Navigation State Persistence (네비게이션 상태 보존)

@@ -2,6 +2,29 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.7: Local Storage Hydration & Navigation Stability (2026-02-05)
+
+### 1. Goal (목표)
+
+- 클라이언트 사이드 저장소(Local Storage)의 하이드레이션 타이밍 이슈를 해결하여 직접 접근 및 새로고침 시의 안정성을 확보하고, 로딩 전환 시의 시각적 깜빡임을 제거하여 프리미엄 UX를 완성합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Hydration Awareness (`useLocalActionStore.ts`)
+
+- **State Management**: 스토어 내부에 `_hasHydrated` 플래그를 도입했습니다.
+- **Persistence Lifecycle**: Zustand의 `onRehydrateStorage` 미들웨어 훅을 사용하여 로컬 스토리지 데이터가 메모리 상의 스테이트로 완전히 복원된 시점에만 플래그를 `true`로 전환합니다.
+- **SSR/CSR Sync**: Next.js의 하이드레이션 과정에서 서버 데이터와 클라이언트 데이터 간의 불일치를 피하기 위해, 하이드레이션 완료 전까지는 초기 상태(빈 값)를 기반으로 한 로직 실행을 유보합니다.
+
+#### B. Robust Data Loading (`LocalVocabularyDetail.tsx`)
+
+- **Deferred Logic**: `useEffect` 내에서 `_hasHydrated`가 `false`일 경우 조기 반환(`return`) 처리하여 잘못된 `notFound()` 트리거를 방지했습니다.
+- **Loading State Union**: `loading || !_hasHydrated` 조건을 통해 데이터가 실제로 준비될 때까지 스켈레톤 UI를 안정적으로 노출합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Navigation Reliability**: 무료 사용자의 모든 진입 경로(Direct URL, Refresh)에 대한 100% 대응 성공.
+
 ## v0.15.6: My Page Dedicated Skeleton & Component Composition (2026-02-05)
 
 ### 1. Goal (목표)

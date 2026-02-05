@@ -2,6 +2,14 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.7: Local Storage Hydration & Navigation Stability (2026-02-05)
+
+### ✅ 진행 사항
+
+1.  **Local Storage Hydration Fix**:
+    - **Problem**: 무료 사용자(Free User)가 단어장 상세 페이지를 직접 입력/새로고침할 때 데이터 복원 전 렌더링으로 인해 404 에러가 발생하는 문제를 발견했습니다.
+    - **Solution**: `useLocalActionStore`에 하이드레이션 상태(`_hasHydrated`)를 추가하고, `LocalVocabularyDetail.tsx`에서 이 상태를 체크하여 데이터 준비 시까지 로딩을 유지하도록 개선했습니다.
+
 ## v0.15.6: My Page Dedicated Skeleton & Component Composition (2026-02-05)
 
 ### ✅ 진행 사항

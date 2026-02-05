@@ -29,8 +29,13 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   const router = useRouter();
   const { dict } = useI18n();
   const { showToast } = useToast();
-  const { vocabularyLists, updateListTitle, deleteList, setDefaultList } =
-    useLocalActionStore();
+  const {
+    vocabularyLists,
+    updateListTitle,
+    deleteList,
+    setDefaultList,
+    _hasHydrated,
+  } = useLocalActionStore();
   const {
     isSelectionMode,
     viewMode,
@@ -58,6 +63,9 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
 
   useEffect(() => {
     let isMounted = true;
+
+    // Wait for hydration
+    if (!_hasHydrated) return;
 
     const fetchList = async () => {
       const list = vocabularyLists[listId];
@@ -100,7 +108,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     return () => {
       isMounted = false;
     };
-  }, [listId, vocabularyLists]);
+  }, [listId, vocabularyLists, _hasHydrated]);
 
   // 삭제 중일 때는 에러(NotFound)를 무시함
   if (error && !isDeleting) {
@@ -108,7 +116,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     return null;
   }
 
-  if (loading) {
+  if (loading || !_hasHydrated) {
     return (
       <div className="py-8 animate-pulse">
         <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
