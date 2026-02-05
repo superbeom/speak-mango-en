@@ -2,6 +2,28 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.4: Automatic Continuity & UI Polish (2026-02-05)
+
+### 1. Goal (목표)
+
+- 기본 단어장 삭제 후에도 사용자의 학습 흐름('즉시 저장')이 끊기지 않도록 관리 자동화를 구현하고, 중복된 UI 요청을 제거하여 쾌적한 UX를 제공합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Automatic Default Reassignment
+
+- **DB Trigger (`handle_vocabulary_list_deleted.sql`)**: `vocabulary_lists` 테이블의 `AFTER DELETE` 트리거를 통해, 삭제된 리스트가 기본값(`is_default = true`)인 경우 남은 목록 중 가장 오래된 리스트를 자동으로 기본으로 설정합니다.
+- **Local Store (`useLocalActionStore.ts`)**: 무료 사용자를 위해 서버와 동일한 '오래된 순 승계' 로직을 Zustand 스토어의 `deleteList` 액션에 통합했습니다.
+
+#### B. UserMenu Optimization (`UserMenu.tsx`)
+
+- 현재 경로(`usePathname`)를 감지하여, 사용자가 이미 마이페이지에 있다면 드롭다운의 '마이페이지' 링크를 `disabled` 처리했습니다. 불필요한 전체 페이지 리로드와 네트워크 대역폭 낭비를 방지합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Seamless Flow**: 단어장 하나 이상 존재 시 항상 기본 저장소가 존재함을 보장.
+- ✅ **UX Integrity**: 사용자 행동에 따른 불필요한 UI 피드백 제거.
+
 ## v0.15.3: Full RLS Enforcement & RPC Bug Fix (2026-02-05)
 
 ### 1. Goal (목표)

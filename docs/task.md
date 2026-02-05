@@ -103,7 +103,7 @@
 - [x] **Refactoring**: 전역 타입 관리 스킴 구축 (`types/*.d.ts` 분리 및 Window 확장 타입 정리)
 - [x] **Refactoring**: 공유 버튼 토스트 시스템 전환 (`ToastContext` 연동)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
-- [x] **Security**: Supabase RLS 설정 및 보안 강화 (프로덕션 대비)
+- [x] **Security**: Supabase RLS 설정 및 보안 강화 (Full RLS Coverage 완료)
 
 ## Phase 5: Analytics (데이터 분석)
 
@@ -156,6 +156,7 @@
       - [x] 원격(Pro) 및 로컬(Free) 단어장 상세 페이지 UI/UX 통일
       - [x] **UI/UX**: `VocabularyToolbar` 모바일 최적화 (2단 레이아웃) 및 리팩토링 (Sub-components)
       - [x] **Logic**: 단어장 이름 변경, 삭제 및 기본값 설정 기능 완료
+      - [x] **Logic**: 기본 단어장 삭제 시 자동 권한 이양 구현 (Auto-reassignment)
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
   - [x] **Refactoring**: 공통 서버 액션 보안 HOF 도입 (`withPro`)
@@ -164,6 +165,7 @@
   - [x] **Performance**: 액션(Save/Learn) 실행 시 SWR 낙관적 업데이트(Optimistic Update) 도입
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입
+  - [x] **UI/UX**: 마이페이지 중복 접근 방지 및 유저 메뉴 최적화
   - [ ] **Audio/Blur**: 사용자 티어별 기능 접근 제어 로직 구현
   - [ ] **Trial**: 무료 사용자용 사용 횟수 제한(Trial Counter) 구현
   - [ ] **Upsell**: 체험 종료 시 결제 안내 및 업그레이드 모달 구현

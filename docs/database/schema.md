@@ -256,9 +256,10 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 #### 1. Trigger Functions
 
-| Function Name                | Returns   | Description                                           |
-| ---------------------------- | --------- | ----------------------------------------------------- |
-| `update_updated_at_column()` | `TRIGGER` | 레코드 수정 시 `updated_at` 컬럼을 현재 시간으로 갱신 |
+| Function Name                      | Returns   | Description                                                 |
+| ---------------------------------- | --------- | ----------------------------------------------------------- |
+| `update_updated_at_column()`       | `TRIGGER` | 레코드 수정 시 `updated_at` 컬럼을 현재 시간으로 갱신       |
+| `handle_vocabulary_list_deleted()` | `TRIGGER` | 기본 단어장 삭제 시 가장 오래된 다른 단어장으로 기본값 이관 |
 
 **SQL Definition**:
 
@@ -276,11 +277,12 @@ $$;
 
 #### 2. Triggers
 
-| Trigger Name                        | Table              | Event           | Description                                                                                          |
-| ----------------------------------- | ------------------ | --------------- | ---------------------------------------------------------------------------------------------------- |
-| `update_users_updated_at`           | `users`            | `BEFORE UPDATE` | 사용자 정보 변경 시 `updated_at` 필드 갱신                                                           |
-| `update_vocab_updated_at`           | `vocabulary_lists` | `BEFORE UPDATE` | 단어장 수정 시 `updated_at` 필드 갱신                                                                |
-| `set_vocabulary_list_first_default` | `vocabulary_lists` | `AFTER INSERT`  | 첫 단어장 생성 시 `is_default=true` 설정 (File: `database/functions/on_vocabulary_list_created.sql`) |
+| Trigger Name                        | Table              | Event           | Description                                                                                                                                             |
+| ----------------------------------- | ------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `update_users_updated_at`           | `users`            | `BEFORE UPDATE` | 사용자 정보 변경 시 `updated_at` 필드 갱신                                                                                                              |
+| `update_vocab_updated_at`           | `vocabulary_lists` | `BEFORE UPDATE` | 단어장 수정 시 `updated_at` 필드 갱신                                                                                                                   |
+| `set_vocabulary_list_first_default` | `vocabulary_lists` | `AFTER INSERT`  | 첫 단어장 생성 시 `is_default=true` 설정 <br> (SQL: [`on_vocabulary_list_created.sql`](../../database/functions/on_vocabulary_list_created.sql))        |
+| `on_vocabulary_list_deleted`        | `vocabulary_lists` | `AFTER DELETE`  | 기본 단어장 삭제 시 자동 이관 로직 수행 <br> (SQL: [`handle_vocabulary_list_deleted.sql`](../../database/functions/handle_vocabulary_list_deleted.sql)) |
 
 ### Custom Enums
 

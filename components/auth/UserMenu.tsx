@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { User } from "next-auth";
@@ -16,6 +17,7 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ user }: UserMenuProps) {
+  const pathname = usePathname();
   const { dict } = useI18n();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -66,7 +68,11 @@ export default function UserMenu({ user }: UserMenuProps) {
 
           <DropdownMenu.Separator className="dropdown-separator" />
 
-          <DropdownMenu.Item className="dropdown-item group" asChild>
+          <DropdownMenu.Item
+            className="dropdown-item group"
+            disabled={pathname === ROUTES.MY_PAGE}
+            asChild
+          >
             <Link href={ROUTES.MY_PAGE}>
               <UserIcon className="h-4 w-4 transition-transform sm:group-focus:scale-110" />
               <span>{dict.auth.myPage}</span>

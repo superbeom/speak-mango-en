@@ -94,7 +94,21 @@ export const useLocalActionStore = create<LocalActionState>()(
       deleteList: (id) =>
         set((state) => {
           const newLists = { ...state.vocabularyLists };
+          const wasDefault = newLists[id]?.isDefault;
           delete newLists[id];
+
+          // If the deleted list was default, reassign default to the oldest list
+          if (wasDefault) {
+            const remainingLists = Object.values(newLists).sort((a, b) =>
+              a.createdAt.localeCompare(b.createdAt),
+            );
+
+            if (remainingLists.length > 0) {
+              const newDefault = remainingLists[0];
+              newLists[newDefault.id] = { ...newDefault, isDefault: true };
+            }
+          }
+
           return { vocabularyLists: newLists };
         }),
       addToList: (listId, expressionId) =>

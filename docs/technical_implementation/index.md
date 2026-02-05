@@ -214,6 +214,15 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
   - **호환성**: NextAuth의 편리함과 Supabase RLS의 보안성을 동시에 누릴 수 있습니다.
   - **격리**: 사용자별 데이터 접근 제어를 애플리케이션 코드가 아닌 DB 정책 레벨에서 안전하게 수행합니다.
 
+### 5.2.2 Full RLS Enforcement (전면 보안 강화)
+
+- **Backdrop**: 초기 개발 단계에서는 생산성을 위해 일부 테이블이 'Unrestricted' 상태였으나, 실 서비스 운영을 위해 전수 조사를 거쳐 모든 테이블에 RLS를 활성화했습니다.
+- **Implementation**:
+  - `expressions`: 조회는 모두 허용하되, 삽입/수정/삭제는 `service_role`만 가능하게 격리.
+  - `user_actions`, `vocabulary_items`: `auth.uid() = user_id` 조건을 통해 철저한 데이터 격리 수행.
+  - `users`, `accounts`, `sessions`: 민감한 인증 정보는 본인 혹은 시스템 관리자 외 접근 불가능하도록 차단.
+- **Result**: "Zero Trust" 원칙에 따라 명시적으로 허용되지 않은 모든 DB 접근이 원천 차단됩니다.
+
 ### 5.3 Client-Side State Management (Zustand)
 
 - **Library**: `zustand` + `persist` middleware.
@@ -957,6 +966,14 @@ Tailwind CSS v4의 `@theme` 및 `@utility` 기능을 활용하여 유지보수�
   - `showBackButton` prop이 true일 경우, 서비스 로고 대신 `InteractiveLink`로 감싸진 `BackButton` 컴포넌트를 렌더링합니다. (로고와 동일한 탭 익스피리언스 보장)
   - 이 전환은 `flex items-center` 레이아웃 내에서 이루어지므로 로고와 뒤로가기 버튼이 동일한 시각적 무게감을 가집니다.
 - **Transparent on Scroll**: `transparentOnScroll` 옵션을 통해 상세 페이지 상단 영역의 개방감을 확보하고, 스크롤 발생 시에만 배경색을 채워 가독성을 높입니다.
+
+### 15.2 Self-Link Disabling Optimization (자기 참조 링크 최적화)
+
+- **Problem**: 마이페이지(`/me`) 등의 특정 경로에 이미 접속 중인 상태에서 드롭다운 메뉴의 동일한 링크를 클릭하면, 페이지가 불필요하게 전체 새로고침(Full Reload)되어 네트워크 부하와 UX 중단이 발생합니다.
+- **Solution**:
+  - `UserMenu` 컴포넌트에서 Next.js의 `usePathname` 훅을 사용하여 현재 활성화된 경로를 실시간으로 감지합니다.
+  - 클릭하려는 링크의 목적지가 현재 경로(`pathname`)와 일치할 경우, 해당 메뉴 아이템에 `disabled` 속성을 부여하고 클릭 이벤트를 차단합니다.
+- **Benefit**: 불필요한 서버 액션 호출과 리소스 리로드를 방지하여 앱의 반응성을 높이고 서버 비용을 절감합니다.
 
 ## 16. Vocabulary Management Architecture (보관함 시스템 아키텍처)
 
@@ -1775,9 +1792,13 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 - **Trigger**: `update_vocab_updated_at` 기능을 통해 단어장 내 아이템 추가/삭제나 제목 변경 시 `updated_at` 컬럼이 자동으로 갱신되어, 정렬 최신성을 유지합니다.
 - **Trigger (Timestamp)**: `update_vocab_updated_at`을 통해 변경 발생 시 `updated_at` 상시 갱신.
 - **Trigger (First List)**: `set_vocabulary_list_first_default` 트리거를 통해 사용자의 첫 단어장 생성 시 자동으로 `is_default = true`를 부여합니다. (File: `database/functions/on_vocabulary_list_created.sql`)
+- **Trigger (Default Continuity)**: 사용자가 현재 **기본 단어장**을 삭제할 경우, 서비스 마비(즉시 저장 불가 등)를 방지하기 위해 남아있는 단어장 중 가장 오래된 리스트를 자동으로 새 기본값으로 승격시킵니다.
+  - **DB (Pro)**: `on_vocabulary_list_deleted` 트리거 및 `handle_vocabulary_list_deleted` SQL 함수를 통해 DB 레벨에서 강제.
+  - **Local Store (Free)**: `useLocalActionStore`의 `deleteList` 액션에서 동일한 우선순위 알고리즘을 구현하여 일관성 유지.
 - **RPC Functions**:
   - `get_vocabulary_lists_with_counts`: 한 번의 JOIN 쿼리로 아이템 수와 기본 여부를 포함한 목록 조회.
   - `set_default_vocabulary_list`: 트랜잭션을 통해 기존 기본값 해제와 신규 설정을 원자적으로 수행.
+  - `get_user_tier`: 사용자의 현재 멤버십 상태(Free/Pro)를 안전하게 확인.
 
 ## 23. Component Refactoring & Reusability (컴포넌트 리팩토링 및 재사용성)
 

@@ -2,6 +2,26 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.4: Automatic Continuity & UI Polish (2026-02-05)
+
+### ✅ 진행 사항
+
+1.  **Automatic Default List Reassignment (기본 단어장 자동 승계)**:
+    - **Problem**: 기본(Default) 단어장을 삭제하면 더 이상 기본 단어장이 남지 않아 '즉시 저장' 기능이 작동하지 않았습니다.
+    - **Solution**:
+      - **DB (Pro)**: `on_vocabulary_list_deleted` 트리거를 추가하여 기본 단어장 삭제 시 가장 오래된 다른 리스트로 기본 설정을 자동 이관합니다.
+      - **Local (Free)**: `useLocalActionStore`의 `deleteList` 로직을 수정하여 동일한 자동 승계 로직을 구현했습니다.
+
+2.  **UserMenu UX Optimization (불필요한 리로드 방지)**:
+    - **Problem**: 마이페이지(`/me`)에 이미 접속해 있는 상태에서도 유저 메뉴의 '마이페이지' 링크를 클릭하면 페이지가 전체 새로고침되었습니다.
+    - **Solution**: `UserMenu` 컴포넌트에서 `usePathname`을 활용해 현재 경로가 마이페이지일 경우 링크를 비활성화(`disabled`) 처리하여 불필요한 네트워크 요청을 차단했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 삭제 로직을 트리거(Trigger)로 구현했나요?**
+
+- **A.** 복잡한 비즈니스 로직이라기보다 **데이터 정합성(Invariant)**에 가까운 규칙이기 때문입니다. 서비스 내 어떤 경로(대시보드, API 호출 등)로든 기본 리스트를 지우면 자동으로 다른 리스트가 그 역할을 대신하게 함으로써 데이터의 자가 치유(Self-healing)가 가능하도록 설계했습니다.
+
 ## v0.15.3: Full RLS Enforcement & RPC Bug Fix (2026-02-05)
 
 ### ✅ 진행 사항
