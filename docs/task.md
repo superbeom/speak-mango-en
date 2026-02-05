@@ -157,6 +157,7 @@
       - [x] **UI/UX**: `VocabularyToolbar` 모바일 최적화 (2단 레이아웃) 및 리팩토링 (Sub-components)
       - [x] **Logic**: 단어장 이름 변경, 삭제 및 기본값 설정 기능 완료
       - [x] **Logic**: 기본 단어장 삭제 시 자동 권한 이양 구현 (Auto-reassignment)
+      - [x] **UI/UX**: 단어장 목록 로딩 중 스켈레톤 도입 및 생성 폼 안정화 (`v0.15.5`)
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
   - [x] **Refactoring**: 공통 서버 액션 보안 HOF 도입 (`withPro`)

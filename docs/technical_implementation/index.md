@@ -590,6 +590,7 @@ iOS 및 모바일 디바이스의 잠금 화면/알림 센터 제어 패널에 �
 - **Strategy**: `docs/project_context.md`의 규칙에 따라 데이터 의존성이 있는 컴포넌트와 한 쌍으로 구현됩니다.
 - **Shared Components**: `components/ui/Skeletons.tsx`에서 중앙 관리합니다.
   - **`SkeletonCard`**: `ExpressionCard`의 높이와 내부 레이아웃(배경색, 뱃지 위치 등)을 픽셀 단위로 모사하여 로딩 전후 CLS 0을 유지합니다.
+  - **`SkeletonVocabularyList`**: `VocabularyListModal` 내부에 사용되는 리스트 아이템 스켈레톤입니다. 테두리 곡률과 내부 텍스트 라인의 너비를 실제 항목과 일치시켜 시각적 안정감을 줍니다.
   - **`SkeletonDetail`**: 상세 페이지의 복잡한 그리드와 대화 블록 구조를 그대로 재현합니다.
 - **Integration**: `app/loading.tsx`를 통해 Next.js App Router의 스트리밍 기능을 활용하며, 첫 번째 바이트(TTFB)가 도달하자마자 레이아웃 윤곽을 표시합니다.
 

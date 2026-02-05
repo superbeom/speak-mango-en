@@ -9,6 +9,7 @@ import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
 import { formatMessage } from "@/lib/utils";
+import { SkeletonVocabularyList } from "@/components/ui/Skeletons";
 import LoginModal from "@/components/auth/LoginModal";
 import CreateListForm from "./CreateListForm";
 import VocabularyListItem from "./VocabularyListItem";
@@ -119,16 +120,20 @@ export default function VocabularyListModal({
           </div>
 
           <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto py-2">
-            {lists.map((list) => (
-              <VocabularyListItem
-                key={list.id}
-                list={list}
-                isSelected={savedListIds.has(list.id)}
-                onToggle={() => handleToggle(list.id)}
-                isDefault={list.is_default}
-                onSetDefault={() => setDefaultList(list.id)}
-              />
-            ))}
+            {isLoading && lists.length === 0 ? (
+              <SkeletonVocabularyList />
+            ) : (
+              lists.map((list) => (
+                <VocabularyListItem
+                  key={list.id}
+                  list={list}
+                  isSelected={savedListIds.has(list.id)}
+                  onToggle={() => handleToggle(list.id)}
+                  isDefault={list.is_default}
+                  onSetDefault={() => setDefaultList(list.id)}
+                />
+              ))
+            )}
 
             {lists.length === 0 && !isLoading && (
               <div className="py-4 text-center text-sm text-zinc-500">

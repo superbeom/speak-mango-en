@@ -2,6 +2,30 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.5: UX Loading States & Form Stability (2026-02-05)
+
+### 1. Goal (목표)
+
+- 단어장 관리 과정에서의 시각적 끊김을 최소화하고, 비동기 데이터 처리 시 발생할 수 있는 잠재적인 인터랙션 오류를 방지하여 견고한 사용자 경험을 제공합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Vocabulary List Skeleton (`Skeletons.tsx`, `VocabularyListModal.tsx`)
+
+- **New Component**: `SkeletonVocabularyList`를 추가했습니다. 단어장 카드의 아웃라인(제목, 개수, 화살표)을 픽셀 단위로 재현하여 로딩 중 레이아웃 시프트를 방지합니다.
+- **Integration**: 단어장 선택 모달에서 데이터가 비어있고(`lists.length === 0`) 로딩 중(`isLoading`)일 때 스켈레톤을 노출하여 사용자에게 작업 진행 상태를 명확히 알립니다.
+
+#### B. CreateListForm Stability (`CreateListForm.tsx`)
+
+- **Internal State Management**: `isSubmitting` 로컬 상태를 도입했습니다. 폼 제출 시 이 값을 `true`로 설정하고 요청이 완료된 후 `false`로 되돌립니다.
+- **Async Safety**: 제출 버튼 클릭 시 즉시 `handleCreate`가 여러 번 호출되는 현상을 원천 차단합니다.
+- **UI Feedback**: `isLoading` 또는 `isSubmitting` 상태일 때 `Loader2` 애니메이션 아이콘을 표시하고 모든 상호작용 가능한 요소를 `disabled` 처리하여 UX 완성도를 높였습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Trustworthy UI**: 빈 화면 대신 스켈레톤을 보여줌으로써 시스템의 반응성 신뢰도 향상.
+- ✅ **Execution Integrity**: 중복 제출 및 로딩 중 입력 수정 오류 방지.
+
 ## v0.15.4: Automatic Continuity & UI Polish (2026-02-05)
 
 ### 1. Goal (목표)

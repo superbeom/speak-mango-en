@@ -2,6 +2,24 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.5: UX Loading States & Form Stability (2026-02-05)
+
+### ✅ 진행 사항
+
+1.  **Vocabulary List Skeleton (`SkeletonVocabularyList`)**:
+    - **Problem**: 단어장 목록 조회 시 초기 로딩 과정에서 빈 화면이 노출되어 사용자가 '데이터 없음'으로 오해할 소지가 있었습니다.
+    - **Solution**: `components/ui/Skeletons.tsx`에 단어장 전용 스켈레톤을 추가하고, `VocabularyListModal`에서 초기 페칭 시 이를 보여주도록 처리했습니다.
+
+2.  **CreateListForm UX Polish**:
+    - **Internal Loading State**: 부모로부터 전달받은 `isLoading` 외에 컴포넌트 내부에서 `isSubmitting` 상태를 별도로 관리하여, 비동기 요청 중 버튼 중복 클릭을 방지하고 상태 제어의 안정성을 확보했습니다.
+    - **Visual Feedback**: 리스트 생성 버튼에 `Loader2` 스피너를 추가하고, 로딩 중에는 입력창과 버튼을 비활성화(`disabled`)하여 데이터 무결성을 보장했습니다.
+
+### 💬 주요 Q&A 및 의사결정
+
+**Q. 왜 `isLoading`이 있는데 `isSubmitting`을 따로 쓰나요?**
+
+- **A.** 외부에서 주입되는 로딩 상태(`isLoading`)는 리스트를 불러오거나 다른 전역적인 작업에 의존할 수 있습니다. 반면 리스트 생성 버튼의 클릭은 이 컴포넌트만의 독립적인 액션이므로, 내부 상태(`isSubmitting`)를 통해 "지금 이 폼이 제출 중임"을 명확히 정의함으로써 예외 상황(예: 외부 isLoading이 늦게 바뀔 때)에서도 안전하게 동작하도록 설계했습니다.
+
 ## v0.15.4: Automatic Continuity & UI Polish (2026-02-05)
 
 ### ✅ 진행 사항

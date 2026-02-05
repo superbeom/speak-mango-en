@@ -255,3 +255,25 @@ export const SkeletonQuiz = memo(function SkeletonQuiz() {
     </div>
   );
 });
+
+/**
+ * 단어장 목록 로딩 시 보여줄 스켈레톤
+ */
+export const SkeletonVocabularyList = memo(function SkeletonVocabularyList() {
+  return (
+    <div className="space-y-2">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={`vocab-skeleton-${i}`}
+          className="flex items-center justify-between rounded-xl border border-zinc-100 p-4 dark:border-zinc-800"
+        >
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-12" />
+          </div>
+          <Skeleton className="h-4 w-4" />
+        </div>
+      ))}
+    </div>
+  );
+});
