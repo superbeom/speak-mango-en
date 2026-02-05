@@ -2,6 +2,30 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.3: Full RLS Enforcement & RPC Bug Fix (2026-02-05)
+
+### 1. Goal (목표)
+
+- 모든 데이터 테이블에 보안 정책을 적용하여 사각지대를 제거하고, 프로덕션 수준의 SQL 안정성을 확보합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Full RLS Coverage (`028`)
+
+- **expressions**: 누구나 조회 가능(`SELECT`)하되, 수정은 `service_role`만 가능하게 설정.
+- **user_actions**: `auth.uid() = user_id` 조건을 통해 본인의 활동 데이터만 접근 가능하게 격리.
+- **users/auth tables**: `users`는 본인 조회만 허용하고, `accounts`, `sessions`는 외부 접근을 차단(Service Role 전용)하여 보안을 극대화했습니다.
+
+#### B. SQL Function Fix (`toggle_user_action`)
+
+- **Problem**: PostgreSQL의 엄격한 타입 체크로 인해 `text` 파라미터와 `action_type` Enum 간의 비교 연산 실패 발생.
+- **Solution**: `::speak_mango_en.action_type` 캐스팅을 구문 곳곳에 추가하여 타입 호환성을 확보했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Full Zero Trust**: 모든 DB 테이블에 대해 '명시적으로 허용되지 않은 접근'을 원천 차단.
+- ✅ **Execution Reliability**: RPC 호출 시 발생하던 타입 에러를 해결하여 실시간 토글 기능 정상화.
+
 ## v0.15.2: Authentication & RLS Security Hardening (2026-02-04)
 
 ### 1. Goal (목표)

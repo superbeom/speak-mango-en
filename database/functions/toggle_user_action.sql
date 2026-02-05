@@ -34,17 +34,17 @@ begin
     select 1 from user_actions
     where user_id = v_user_id
       and expression_id = p_expression_id
-      and action_type = p_action_type
+      and action_type = p_action_type::speak_mango_en.action_type
   ) then
     -- If exists, delete (Toggle Off)
     delete from user_actions
     where user_id = v_user_id
       and expression_id = p_expression_id
-      and action_type = p_action_type;
+      and action_type = p_action_type::speak_mango_en.action_type;
   else
     -- If not exists, insert (Toggle On)
     insert into user_actions (user_id, expression_id, action_type)
-    values (v_user_id, p_expression_id, p_action_type);
+    values (v_user_id, p_expression_id, p_action_type::speak_mango_en.action_type);
   end if;
 end;
 $$;

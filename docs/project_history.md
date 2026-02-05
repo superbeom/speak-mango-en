@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.3: Full RLS Enforcement & RPC Bug Fix (2026-02-05)
+
+### ✅ 진행 사항
+
+1.  **Full RLS Coverage (보안 전면 강화)**:
+    - **Backdrop**: 기존에는 `vocabulary_lists` 등 일부 테이블만 RLS가 걸려있어 다른 테이블들이 'Unrestricted' 상태였습니다.
+    - **Solution**: `028_enable_rls_all_tables.sql`을 통해 `expressions`, `user_actions`, `users`, `accounts`, `sessions` 등 모든 테이블의 RLS를 활성화하고, 각 용도에 맞는 엄격한 정책(Policy)을 수립했습니다.
+
+2.  **RPC Type Casting Bug Fix (SQL 에러 해결)**:
+    - **Problem**: `toggle_user_action` 함수 호출 시 `text`와 `action_type` Enum 간의 비교 연산자 에러(`operator does not exist`)가 발생했습니다.
+    - **Solution**: SQL 함수 내부에서 `p_action_type::speak_mango_en.action_type`으로 명시적 형변환을 추가하여 타입을 일치시켰습니다.
+
 ## v0.15.2: Authentication & RLS Security Hardening (2026-02-04)
 
 ### ✅ 진행 사항
