@@ -166,6 +166,32 @@ body {
   border-radius: var(--radius-card);
 }
 
+/* Brand Colors */
+
+@utility text-brand-indigo {
+  @apply text-indigo-600 dark:text-indigo-400;
+}
+
+@utility bg-brand-indigo {
+  @apply bg-indigo-50 dark:bg-indigo-900/20;
+}
+
+@utility border-brand-indigo {
+  @apply border-indigo-200 dark:border-indigo-800;
+}
+
+@utility btn-brand-indigo {
+  @apply bg-indigo-600 text-white hover:bg-indigo-700 transition-colors;
+}
+
+@utility input-focus-brand {
+  @apply outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500;
+}
+
+@utility shadow-brand-indigo-lg {
+  @apply shadow-lg shadow-indigo-500/20;
+}
+
 /* Auth Utilities */
 
 @utility skeleton-avatar {
@@ -220,4 +246,34 @@ body {
 
 @utility coming-soon-badge {
   @apply bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 font-bold uppercase;
+}
+
+/* Vocabulary List Styles */
+
+@utility vocab-list-item {
+  @apply flex items-center justify-between w-full p-3 rounded-xl transition-all border touch-manipulation;
+}
+
+@utility vocab-list-item-selected {
+  @apply bg-brand-indigo border-brand-indigo;
+}
+
+@utility vocab-list-item-default {
+  @apply bg-white border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800;
+}
+
+@utility vocab-list-item-disabled {
+  @apply bg-zinc-300 dark:bg-zinc-800 opacity-50 cursor-not-allowed grayscale border-transparent;
+}
+
+@utility vocab-list-text-selected {
+  @apply text-brand-indigo;
+}
+
+@utility vocab-list-text-default {
+  @apply text-zinc-700 dark:text-zinc-300;
+}
+
+@utility vocab-list-check {
+  @apply text-brand-indigo;
 }

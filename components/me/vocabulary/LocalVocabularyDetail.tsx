@@ -4,10 +4,12 @@ import { useEffect, useState, memo } from "react";
 import { notFound, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import { useToast } from "@/context/ToastContext";
 import { Expression } from "@/types/expression";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
+import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
 import { getExpressionsByIds } from "@/services/actions/expressions";
 import { ROUTES } from "@/lib/routes";
 import {
@@ -15,6 +17,7 @@ import {
   SkeletonVocabularyDetailHeader,
   SkeletonVocabularyToolbar,
 } from "@/components/ui/Skeletons";
+import BulkActionModalWrapper from "@/components/vocabulary/BulkActionModalWrapper";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
@@ -28,12 +31,15 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
 }: LocalVocabularyDetailProps) {
   const router = useRouter();
   const { dict } = useI18n();
+  const { confirm } = useConfirm();
   const { showToast } = useToast();
   const {
     vocabularyLists,
     updateListTitle,
     deleteList,
     setDefaultList,
+    addMultipleToList,
+    removeMultipleFromList,
     _hasHydrated,
   } = useLocalActionStore();
   const {
@@ -53,12 +59,54 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   const [error, setError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // 404 방지용 삭제 상태
 
+  const {
+    bulkAction: bulkActionState,
+    openCopy: handleCopy,
+    openMove: handleMove,
+    close: closeBulkAction,
+    onOpenChange: onBulkActionOpenChange,
+  } = useBulkAction();
+
   const handleToggleAll = () => {
     if (selectedIds.size === items.length) {
       clearSelection();
     } else {
       selectAll(items.map((item) => item.id));
     }
+  };
+
+  const handleTitleSave = (newTitle: string) => {
+    setListTitle(newTitle);
+    updateListTitle(listId, newTitle);
+    showToast(dict.vocabulary.saveSuccess);
+  };
+
+  const handleListDelete = () => {
+    setIsDeleting(true);
+    router.replace(ROUTES.MY_PAGE);
+
+    // Optimistic Navigation: 먼저 이동하고, 삭제는 나중에 처리하여 404 플리커링 방지
+    setTimeout(() => {
+      deleteList(listId);
+      showToast(dict.vocabulary.deleteSuccess);
+    }, 100);
+  };
+
+  const handleSetDefault = () => {
+    setDefaultList(listId);
+    showToast(dict.vocabulary.setDefaultSuccess);
+  };
+
+  const handleItemsDelete = () => {
+    confirm({
+      title: dict.vocabulary.delete,
+      description: dict.vocabulary.itemsDeleteConfirm,
+      onConfirm: () => {
+        removeMultipleFromList(listId, Array.from(selectedIds));
+        showToast(dict.vocabulary.itemsDeleteSuccess);
+        toggleSelectionMode();
+      },
+    });
   };
 
   useEffect(() => {
@@ -143,25 +191,9 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
           title={listTitle}
           itemCount={items.length}
           isDefault={vocabularyLists[listId]?.isDefault}
-          onTitleSave={(newTitle) => {
-            setListTitle(newTitle);
-            updateListTitle(listId, newTitle);
-            showToast(dict.vocabulary.saveSuccess);
-          }}
-          onListDelete={() => {
-            setIsDeleting(true);
-            router.replace(ROUTES.MY_PAGE);
-
-            // Optimistic Navigation: 먼저 이동하고, 삭제는 나중에 처리하여 404 플리커링 방지
-            setTimeout(() => {
-              deleteList(listId);
-              showToast(dict.vocabulary.deleteSuccess);
-            }, 100);
-          }}
-          onSetDefault={() => {
-            setDefaultList(listId);
-            showToast(dict.vocabulary.setDefaultSuccess);
-          }}
+          onTitleSave={handleTitleSave}
+          onListDelete={handleListDelete}
+          onSetDefault={handleSetDefault}
         />
       </div>
 
@@ -182,8 +214,34 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
           viewMode={viewMode}
           selectedIds={selectedIds}
           onToggleItem={toggleItem}
+          onCopy={handleCopy}
+          onMove={handleMove}
+          onDelete={handleItemsDelete}
         />
       </div>
+
+      {bulkActionState && (
+        <BulkActionModalWrapper
+          isOpen={bulkActionState.isOpen}
+          onOpenChange={onBulkActionOpenChange}
+          type={bulkActionState.type}
+          currentListId={listId}
+          onSubmit={async (targetListId) => {
+            const ids = Array.from(selectedIds);
+            if (bulkActionState.type === BULK_ACTION_TYPE.COPY) {
+              addMultipleToList(targetListId, ids);
+              showToast(dict.vocabulary.copySuccess);
+            } else {
+              // bulkAction.type === BULK_ACTION_TYPE.MOVE
+              addMultipleToList(targetListId, ids);
+              removeMultipleFromList(listId, ids);
+              showToast(dict.vocabulary.moveSuccess);
+            }
+            closeBulkAction();
+            toggleSelectionMode();
+          }}
+        />
+      )}
     </motion.div>
   );
 });

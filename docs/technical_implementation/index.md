@@ -396,6 +396,35 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
 - **Interaction Bug**: 모바일 기기에서 버튼 터치 시 `:hover` 스타일이 해제되지 않고 남아있는 'Sticky Hover' 현상을 해결했습니다.
 - **Implementation**: 모든 UI 피드백에 `sm:hover:` 접두사를 적용하여, 호버 배경색 등의 시각 효과가 마우스가 연결된 데스크탑(sm 이상)에서만 작동하도록 제한했습니다. 모바일에서는 `whileTap` 애니메이션만으로 간결한 인터랙션 피드백을 제공합니다.
 
+#### D. Bulk Action Selection UX (일괄 작업 선택 UX)
+
+- **Interaction**: '선택 모드' 활성화 시, 각 아이템 카드에 체크박스(또는 선택 효과)가 나타나며 여러 항목을 동시에 지정할 수 있습니다.
+- **State Flow**: `useVocabularyView` 훅에서 관리되는 `selectedIds` (Set)를 기반으로 툴바에 '전체 선택/해제' 및 '작업 메뉴(이동/복사/삭제)'를 노출합니다.
+
+### 7.4 Vocabulary Bulk Operations (일괄 이동 및 복사)
+
+사용자가 다수의 표현을 다른 단어장으로 편리하게 옮기거나 복제할 수 있는 시스템입니다.
+
+#### A. Atomic Transfer Logic (`move_vocabulary_items` RPC)
+
+- **Process**:
+  1. 타겟 리스트에 항목 삽입 (`INSERT INTO ... ON CONFLICT DO NOTHING`)
+  2. 성공 시 소스 리스트에서 항목 삭제 (`DELETE FROM ...`)
+- **Safety**: SQL 레벨에서 두 작업을 묶어 처리함으로써, 중간에 네트워크 에러가 발생하더라도 데이터가 양쪽 리스트에서 증발하거나 중복되는 현상을 방지합니다.
+
+#### B. Bulk Action State Management (`useBulkAction` Hook)
+
+- **Encapsulation**: 복사(Copy)와 이동(Move) 작업은 '타겟 단어장 선택'이라는 공통된 UI 흐름을 공유합니다.
+- **Logic**: `useBulkAction` 훅은 현재 수행 중인 작업의 유형(`BulkActionType`)과 모달 제어 상태를 캡슐화하여, 툴바와 모달 간의 복잡한 상태 연동을 단순화합니다.
+
+### 7.5 Vocabulary Plan Status (플랜 사용 현황)
+
+사용자의 현재 리소스 사용량과 서비스 정책을 시각적으로 연결하는 컴포넌트입니다.
+
+- **Component**: `VocabularyPlanStatus.tsx`
+- **Logic**: 현재 생성된 단어장 개수(`lists.length`)와 플랜별 최대 허용 한도(`MAX_LISTS`)를 비교하여 수치로 표시합니다.
+- **UI Logic**: 한도 도달 시(`>= 5`) 생성 버튼을 비활성화하고, "더 많은 단어장을 추가할 수 있도록 곧 업데이트될 예정입니다"라는 문구를 통해 향후 유료 플랜(Pro)으로의 업그레이드 경로를 암시합니다.
+
 ## 8. Audio Playback System (오디오 재생 시스템)
 
 ### 8.1 Web Audio API & Volume Amplification (볼륨 증폭)

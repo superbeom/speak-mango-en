@@ -250,6 +250,17 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Returns**: `Table (tier user_tier, subscription_end_date timestamptz)`
 - **SQL Definition**: [`database/functions/get_user_tier.sql`](../../database/functions/get_user_tier.sql) 참조.
 
+#### 7. `move_vocabulary_items`
+
+- **Description**: 원본 단어장에서 표현들을 제거하고 대상 단어장에 추가하는 이동 작업을 원자적(Atomic)으로 수행합니다.
+- **Usage**: 단어장 간 표현 이동(`moveExpressionsToVocabularyList`) 시 사용.
+- **Parameters**:
+  - `p_source_list_id` (uuid): 원본 단어장 ID.
+  - `p_target_list_id` (uuid): 대상 단어장 ID.
+  - `p_expression_ids` (uuid[]): 이동할 표현 ID 배열.
+- **Returns**: `void`
+- **SQL Definition**: [`database/functions/move_vocabulary_items.sql`](../../database/functions/move_vocabulary_items.sql) 참조.
+
 ### Database Triggers
 
 트리거는 데이터 변경 시 자동으로 실행되는 로직을 정의합니다.

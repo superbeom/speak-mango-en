@@ -59,6 +59,8 @@ export const de = {
         "Kostenlose Benutzer können bis zu 5 Listen erstellen.",
       VOCABULARY_DELETE_FAILED: "Vokabelheft konnte nicht gelöscht werden.",
       VOCABULARY_NOT_FOUND: "Vokabelliste nicht gefunden.",
+      VOCABULARY_COPY_FAILED: "Kopieren der Elemente fehlgeschlagen.",
+      VOCABULARY_MOVE_FAILED: "Verschieben der Elemente fehlgeschlagen.",
     },
   },
   auth: {
@@ -156,6 +158,11 @@ export const de = {
     delete: "Löschen",
     selectAll: "Alle auswählen",
     deselectAll: "Auswahl aufheben",
+    copySuccess: "Ausgewählte Elemente kopiert.",
+    moveSuccess: "Ausgewählte Elemente verschoben.",
+    itemsDeleteConfirm:
+      "Möchten Sie die ausgewählten Elemente wirklich löschen?",
+    itemsDeleteSuccess: "Ausgewählte Elemente gelöscht.",
     deleteConfirm: "Möchten Sie dieses Vokabelheft wirklich löschen?",
     deleteSuccess: "Vokabelheft erfolgreich gelöscht.",
     saveSuccess: "Name des Vokabelhefts aktualisiert.",

@@ -58,6 +58,8 @@ export const es = {
         "Los usuarios gratuitos pueden crear hasta 5 listas.",
       VOCABULARY_DELETE_FAILED: "Error al eliminar el cuaderno.",
       VOCABULARY_NOT_FOUND: "Lista de vocabulario no encontrada.",
+      VOCABULARY_COPY_FAILED: "Error al copiar los elementos.",
+      VOCABULARY_MOVE_FAILED: "Error al mover los elementos.",
     },
   },
   auth: {
@@ -155,6 +157,11 @@ export const es = {
     delete: "Eliminar",
     selectAll: "Seleccionar todo",
     deselectAll: "Deseleccionar todo",
+    copySuccess: "Elementos seleccionados copiados.",
+    moveSuccess: "Elementos seleccionados movidos.",
+    itemsDeleteConfirm:
+      "¿Estás seguro de que quieres eliminar los elementos seleccionados?",
+    itemsDeleteSuccess: "Los elementos seleccionados han sido eliminados.",
     deleteConfirm: "¿Estás seguro de que quieres eliminar este cuaderno?",
     deleteSuccess: "Cuaderno eliminado con éxito.",
     saveSuccess: "Nombre del cuaderno actualizado.",

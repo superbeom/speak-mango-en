@@ -3,16 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/context/I18nContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import { useToast } from "@/context/ToastContext";
 import { Expression } from "@/types/expression";
 import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
+import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
 import {
   updateVocabularyListTitle,
   deleteVocabularyList,
   setDefaultVocabularyList,
+  copyExpressionsToVocabularyList,
+  moveExpressionsToVocabularyList,
+  removeExpressionsFromVocabularyList,
 } from "@/services/actions/vocabulary";
 import { ROUTES } from "@/lib/routes";
+import BulkActionModalWrapper from "@/components/vocabulary/BulkActionModalWrapper";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
@@ -32,6 +38,7 @@ export default function RemoteVocabularyDetail({
 }: RemoteVocabularyDetailProps) {
   const router = useRouter();
   const { dict } = useI18n();
+  const { confirm } = useConfirm();
   const { showToast } = useToast();
   const [title, setTitle] = useState(initialTitle);
   const [isDefault, setIsDefault] = useState(initialIsDefault);
@@ -46,6 +53,14 @@ export default function RemoteVocabularyDetail({
     clearSelection,
     setViewMode,
   } = useVocabularyView();
+
+  const {
+    bulkAction: bulkActionState,
+    openCopy: handleCopy,
+    openMove: handleMove,
+    close: closeBulkAction,
+    onOpenChange: onBulkActionOpenChange,
+  } = useBulkAction();
 
   const handleToggleAll = () => {
     if (selectedIds.size === items.length) {
@@ -90,6 +105,25 @@ export default function RemoteVocabularyDetail({
     }
   };
 
+  const handleItemsDelete = () => {
+    confirm({
+      title: dict.vocabulary.delete,
+      description: dict.vocabulary.itemsDeleteConfirm,
+      onConfirm: async () => {
+        try {
+          await removeExpressionsFromVocabularyList(
+            listId,
+            Array.from(selectedIds),
+          );
+          showToast(dict.vocabulary.itemsDeleteSuccess);
+          toggleSelectionMode();
+        } catch (error) {
+          handleError(error);
+        }
+      },
+    });
+  };
+
   return (
     <div className="py-8">
       <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
@@ -120,8 +154,44 @@ export default function RemoteVocabularyDetail({
           viewMode={viewMode}
           selectedIds={selectedIds}
           onToggleItem={toggleItem}
+          onCopy={handleCopy}
+          onMove={handleMove}
+          onDelete={handleItemsDelete}
         />
       </div>
+
+      {bulkActionState && (
+        <BulkActionModalWrapper
+          isOpen={bulkActionState.isOpen}
+          onOpenChange={onBulkActionOpenChange}
+          type={bulkActionState.type}
+          currentListId={listId}
+          onSubmit={async (targetListId) => {
+            const ids = Array.from(selectedIds);
+            try {
+              if (bulkActionState.type === BULK_ACTION_TYPE.COPY) {
+                await copyExpressionsToVocabularyList(targetListId, ids);
+              } else {
+                await moveExpressionsToVocabularyList(
+                  listId,
+                  targetListId,
+                  ids,
+                );
+              }
+              showToast(
+                bulkActionState.type === BULK_ACTION_TYPE.COPY
+                  ? dict.vocabulary.copySuccess
+                  : dict.vocabulary.moveSuccess,
+              );
+              closeBulkAction();
+              toggleSelectionMode();
+            } catch (error) {
+              handleError(error); // 1. 사용자에게 에러 토스트를 보여줍니다.
+              throw error; // 2. BulkVocabularyListModal에게 실패를 알려 로딩 상태(isSubmitting)를 해제하게 합니다.
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

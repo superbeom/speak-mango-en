@@ -66,14 +66,14 @@ export default function CreateListForm({
         onChange={(e) => setTitle(e.target.value)}
         placeholder={dict.vocabulary.placeholder}
         disabled={isLoading}
-        className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
+        className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm input-focus-brand disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
         autoFocus
       />
       <button
         type="submit"
         disabled={!title.trim() || isLoading}
         className={cn(
-          "flex items-center justify-center min-w-[60px] rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50",
+          "flex items-center justify-center min-w-[60px] rounded-lg px-4 py-2 text-sm font-medium btn-brand-indigo disabled:opacity-50",
           isLoading
             ? "sm:cursor-wait"
             : title.trim()

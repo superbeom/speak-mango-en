@@ -4,7 +4,7 @@ import { Check, Star } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useLongPress } from "@/hooks/useLongPress";
-import { formatMessage } from "@/lib/utils";
+import { formatMessage, cn } from "@/lib/utils";
 
 interface VocabularyListItemProps {
   list: VocabularyListWithCount;
@@ -33,25 +33,37 @@ const VocabularyListItem = memo(function VocabularyListItem({
   return (
     <button
       {...longPressProps}
-      className="flex w-full items-center justify-between rounded-lg p-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900 sm:cursor-pointer touch-manipulation transition-colors active:bg-zinc-100 dark:active:bg-zinc-800"
+      className={cn(
+        "vocab-list-item sm:cursor-pointer",
+        isSelected ? "vocab-list-item-selected" : "vocab-list-item-default",
+      )}
     >
-      <div className="flex flex-col min-w-0 flex-1 mr-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100 truncate">
+      <div className="flex flex-col items-start gap-1">
+        <div className="flex items-center gap-1.5">
+          <span
+            className={cn(
+              "font-medium text-sm",
+              isSelected
+                ? "vocab-list-text-selected"
+                : "vocab-list-text-default",
+            )}
+          >
             {list.title}
           </span>
           {isDefault && (
             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />
           )}
         </div>
-        <span className="text-xs text-zinc-500">
+        <span className="text-xs text-zinc-400">
           {formatMessage(dict.vocabulary.itemsCount, {
             count: (list.item_count ?? 0).toString(),
           })}
         </span>
       </div>
       {isSelected && (
-        <Check className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+        <div className="vocab-list-check">
+          <Check size={18} />
+        </div>
       )}
     </button>
   );

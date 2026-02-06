@@ -158,12 +158,16 @@
       - [x] **Logic**: 단어장 이름 변경, 삭제 및 기본값 설정 기능 완료
       - [x] **Logic**: 기본 단어장 삭제 시 자동 권한 이양 구현 (Auto-reassignment)
       - [x] **UI/UX**: 단어장 목록 및 마이페이지 로딩 스켈레톤 도입
+- [x] **Logic**: 단어장 항목 일괄 이동 및 복사 지원 (Bulk Move/Copy)
+- [x] **UX/UI**: 일괄 작업용 `useBulkAction` 훅 및 타겟 선택 흐름 구현
+- [x] **UI/UX**: 플랜 사용 현황 및 안내 컴포넌트(`VocabularyPlanStatus`) 도입
   - [ ] **Logic**: '학습 완료' 시 목록 필터링
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
   - [x] **Refactoring**: 공통 서버 액션 보안 HOF 도입 (`withPro`)
   - [x] **UI/UX**: 전역 확인 모달 시스템 구현 (`ConfirmDialog`)
   - [x] **Logic**: 단어장 동기화(`useVocabularySync`) 및 익명/로그인 데이터 병합 정책 안정화
   - [x] **Performance**: 액션(Save/Learn) 실행 시 SWR 낙관적 업데이트(Optimistic Update) 도입
+
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입
   - [x] **UI/UX**: 마이페이지 중복 접근 방지 및 유저 메뉴 최적화

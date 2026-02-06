@@ -59,6 +59,8 @@ export const fr = {
         "Les utilisateurs gratuits peuvent créer jusqu'à 5 listes.",
       VOCABULARY_DELETE_FAILED: "Échec de la suppression du carnet.",
       VOCABULARY_NOT_FOUND: "Liste de vocabulaire non trouvée.",
+      VOCABULARY_COPY_FAILED: "Échec de la copie des éléments.",
+      VOCABULARY_MOVE_FAILED: "Échec du déplacement des éléments.",
     },
   },
   auth: {
@@ -156,6 +158,11 @@ export const fr = {
     delete: "Supprimer",
     selectAll: "Tout sélectionner",
     deselectAll: "Tout désélectionner",
+    copySuccess: "Éléments sélectionnés copiés.",
+    moveSuccess: "Éléments sélectionnés déplacés.",
+    itemsDeleteConfirm:
+      "Voulez-vous vraiment supprimer les éléments sélectionnés ?",
+    itemsDeleteSuccess: "Éléments sélectionnés supprimés.",
     deleteConfirm: "Voulez-vous vraiment supprimer ce carnet ?",
     deleteSuccess: "Carnet supprimé avec succès.",
     saveSuccess: "Nom du carnet mis à jour.",

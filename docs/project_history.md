@@ -2,6 +2,23 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.8: Vocabulary Bulk Actions & Staged Area UX (2026-02-06)
+
+### ✅ 진행 사항
+
+1.  **Vocabulary Bulk Actions (일괄 작업)**:
+    - **Feature**: 단어장 내 여러 표현을 한꺼번에 다른 단어장으로 이동(`Move`)하거나 복사(`Copy`)할 수 있는 기능을 구현했습니다.
+    - **Atomic Operations**: `move_vocabulary_items` SQL 함수를 통해 이동 작업을 원자적(Atomic)으로 처리하여 데이터 무결성을 보장했습니다.
+    - **UX/UI**: `useBulkAction` 훅을 통해 일괄 작업의 상태(Open/Type)를 관리하고, 다국어 대응(9개 언어)을 완료했습니다.
+
+2.  **Staged Area UX Polish**:
+    - **State Management**: 항목 선택 후 '이동/복사' 시 타겟 단어장을 선택할 수 있는 UX 흐름을 최적화했습니다.
+    - **Visual Feedback**: 성공 시 '복사/이동 완료' 토스트 알림을 통해 작업 피드백을 강화했습니다.
+
+3.  **Vocabulary Plan Status UI**:
+    - **Visual Indicator**: 사용자가 현재 생성한 단어장 개수와 플랜 한도를 직관적으로 확인할 수 있는 `VocabularyPlanStatus` 컴포넌트를 추가했습니다.
+    - **Plan Guidance**: 한도 도달 시 부드러운 안내 문구를 통해 향후 업데이트 예정인 유료 플랜에 대한 기대감을 높였습니다.
+
 ## v0.15.7: Local Storage Hydration & Navigation Stability (2026-02-05)
 
 ### ✅ 진행 사항

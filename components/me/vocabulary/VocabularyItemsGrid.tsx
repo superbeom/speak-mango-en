@@ -9,6 +9,7 @@ import { VIEW_MODE, ViewMode } from "@/constants/ui";
 import { cn } from "@/lib/utils";
 import VocabularyEmptyState from "./VocabularyEmptyState";
 import VocabularyItem from "./VocabularyItem";
+import FloatingActionButton from "./FloatingActionButton";
 
 interface VocabularyItemsGridProps {
   items: Expression[];
@@ -16,6 +17,9 @@ interface VocabularyItemsGridProps {
   viewMode: ViewMode;
   selectedIds: Set<string>;
   onToggleItem: (id: string) => void;
+  onCopy?: (selectedIds: Set<string>) => void;
+  onMove?: (selectedIds: Set<string>) => void;
+  onDelete?: (selectedIds: Set<string>) => void;
 }
 
 const containerVariants = {
@@ -34,6 +38,9 @@ const VocabularyItemsGrid = memo(function VocabularyItemsGrid({
   viewMode,
   selectedIds,
   onToggleItem,
+  onCopy,
+  onMove,
+  onDelete,
 }: VocabularyItemsGridProps) {
   const { dict } = useI18n();
 
@@ -81,35 +88,24 @@ const VocabularyItemsGrid = memo(function VocabularyItemsGrid({
             exit={{ y: 100, opacity: 0 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 floating-action-bar"
           >
-            <button
-              className="flex flex-col items-center gap-1 px-4 py-2 hover:bg-white/10 dark:hover:bg-black/10 rounded-xl transition-colors min-w-[60px]"
-              onClick={() => console.log("Copy", selectedIds)}
-            >
-              <Copy size={20} />
-              <span className="text-[10px] font-medium">
-                {dict.vocabulary.copy}
-              </span>
-            </button>
+            <FloatingActionButton
+              icon={Copy}
+              label={dict.vocabulary.copy}
+              onClick={() => onCopy?.(selectedIds)}
+            />
             <div className="w-px h-8 bg-white/20 dark:bg-black/20" />
-            <button
-              className="flex flex-col items-center gap-1 px-4 py-2 hover:bg-white/10 dark:hover:bg-black/10 rounded-xl transition-colors min-w-[60px]"
-              onClick={() => console.log("Move", selectedIds)}
-            >
-              <FolderInput size={20} />
-              <span className="text-[10px] font-medium">
-                {dict.vocabulary.move}
-              </span>
-            </button>
+            <FloatingActionButton
+              icon={FolderInput}
+              label={dict.vocabulary.move}
+              onClick={() => onMove?.(selectedIds)}
+            />
             <div className="w-px h-8 bg-white/20 dark:bg-black/20" />
-            <button
-              className="flex flex-col items-center gap-1 px-4 py-2 text-red-400 dark:text-red-600 hover:bg-red-500/10 rounded-xl transition-colors min-w-[60px]"
-              onClick={() => console.log("Delete", selectedIds)}
-            >
-              <Trash2 size={20} />
-              <span className="text-[10px] font-medium">
-                {dict.vocabulary.delete}
-              </span>
-            </button>
+            <FloatingActionButton
+              icon={Trash2}
+              label={dict.vocabulary.delete}
+              onClick={() => onDelete?.(selectedIds)}
+              variant="danger"
+            />
           </motion.div>
         )}
       </AnimatePresence>

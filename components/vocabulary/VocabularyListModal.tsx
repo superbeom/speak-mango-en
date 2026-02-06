@@ -8,11 +8,11 @@ import { VOCABULARY_ERROR } from "@/types/error";
 import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
-import { formatMessage } from "@/lib/utils";
 import { SkeletonVocabularyList } from "@/components/ui/Skeletons";
 import LoginModal from "@/components/auth/LoginModal";
 import CreateListForm from "./CreateListForm";
 import VocabularyListItem from "./VocabularyListItem";
+import VocabularyPlanStatus from "./VocabularyPlanStatus";
 
 interface VocabularyListModalProps {
   isOpen: boolean;
@@ -152,17 +152,14 @@ export default function VocabularyListModal({
               TODO: Currently we don't have a paid version, so we show simple limit status.
               'vocabulary.freePlanLimit' (e.g., "Free Plan: 3 / 5 lists used") is kept for future use.
             */}
-            <div className="mt-2 text-center">
-              <p className="text-xs font-medium text-zinc-500">
-                {formatMessage(dict.vocabulary.planStatus, {
-                  count: lists.length.toString(),
-                  total: "5",
-                })}
-              </p>
-              <p className="mt-1 text-[10px] text-zinc-400">
-                {dict.vocabulary.planHint}
-              </p>
-            </div>
+            {/* 
+              TODO: Currently we don't have a paid version, so we show simple limit status.
+              'vocabulary.freePlanLimit' (e.g., "Free Plan: 3 / 5 lists used") is kept for future use.
+            */}
+            <VocabularyPlanStatus
+              currentCount={lists.length}
+              isLoading={isLoading}
+            />
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

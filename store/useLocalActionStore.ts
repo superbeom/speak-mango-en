@@ -24,7 +24,9 @@ interface LocalActionState {
   createList: (title: string) => string; // Returns new ID
   deleteList: (id: string) => void;
   addToList: (listId: string, expressionId: string) => void;
+  addMultipleToList: (listId: string, expressionIds: string[]) => void;
   removeFromList: (listId: string, expressionId: string) => void;
+  removeMultipleFromList: (listId: string, expressionIds: string[]) => void;
   getLists: () => LocalVocabularyList[];
   getListIdsForExpression: (expressionId: string) => string[];
   setDefaultList: (listId: string) => void;
@@ -128,12 +130,38 @@ export const useLocalActionStore = create<LocalActionState>()(
             },
           };
         }),
+      addMultipleToList: (listId, expressionIds) =>
+        set((state) => {
+          const list = state.vocabularyLists[listId];
+          if (!list) return {};
+          const newSet = new Set(list.itemIds);
+          expressionIds.forEach((id) => newSet.add(id));
+          return {
+            vocabularyLists: {
+              ...state.vocabularyLists,
+              [listId]: { ...list, itemIds: newSet },
+            },
+          };
+        }),
       removeFromList: (listId, expressionId) =>
         set((state) => {
           const list = state.vocabularyLists[listId];
           if (!list) return {};
           const newSet = new Set(list.itemIds);
           newSet.delete(expressionId);
+          return {
+            vocabularyLists: {
+              ...state.vocabularyLists,
+              [listId]: { ...list, itemIds: newSet },
+            },
+          };
+        }),
+      removeMultipleFromList: (listId, expressionIds) =>
+        set((state) => {
+          const list = state.vocabularyLists[listId];
+          if (!list) return {};
+          const newSet = new Set(list.itemIds);
+          expressionIds.forEach((id) => newSet.delete(id));
           return {
             vocabularyLists: {
               ...state.vocabularyLists,

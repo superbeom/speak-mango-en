@@ -16,6 +16,7 @@ export function useUserActions() {
     mutate: mutateSave,
   } = useSWR(isPro ? ["actions", "save"] : null, () => getUserActions("save"), {
     dedupingInterval: 5000,
+    revalidateOnFocus: false,
   });
 
   const {
@@ -27,6 +28,7 @@ export function useUserActions() {
     () => getUserActions("learn"),
     {
       dedupingInterval: 5000,
+      revalidateOnFocus: false,
     },
   );
 

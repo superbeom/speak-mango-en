@@ -2,19 +2,13 @@
 
 import { useEffect, useState, useMemo, memo } from "react";
 import { motion, useAnimation, Reorder, LayoutGroup } from "framer-motion";
-import { Folder, Plus, MoreVertical, Star, BookOpenCheck } from "lucide-react";
+import { Folder, Plus, Star, BookOpenCheck } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useEnableHover } from "@/hooks/useIsMobile";
 import { ROUTES } from "@/lib/routes";
 import { cn, formatMessage } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import InteractiveLink from "@/components/ui/InteractiveLink";
 import VocabularyEmptyState from "./VocabularyEmptyState";
 
@@ -27,11 +21,9 @@ const LEARNED_FOLDER_ID = "learned";
 
 const VocabularyListCard = memo(function VocabularyListCard({
   list,
-  isPro,
   enableHover,
 }: {
   list: VocabularyListWithCount;
-  isPro: boolean;
   enableHover: boolean;
 }) {
   const controls = useAnimation();
@@ -77,38 +69,9 @@ const VocabularyListCard = memo(function VocabularyListCard({
             />
           )}
 
-          <div className="flex items-center gap-2">
-            {!isLearned && list.is_default && (
-              <Star size={16} className="fill-yellow-400 text-yellow-400" />
-            )}
-
-            {/* 메뉴 트리거 (Learned가 아니고 Pro일 때만 or Local? 지금은 Pro만) */}
-            {!isLearned && isPro && (
-              <div
-                className="opacity-0 group-hover:opacity-100 transition-all duration-300"
-                onClick={(e) => e.preventDefault()} // 링크 이동 방지
-              >
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-colors">
-                      <MoreVertical size={16} className="text-zinc-400" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => console.log("Rename")}>
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-500 focus:text-red-500"
-                      onClick={() => console.log("Delete")}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-          </div>
+          {!isLearned && list.is_default && (
+            <Star size={16} className="fill-yellow-400 text-yellow-400" />
+          )}
         </div>
 
         <div>
@@ -218,11 +181,7 @@ const VocabularyListManager = memo(function VocabularyListManager({
         >
           {/* Static Learned Folder - Always show as first item */}
           <motion.div layout id={LEARNED_FOLDER_ID} className="relative h-full">
-            <VocabularyListCard
-              list={learnedList}
-              isPro={isPro}
-              enableHover={enableHover}
-            />
+            <VocabularyListCard list={learnedList} enableHover={enableHover} />
           </motion.div>
 
           {/* Custom Lists */}
@@ -234,11 +193,7 @@ const VocabularyListManager = memo(function VocabularyListManager({
               className="h-full"
               style={{ position: "relative" }}
             >
-              <VocabularyListCard
-                list={list}
-                isPro={isPro}
-                enableHover={enableHover}
-              />
+              <VocabularyListCard list={list} enableHover={enableHover} />
             </Reorder.Item>
           ))}
         </Reorder.Group>

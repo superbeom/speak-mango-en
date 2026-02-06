@@ -2,6 +2,38 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.8: Vocabulary Bulk Actions & Staged Area UX (2026-02-06)
+
+### 1. Goal (목표)
+
+- 사용자가 다수의 표현을 효율적으로 정리할 수 있도록 단어장 간 '복사' 및 '이동' 기능을 제공하고, 대량 작업 시의 데이터 정합성과 매끄러운 UX를 확보합니다. 또한 현재 플랜의 사용 상태를 시각적으로 명확히 전달합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Atomic Move Operation (`move_vocabulary_items.sql`)
+
+- **Dual-Step Transaction**: SQL 함수 내에서 타겟 리스트로의 `INSERT` (중복 무시)와 소스 리스트에서의 `DELETE`를 하나의 트랜잭션으로 묶어 처리했습니다.
+- **Conflict Handling**: `ON CONFLICT DO NOTHING` 구문을 사용하여, 이미 타겟 리스트에 존재하는 표현을 이동할 때 발생할 수 있는 PK 충돌 에러를 방지했습니다.
+
+#### B. Bulk Action Orchestration (`useBulkAction.ts`)
+
+- **State Interface**: 작업 유형(`copy`, `move`)과 모달 오픈 상태를 중앙 관리하는 커스텀 훅을 구현했습니다.
+- **Loose Coupling**: UI 컴포넌트(`VocabularyToolbar`)와 비즈니스 로직(`VocabularyListModal`) 사이의 상태를 중재하여 코드의 복잡도를 낮췄습니다.
+
+#### C. Plan Status Transparency (`VocabularyPlanStatus.tsx`)
+
+- **Usage Visualization**: 단어장 선택 모달 하단에 현재 리스트 사용 현황을 프로그레스 바(또는 텍스트) 형태로 노출하여 한도를 직시하게 했습니다.
+- **Premium Upsell Foundation**: 무료 사용자의 한도 도달 시 긍정적인 안내 메시지를 표시하여 유료 플랜으로의 자연스러운 전환 가능성을 열어두었습니다.
+
+#### D. Error & Localization Hardening
+
+- **Error Codes**: `VOCABULARY_COPY_FAILED`, `VOCABULARY_MOVE_FAILED` 코드를 추가하고, 9개 언어 전체에 성공/실패 토스트 메시지를 반영했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Productivity**: 표현 하나씩 수동으로 옮기던 불편함 해소.
+- ✅ **Data Integrity**: 서버 사이드 원자적 처리를 통해 데이터 유실 없는 안전한 이동 보장.
+
 ## v0.15.7: Local Storage Hydration & Navigation Stability (2026-02-05)
 
 ### 1. Goal (목표)

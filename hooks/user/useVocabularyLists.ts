@@ -71,16 +71,16 @@ export function useVocabularyLists() {
   }, [isPro, remoteLists, vocabularyListsMap]);
 
   const createList = useCallback(
-    async (title: string) => {
+    async (title: string): Promise<string | undefined> => {
       if (!isPro) {
         if (lists.length >= 5) {
           throw createAppError(VOCABULARY_ERROR.LIMIT_REACHED);
         }
-        localCreateList(title);
-        return;
+        return localCreateList(title);
       }
-      await createVocabularyList(title);
-      mutate(); // Refresh SWR cache
+      const newList = await createVocabularyList(title);
+      await mutate(); // Refresh SWR cache and wait for update
+      return newList?.id;
     },
     [isPro, lists.length, localCreateList, mutate],
   );
