@@ -21,6 +21,7 @@ interface ExpressionCardProps {
   item: Expression;
   isStatic?: boolean;
   className?: string;
+  hideSaveButton?: boolean;
 }
 
 const itemVariants = {
@@ -39,6 +40,7 @@ const ExpressionCard = memo(function ExpressionCard({
   item,
   isStatic = false,
   className,
+  hideSaveButton = false,
 }: ExpressionCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -167,6 +169,7 @@ const ExpressionCard = memo(function ExpressionCard({
         meaning={meaning}
         shareVariant="compact"
         onShareClick={(e) => e.stopPropagation()}
+        hideSaveButton={hideSaveButton}
       />
     </div>
   );

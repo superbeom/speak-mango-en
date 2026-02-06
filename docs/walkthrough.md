@@ -2,6 +2,28 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.15.9: Vocabulary UX Polish & Compact View Enhancement (2026-02-06)
+
+### 1. Goal (목표)
+
+- 단어장 상세 페이지 내 불필요한 UI 요소를 제거하여 사용성을 개선하고, 벌크 편집 시 요약 보기 모드(Compact View)의 정보 전달력을 강화합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Contextual Action Hiding
+
+- **`ExpressionActions.tsx`**: `hideSaveButton` 속성을 추가하여, 이미 저장된 항목들만 모인 단어장 페이지에서는 '북마크' 버튼을 숨김 처리했습니다. 이를 통해 사용자가 '삭제'와 '저장 해제'를 혼동하지 않도록 개선했습니다.
+
+#### B. Localization in Compact View
+
+- **`VocabularyItem.tsx`**: 요약 모드에서 표현(Expression)만 표시되던 기존 UI를 개선했습니다. `useI18n` 훅을 통해 현재 언어에 맞는 의미(Meaning)를 추출하여 하단에 추가했습니다.
+- **Robust Layout**: `line-clamp-2`를 적용하여 텍스트 길이에 관계없이 일정한 그리드 높이를 유지하며, 데이터 부재 시를 대비한 영어(EN) Fallback 로직을 적용했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **UI Clarity**: 맥락에 맞는 기능 노출을 통해 인지 부하 감소.
+- ✅ **Information Density**: 요약 모드에서도 핵심 정보(의미)를 제공하여 편집 효율성 증대.
+
 ## v0.15.8: Vocabulary Bulk Actions & Staged Area UX (2026-02-06)
 
 ### 1. Goal (목표)

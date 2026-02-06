@@ -2,6 +2,16 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.15.9: Vocabulary UX Polish & Compact View Enhancement (2026-02-06)
+
+### ✅ 진행 사항
+
+1.  **UX Polish**:
+    - **Redundancy Removal**: 단어장(List) 상세 페이지의 표현 카드에서 '저장(북마크)' 버튼을 제거했습니다. 이미 저장된 항목들만 모여 있는 공간이므로, 중복된 관리 기능을 제거하여 UI를 간소화하고 직관성을 높였습니다.
+2.  **Compact View Enhancement**:
+    - **Multilingual Meaning**: 벌크 액션(선택 모드)의 Compact 뷰에서 기존에 영어 표현만 보여주던 방식을 개선하여, 현재 설정된 언어에 맞는 의미(Meaning)를 함께 표시합니다.
+    - **UI Stability**: 긴 의미 텍스트에 대응하기 위해 `line-clamp-2` 및 Fallback(EN) 로직을 적용하여 정보 가독성과 레이아웃 안정성을 동시에 확보했습니다.
+
 ## v0.15.8: Vocabulary Bulk Actions & Staged Area UX (2026-02-06)
 
 ### ✅ 진행 사항

@@ -2,6 +2,8 @@
 
 import { memo } from "react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/context/I18nContext";
+import { SupportedLanguage } from "@/i18n";
 import { Expression } from "@/types/expression";
 import { VIEW_MODE, ViewMode } from "@/constants/ui";
 import { cn } from "@/lib/utils";
@@ -23,6 +25,7 @@ const VocabularyItem = memo(function VocabularyItem({
   viewMode,
   isSelectionMode,
 }: VocabularyItemProps) {
+  const { locale } = useI18n();
   const isCompact = isSelectionMode && viewMode === VIEW_MODE.COMPACT;
 
   return (
@@ -40,9 +43,14 @@ const VocabularyItem = memo(function VocabularyItem({
           )}
         >
           <div className="flex items-start justify-between gap-3">
-            <span className="font-bold text-lg text-zinc-900 dark:text-zinc-100 line-clamp-2">
-              {item.expression}
-            </span>
+            <div className="flex flex-col gap-1 min-w-0">
+              <span className="font-bold text-lg text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-tight">
+                {item.expression}
+              </span>
+              <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                {item.meaning[locale] || item.meaning[SupportedLanguage.EN]}
+              </span>
+            </div>
             <div className="mt-1 shrink-0">
               <Checkbox checked={isSelected} readOnly />
             </div>
@@ -50,7 +58,11 @@ const VocabularyItem = memo(function VocabularyItem({
         </div>
       ) : (
         <div className="relative h-full">
-          <ExpressionCard item={item} isStatic={isSelectionMode} />
+          <ExpressionCard
+            item={item}
+            isStatic={isSelectionMode}
+            hideSaveButton
+          />
 
           {/* Overlay for selection in Full Mode */}
           {isSelectionMode && (

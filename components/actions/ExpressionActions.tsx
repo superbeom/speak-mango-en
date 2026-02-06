@@ -14,6 +14,7 @@ interface ExpressionActionsProps {
   actionButtonSize?: ActionIconSize;
   shareVariant?: "default" | "compact";
   onShareClick?: (e: React.MouseEvent) => void;
+  hideSaveButton?: boolean;
 }
 
 export default function ExpressionActions({
@@ -24,6 +25,7 @@ export default function ExpressionActions({
   actionButtonSize,
   shareVariant = "default",
   onShareClick,
+  hideSaveButton = false,
 }: ExpressionActionsProps) {
   return (
     <div
@@ -33,7 +35,9 @@ export default function ExpressionActions({
       )}
     >
       <ActionButtonGroup>
-        <SaveButton expressionId={expressionId} size={actionButtonSize} />
+        {!hideSaveButton && (
+          <SaveButton expressionId={expressionId} size={actionButtonSize} />
+        )}
       </ActionButtonGroup>
 
       <ActionButtonGroup>
