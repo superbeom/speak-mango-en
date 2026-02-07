@@ -10,7 +10,10 @@ import { getI18n } from "@/i18n/server";
 import { SERVICE_NAME } from "@/constants";
 import { ACTION_ICON_SIZE } from "@/constants/ui";
 import { generateSeoKeywords } from "@/lib/seo";
-import { getExpressionById, getRelatedExpressions } from "@/lib/expressions";
+import {
+  getExpressionById,
+  getRelatedExpressions,
+} from "@/services/queries/expressions";
 import { CANONICAL_URLS, getHomeWithFilters } from "@/lib/routes";
 import { getExpressionUIConfig } from "@/lib/ui-config";
 import { formatMessage } from "@/lib/utils";

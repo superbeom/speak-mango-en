@@ -2,6 +2,33 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.0: Service Layer Refactoring & Server-side Performance (2026-02-07)
+
+### 1. Goal (목표)
+
+- 프로젝트 규모 확장에 대비하여 데이터 접근 로직의 책임(조회 vs 변경)을 명확히 분리하고, 서버 사이드 렌더링 시 발생하는 중복 데이터 요청을 제거하여 성능을 최적화합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Service Layer Split (Queries & Actions)
+
+- **`services/queries/`**: 서버 컴포넌트 및 클라이언트 사이드(SWR) 모두에서 호출되는 데이터 조회 전용 레이어입니다. 모든 함수에 `cache()`를 적용하여 요청 단위 메모이제이션을 수행합니다.
+- **`services/actions/`**: 데이터를 변경(Mutation)하는 전용 레이어입니다. `withPro` 래퍼를 통한 세션 및 권한 검증이 필수적으로 동반됩니다.
+
+#### B. Request-level Deduplication
+
+- **React `cache()` Adoption**: 기존에 Prop Drilling으로 전달되던 복잡한 데이터를 컴포넌트 트리 어디에서든 직접 패치할 수 있도록 개선했습니다. `cache()` 덕분에 여러 컴포넌트가 동일한 데이터를 요청해도 실제 DB 쿼리는 단 한 번만 실행됩니다.
+
+#### C. Legacy Cleanup & Integration
+
+- `/lib/actions.ts`에 있던 `fetchMoreExpressions` 등 유틸리티성 조회 로직을 `services/queries/expressions.ts`로 통합하여 데이터 접근 창구를 단일화했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Maintainability**: 폴더 구조만으로 함수의 성격(Read/Write)과 환경(Server-side)을 즉시 파악 가능.
+- ✅ **Performance**: 서버 렌더링 시 발생하는 불필요한 Waterfall 및 중복 DB 요청 제거.
+- ✅ **Developer Experience**: "필요한 곳에서 직접 데이터를 가져온다"는 현대적인 React Patterns 확립.
+
 ## v0.15.9: Vocabulary UX Polish & Compact View Enhancement (2026-02-06)
 
 ### 1. Goal (목표)

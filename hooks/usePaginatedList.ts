@@ -4,8 +4,10 @@ import { useCallback, useEffect } from "react";
 import useSWRInfinite from "swr/infinite";
 import { Expression } from "@/types/database";
 import { useExpressionStore } from "@/context/ExpressionContext";
-import { fetchMoreExpressions } from "@/lib/actions";
-import { ExpressionFilters } from "@/lib/expressions";
+import {
+  ExpressionFilters,
+  fetchMoreExpressions,
+} from "@/services/queries/expressions";
 
 interface UsePaginatedListProps {
   initialItems: Expression[];

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getI18n } from "@/i18n/server";
 import { isAppError, VOCABULARY_ERROR } from "@/types/error";
-import { getVocabularyListDetails } from "@/services/actions/vocabulary";
+import { getVocabularyListDetails } from "@/services/queries/vocabulary";
 import { getAuthSession } from "@/lib/auth/utils";
 import VocabularyDetailLayout from "@/components/me/vocabulary/VocabularyDetailLayout";
 import LocalVocabularyDetail from "@/components/me/vocabulary/LocalVocabularyDetail";

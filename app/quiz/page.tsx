@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getI18n } from "@/i18n/server";
-import { getRandomExpressions } from "@/lib/expressions";
+import { getRandomExpressions } from "@/services/queries/expressions";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 import QuizGame from "@/components/quiz/QuizGame";

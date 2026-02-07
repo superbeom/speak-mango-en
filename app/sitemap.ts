@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 import { BASE_URL } from "@/constants";
-import { getAllExpressionIds } from "@/lib/expressions";
+import { getAllExpressionIds } from "@/services/queries/expressions";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 1. Static Routes

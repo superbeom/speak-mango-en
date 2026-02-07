@@ -5,7 +5,8 @@ import useSWR from "swr";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { ActionType } from "@/services/repositories/UserActionRepository";
-import { getUserActions, toggleUserAction } from "@/services/actions/user";
+import { getUserActions } from "@/services/queries/user";
+import { toggleUserAction } from "@/services/actions/user";
 
 export function useUserActions() {
   const { isPro } = useAuthUser();

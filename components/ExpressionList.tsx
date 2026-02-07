@@ -5,7 +5,7 @@ import { Expression } from "@/types/database";
 import { usePaginatedList } from "@/hooks/usePaginatedList";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { serializeFilters } from "@/lib/utils";
-import { ExpressionFilters } from "@/lib/expressions";
+import { ExpressionFilters } from "@/services/queries/expressions";
 import { SkeletonExpressionList } from "./ui/Skeletons";
 import AnimatedList from "./AnimatedList";
 import ExpressionCard from "./ExpressionCard";

@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-02-04
+**최종 수정일**: 2026-02-07
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -77,7 +77,8 @@ speak-mango-en/
 │   ├── routes.ts        # 라우트 상수 및 경로 생성 로직 (중앙 관리)
 │   └── utils.ts         # 공통 유틸리티 함수
 ├── services/            # 비즈니스 로직 및 데이터 접근 서비스
-│   ├── actions/         # Next.js Server Actions (user context 등)
+│   ├── queries/         # 데이터 조회 전용 서비스 (React.cache 적용)
+│   ├── actions/         # 데이터 변경 전용 Server Actions (withPro 적용)
 │   └── repositories/    # 데이터 레이어 추상화 (Local/Remote Hybrid Pattern)
 ├── store/               # 전역 상태 관리 (Zustand)
 │   └── useLocalActionStore.ts # 로컬 액션 상태 (localStorage 연동)
@@ -214,6 +215,15 @@ speak-mango-en/
   - 삭제나 중요 설정 변경 등 되돌리기 어려운 작업 전에는 반드시 `useConfirm` 훅을 통한 사용자 확인 과정을 거쳐야 합니다.
   - **Usage**: `const confirmed = await confirm({ title: "...", message: "..." })`
   - **Consistency**: 개별 컴포넌트에서 브라우저의 `window.confirm()`을 사용하지 않고, 앱 디자인 가이드라인을 따르는 전역 `ConfirmDialog`를 사용합니다.
+
+### Service Layer (데이터 접근 및 비즈니스 로직)
+
+- **Queries vs Actions 분리**:
+  - **Queries (`services/queries/`)**: 데이터 조회(Read) 전용. 서버 컴포넌트뿐만 아니라 클라이언트 컴포넌트(SWR, useEffect 등)에서도 호출될 것을 고려하여 `"use server"`를 필수적으로 선언합니다.
+  - **Actions (`services/actions/`)**: 데이터 생성/수정/삭제(Write) 전용. 유료 사용자 전용 수정 작업은 반드시 `withPro` 래퍼 등을 통해 세션 인증 및 권한 검증이 동반되는 Server Actions로 구현합니다.
+- **Request-level Caching (Deduplication)**:
+  - 모든 `Queries` 함수는 React의 `cache()`로 래핑하여 **단일 HTTP 요청(Request) 내에서 발생하는 중복된 DB 쿼리를 자동으로 제거**합니다. 이를 통해 컴포넌트 트리 어디에서든 성능 저하 걱정 없이 필요한 데이터를 직접 호출할 수 있는 구조(Prop Drilling 방지)를 지향합니다.
+- **인터페이스 일관성**: 서비스 함수는 가능한 한 명시적인 타입을 반환하며, 에러 발생 시 적절한 `createAppError`를 던져 프론트엔드 에러 핸들러(`useAppErrorHandler`)에서 처리될 수 있도록 합니다.
 
 ### Frontend
 

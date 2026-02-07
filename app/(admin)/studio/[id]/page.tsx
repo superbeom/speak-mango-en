@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getExpressionById } from "@/lib/expressions";
+import { getExpressionById } from "@/services/queries/expressions";
 import StudioClient from "./StudioClient";
 
 interface PageProps {

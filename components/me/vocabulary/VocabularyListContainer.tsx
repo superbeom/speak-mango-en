@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getVocabularyLists } from "@/services/actions/vocabulary";
+import { getVocabularyLists } from "@/services/queries/vocabulary";
 import { SkeletonVocabularyListSection } from "@/components/ui/Skeletons";
 import VocabularyListManager from "./VocabularyListManager";
 

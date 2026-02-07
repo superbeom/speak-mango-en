@@ -2,6 +2,22 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.0: Service Layer Refactoring & Server-side Performance (2026-02-07)
+
+### ✅ 진행 사항
+
+1.  **Service Layer Separation (Queries/Actions)**:
+    - **Architecture**: 데이터 조회(Read)와 변경(Write) 로직을 분리하여 `services/queries/`와 `services/actions/`로 재배치했습니다.
+    - **Queries**: `expressions`, `vocabulary`, `user`와 관련된 모든 데이터 패칭 로직을 `queries` 디렉토리로 이동하고 `"use server"`를 선언하여 클라이언트 컴포넌트에서도 일관되게 호출할 수 있도록 했습니다.
+    - **Actions**: 데이터 변경을 동반하는 Server Actions를 `actions` 디렉토리에 집중시키고, `withPro` 래퍼를 통한 보안 검증을 표준화했습니다.
+
+2.  **Request-level Caching Optimization**:
+    - **React.cache**: 모든 조회 서비스(`Queries`)에 React의 `cache()`를 적용했습니다. 이를 통해 단일 HTTP 요청 내에서 발생하는 중복된 DB 호출을 자동으로 제거하고, 데이터가 필요한 컴포넌트에서 직접 호출할 수 있는 효율적인 아키텍처를 구축했습니다.
+
+3.  **Code Maintenance**:
+    - **File Cleanup**: 프로젝트 루트의 `lib/actions.ts`, `lib/expressions.ts` 등 산재해 있던 로직들을 `services/` 하위로 통합하고 사용되지 않는 레거시 파일을 삭제했습니다.
+    - **Import Standardization**: 프로젝트 전반의 임포트 경로를 새로운 서비스 구조에 맞게 일괄 업데이트했습니다.
+
 ## v0.15.9: Vocabulary UX Polish & Compact View Enhancement (2026-02-06)
 
 ### ✅ 진행 사항

@@ -3,11 +3,8 @@ import {
   UserActionRepository,
   SyncableRepository,
 } from "./UserActionRepository";
-import {
-  getUserActions,
-  toggleUserAction,
-  syncUserActions,
-} from "@/services/actions/user";
+import { getUserActions } from "@/services/queries/user";
+import { toggleUserAction, syncUserActions } from "@/services/actions/user";
 
 export const remoteUserActionRepository: SyncableRepository = {
   async getActions(type: ActionType): Promise<string[]> {

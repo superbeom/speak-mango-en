@@ -10,7 +10,7 @@ import { Expression } from "@/types/expression";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
-import { getExpressionsByIds } from "@/services/actions/expressions";
+import { getExpressionsByIds } from "@/services/queries/expressions";
 import { ROUTES } from "@/lib/routes";
 import {
   SkeletonExpressionList,

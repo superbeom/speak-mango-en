@@ -8,10 +8,12 @@ import { createAppError, VOCABULARY_ERROR } from "@/types/error";
 import { VocabularyListWithCount } from "@/types/vocabulary";
 import {
   getVocabularyLists,
+  getSavedListIds,
+} from "@/services/queries/vocabulary";
+import {
   createVocabularyList,
   addToVocabularyList,
   removeFromVocabularyList,
-  getSavedListIds,
   setDefaultVocabularyList,
 } from "@/services/actions/vocabulary";
 

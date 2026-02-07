@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { getI18n, getLocale } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { serializeFilters } from "@/lib/utils";
-import { getExpressions } from "@/lib/expressions";
+import { getExpressions } from "@/services/queries/expressions";
 import MainHeader from "@/components/MainHeader";
 import FilterBar from "@/components/FilterBar";
 import ExpressionList from "@/components/ExpressionList";

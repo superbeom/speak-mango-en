@@ -1,6 +1,8 @@
+"use server";
+
 import { cache } from "react";
+import { Expression } from "@/types/expression";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { Expression } from "@/types/database";
 
 export interface ExpressionFilters {
   domain?: string;
@@ -113,6 +115,40 @@ export const getExpressionById = cache(async function getExpressionById(
 });
 
 /**
+ * ID 목록을 바탕으로 여러 표현(Expression) 데이터를 한꺼번에 가져옵니다.
+ *
+ * 주로 로컬 스토리지에 ID만 저장하는 무료 사용자의 단어장 상세 내용을
+ * DB에서 불러올 때 사용됩니다.
+ *
+ * @param ids - 가져올 표현의 고유 ID 배열입니다.
+ * @returns 조회된 Expression 객체 배열을 담은 Promise를 반환합니다. 결과는 최신순으로 정렬됩니다.
+ */
+export const getExpressionsByIds = cache(async function getExpressionsByIds(
+  ids: string[],
+): Promise<Expression[]> {
+  if (!ids || ids.length === 0) return [];
+
+  try {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase
+      .from("expressions")
+      .select("*")
+      .in("id", ids)
+      .order("published_at", { ascending: false });
+
+    if (error) {
+      console.error("Failed to fetch expressions by IDs:", error);
+      return [];
+    }
+
+    return (data as Expression[]) || [];
+  } catch (error) {
+    console.error("Failed to fetch expressions by IDs:", error);
+    return [];
+  }
+});
+
+/**
  * 동일한 카테고리 내의 관련 표현들을 가져옵니다.
  *
  * 상세 페이지 하단의 "관련 표현"이나 "추천" 등을 표시할 때 사용됩니다.
@@ -216,3 +252,22 @@ export const getRandomExpressions = cache(async function getRandomExpressions(
     return [];
   }
 });
+
+/**
+ * 무한 스크롤 및 페이지네이션을 위한 추가 데이터 페칭 함수입니다.
+ * 클라이언트 컴포넌트의 useSWRInfinite 등에서 다음 페이지 데이터를 불러올 때 상용됩니다.
+ *
+ * @param filters - 적용할 필터 조건 (로케일, 검색어, 카테고리 등).
+ * @param page - 불러올 페이지 번호.
+ * @returns 해당 페이지의 Expression 객체 배열을 담은 Promise를 반환합니다.
+ */
+export async function fetchMoreExpressions(
+  filters: ExpressionFilters,
+  page: number,
+): Promise<Expression[]> {
+  // 인자로 받은 필터와 새 페이지 번호를 사용하여 다음 데이터 페칭
+  return await getExpressions({
+    ...filters,
+    page,
+  });
+}

@@ -5,10 +5,8 @@ import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
-import {
-  addToVocabularyList,
-  getVocabularyLists,
-} from "@/services/actions/vocabulary";
+import { getVocabularyLists } from "@/services/queries/vocabulary";
+import { addToVocabularyList } from "@/services/actions/vocabulary";
 
 export function useVocabularySync(expressionId: string) {
   const { isPro } = useAuthUser();
