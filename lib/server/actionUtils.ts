@@ -1,7 +1,7 @@
 import { createAppError, COMMON_ERROR } from "@/types/error";
 import { getAuthSession } from "@/lib/auth/utils";
 
-type AuthAction<T extends any[], R> = (
+type AuthAction<T extends unknown[], R> = (
   userId: string,
   isPro: boolean,
   ...args: T
@@ -13,7 +13,7 @@ type AuthAction<T extends any[], R> = (
  *
  * @param action - 실행할 비즈니스 로직 함수 (첫 번째 인자로 userId와 isPro를 받습니다)
  */
-export function withPro<T extends any[], R>(action: AuthAction<T, R>) {
+export function withPro<T extends unknown[], R>(action: AuthAction<T, R>) {
   return async (...args: T): Promise<R> => {
     const { userId, isPro } = await getAuthSession();
 
