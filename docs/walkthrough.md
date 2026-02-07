@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.1: Random Feed Optimization & UX Polish (2026-02-07)
+
+### 1. Goal (목표)
+
+- 기존의 최신순 중심 피드를 확장하여 '랜덤 피드'를 안정적으로 지원하고, 초기 데이터 노출량을 늘려(12->24) 사용자에게 더욱 풍부한 무작위 탐색 경험을 제공합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Centralized Fetching Logic (`getExpressions.ts`)
+
+- **Dynamic Sorting**: `getExpressions` 함수가 정렬 옵션(`EXPRESSION_SORT.RANDOM`)을 직접 인식하여 조건부로 전용 랜덤 쿼리를 수행하도록 로직을 일원화했습니다.
+- **Improved Initial Payload**: 한 번에 가져오는 기본 데이터 개수를 12개에서 **24개**로 증폭하여, 무작위 피드의 특성에 최적화된 초기 렌더링을 구현했습니다.
+
+#### B. SQL Strategy: Back to Reliability
+
+- **Reverting to `ORDER BY RANDOM()`**: 현재 규모에서는 `TABLESAMPLE`보다 정확도가 높고 성능 차이가 미미한 표준 방식을 채택하여 로직의 명확성을 확보했습니다.
+
+#### C. Deterministic UX with Seeds & Deduplication
+
+- **Seed-based Cache Key**: SWR 키에 랜덤 시드값을 부여하여 "새로고침" 시 명확히 구분된 새로운 데이터를 가져오도록 설계했습니다.
+- **Restoration Awareness**: 데이터 리셋 시 `isRestoring` 상태를 활용하여 스켈레톤 UI를 매끄럽게 연결했습니다.
+- **Client-side Filtering**: 서버 응답 데이터에 대한 고유 ID 기반 중복 제거를 통해 보장된 유니크 피드를 구현했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Rich Content**: 초기 노출량 확대를 통한 탐색 몰입도 향상.
+- ✅ **Architectural Clarity**: 서비스 함수 하나로 최신순/랜덤순을 유연하게 제어.
+- ✅ **No Duplication**: 시드 관리와 클라이언트 필터링을 통한 완벽한 중복 차단.
+
 ## v0.16.0: Service Layer Refactoring & Server-side Performance (2026-02-07)
 
 ### 1. Goal (목표)

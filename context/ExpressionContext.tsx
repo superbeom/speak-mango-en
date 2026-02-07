@@ -30,6 +30,9 @@ interface ExpressionContextType {
   updateScrollPosition: (key: string, position: number) => void;
   // 저장된 캐시 조회
   getCache: (key: string) => ExpressionState | undefined;
+  // 랜덤 피드 시드 관리 (뒤로가기 시 복원용)
+  randomSeed: string | undefined;
+  setRandomSeed: (seed: string) => void;
 }
 
 const ExpressionContext = createContext<ExpressionContextType | undefined>(
@@ -38,6 +41,7 @@ const ExpressionContext = createContext<ExpressionContextType | undefined>(
 
 export function ExpressionProvider({ children }: { children: ReactNode }) {
   const [cache, setCacheState] = useState<Record<string, ExpressionState>>({});
+  const [randomSeed, setRandomSeed] = useState<string | undefined>(undefined);
 
   /**
    * 캐시 전체를 설정합니다.
@@ -126,8 +130,18 @@ export function ExpressionProvider({ children }: { children: ReactNode }) {
       updateCacheData,
       updateScrollPosition,
       getCache,
+      randomSeed,
+      setRandomSeed,
     }),
-    [cache, setCache, updateCacheData, updateScrollPosition, getCache],
+    [
+      cache,
+      setCache,
+      updateCacheData,
+      updateScrollPosition,
+      getCache,
+      randomSeed,
+      setRandomSeed,
+    ],
   );
 
   return (

@@ -2,6 +2,23 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.1: Random Feed Optimization & UX Polish (2026-02-07)
+
+### ✅ 진행 사항
+
+1.  **Feed Fetching Logic Evolution**:
+    - **From Latest to Random**: 기존의 '최신순' 단일 패칭 방식에서 벗어나, `getExpressions` 서비스 함수가 `RANDOM` 정렬 파라미터를 지원하도록 확장했습니다. 이제 정렬 조건에 따라 전용 SQL 함수(`get_random_expressions`)를 호출하여 유연하게 대응합니다.
+    - **Default Page Size Adjustment**: 초기 로드 데이터 개수를 기존 12개에서 **24개**로 상향 조정하여, 무작위 목록 탐색 시 더 풍부한 콘텐츠를 즉시 제공하도록 개선했습니다.
+    - **SQL Simplification**: 대규모 데이터셋을 대비해 실험적으로 검토했던 `TABLESAMPLE` 방식을 배제하고, 현재 데이터 규모에서 가장 안정적이고 정확한 `ORDER BY RANDOM()` 방식으로 확정했습니다.
+
+2.  **Client-side Experience (UX)**:
+    - **Seed-based Unique Key**: SWR 캐시 키에 랜덤 `seed` 값을 포함하여, 동일한 필터 조건 내에서도 "새로고침" 시 캐시 충돌 없이 새로운 무작위 목록을 안정적으로 가져옵니다.
+    - **Restoration UX**: 새로운 시드값에 의해 리스트가 초기화(Restoration)되는 시점에도 스켈레톤을 노출하여 시각적 끊김을 방지했습니다.
+    - **Deduplication Maintenance**: 페이지네이션 간 발생할 수 있는 데이터 중복 노출을 방지하기 위해 `usePaginatedList`의 고유 ID 기반 중복 제거 로직을 강화했습니다.
+
+3.  **Future-proofing**:
+    - **Optimization Roadmap**: 추후 데이터가 10만 건 이상으로 증가할 경우를 대비한 최적화 방안(`TABLESAMPLE SYSTEM` 등)을 `future_todos.md`에 정비했습니다.
+
 ## v0.16.0: Service Layer Refactoring & Server-side Performance (2026-02-07)
 
 ### ✅ 진행 사항

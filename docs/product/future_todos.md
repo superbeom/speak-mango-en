@@ -33,6 +33,7 @@
 - [ ] **Security (RLS)**: 프로덕션 배포 전 `speak_mango_en` 스키마의 RLS를 활성화하고, `service_role` 전용 정책 설정 필요 (현재는 개발 편의를 위해 비활성화 상태).
 - [ ] **Security (n8n)**: Supabase Credential의 'Allowed HTTP Request Domains'를 'All'에서 'Specific Domains'로 변경하여 보안 강화.
 - [ ] **i18n Content Strategy**: DB의 `meaning` 및 `content` JSONB 컬럼에 `ja`, `es` 등 추가 언어 데이터 생성 워크플로우(n8n) 고도화.
+- [ ] **Random Query Optimization**: 현재 `get_random_expressions`는 `ORDER BY RANDOM()`을 사용 (데이터 ~4k 기준 적합). 추후 데이터가 10만 건 이상으로 증가하여 성능 저하 시 `TABLESAMPLE` 또는 `ID` 기반 추출 방식으로 마이그레이션 필요.
 
 ## User System & Interaction (사용자 시스템 및 고도화)
 

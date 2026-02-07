@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect } from "react";
 import useSWRInfinite from "swr/infinite";
-import { Expression } from "@/types/database";
 import { useExpressionStore } from "@/context/ExpressionContext";
+import { Expression } from "@/types/database";
+import { EXPRESSION_SORT } from "@/constants/expressions";
 import {
   ExpressionFilters,
   fetchMoreExpressions,
@@ -40,14 +41,24 @@ export function usePaginatedList({
   };
 
   // 2. Data Fetcher
-  const fetcher = async ([_, serializedFilters, page]: [
-    string,
-    string,
-    number,
-  ]) => {
-    const currentFilters = JSON.parse(serializedFilters) as ExpressionFilters;
-    return await fetchMoreExpressions(currentFilters, page);
-  };
+  const fetcher = useCallback(
+    async ([_, serializedFilters, page]: [string, string, number]) => {
+      const currentFilters = JSON.parse(serializedFilters) as ExpressionFilters;
+
+      // 랜덤 모드일 때 1페이지(page=1) 요청은 네트워크 통신 없이 초기 데이터 반환
+      // 단, initialItems가 비어있지 않을 때만 해당 (뒤로가기 등으로 initialItems가 []인 경우 서버 요청 필요)
+      if (
+        currentFilters.sort === EXPRESSION_SORT.RANDOM &&
+        page === 1 &&
+        initialItems.length > 0
+      ) {
+        return initialItems;
+      }
+
+      return await fetchMoreExpressions(currentFilters, page);
+    },
+    [initialItems],
+  );
 
   // 3. useSWRInfinite 설정
   const { data, size, setSize, isLoading } = useSWRInfinite(getKey, fetcher, {
@@ -64,11 +75,17 @@ export function usePaginatedList({
     revalidateFirstPage: false,
   });
 
-  // 4. 데이터 가공 (2차원 배열 -> 1차원 배열)
-  const items = data ? data.flat() : initialItems;
+  // 4. 데이터 가공 (2차원 배열 -> 1차원 배열) 및 중복 제거
+  // 랜덤 피드(중복 가능성)나 데이터 밀림 현상으로 인한 중복 키 에러를 방지하기 위해 ID 기준으로 유니크하게 필터링합니다.
+  const flatItems = data ? data.flat() : initialItems;
+  const items = Array.from(
+    new Map(flatItems.map((item) => [item.id, item])).values(),
+  );
+  const limit = filters.limit || 24;
 
   const isEmpty = data?.[0]?.length === 0;
-  const isReachingEnd = isEmpty || (data && data[data.length - 1]?.length < 12);
+  const isReachingEnd =
+    isEmpty || (data && data[data.length - 1]?.length < limit);
   const loadingMore =
     isLoading || (size > 0 && data && typeof data[size - 1] === "undefined");
 

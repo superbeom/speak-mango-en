@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { getI18n, getLocale } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
+import { EXPRESSION_SORT, ExpressionSortType } from "@/constants/expressions";
 import { serializeFilters } from "@/lib/utils";
 import { getExpressions } from "@/services/queries/expressions";
 import MainHeader from "@/components/MainHeader";
@@ -32,17 +33,26 @@ export default async function Home({ searchParams }: PageProps) {
   const search = typeof params.search === "string" ? params.search : undefined;
   const tag = typeof params.tag === "string" ? params.tag : undefined;
 
-  const filters = { category, search, tag };
+  // 필터가 없으면 랜덤(random) 모드, 있으면 최신순(latest) 모드
+  // 모든 경우에 24개씩 가져옵니다.
+  const isFiltered = !!(category || search || tag);
+  const sort: ExpressionSortType = isFiltered
+    ? EXPRESSION_SORT.LATEST
+    : EXPRESSION_SORT.RANDOM;
+  // SWR 캐시 키 충돌 방지를 위한 시드 생성 (랜덤 모드일 때만)
+  const seed = !isFiltered ? crypto.randomUUID() : undefined;
+
+  const filters = { category, search, tag, sort, seed };
   const cacheKey = serializeFilters(filters);
 
-  // 초기 1페이지 데이터 페칭 (limit 12)
+  // 초기 1페이지 데이터 페칭 (limit 24)
   const locale = await getLocale();
   const [{ dict }, expressions] = await Promise.all([
     getI18n(),
     getExpressions({
       ...filters,
       page: 1,
-      limit: 12,
+      limit: 24,
       locale, // 로케일별 검색을 위해 추가
     }),
   ]);

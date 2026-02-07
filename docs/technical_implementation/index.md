@@ -357,6 +357,26 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
   - **Action**: 따라서 `isBackToLogin`이 감지되면 `window.history.go(-3)`을 호출하여 위 과정을 역순으로 건너뛰고 바로 `[이전 페이지]`에 도달하게 합니다.
   - **Safety**: 히스토리 스택이 부족하여 3단계 이전이 존재하지 않을 경우를 대비해 `window.history.length > 3` 조건을 검사한 후, 실패 시 `router.push('/')`로 안전하게 폴백(Fallback)합니다.
 
+### 6.9 Random Feed Optimization (랜덤 피드 최적화)
+
+사용자에게 매번 새로운 학습 동기를 부여하기 위해 피드 조회 방식을 '최신순'에서 '랜덤순'으로 유연하게 전환하고 최적화한 구현 명세입니다.
+
+#### 6.9.1 Logic Transition: Latest to Random
+
+- **Unified Service Entry**: `getExpressions` 서비스 함수가 정렬 파라미터를 지원하도록 개선하여, UI에서는 동일한 함수를 호출하되 내부적으로는 정렬 조건에 따라 다른 SQL 로직을 수행하도록 설계했습니다.
+- **SQL Selection**: 데이터 규모(수만 건 이하)를 고려하여 정확한 무작위성을 보장하는 `ORDER BY RANDOM()`을 채택했습니다. 대규모 확장을 고려한 `TABLESAMPLE` 도입 계획은 `future_todos.md`에 기술 부채로 관리됩니다.
+- **Page Size Expansion**: 랜덤 탐색의 효율성을 높이기 위해 기본 아이템 노출량을 12개에서 **24개**로 증폭했습니다.
+
+#### 6.9.2 Seed-based Deterministic Caching
+
+- **Cache Key Design**: SWR 캐시 키에 랜덤 `seed` 값을 포함시켜, 동일한 페이지 내에서 "새로고침" 시 명확한 데이터 갱신을 보장합니다.
+- **State Preservation**: 피드 내 "더 보기" 시에는 동일한 시드를 유지하여 데이터 중복 및 누락 없는 연속적인 탐색 경험을 제공합니다.
+
+#### 6.9.3 Client-side Integrity (Deduplication & Restoration)
+
+- **Deduplication**: 서버 사이드 무작위 추출 시 발생 가능한 미세한 중복 확률을 차단하기 위해, 클라이언트 사이드에서 ID 기반 중복 제거 필터를 적용했습니다.
+- **Restoration UX**: 새로운 시드 생성을 통한 리스트 초기화 시 `isRestoring` 상태를 통해 스켈레톤 UI를 강제 노출함으로써 시각적 안정성을 확보했습니다.
+
 ## 7. My Page & User Profile Implementation (마이페이지 및 사용자 프로필)
 
 ### 7.1 Remote Image Handling (`next.config.ts`)

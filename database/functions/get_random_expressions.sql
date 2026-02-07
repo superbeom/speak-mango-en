@@ -2,7 +2,9 @@
 -- Name: get_random_expressions(int); Type: FUNCTION; Schema: speak_mango_en
 --
 -- Description: Efficiently fetches a random set of expressions from the database.
---              Solves the scalability issue of fetching all IDs on the client side.
+--              Currently uses ORDER BY RANDOM() which is sufficient and accurate for
+--              dataset sizes up to ~100k rows.
+--              For larger datasets, consider switching to TABLESAMPLE approaches.
 --
 -- Parameters:
 -- limit_cnt: The maximum number of expressions to return.

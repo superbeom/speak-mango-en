@@ -168,6 +168,7 @@
   - [x] **Logic**: 단어장 동기화(`useVocabularySync`) 및 익명/로그인 데이터 병합 정책 안정화
   - [x] **Performance**: 액션(Save/Learn) 실행 시 SWR 낙관적 업데이트(Optimistic Update) 도입
 - [x] **Refactoring**: 서비스 레이어 구조화 (Queries/Actions 분리) 및 `cache()` 기반 데이터 접근 최적화
+- [x] **Refactoring**: 랜덤 피드 조회 로직 최적화 및 시드 기반 캐싱/중복 제거 구현
 
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입
