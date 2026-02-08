@@ -4,7 +4,7 @@ import { useCallback, useEffect } from "react";
 import useSWRInfinite from "swr/infinite";
 import { useExpressionStore } from "@/context/ExpressionContext";
 import { Expression } from "@/types/database";
-import { EXPRESSION_SORT } from "@/constants/expressions";
+import { EXPRESSION_PAGE_SIZE, EXPRESSION_SORT } from "@/constants/expressions";
 import {
   ExpressionFilters,
   fetchMoreExpressions,
@@ -81,7 +81,7 @@ export function usePaginatedList({
   const items = Array.from(
     new Map(flatItems.map((item) => [item.id, item])).values(),
   );
-  const limit = filters.limit || 24;
+  const limit = filters.limit || EXPRESSION_PAGE_SIZE;
 
   const isEmpty = data?.[0]?.length === 0;
   const isReachingEnd =

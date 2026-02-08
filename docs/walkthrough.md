@@ -2,6 +2,34 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.2: Vocabulary Pagination & UI Foundation (2026-02-08)
+
+### 1. Goal (목표)
+
+- 단어장에 포함된 표현이 많아짐에 따라 발생할 수 있는 데이터 로딩 병목을 해결하기 위해 서버 사이드 페이지네이션을 도입하고, 이를 위한 공통 UI 컴포넌트 기반을 구축합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. SQL-level Pagination (`get_vocabulary_list_details.sql`)
+
+- **Offset Calculation**: 입력받은 `p_page`와 `p_page_size`를 기반으로 `v_offset`을 계산하여 `LIMIT`와 `OFFSET` 구문에 적용했습니다.
+- **Aggregated Total Count**: JSON 응답에 `total_count` 필드를 추가하여, 클라이언트가 전체 페이지 수를 계산할 수 있도록 정보를 제공합니다.
+
+#### B. Query Layer Adaptation (`vocabulary.ts`)
+
+- **Service Extension**: `getVocabularyListDetails` 함수에 `page`와 `limit` 파라미터를 추가하고, Supabase RPC 호출 시 이를 전달하도록 수정했습니다.
+- **Type Integration**: `VocabularyListDetails` 인터페이스에 `total_count` 필드를 추가하여 타입 안정성을 확보했습니다.
+
+#### C. Shared UI Components (`Pagination.tsx`, `button.tsx`)
+
+- **Standard Pagination**: Shadcn UI 스타일의 `Pagination` 컴포넌트를 구현했습니다. '이전', '다음' 버튼 및 페이지 번호 탐색을 지원합니다.
+- **Flexible Button**: `class-variance-authority` (CVA)를 도입하여 다양한 베리에이션(`variant`, `size`)을 선언적으로 관리할 수 있는 `Button` 컴포넌트를 구축했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Scalability**: 대량의 표현(100개 이상)을 가진 단어장에서도 일정한 로딩 성능 유지.
+- ✅ **Design Consistency**: 공통 UI 모듈화를 통해 서비스 전반의 디자인 완성도 향상.
+
 ## v0.16.1: Random Feed Optimization & UX Polish (2026-02-07)
 
 ### 1. Goal (목표)

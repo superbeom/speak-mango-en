@@ -2,6 +2,22 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.2: Vocabulary Pagination & UI Foundation (2026-02-08)
+
+### ✅ 진행 사항
+
+1.  **Vocabulary List Pagination**:
+    - **Server-side Support**: `get_vocabulary_list_details` SQL 함수를 업데이트하여 페이지네이션(`p_page`, `p_page_size`)을 지원하도록 개선했습니다. 이제 대량의 표현이 담긴 단어장도 전체를 한꺼번에 불러오지 않고 효율적으로 나누어 로션합니다.
+    - **Total Count Integration**: 단어장 정보와 함께 전체 아이템 수(`total_count`)를 반환하여 클라이언트에서 정확한 페이지네이션 UI를 구성할 수 있는 기반을 마련했습니다.
+    - **Query Layer Extension**: `getVocabularyListDetails` 서비스 함수가 페이지 파라미터를 지원하도록 확장했습니다.
+
+2.  **UI Component Foundation (Shadcn UI Style)**:
+    - **Pagination Component**: 재사용 가능한 `Pagination` 컴포넌트를 추가하여 여러 목록 페이지에서 일관된 페이지 이동 경험을 제공합니다.
+    - **Button Component**: `class-variance-authority`를 활용한 확장 가능한 `Button` 컴포넌트를 도입하여 UI 시스템의 유연성을 높였습니다.
+
+3.  **Client-side Hook Refinement**:
+    - **`usePaginatedList`**: 기존의 무한 스크롤 형태 외에 명시적인 페이지네이션이 필요한 경우에도 대응할 수 있도록 `EXPRESSION_PAGE_SIZE` 상수를 통합 관리합니다.
+
 ## v0.16.1: Random Feed Optimization & UX Polish (2026-02-07)
 
 ### ✅ 진행 사항

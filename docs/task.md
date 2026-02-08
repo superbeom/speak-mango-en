@@ -158,6 +158,7 @@
       - [x] **Logic**: 단어장 이름 변경, 삭제 및 기본값 설정 기능 완료
       - [x] **Logic**: 기본 단어장 삭제 시 자동 권한 이양 구현 (Auto-reassignment)
       - [x] **UI/UX**: 단어장 목록 및 마이페이지 로딩 스켈레톤 도입
+      - [x] **Logic**: 단어장 항목 페이지네이션 및 UI 컴포넌트(`Pagination`, `Button`) 구축
 - [x] **Logic**: 단어장 항목 일괄 이동 및 복사 지원 (Bulk Move/Copy)
 - [x] **UX/UI**: 일괄 작업용 `useBulkAction` 훅 및 타겟 선택 흐름 구현
 - [x] **UI/UX**: 플랜 사용 현황 및 안내 컴포넌트(`VocabularyPlanStatus`) 도입

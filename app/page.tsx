@@ -2,7 +2,11 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { getI18n, getLocale } from "@/i18n/server";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
-import { EXPRESSION_SORT, ExpressionSortType } from "@/constants/expressions";
+import {
+  EXPRESSION_PAGE_SIZE,
+  EXPRESSION_SORT,
+  ExpressionSortType,
+} from "@/constants/expressions";
 import { serializeFilters } from "@/lib/utils";
 import { getExpressions } from "@/services/queries/expressions";
 import MainHeader from "@/components/MainHeader";
@@ -45,14 +49,14 @@ export default async function Home({ searchParams }: PageProps) {
   const filters = { category, search, tag, sort, seed };
   const cacheKey = serializeFilters(filters);
 
-  // 초기 1페이지 데이터 페칭 (limit 24)
+  // 초기 1페이지 데이터 페칭 (limit 24 - EXPRESSION_PAGE_SIZE)
   const locale = await getLocale();
   const [{ dict }, expressions] = await Promise.all([
     getI18n(),
     getExpressions({
       ...filters,
       page: 1,
-      limit: 24,
+      limit: EXPRESSION_PAGE_SIZE,
       locale, // 로케일별 검색을 위해 추가
     }),
   ]);

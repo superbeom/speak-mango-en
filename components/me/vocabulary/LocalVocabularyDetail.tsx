@@ -11,12 +11,14 @@ import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
 import { getExpressionsByIds } from "@/services/queries/expressions";
+import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import { ROUTES } from "@/lib/routes";
 import {
   SkeletonExpressionList,
   SkeletonVocabularyDetailHeader,
   SkeletonVocabularyToolbar,
 } from "@/components/ui/Skeletons";
+import Pagination from "@/components/ui/Pagination";
 import BulkActionModalWrapper from "@/components/vocabulary/BulkActionModalWrapper";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
@@ -24,10 +26,12 @@ import VocabularyToolbar from "./VocabularyToolbar";
 
 interface LocalVocabularyDetailProps {
   listId: string;
+  currentPage: number;
 }
 
 const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   listId,
+  currentPage,
 }: LocalVocabularyDetailProps) {
   const router = useRouter();
   const { dict } = useI18n();
@@ -126,9 +130,11 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
         return;
       }
 
+      const totalItemsCount = list.itemIds.size;
+
       if (isMounted) {
         setListTitle(list.title);
-        if (list.itemIds.size === 0) {
+        if (totalItemsCount === 0) {
           setItems([]);
           setLoading(false);
           return;
@@ -136,8 +142,14 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
       }
 
       try {
-        const expressionIds = Array.from(list.itemIds);
-        const fetchedItems = await getExpressionsByIds(expressionIds);
+        // Optimization: Slice identifiers first to bring only the items needed for the current page
+        const allItemIds = Array.from(list.itemIds);
+        const startIdx = (currentPage - 1) * EXPRESSION_PAGE_SIZE;
+        const endIdx = startIdx + EXPRESSION_PAGE_SIZE;
+        const currentPageIds = allItemIds.slice(startIdx, endIdx);
+
+        // Fetch only the items for the current page
+        const fetchedItems = await getExpressionsByIds(currentPageIds);
 
         if (!isMounted) return;
 
@@ -156,7 +168,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     return () => {
       isMounted = false;
     };
-  }, [listId, vocabularyLists, _hasHydrated]);
+  }, [listId, vocabularyLists, _hasHydrated, currentPage]);
 
   // 삭제 중일 때는 에러(NotFound)를 무시함
   if (error && !isDeleting) {
@@ -179,6 +191,13 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     );
   }
 
+  // Calculate pagination
+  // totalCount should be total items in the list (from local store), not just fetched items
+  const totalCount = vocabularyLists[listId]?.itemIds.size || 0;
+  const totalPages = Math.ceil(totalCount / EXPRESSION_PAGE_SIZE);
+  // visibleItems is now just items, since we only fetched what we need
+  const visibleItems = items;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -189,7 +208,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
       <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
         <VocabularyDetailHeader
           title={listTitle}
-          itemCount={items.length}
+          itemCount={totalCount}
           isDefault={vocabularyLists[listId]?.isDefault}
           onTitleSave={handleTitleSave}
           onListDelete={handleListDelete}
@@ -204,12 +223,12 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           selectedCount={selectedIds.size}
-          totalCount={items.length}
+          totalCount={totalCount}
           onToggleAll={handleToggleAll}
         />
 
         <VocabularyItemsGrid
-          items={items}
+          items={visibleItems}
           isSelectionMode={isSelectionMode}
           viewMode={viewMode}
           selectedIds={selectedIds}
@@ -218,6 +237,16 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
           onMove={handleMove}
           onDelete={handleItemsDelete}
         />
+
+        {totalPages > 1 && (
+          <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              baseUrl={ROUTES.VOCABULARY_LIST(listId)}
+            />
+          </div>
+        )}
       </div>
 
       {bulkActionState && (

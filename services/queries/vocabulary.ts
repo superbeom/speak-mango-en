@@ -6,6 +6,7 @@ import {
   VocabularyListWithCount,
   VocabularyListDetails,
 } from "@/types/vocabulary";
+import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getAuthSession } from "@/lib/auth/utils";
 
@@ -97,6 +98,8 @@ export const getSavedListIds = cache(async function getSavedListIds(
 export const getVocabularyListDetails = cache(
   async function getVocabularyListDetails(
     listId: string,
+    page: number = 1,
+    limit: number = EXPRESSION_PAGE_SIZE,
   ): Promise<VocabularyListDetails> {
     /**
      * Note: This function doesn't use withPro because cache() doesn't play well with HOFs directly within the export.
@@ -111,6 +114,8 @@ export const getVocabularyListDetails = cache(
 
     const { data, error } = await supabase.rpc("get_vocabulary_list_details", {
       p_list_id: listId,
+      p_page: page,
+      p_page_size: limit,
     });
 
     if (error) {

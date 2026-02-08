@@ -9,6 +9,7 @@ import { Expression } from "@/types/expression";
 import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
+import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import {
   updateVocabularyListTitle,
   deleteVocabularyList,
@@ -22,12 +23,15 @@ import BulkActionModalWrapper from "@/components/vocabulary/BulkActionModalWrapp
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
+import Pagination from "@/components/ui/Pagination";
 
 interface RemoteVocabularyDetailProps {
   listId: string;
   title: string;
   items: Expression[];
   isDefault: boolean;
+  totalCount: number;
+  currentPage: number;
 }
 
 export default function RemoteVocabularyDetail({
@@ -35,6 +39,8 @@ export default function RemoteVocabularyDetail({
   title: initialTitle,
   items,
   isDefault: initialIsDefault,
+  totalCount,
+  currentPage,
 }: RemoteVocabularyDetailProps) {
   const router = useRouter();
   const { dict } = useI18n();
@@ -129,7 +135,7 @@ export default function RemoteVocabularyDetail({
       <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
         <VocabularyDetailHeader
           title={title}
-          itemCount={items.length}
+          itemCount={totalCount}
           isDefault={isDefault}
           onTitleSave={handleTitleSave}
           onListDelete={handleListDelete}
@@ -157,6 +163,12 @@ export default function RemoteVocabularyDetail({
           onCopy={handleCopy}
           onMove={handleMove}
           onDelete={handleItemsDelete}
+        />
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalCount / EXPRESSION_PAGE_SIZE)}
+          baseUrl={ROUTES.VOCABULARY_LIST(listId)}
         />
       </div>
 

@@ -234,11 +234,13 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 #### 5. `get_vocabulary_list_details`
 
-- **Description**: 특정 단어장의 상세 정보와 포함된 모든 표현(Expression) 데이터를 하나의 JSON 객체로 조회합니다. 소유권 체크(`auth.uid()`)가 내장되어 있습니다.
+- **Description**: 특정 단어장의 상세 정보와 포함된 표현(Expression) 데이터를 페이지네이션하여 JSON 객체로 조회합니다. 소유권 체크(`auth.uid()`)가 내장되어 있습니다.
 - **Usage**: 단어장 상세 페이지에서 사용.
 - **Parameters**:
   - `p_list_id` (uuid): 조회할 단어장 ID.
-- **Returns**: `json` (단어장 정보 및 items 배열 포함)
+  - `p_page` (int, default: 1): 조회할 페이지 번호.
+  - `p_page_size` (int, default: 24): 페이지당 아이템 개수.
+- **Returns**: `json` (단어장 정보, 전체 아이템 수(`total_count`), 현재 페이지의 items 배열 포함)
 - **SQL Definition**: [`database/functions/get_vocabulary_list_details.sql`](../../database/functions/get_vocabulary_list_details.sql) 참조.
 
 #### 6. `get_user_tier`

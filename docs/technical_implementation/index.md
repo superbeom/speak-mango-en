@@ -1858,6 +1858,18 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
   - `set_default_vocabulary_list`: 트랜잭션을 통해 기존 기본값 해제와 신규 설정을 원자적으로 수행.
   - `get_user_tier`: 사용자의 현재 멤버십 상태(Free/Pro)를 안전하게 확인.
 
+### 22.7 Vocabulary Pagination (단어장 페이지네이션)
+
+단어장에 포함된 표현이 점진적으로 증가함에 따라, 수백 개 이상의 항목을 한 번에 로드할 때 발생하는 성능 저하와 메모리 부하를 해결하기 위해 서버 사이드 페이지네이션을 도입했습니다.
+
+- **Objective**: 대량의 데이터셋에서도 일정한 첫 페이지 로딩 속도(FMP)를 보장하고, 필요한 시점에 추가 데이터를 효율적으로 가져옵니다.
+- **SQL Implementation (`get_vocabulary_list_details`)**:
+  - 기존의 단일 JSON 반환 구조에 `p_page` 및 `p_page_size` 파라미터를 추가했습니다.
+  - `total_count` 필드를 집계(Aggregate)하여 반환함으로써 클라이언트가 전체 페이지 수(Total Pages)를 계산하고 이동할 수 있도록 했습니다.
+  - `LIMIT`와 `OFFSET`을 활용하여 DB 레벨에서 필요한 조각만 정확히 추출합니다.
+- **Query Layer Integration**: `getVocabularyListDetails` 서비스 함수에서 페이지 번호를 지원하며, 반환 타입을 `VocabularyListDetails` (total_count 포함)로 확장하여 일관성을 확보했습니다.
+- **UX Strategy**: 무한 스크롤이 아닌 명시적 페이지네이션 UI를 채택하여, 사용자가 특정 위치의 표현을 더 쉽게 기억하고 찾아갈 수 있는 인지적 편의성을 제공합니다.
+
 ## 23. Component Refactoring & Reusability (컴포넌트 리팩토링 및 재사용성)
 
 ### 23.1 Unified Action Bar (`ExpressionActions.tsx`)
@@ -1989,3 +2001,24 @@ export function useQuizGame(initialExpressions: Expression[]) {
 
 - **User Tier SQL**: `database/functions/get_user_tier.sql`에 정의된 `get_user_tier` 함수는 JWT 세션 정보를 기반으로 유저의 최신 상태를 DB 레벨에서 안전하게 반환합니다.
 - **Default List RPC**: `set_default_vocabulary_list`를 통해 복잡한 `is_default` 플래그 전환 로직을 원자적(Atomic)으로 처리합니다.
+
+## 26. UI Component Architecture (Shadcn Style)
+
+프로젝트의 UI 일관성을 유지하고 개발 생산성을 높이기 위해, Shadcn UI 스타일의 원자적(Atomic) 컴포넌트 시스템을 구축하고 있습니다.
+
+### 26.1 Base Component Foundation (`button.tsx`)
+
+- **Library**: `class-variance-authority` (CVA) + `clsx` + `tailwind-merge`
+- **Philosophy**: 컴포넌트의 논리(Logic)와 스타일(Variant)을 철저히 분리합니다.
+- **Implementation**:
+  - `Slot`을 지원하여 `asChild` 패턴을 통한 유연한 HTML 태그 및 컴포넌트 합성을 지원합니다.
+  - `buttonVariants` 상수를 통해 `default`, `destructive`, `outline`, `ghost` 등 다양한 스타일 베리에이션과 `sm`, `lg`, `icon` 등 사이즈를 선언적으로 정의합니다.
+  - `twMerge`를 활용하여 Props로 전달된 커스텀 클래스가 기본 스타일과 충돌 없이 안전하게 병합되도록 처리했습니다.
+
+### 26.2 Navigation Components (`Pagination.tsx`)
+
+- **Composition**: 여러 개의 작은 서브 컴포넌트(`${Name}Item`, `${Name}Link`, `${Name}Previous`, etc.)를 조합하여 거대한 UI를 구성하는 조립형 패턴을 사용합니다.
+- **Features**:
+  - 현재 페이지 강조 및 접근성(`aria-label`) 고려.
+  - 페이지 번호가 많을 경우를 대비한 생략 표기(`PaginationEllipsis`) 지원.
+  - 통일된 화살표 아이콘 사용으로 시각적 일관성 유지.

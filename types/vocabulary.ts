@@ -24,6 +24,7 @@ export interface VocabularyListDetails extends Pick<
   VocabularyList,
   "id" | "title" | "is_default" | "created_at"
 > {
+  total_count: number;
   items: Expression[];
 }
 

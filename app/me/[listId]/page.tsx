@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getI18n } from "@/i18n/server";
 import { isAppError, VOCABULARY_ERROR } from "@/types/error";
+import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import { getVocabularyListDetails } from "@/services/queries/vocabulary";
 import { getAuthSession } from "@/lib/auth/utils";
 import VocabularyDetailLayout from "@/components/me/vocabulary/VocabularyDetailLayout";
@@ -10,6 +11,7 @@ import RemoteVocabularyDetail from "@/components/me/vocabulary/RemoteVocabularyD
 
 interface PageProps {
   params: Promise<{ listId: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,20 +24,35 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function VocabularyListPage({ params }: PageProps) {
+export default async function VocabularyListPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { listId } = await params;
+  const { page } = await searchParams;
+
+  const pageNumber = Number(page);
+  const currentPage = pageNumber > 0 ? pageNumber : 1;
+  const itemsPerPage = EXPRESSION_PAGE_SIZE;
+
   const { isPro } = await getAuthSession();
 
   let content;
 
   if (!isPro) {
     /** Free User: Use Client Component for Local Storage */
-    content = <LocalVocabularyDetail listId={listId} />;
+    content = (
+      <LocalVocabularyDetail listId={listId} currentPage={currentPage} />
+    );
   } else {
     /** Pro User: Use Server Component for DB Data */
     const list = await (async () => {
       try {
-        return await getVocabularyListDetails(listId);
+        return await getVocabularyListDetails(
+          listId,
+          currentPage,
+          itemsPerPage,
+        );
       } catch (error) {
         if (
           isAppError(error) &&
@@ -54,6 +71,8 @@ export default async function VocabularyListPage({ params }: PageProps) {
         title={list.title}
         items={list.items}
         isDefault={list.is_default}
+        totalCount={list.total_count}
+        currentPage={currentPage}
       />
     );
   }

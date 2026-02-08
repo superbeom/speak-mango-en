@@ -2,7 +2,11 @@
 
 import { cache } from "react";
 import { Expression } from "@/types/expression";
-import { ExpressionSortType, EXPRESSION_SORT } from "@/constants/expressions";
+import {
+  EXPRESSION_PAGE_SIZE,
+  ExpressionSortType,
+  EXPRESSION_SORT,
+} from "@/constants/expressions";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export interface ExpressionFilters {
@@ -29,7 +33,7 @@ export interface ExpressionFilters {
  *   - search: 해당 문자열을 포함하는 표현을 검색합니다 (대소문자 구분 없음).
  *   - tag: 특정 태그를 가진 표현을 필터링합니다.
  *   - page: 페이지네이션을 위한 페이지 번호 (기본값: 1).
- *   - limit: 페이지당 항목 수 (기본값: 24).
+ *   - limit: 페이지당 항목 수 (기본값: 24 - EXPRESSION_PAGE_SIZE).
  *   - sort: 정렬 순서 ('latest' | 'random'). 'random'의 경우 필터를 무시하고 무작위로 가져옵니다.
  *   - seed: SWR 캐시 키 유니크화를 위한 시드값. DB 쿼리에는 영향을 주지 않습니다.
  * @returns Expression 객체 배열을 담은 Promise를 반환합니다. 에러 발생 시 빈 배열을 반환합니다.
@@ -38,7 +42,7 @@ export const getExpressions = cache(async function getExpressions(
   filters?: ExpressionFilters,
 ): Promise<Expression[]> {
   try {
-    const limit = filters?.limit || 24;
+    const limit = filters?.limit || EXPRESSION_PAGE_SIZE;
 
     // Random Sort Handling
     if (filters?.sort === EXPRESSION_SORT.RANDOM) {
