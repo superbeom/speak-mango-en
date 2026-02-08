@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
 import { useConfirm } from "@/context/ConfirmContext";
 import { useToast } from "@/context/ToastContext";
@@ -131,7 +132,13 @@ export default function RemoteVocabularyDetail({
   };
 
   return (
-    <div className="py-8">
+    <motion.div
+      key={`${listId}-${currentPage}`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="py-8"
+    >
       <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
         <VocabularyDetailHeader
           title={title}
@@ -204,6 +211,6 @@ export default function RemoteVocabularyDetail({
           }}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.3: Pro Vocabulary Animation Fix & Navigation Stability (2026-02-08)
+
+### ✅ 진행 사항
+
+1.  **Remote Vocabulary Detail Fix (Pro User)**:
+    - **Problem**: Pro 유저가 단어장 상세 페이지에 진입할 때 빈 화면이 노출되고, 클릭 시 이전 페이지로 이동하는 현상이 발생했습니다. 이는 `VocabularyItemsGrid` 내부의 `motion` 컴포넌트들이 `opacity: 0` 상태로 시작하는데, 이를 트리거할 부모 애니메이션 컨텍스트가 부재했기 때문입니다.
+    - **Solution**: `RemoteVocabularyDetail` 컴포넌트 최상단을 `motion.div`로 감싸고 `initial`/`animate` 속성을 부여하여, 자식 요소들이 정상적으로 '보임(Visible)' 상태로 전환되도록 수정했습니다.
+
+2.  **Navigation Stability (History & Pagination)**:
+    - **Problem**: 페이지네이션이나 브라우저 뒤로가기/앞으로가기 시, Next.js의 컴포넌트 재사용(Reconciliation)으로 인해 애니메이션이 다시 실행되지 않고 빈 화면(opacity: 0) 상태로 남는 문제가 있었습니다.
+    - **Solution**: `motion.div`에 `key={`${listId}-${currentPage}`} `를 명시하여, 페이지나 리스트가 변경될 때마다 컴포넌트를 강제로 언마운트/마운트(Remount) 시키도록 했습니다. 이를 통해 진입 애니메이션이 항상 확실하게 실행되고 내부 상태가 초기화됩니다.
+
 ## v0.16.2: Vocabulary Pagination & UI Foundation (2026-02-08)
 
 ### ✅ 진행 사항

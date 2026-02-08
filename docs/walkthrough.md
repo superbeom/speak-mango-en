@@ -2,6 +2,29 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.3: Pro Vocabulary Animation Fix & Navigation Stability (2026-02-08)
+
+### 1. Goal (목표)
+
+- Pro 유저의 단어장 상세 페이지에서 발생하는 빈 화면 및 클릭 오작동(이전 페이지 이동) 문제를 해결하고, 페이지네이션 및 브라우저 탐색(뒤로가기) 시 애니메이션과 상태를 안정적으로 초기화합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Animation Context Fix (`RemoteVocabularyDetail.tsx`)
+
+- **Root Motion Wrapper**: `div` 래퍼를 `motion.div`로 교체하고 `initial={{ opacity: 0, y: 10 }}` 및 `animate={{ opacity: 1, y: 0 }}` 속성을 추가했습니다.
+- **Why**: 자식 컴포넌트인 `VocabularyItemsGrid`가 `initial="hidden"` 상태로 렌더링되는데, 부모 레벨에서의 진입 신호가 없어 `visible` 상태로 전환되지 못하던 문제를 해결했습니다.
+
+#### B. Component Remount Strategy (`key` prop)
+
+- **Key-based Reset**: 최상위 `motion.div`에 `key={`${listId}-${currentPage}`} `를 적용했습니다.
+- **Effect**: 페이지 번호나 리스트가 변경될 때마다 React가 해당 컴포넌트를 완전히 새로운 인스턴스로 인식하게 하여, 애니메이션 사이클(`initial` -> `animate`)이 항상 처음부터 실행되도록 강제했습니다. 이는 Next.js의 컴포넌트 재사용으로 인한 상태 잔존 및 애니메이션 누락을 방지합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Visual Stability**: Pro 유저의 단어장 진입 시 Free 유저와 동일하게 부드러운 진입 애니메이션 제공.
+- ✅ **Navigation Integrity**: 뒤로가기/페이지 이동 시 빈 화면 문제 원천 차단.
+
 ## v0.16.2: Vocabulary Pagination & UI Foundation (2026-02-08)
 
 ### 1. Goal (목표)
