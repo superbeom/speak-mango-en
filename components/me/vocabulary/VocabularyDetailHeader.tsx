@@ -151,12 +151,9 @@ export default function VocabularyDetailHeader({
           {!isEditing && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2 text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50 bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors cursor-pointer outline-hidden focus-visible:ring-2 focus-visible:ring-zinc-400"
-                >
+                <button className="p-2 text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50 bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors cursor-pointer outline-hidden">
                   <MoreVertical size={20} />
-                </motion.button>
+                </button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end">

@@ -172,6 +172,7 @@ export const en = {
     reinforce: "Weak Points",
     reinforceDesc: "Focus on hard items",
     myLists: "My Lists",
+    myList: "My List",
     learned: "Learned",
     emptyState: "No lists created yet. Start by saving expressions!",
     noSavedExpressions: "No saved expressions yet",

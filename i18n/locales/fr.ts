@@ -181,6 +181,7 @@ export const fr = {
     reinforce: "Points faibles",
     reinforceDesc: "Concentrez-vous sur les points difficiles",
     myLists: "Mon Vocabulaire",
+    myList: "Mon Carnet",
     learned: "Appris",
     emptyState:
       "Aucun carnet créé. Commencez par enregistrer des expressions !",

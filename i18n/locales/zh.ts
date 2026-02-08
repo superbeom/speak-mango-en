@@ -169,6 +169,7 @@ export const zh = {
     reinforce: "重点强化",
     reinforceDesc: "集中学习难点表达",
     myLists: "我的生词本",
+    myList: "我的生词本",
     learned: "已掌握",
     emptyState: "尚无生词本。快来收藏表达吧！",
     noSavedExpressions: "暂无收藏表达",

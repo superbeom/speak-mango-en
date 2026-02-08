@@ -180,6 +180,7 @@ export const es = {
     reinforce: "Puntos débiles",
     reinforceDesc: "Céntrate en lo más difícil",
     myLists: "Mi Vocabulario",
+    myList: "Mi Cuaderno",
     learned: "Aprendido",
     emptyState: "Aún no has creado cuadernos. ¡Empieza guardando expresiones!",
     noSavedExpressions: "No hay expresiones guardadas",

@@ -181,6 +181,7 @@ export const de = {
     reinforce: "Schwachstellen",
     reinforceDesc: "Fokus auf schwierige Ausdrücke",
     myLists: "Mein Wortschatz",
+    myList: "Mein Vokabelheft",
     learned: "Gelernt",
     emptyState: "Noch keine Vokabelhefte erstellt. Speichere zuerst Ausdrücke!",
     noSavedExpressions: "Keine Ausdrücke gespeichert",

@@ -172,6 +172,7 @@ export const ko = {
     reinforce: "약점 보완",
     reinforceDesc: "어려운 표현 집중 학습",
     myLists: "내 단어장",
+    myList: "단어장",
     learned: "학습 완료",
     emptyState: "생성된 단어장이 없습니다. 표현을 저장해 보세요!",
     noSavedExpressions: "저장된 표현이 없습니다",

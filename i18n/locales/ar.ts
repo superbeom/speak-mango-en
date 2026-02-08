@@ -171,6 +171,7 @@ export const ar = {
     reinforce: "نقاط الضعف",
     reinforceDesc: "ركز على التعبيرات الصعبة",
     myLists: "مفرداتي",
+    myList: "قائمة الكلمات",
     learned: "تم تعلمه",
     emptyState: "لم يتم إنشاء قاموس بعد. ابدأ بحفظ التعبيرات!",
     noSavedExpressions: "لا توجد تعبيرات محفوظة",

@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const { dict } = await getI18n();
 
   return {
-    title: dict.me.myLists,
+    title: dict.me.myList,
     description: dict.me.metaDescription,
     robots: { index: false, follow: false },
   };
