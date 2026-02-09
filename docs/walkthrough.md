@@ -2,6 +2,41 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.4: Skeleton Refactoring & Pagination UX Polish (2026-02-09)
+
+### 1. Goal (목표)
+
+- `RemoteVocabularyDetail`과 `LocalVocabularyDetail` 간의 스켈레톤 중복 코드를 제거하고, `SkeletonVocabularyDetail` 통합 컴포넌트로 관리하여 유지보수성과 시각적 일관성을 확보합니다.
+- 페이지네이션 동작 시 전체 리로드 없이 부드러운 상태 전환을 지원하여 더 나은 사용자 경험을 제공합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Centralized Skeleton Architecture (`Skeletons.tsx`)
+
+- **`SkeletonVocabularyDetail` New Component**: 기존에 여러 페이지와 컴포넌트에 파편화되어 정의되어 있던 상세 페이지 스켈레톤(Header + Toolbar + List)을 단일 컴포넌트로 통합했습니다.
+- **Unified Loading UX**:
+  - `app/me/[listId]/loading.tsx` (Server)
+  - `LocalVocabularyDetail.tsx` (Client Loading)
+  - `RemoteVocabularyDetail.tsx` (Client Loading)
+- 위 세 곳 모두 동일한 `SkeletonVocabularyDetail`을 사용하도록 구조화하여, 데이터 소스나 렌더링 시점에 관계없이 완벽히 일치하는 로딩 화면을 구현했습니다.
+
+#### B. Component Logic Polish (`Pagination.tsx`, `loading.tsx`)
+
+- **Pagination Callback**: `Pagination` 컴포넌트에 `onPageChange` 콜백 프로퍼티를 추가했습니다.
+- **Improved Interaction**: 페이지네이션 클릭 시 `e.preventDefault()`를 통해 기본 링크 이동을 차단하고 주입된 콜백을 실행함으로써, 불필요한 전체 페이지 새로고침과 네트워크 지연 없는 쾌적한 페이지 이동 경험을 제공합니다.
+
+#### C. SWR Integration for Caching & UX (`useSWR`)
+
+- **Client-side Caching**: `RemoteVocabularyDetail`과 `LocalVocabularyDetail` 모두 `useSWR`을 사용하여 표현 데이터를 관리합니다. 이를 통해 한 번 방문한 페이지의 데이터는 즉시 로딩(Instant Load)되며, 네트워크 요청을 최소화합니다.
+- **Optimistic Fetching**: `keepPreviousData: true` 옵션을 사용하여 페이지 전환 시 다음 데이터가 준비될 때까지 현재 데이터를 유지함으로써, 사용자에게 끊김 없는 탐색 경험을 제공합니다.
+- **Data Synchronization**: 단어장 제목 수정, 삭제, 기본 설정 변경 등 Mutation 발생 시 SWR의 `mutate()`를 호출하여 UI와 실제 서버/로컬 저장소 간의 데이터 동기화를 보장합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Full Consistency**: 유저 타입(Free/Pro)이나 데이터 환경에 상관없이 100% 동일한 로딩 화면 보장.
+- ✅ **Refined Navigation**: 페이지네이션 시 시각적 깜빡임 최소화 및 인터랙션 반응성 향상.
+- ✅ **Code Maintainability**: 수십 라인의 중복된 스켈레톤 코드를 단 한 줄의 컴포넌트 호출로 단순화.
+
 ## v0.16.3: Pro Vocabulary Animation Fix & Navigation Stability (2026-02-08)
 
 ### 1. Goal (목표)

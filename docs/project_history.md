@@ -2,6 +2,24 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.4: Skeleton Refactoring & Pagination UX Polish (2026-02-09)
+
+### ✅ 진행 사항
+
+1.  **Vocabulary Detail Skeleton Consolidation**:
+    - **Problem**: `RemoteVocabularyDetail`과 `LocalVocabularyDetail`에서 각각 정의되어 사용되던 복잡한 스켈레톤 구조가 중복 코드로 관리되고 있었습니다.
+    - **Solution**: `components/ui/Skeletons.tsx`에 `SkeletonVocabularyDetail` 통합 컴포넌트를 신설하여, 단어장 상세 페이지의 로딩 화면을 단일 소스(Single Source of Truth)로 관리하도록 개선했습니다.
+    - **Reusability**: `app/me/[listId]/loading.tsx` 및 클라이언트 컴포넌트 내부 로딩 상태에서 동일한 컴포넌트를 사용하여 로딩 경험의 일관성을 확보했습니다.
+
+2.  **SWR-powered Data Fetching & Caching**:
+    - **Refactor**: `RemoteVocabularyDetail`과 `LocalVocabularyDetail`의 데이터 페칭 로직을 `useSWR` 기반으로 전면 리팩토링했습니다.
+    - **UX Improvement**: `keepPreviousData: true` 옵션을 통해 페이지 이동 시 이전 목록을 유지하거나, SWR 캐시를 활용해 즉각적인 화면 전환이 가능하도록 구현했습니다.
+    - **Consistency**: 데이터 소스(Remote/Local)에 상관없이 SWR 캐싱 레이어를 거치도록 구조를 통일하여 데이터 일관성을 강화했습니다.
+
+3.  **Pagination UX Stability**:
+    - **Enhancement**: `Pagination` 컴포넌트가 `onPageChange` 콜백을 지원하도록 고도화했습니다.
+    - **Stable Client Navigation**: 로컬 단어장 등 클라이언트 사이드에서 페이지네이션을 처리할 때, 전체 페이지 리로드를 방지하고 부드러운 상태 전환이 가능하도록 인터랙션을 개선했습니다.
+
 ## v0.16.3: Pro Vocabulary Animation Fix & Navigation Stability (2026-02-08)
 
 ### ✅ 진행 사항

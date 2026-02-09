@@ -365,3 +365,23 @@ export const SkeletonVocabularyToolbar = memo(
     );
   },
 );
+
+/**
+ * 단어장 상세 페이지 - 전체 레이아웃 스켈레톤
+ */
+export const SkeletonVocabularyDetail = memo(
+  function SkeletonVocabularyDetail() {
+    return (
+      <div className="py-8">
+        <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+          <SkeletonVocabularyDetailHeader />
+        </div>
+
+        <div className="mt-8 space-y-10 max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+          <SkeletonVocabularyToolbar />
+          <SkeletonExpressionList />
+        </div>
+      </div>
+    );
+  },
+);

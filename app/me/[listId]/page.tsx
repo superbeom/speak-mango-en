@@ -41,9 +41,7 @@ export default async function VocabularyListPage({
 
   if (!isPro) {
     /** Free User: Use Client Component for Local Storage */
-    content = (
-      <LocalVocabularyDetail listId={listId} currentPage={currentPage} />
-    );
+    content = <LocalVocabularyDetail listId={listId} />;
   } else {
     /** Pro User: Use Server Component for DB Data */
     const list = await (async () => {

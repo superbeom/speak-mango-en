@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
-import { notFound, useRouter } from "next/navigation";
+import { useEffect, useState, memo, useMemo } from "react";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
+import useSWR from "swr";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -13,11 +14,7 @@ import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
 import { getExpressionsByIds } from "@/services/queries/expressions";
 import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import { ROUTES } from "@/lib/routes";
-import {
-  SkeletonExpressionList,
-  SkeletonVocabularyDetailHeader,
-  SkeletonVocabularyToolbar,
-} from "@/components/ui/Skeletons";
+import { SkeletonVocabularyDetail } from "@/components/ui/Skeletons";
 import Pagination from "@/components/ui/Pagination";
 import BulkActionModalWrapper from "@/components/vocabulary/BulkActionModalWrapper";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
@@ -26,14 +23,13 @@ import VocabularyToolbar from "./VocabularyToolbar";
 
 interface LocalVocabularyDetailProps {
   listId: string;
-  currentPage: number;
 }
 
 const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   listId,
-  currentPage,
 }: LocalVocabularyDetailProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { dict } = useI18n();
   const { confirm } = useConfirm();
   const { showToast } = useToast();
@@ -57,10 +53,6 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     setViewMode,
   } = useVocabularyView();
 
-  const [listTitle, setListTitle] = useState("");
-  const [items, setItems] = useState<Expression[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // 404 방지용 삭제 상태
 
   const {
@@ -71,18 +63,78 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     onOpenChange: onBulkActionOpenChange,
   } = useBulkAction();
 
+  // URL의 page 번호와 내부 상태 동기화
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const [page, setPage] = useState(pageFromUrl);
+
+  useEffect(() => {
+    setPage(pageFromUrl);
+  }, [pageFromUrl]);
+
+  // 로컬 스토리지에서 현재 리스트 정보 가져오기
+  const list = vocabularyLists[listId];
+  const listTitle = list?.title || "";
+  const totalCount = list?.itemIds.size || 0;
+  const totalPages = Math.ceil(totalCount / EXPRESSION_PAGE_SIZE);
+
+  // 현재 페이지에 해당하는 item ID들 계산 (Client Side Pagination of IDs)
+  const currentPageIds = useMemo(() => {
+    if (!list) return [];
+    const allItemIds = Array.from(list.itemIds);
+    const startIdx = (page - 1) * EXPRESSION_PAGE_SIZE;
+    const endIdx = startIdx + EXPRESSION_PAGE_SIZE;
+    return allItemIds.slice(startIdx, endIdx);
+  }, [list, page]);
+
+  // SWR을 사용하여 ID들에 해당하는 Expression 데이터 가져오기
+  const {
+    data: items,
+    isLoading: isSwrLoading,
+    mutate,
+  } = useSWR(
+    currentPageIds.length > 0
+      ? ["local-vocabulary", listId, currentPageIds]
+      : null,
+    () => getExpressionsByIds(currentPageIds),
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+    },
+  );
+
+  const displayItems: Expression[] = items || [];
+  const isLoading = (isSwrLoading && !items) || !_hasHydrated;
+
+  // 리스트가 없으면 404 처리 (Hydration 완료 후)
+  useEffect(() => {
+    if (_hasHydrated && !list && !isDeleting) {
+      notFound();
+    }
+  }, [_hasHydrated, list, isDeleting]);
+
+  const handlePageChange = async (newPage: number) => {
+    // 페이지 이동 시에는 스켈레톤을 보여주기 위해 현재 데이터를 비움
+    await mutate(undefined, { revalidate: false });
+
+    setPage(newPage);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+
+    router.push(`${ROUTES.VOCABULARY_LIST(listId)}?${params.toString()}`);
+  };
+
   const handleToggleAll = () => {
-    if (selectedIds.size === items.length) {
+    if (selectedIds.size === displayItems.length) {
       clearSelection();
     } else {
-      selectAll(items.map((item) => item.id));
+      selectAll(displayItems.map((item) => item.id));
     }
   };
 
   const handleTitleSave = (newTitle: string) => {
-    setListTitle(newTitle);
     updateListTitle(listId, newTitle);
     showToast(dict.vocabulary.saveSuccess);
+    mutate();
   };
 
   const handleListDelete = () => {
@@ -99,13 +151,14 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   const handleSetDefault = () => {
     setDefaultList(listId);
     showToast(dict.vocabulary.setDefaultSuccess);
+    mutate();
   };
 
   const handleItemsDelete = () => {
     confirm({
       title: dict.vocabulary.delete,
       description: dict.vocabulary.itemsDeleteConfirm,
-      onConfirm: () => {
+      onConfirm: async () => {
         removeMultipleFromList(listId, Array.from(selectedIds));
         showToast(dict.vocabulary.itemsDeleteSuccess);
         toggleSelectionMode();
@@ -113,90 +166,9 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     });
   };
 
-  useEffect(() => {
-    let isMounted = true;
-
-    // Wait for hydration
-    if (!_hasHydrated) return;
-
-    const fetchList = async () => {
-      const list = vocabularyLists[listId];
-
-      if (!list) {
-        if (isMounted) {
-          setError(true);
-          setLoading(false);
-        }
-        return;
-      }
-
-      const totalItemsCount = list.itemIds.size;
-
-      if (isMounted) {
-        setListTitle(list.title);
-        if (totalItemsCount === 0) {
-          setItems([]);
-          setLoading(false);
-          return;
-        }
-      }
-
-      try {
-        // Optimization: Slice identifiers first to bring only the items needed for the current page
-        const allItemIds = Array.from(list.itemIds);
-        const startIdx = (currentPage - 1) * EXPRESSION_PAGE_SIZE;
-        const endIdx = startIdx + EXPRESSION_PAGE_SIZE;
-        const currentPageIds = allItemIds.slice(startIdx, endIdx);
-
-        // Fetch only the items for the current page
-        const fetchedItems = await getExpressionsByIds(currentPageIds);
-
-        if (!isMounted) return;
-
-        setItems(fetchedItems);
-      } catch (err) {
-        if (isMounted) {
-          console.error("Failed to fetch local list items:", err);
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchList();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [listId, vocabularyLists, _hasHydrated, currentPage]);
-
-  // 삭제 중일 때는 에러(NotFound)를 무시함
-  if (error && !isDeleting) {
-    notFound();
-    return null;
+  if (isLoading || isDeleting) {
+    return <SkeletonVocabularyDetail />;
   }
-
-  if (loading || !_hasHydrated) {
-    return (
-      <div className="py-8 animate-pulse">
-        <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
-          <SkeletonVocabularyDetailHeader />
-        </div>
-
-        <div className="mt-8 space-y-10 max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
-          <SkeletonVocabularyToolbar />
-          <SkeletonExpressionList />
-        </div>
-      </div>
-    );
-  }
-
-  // Calculate pagination
-  // totalCount should be total items in the list (from local store), not just fetched items
-  const totalCount = vocabularyLists[listId]?.itemIds.size || 0;
-  const totalPages = Math.ceil(totalCount / EXPRESSION_PAGE_SIZE);
-  // visibleItems is now just items, since we only fetched what we need
-  const visibleItems = items;
 
   return (
     <motion.div
@@ -209,7 +181,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
         <VocabularyDetailHeader
           title={listTitle}
           itemCount={totalCount}
-          isDefault={vocabularyLists[listId]?.isDefault}
+          isDefault={list?.isDefault}
           onTitleSave={handleTitleSave}
           onListDelete={handleListDelete}
           onSetDefault={handleSetDefault}
@@ -228,7 +200,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
         />
 
         <VocabularyItemsGrid
-          items={visibleItems}
+          items={displayItems}
           isSelectionMode={isSelectionMode}
           viewMode={viewMode}
           selectedIds={selectedIds}
@@ -241,9 +213,10 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
         {totalPages > 1 && (
           <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8 pb-8">
             <Pagination
-              currentPage={currentPage}
+              currentPage={page}
               totalPages={totalPages}
               baseUrl={ROUTES.VOCABULARY_LIST(listId)}
+              onPageChange={handlePageChange}
             />
           </div>
         )}
@@ -268,6 +241,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
             }
             closeBulkAction();
             toggleSelectionMode();
+            mutate(); // 로컬 스토리지 변경은 즉시 반영되지만, SWR 캐시 무효화를 위해 호출
           }}
         />
       )}

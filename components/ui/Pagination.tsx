@@ -15,12 +15,14 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   baseUrl: string;
+  onPageChange?: (page: number) => void;
 }
 
 export default function Pagination({
   currentPage,
   totalPages,
   baseUrl,
+  onPageChange,
 }: PaginationProps) {
   const searchParams = useSearchParams();
 
@@ -60,6 +62,12 @@ export default function Pagination({
           <Link
             href={createPageUrl(i)}
             aria-current={isActive ? "page" : undefined}
+            onClick={(e) => {
+              if (onPageChange) {
+                e.preventDefault();
+                onPageChange(i);
+              }
+            }}
           >
             {i}
           </Link>
@@ -89,7 +97,16 @@ export default function Pagination({
           currentPage <= 1 && "pointer-events-none opacity-30",
         )}
       >
-        <Link href={createPageUrl(1)} aria-label="Go to first page">
+        <Link
+          href={createPageUrl(1)}
+          aria-label="Go to first page"
+          onClick={(e) => {
+            if (onPageChange) {
+              e.preventDefault();
+              onPageChange(1);
+            }
+          }}
+        >
           <ChevronsLeft className="h-4 w-4" />
         </Link>
       </Button>
@@ -109,6 +126,12 @@ export default function Pagination({
           // Move to the last page of the previous group or simply -5 pages
           href={createPageUrl(Math.max(1, startPage - 1))}
           aria-label="Go to previous pages"
+          onClick={(e) => {
+            if (onPageChange) {
+              e.preventDefault();
+              onPageChange(Math.max(1, startPage - 1));
+            }
+          }}
         >
           <ChevronLeft className="h-4 w-4" />
         </Link>
@@ -133,6 +156,12 @@ export default function Pagination({
           // Move to the first page of the next group
           href={createPageUrl(Math.min(totalPages, endPage + 1))}
           aria-label="Go to next pages"
+          onClick={(e) => {
+            if (onPageChange) {
+              e.preventDefault();
+              onPageChange(Math.min(totalPages, endPage + 1));
+            }
+          }}
         >
           <ChevronRight className="h-4 w-4" />
         </Link>
@@ -149,7 +178,16 @@ export default function Pagination({
           currentPage >= totalPages && "pointer-events-none opacity-30",
         )}
       >
-        <Link href={createPageUrl(totalPages)} aria-label="Go to last page">
+        <Link
+          href={createPageUrl(totalPages)}
+          aria-label="Go to last page"
+          onClick={(e) => {
+            if (onPageChange) {
+              e.preventDefault();
+              onPageChange(totalPages);
+            }
+          }}
+        >
           <ChevronsRight className="h-4 w-4" />
         </Link>
       </Button>

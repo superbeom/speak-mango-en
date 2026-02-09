@@ -142,6 +142,7 @@
 - **스켈레톤 로딩 (Skeleton Loading)**:
   - 데이터 페칭 중 레이아웃 흔들림(CLS)을 방지하기 위한 정교한 스켈레톤 UI 적용.
   - 네비바, 히어로 섹션, 카드 리스트, 상세 페이지(메인 카드, 퀴즈, 태그) 등 각 요소별 전용 스켈레톤 제공.
+  - **Component Consolidation**: 단어장 상세 페이지의 복잡한 스켈레톤 구성을 `SkeletonVocabularyDetail`로 모듈화하여, 서버(`loading.tsx`)와 클라이언트 로딩 상태 모두에서 100% 일관된 로딩 경험을 보장합니다.
 - **시맨틱 스타일 관리**: `bg-surface`, `text-body` 등 의미 기반의 유틸리티 클래스를 통한 전역 테마 관리.
 - **ISR (Incremental Static Regeneration)**: 1시간마다 정적 페이지를 갱신하여 최신 데이터와 빠른 속도 동시 제공.
 - **Framer Motion**: 리스트 정렬, 카드 등장, 호버 효과 등 부드러운 인터랙션 구현.
