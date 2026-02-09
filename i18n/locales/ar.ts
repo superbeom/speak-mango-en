@@ -181,5 +181,7 @@ export const ar = {
     metaTitle: "صفحتي الشخصية",
     metaDescription:
       "راجع التعبيرات المحفوظة وتدرب باستخدام قواميس المفردات وأوضاع الدراسة الخاصة بك.",
+    learnedExpressions: "العبارات المتعلمة",
+    learnedMetaDescription: "راجع العبارات التي تعلمتها حتى الآن.",
   },
 };

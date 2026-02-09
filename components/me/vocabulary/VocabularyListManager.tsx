@@ -35,11 +35,7 @@ const VocabularyListCard = memo(function VocabularyListCard({
 
   return (
     <InteractiveLink
-      href={
-        isLearned
-          ? `${ROUTES.MY_PAGE}/learned`
-          : ROUTES.VOCABULARY_LIST(list.id)
-      }
+      href={isLearned ? ROUTES.LEARNED : ROUTES.VOCABULARY_LIST(list.id)}
       isStatic={false}
       enableHover={enableHover}
       controls={controls}

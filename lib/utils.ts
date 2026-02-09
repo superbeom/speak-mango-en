@@ -16,7 +16,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function formatMessage(
   template: string,
-  params: Record<string, string>
+  params: Record<string, string>,
 ) {
   return template.replace(/{(\w+)}/g, (_, key) => params[key] || `{${key}}`);
 }
@@ -33,7 +33,7 @@ export function serializeFilters<T extends object>(filters: T): string {
       (key) =>
         filters[key] !== undefined &&
         filters[key] !== null &&
-        filters[key] !== ""
+        filters[key] !== "",
     )
     .map((key) => `${String(key)}=${String(filters[key])}`);
 
@@ -66,7 +66,7 @@ export function getStorageUrl(path?: string) {
  */
 export function getShareUrl(
   expressionId: string,
-  utmParams?: Record<string, string>
+  utmParams?: Record<string, string>,
 ): string {
   const url = `${BASE_URL}/expressions/${expressionId}`;
 
@@ -76,4 +76,18 @@ export function getShareUrl(
 
   const params = new URLSearchParams(utmParams);
   return `${url}?${params.toString()}`;
+}
+
+/**
+ * 쿼리 파라미터로 전달된 페이지 번호를 안전하게 파싱합니다.
+ * 숫자가 아니거나 0 이하인 경우 기본값(1)을 반환합니다.
+ * @param page - 파싱할 페이지 번호 (문자열 또는 숫자)
+ * @param defaultPage - 유효하지 않을 경우 반환할 기본 페이지 번호 (기본값: 1)
+ */
+export function getSafePageNumber(
+  page: string | number | undefined | null,
+  defaultPage = 1,
+): number {
+  const pageNumber = Number(page);
+  return !isNaN(pageNumber) && pageNumber > 0 ? pageNumber : defaultPage;
 }

@@ -10,6 +10,7 @@ export const ROUTES = {
   QUIZ: "/quiz",
   MY_PAGE: "/me",
   VOCABULARY_LIST: (id: string) => `/me/${id}`,
+  LEARNED: "/me/learned",
 } as const;
 
 /**

@@ -192,5 +192,8 @@ export const fr = {
     metaTitle: "Mon Profil",
     metaDescription:
       "Consultez vos expressions enregistrées et entraînez-vous avec vos carnets et modes d'étude.",
+    learnedExpressions: "Expressions apprises",
+    learnedMetaDescription:
+      "Révisez les expressions que vous avez apprises jusqu'à présent.",
   },
 };

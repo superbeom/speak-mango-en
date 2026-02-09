@@ -46,6 +46,14 @@ body {
   max-width: 64rem;
 }
 
+@utility layout-container {
+  @apply max-w-layout mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+@utility pagination-container {
+  @apply layout-container pb-8;
+}
+
 @utility bg-layout {
   @apply bg-zinc-50 dark:bg-black;
 }

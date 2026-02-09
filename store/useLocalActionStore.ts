@@ -8,12 +8,14 @@ export interface LocalVocabularyList {
   id: string;
   title: string;
   itemIds: Set<string>;
+  itemTimestamps: Record<string, number>; // <expressionId, timestamp>
   createdAt: string;
   isDefault?: boolean;
 }
 
 interface LocalActionState {
   actions: Record<ActionType, Set<string>>;
+  actionTimestamps: Record<string, number>; // "type:expressionId" -> timestamp
   vocabularyLists: Record<string, LocalVocabularyList>; // Keyed by ID
 
   toggleAction: (expressionId: string, type: ActionType) => void;
@@ -40,12 +42,14 @@ interface LocalActionState {
 // Set persistence helper to serialize/deserialize Set
 type PersistedState = {
   actions: Record<ActionType, string[]>;
+  actionTimestamps: Record<string, number>;
   vocabularyLists: Record<
     string,
     {
       id: string;
       title: string;
       items: string[];
+      itemTimestamps: Record<string, number>;
       createdAt: string;
       isDefault?: boolean;
     }
@@ -60,26 +64,39 @@ export const useLocalActionStore = create<LocalActionState>()(
         save: new Set(),
         learn: new Set(),
       },
+      actionTimestamps: {},
       vocabularyLists: {},
 
       toggleAction: (expressionId, type) =>
         set((state) => {
           const newSet = new Set(state.actions[type]);
+          const newTimestamps = { ...state.actionTimestamps };
+          const timestampKey = `${type}:${expressionId}`;
+
           if (newSet.has(expressionId)) {
             newSet.delete(expressionId);
-            // Optional: If unsaving, remove from default list?
-            // For now, keep logic simple: Action is just a flag.
+            delete newTimestamps[timestampKey];
           } else {
             newSet.add(expressionId);
+            newTimestamps[timestampKey] = Date.now();
           }
           return {
             actions: {
               ...state.actions,
               [type]: newSet,
             },
+            actionTimestamps: newTimestamps,
           };
         }),
-      getActions: (type) => Array.from(get().actions[type]),
+      getActions: (type) => {
+        const ids = Array.from(get().actions[type]);
+        const timestamps = get().actionTimestamps;
+        return ids.sort((a, b) => {
+          const tsA = timestamps[`${type}:${a}`] || 0;
+          const tsB = timestamps[`${type}:${b}`] || 0;
+          return tsB - tsA; // Latest first
+        });
+      },
       hasAction: (expressionId, type) => get().actions[type].has(expressionId),
 
       // Vocabulary Implementation
@@ -90,6 +107,7 @@ export const useLocalActionStore = create<LocalActionState>()(
           id,
           title,
           itemIds: new Set(),
+          itemTimestamps: {},
           createdAt: new Date().toISOString(),
           isDefault: isFirstList,
         };
@@ -123,10 +141,18 @@ export const useLocalActionStore = create<LocalActionState>()(
           const list = state.vocabularyLists[listId];
           if (!list) return {};
           const newSet = new Set(list.itemIds).add(expressionId);
+          const newTimestamps = {
+            ...list.itemTimestamps,
+            [expressionId]: Date.now(),
+          };
           return {
             vocabularyLists: {
               ...state.vocabularyLists,
-              [listId]: { ...list, itemIds: newSet },
+              [listId]: {
+                ...list,
+                itemIds: newSet,
+                itemTimestamps: newTimestamps,
+              },
             },
           };
         }),
@@ -135,11 +161,20 @@ export const useLocalActionStore = create<LocalActionState>()(
           const list = state.vocabularyLists[listId];
           if (!list) return {};
           const newSet = new Set(list.itemIds);
-          expressionIds.forEach((id) => newSet.add(id));
+          const newTimestamps = { ...list.itemTimestamps };
+          const now = Date.now();
+          expressionIds.forEach((id) => {
+            newSet.add(id);
+            newTimestamps[id] = now;
+          });
           return {
             vocabularyLists: {
               ...state.vocabularyLists,
-              [listId]: { ...list, itemIds: newSet },
+              [listId]: {
+                ...list,
+                itemIds: newSet,
+                itemTimestamps: newTimestamps,
+              },
             },
           };
         }),
@@ -149,10 +184,16 @@ export const useLocalActionStore = create<LocalActionState>()(
           if (!list) return {};
           const newSet = new Set(list.itemIds);
           newSet.delete(expressionId);
+          const newTimestamps = { ...list.itemTimestamps };
+          delete newTimestamps[expressionId];
           return {
             vocabularyLists: {
               ...state.vocabularyLists,
-              [listId]: { ...list, itemIds: newSet },
+              [listId]: {
+                ...list,
+                itemIds: newSet,
+                itemTimestamps: newTimestamps,
+              },
             },
           };
         }),
@@ -161,11 +202,19 @@ export const useLocalActionStore = create<LocalActionState>()(
           const list = state.vocabularyLists[listId];
           if (!list) return {};
           const newSet = new Set(list.itemIds);
-          expressionIds.forEach((id) => newSet.delete(id));
+          const newTimestamps = { ...list.itemTimestamps };
+          expressionIds.forEach((id) => {
+            newSet.delete(id);
+            delete newTimestamps[id];
+          });
           return {
             vocabularyLists: {
               ...state.vocabularyLists,
-              [listId]: { ...list, itemIds: newSet },
+              [listId]: {
+                ...list,
+                itemIds: newSet,
+                itemTimestamps: newTimestamps,
+              },
             },
           };
         }),
@@ -216,12 +265,14 @@ export const useLocalActionStore = create<LocalActionState>()(
           save: Array.from(state.actions.save),
           learn: Array.from(state.actions.learn),
         },
+        actionTimestamps: state.actionTimestamps,
         vocabularyLists: Object.fromEntries(
           Object.entries(state.vocabularyLists).map(([id, list]) => [
             id,
             {
               ...list,
               items: Array.from(list.itemIds),
+              itemTimestamps: list.itemTimestamps,
               isDefault: list.isDefault,
             },
           ]),
@@ -237,6 +288,7 @@ export const useLocalActionStore = create<LocalActionState>()(
             rehydratedLists[id] = {
               ...list,
               itemIds: new Set(list.items || []),
+              itemTimestamps: list.itemTimestamps || {},
               isDefault: list.isDefault,
               createdAt: list.createdAt,
             };
@@ -249,6 +301,7 @@ export const useLocalActionStore = create<LocalActionState>()(
             save: new Set(persisted.actions.save || []),
             learn: new Set(persisted.actions.learn || []),
           },
+          actionTimestamps: persisted.actionTimestamps || {},
           vocabularyLists: rehydratedLists,
           _hasHydrated: true,
         };

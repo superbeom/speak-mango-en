@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.5: Learned Expressions & Layout Refactoring (2026-02-09)
+
+### ✅ 진행 사항
+
+1.  **Learned Expressions View (학습 완료 표현 목록)**:
+    - **New Page**: 마이페이지 내 '학습 완료(`Learned`)' 섹션을 클릭하면 진입할 수 있는 `/me/learned` 페이지를 구현했습니다.
+    - **Dual Mode Support**:
+      - **Pro**: `get_learned_list_details` RPC를 통해 서버에 저장된 학습 기록을 페이지네이션된 형태로 불러옵니다.
+      - **Free**: 로컬 스토리지(`user_actions`)에 저장된 학습 데이터를 역순 정렬하여 클라이언트 사이드에서 페이지네이션을 처리합니다.
+    - **Reusability**: 기존의 `VocabularyItemsGrid`와 `Pagination` 컴포넌트를 재사용하여 일관된 디자인을 유지했습니다.
+
+2.  **Global Layout Refactoring (레이아웃 유틸리티화)**:
+    - **CSS Utilities**: 여러 컴포넌트(`VocabularyDetail`, `LearnedDetail` 등)에서 반복되던 패딩과 최대 너비 설정을 `globals.css`의 `.layout-container` 및 `.pagination-container` 클래스로 추출했습니다.
+    - **Standardization**: `RemoteVocabularyDetail`, `LocalVocabularyDetail`, `RemoteLearnedDetail`, `LocalLearnedDetail` 등 모든 상세 페이지에 공통 유틸리티를 적용하여 레이아웃 일관성을 확보하고 코드 중복을 제거했습니다.
+
 ## v0.16.4: Skeleton Refactoring & Pagination UX Polish (2026-02-09)
 
 ### ✅ 진행 사항

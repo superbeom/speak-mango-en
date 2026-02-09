@@ -190,5 +190,8 @@ export const es = {
     metaTitle: "Mi Perfil",
     metaDescription:
       "Revisa tus expresiones guardadas y practica con tus cuadernos y modos de estudio.",
+    learnedExpressions: "Expresiones aprendidas",
+    learnedMetaDescription:
+      "Repasa las expresiones que has aprendido hasta ahora.",
   },
 };

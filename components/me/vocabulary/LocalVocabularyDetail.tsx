@@ -80,7 +80,14 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   // 현재 페이지에 해당하는 item ID들 계산 (Client Side Pagination of IDs)
   const currentPageIds = useMemo(() => {
     if (!list) return [];
-    const allItemIds = Array.from(list.itemIds);
+
+    // Sort items by their timestamps (latest first)
+    const allItemIds = Array.from(list.itemIds).sort((a, b) => {
+      const tsA = list.itemTimestamps[a] || 0;
+      const tsB = list.itemTimestamps[b] || 0;
+      return tsB - tsA;
+    });
+
     const startIdx = (page - 1) * EXPRESSION_PAGE_SIZE;
     const endIdx = startIdx + EXPRESSION_PAGE_SIZE;
     return allItemIds.slice(startIdx, endIdx);
@@ -177,7 +184,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="py-8"
     >
-      <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="layout-container">
         <VocabularyDetailHeader
           title={listTitle}
           itemCount={totalCount}
@@ -211,7 +218,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
         />
 
         {totalPages > 1 && (
-          <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="pagination-container">
             <Pagination
               currentPage={page}
               totalPages={totalPages}

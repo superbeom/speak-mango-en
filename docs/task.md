@@ -162,7 +162,7 @@
 - [x] **Logic**: 단어장 항목 일괄 이동 및 복사 지원 (Bulk Move/Copy)
 - [x] **UX/UI**: 일괄 작업용 `useBulkAction` 훅 및 타겟 선택 흐름 구현
 - [x] **UI/UX**: 플랜 사용 현황 및 안내 컴포넌트(`VocabularyPlanStatus`) 도입
-  - [ ] **Logic**: '학습 완료' 시 목록 필터링
+- [x] **Page**: 학습 완료 목록 페이지(`/me/learned`) 구현 및 페이지네이션 지원
   - [x] **Refactoring**: 통합 에러 핸들링 시스템 구축 (`useAppErrorHandler`, `ToastContext.tsx`)
   - [x] **Refactoring**: 공통 서버 액션 보안 HOF 도입 (`withPro`)
   - [x] **UI/UX**: 전역 확인 모달 시스템 구현 (`ConfirmDialog`)

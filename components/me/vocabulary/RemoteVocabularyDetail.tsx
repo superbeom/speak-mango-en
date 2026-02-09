@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, memo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { motion } from "framer-motion";
@@ -38,7 +38,7 @@ interface RemoteVocabularyDetailProps {
   currentPage: number;
 }
 
-export default function RemoteVocabularyDetail({
+const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   listId,
   title: initialTitle,
   items: initialItems,
@@ -97,6 +97,7 @@ export default function RemoteVocabularyDetail({
 
   const displayItems = data?.items || [];
   const displayTotalCount = data?.total_count || 0;
+  const totalPages = Math.ceil(displayTotalCount / EXPRESSION_PAGE_SIZE);
   const isLoading = (isSwrLoading && !data) || isPageTransition;
 
   // 데이터 로딩이 완료되면 페이지 전환 상태 해제
@@ -215,7 +216,7 @@ export default function RemoteVocabularyDetail({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="py-8"
     >
-      <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="layout-container">
         <VocabularyDetailHeader
           title={title}
           itemCount={displayTotalCount}
@@ -248,12 +249,16 @@ export default function RemoteVocabularyDetail({
           onDelete={handleItemsDelete}
         />
 
-        <Pagination
-          currentPage={page}
-          totalPages={Math.ceil(displayTotalCount / EXPRESSION_PAGE_SIZE)}
-          baseUrl={ROUTES.VOCABULARY_LIST(listId)}
-          onPageChange={handlePageChange}
-        />
+        {totalPages > 1 && (
+          <div className="pagination-container">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              baseUrl={ROUTES.VOCABULARY_LIST(listId)}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </div>
 
       {bulkActionState && (
@@ -291,4 +296,8 @@ export default function RemoteVocabularyDetail({
       )}
     </motion.div>
   );
-}
+});
+
+RemoteVocabularyDetail.displayName = "RemoteVocabularyDetail";
+
+export default RemoteVocabularyDetail;

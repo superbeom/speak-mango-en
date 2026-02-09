@@ -252,7 +252,17 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Returns**: `Table (tier user_tier, subscription_end_date timestamptz)`
 - **SQL Definition**: [`database/functions/get_user_tier.sql`](../../database/functions/get_user_tier.sql) 참조.
 
-#### 7. `move_vocabulary_items`
+#### 7. `get_learned_list_details`
+
+- **Description**: 현재 사용자가 학습 완료한 표현(Learned Expressions) 목록을 페이지네이션하여 반환합니다. `total_count`와 `items` 배열을 포함한 JSON 객체를 반환하며, `auth.uid()`를 통한 소유권 검증이 수행됩니다.
+- **Usage**: 학습 완료 페이지(`/me/learned`)에서 사용.
+- **Parameters**:
+  - `p_page` (int, default: 1): 조회할 페이지 번호.
+  - `p_page_size` (int, default: 24): 페이지당 아이템 개수.
+- **Returns**: `json` (전체 학습 완료 개수(`total_count`), 현재 페이지의 items 배열 포함)
+- **SQL Definition**: [`database/functions/get_learned_list_details.sql`](../../database/functions/get_learned_list_details.sql) 참조.
+
+#### 8. `move_vocabulary_items`
 
 - **Description**: 원본 단어장에서 표현들을 제거하고 대상 단어장에 추가하는 이동 작업을 원자적(Atomic)으로 수행합니다.
 - **Usage**: 단어장 간 표현 이동(`moveExpressionsToVocabularyList`) 시 사용.

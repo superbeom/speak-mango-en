@@ -46,14 +46,14 @@ const VocabularyItemsGrid = memo(function VocabularyItemsGrid({
 
   if (items.length === 0) {
     return (
-      <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="layout-container">
         <VocabularyEmptyState />
       </div>
     );
   }
 
   return (
-    <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="layout-container">
       <motion.div
         variants={containerVariants}
         initial="hidden"

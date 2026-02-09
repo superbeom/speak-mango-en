@@ -11,7 +11,7 @@ export default function Loading() {
       {/* Navbar Skeleton */}
       <SkeletonNavbar />
 
-      <main className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="layout-container py-8">
         {/* Home Hero Skeleton */}
         <SkeletonHomeHero />
 

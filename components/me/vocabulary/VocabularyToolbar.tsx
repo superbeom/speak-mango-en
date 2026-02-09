@@ -106,7 +106,7 @@ const VocabularyToolbar = memo(function VocabularyToolbar({
           : "bg-transparent py-0",
       )}
     >
-      <div className="max-w-layout mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="layout-container">
         <div
           className={cn(
             "sticky-toolbar flex flex-col sm:flex-row sm:items-center justify-between p-1.5 sm:p-2 rounded-xl transition-all duration-300",

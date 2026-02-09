@@ -182,5 +182,7 @@ export const en = {
     metaTitle: "My Page",
     metaDescription:
       "Check your saved expressions and practice them with personalized vocabulary lists and study modes.",
+    learnedExpressions: "Learned Expressions",
+    learnedMetaDescription: "Review the expressions you have learned so far.",
   },
 };

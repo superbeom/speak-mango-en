@@ -179,5 +179,7 @@ export const zh = {
     metaTitle: "个人中心",
     metaDescription:
       "查看已收藏的表达，并通过专属生词本和多种学习模式进行复习。",
+    learnedExpressions: "已学表达",
+    learnedMetaDescription: "复习至今已学的表达。",
   },
 };

@@ -2,6 +2,37 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.5: Learned Expressions & Layout Refactoring (2026-02-09)
+
+### 1. Goal (목표)
+
+- 사용자가 완료 처리한 표현들을 한곳에서 모아 볼 수 있는 '학습 완료(`Learned`)' 페이지를 구현하고, 페이지네이션과 레이아웃 일관성을 확보합니다.
+- 여러 컴포넌트에 중복된 레이아웃 스타일을 공통 CSS 유틸리티로 추출하여 코드 유지보수성을 높입니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Learned Expressions View (`/me/learned`)
+
+- **Dual-Mode Architecture**:
+  - **remote (`RemoteLearnedDetail`)**: `get_learned_list_details` RPC를 호출하여 서버 DB(`user_actions`)에서 학습 완료된 항목을 최신순으로 페이지네이션하여 가져옵니다.
+  - **local (`LocalLearnedDetail`)**: `useLocalActionStore`의 `learned` 데이터를 클라이언트에서 필터링하고 슬라이싱하여 동일한 UI로 렌더링합니다.
+- **RPC Implementation (`get_learned_list_details.sql`)**:
+  - `user_actions` 테이블에서 `action_type = 'learn'`인 항목만 효율적으로 조회합니다.
+  - `LIMIT` / `OFFSET`을 사용하여 대량 데이터 조회 시 성능을 보장하며, `total_count`를 함께 반환하여 페이지네이션 UI를 지원합니다.
+  - `expressions` 테이블과 조인하여 상세 정보를 한 번에 가져옵니다.
+
+#### B. Global CSS Utilities (`globals.css`)
+
+- **Refactoring**: `VocabularyDetail` 등에서 반복 사용되던 `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` 등의 긴 클래스들을 `.layout-container`로 추상화했습니다.
+- **Consistency**: `loading.tsx` 및 모든 상세 페이지(`RemoteVocabularyDetail`, `LocalLearnedDetail` 등)에 해당 클래스를 일괄 적용하여 시각적 통일성을 확보했습니다.
+- **Pagination**: `.pagination-container` 클래스를 신설하여 페이지네이션 컴포넌트의 상단 여백(`mt-8`)과 정렬 방식을 중앙 관리합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Feature Completeness**: '저장 -> 학습 완료 -> 복습'으로 이어지는 사용자 여정(User Journey)의 핵심 고리를 완성.
+- ✅ **Code Maintainability**: CSS 유틸리티화를 통해 수십 개의 파일에서 반복되던 테일윈드 클래스 중복 제거.
+- ✅ **Scalability**: 서버 사이드 페이지네이션 지원으로 학습 데이터가 1000건 이상 쌓여도 안정적인 성능 유지.
+
 ## v0.16.4: Skeleton Refactoring & Pagination UX Polish (2026-02-09)
 
 ### 1. Goal (목표)

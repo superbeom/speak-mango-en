@@ -148,15 +148,19 @@ export const getExpressionsByIds = cache(async function getExpressionsByIds(
     const { data, error } = await supabase
       .from("expressions")
       .select("*")
-      .in("id", ids)
-      .order("published_at", { ascending: false });
+      .in("id", ids);
 
     if (error) {
       console.error("Failed to fetch expressions by IDs:", error);
       return [];
     }
 
-    return (data as Expression[]) || [];
+    const expressions = (data as Expression[]) || [];
+
+    // Preserving the order of input 'ids'
+    return ids
+      .map((id) => expressions.find((e) => e.id === id))
+      .filter((e): e is Expression => !!e);
   } catch (error) {
     console.error("Failed to fetch expressions by IDs:", error);
     return [];

@@ -2,6 +2,7 @@
 
 import { cache } from "react";
 import { createAppError, VOCABULARY_ERROR } from "@/types/error";
+import { Expression } from "@/types/expression";
 import {
   VocabularyListWithCount,
   VocabularyListDetails,
@@ -55,7 +56,6 @@ export const getVocabularyLists = cache(
 
 /**
  * 특정 표현이 저장되어 있는 단어장 ID 목록을 가져옵니다.
- * (로그인한 프로 사용자 전용)
  *
  * @param expressionId - 확인할 표현의 ID입니다.
  * @returns 해당 표현이 포함된 단어장 ID들의 배열을 반환합니다.
@@ -130,3 +130,54 @@ export const getVocabularyListDetails = cache(
     return data as VocabularyListDetails;
   },
 );
+
+/**
+ * 학습 완료한(Is Learned) 표현 목록을 페이지네이션하여 가져옵니다.
+ *
+ * @param page - 페이지 번호
+ * @param limit - 페이지당 항목 수 (기본값: 24)
+ * @returns 학습 완료된 표현 목록과 전체 개수
+ */
+export const getLearnedListDetails = cache(async function getLearnedListDetails(
+  page: number = 1,
+  limit: number = EXPRESSION_PAGE_SIZE,
+): Promise<VocabularyListDetails> {
+  /**
+   * Note: This function doesn't use withPro because cache() doesn't play well with HOFs directly within the export.
+   */
+  const { userId, isPro } = await getAuthSession();
+
+  if (!userId || !isPro) {
+    throw createAppError(VOCABULARY_ERROR.UNAUTHORIZED);
+  }
+
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase.rpc("get_learned_list_details", {
+    p_page: page,
+    p_page_size: limit,
+  });
+
+  if (error) {
+    console.error("Failed to fetch learned list details:", error);
+    throw createAppError(VOCABULARY_ERROR.FETCH_FAILED);
+  }
+
+  // RPC returns { total_count, items } matching VocabularyListDetails structure partially
+  // We need to shape it as VocabularyListDetails
+  // The RPC get_learned_list_details returns json: { total_count, items }
+  // VocabularyListDetails expects: { id, title, is_default, created_at, ... }
+  // We should map it or return compatible type.
+  // The RPC output needs to be adapted.
+
+  const result = data as { total_count: number; items: Expression[] };
+
+  return {
+    id: "learned", // Virtual ID
+    title: "Learned Expressions",
+    is_default: false,
+    created_at: new Date().toISOString(),
+    total_count: result.total_count,
+    items: result.items,
+  };
+});

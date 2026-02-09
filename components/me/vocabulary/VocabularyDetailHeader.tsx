@@ -20,6 +20,7 @@ interface VocabularyDetailHeaderProps {
   onListDelete?: () => void;
   onSetDefault?: () => void;
   className?: string;
+  readonly?: boolean;
 }
 
 export default function VocabularyDetailHeader({
@@ -30,6 +31,7 @@ export default function VocabularyDetailHeader({
   onListDelete,
   onSetDefault,
   className,
+  readonly = false,
 }: VocabularyDetailHeaderProps) {
   const { dict } = useI18n();
   const { confirm } = useConfirm();
@@ -147,47 +149,49 @@ export default function VocabularyDetailHeader({
         </div>
 
         {/* Action Dropdown */}
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
-          {!isEditing && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-2 text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50 bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors cursor-pointer outline-hidden">
-                  <MoreVertical size={20} />
-                </button>
-              </DropdownMenuTrigger>
+        {!readonly && (
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+            {!isEditing && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-2 text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-50 bg-zinc-100 dark:bg-zinc-800 rounded-lg transition-colors cursor-pointer outline-hidden">
+                    <MoreVertical size={20} />
+                  </button>
+                </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end">
-                {!isDefault && onSetDefault && (
+                <DropdownMenuContent align="end">
+                  {!isDefault && onSetDefault && (
+                    <DropdownMenuItem
+                      onClick={onSetDefault}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 outline-hidden dark:text-zinc-300 transition-colors"
+                    >
+                      <Star size={16} className="text-amber-400" />
+                      {dict.vocabulary.setDefault}
+                    </DropdownMenuItem>
+                  )}
+
                   <DropdownMenuItem
-                    onClick={onSetDefault}
+                    onClick={handleStartEdit}
                     className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 outline-hidden dark:text-zinc-300 transition-colors"
                   >
-                    <Star size={16} className="text-amber-400" />
-                    {dict.vocabulary.setDefault}
+                    <Pencil size={16} />
+                    {dict.common.edit}
                   </DropdownMenuItem>
-                )}
 
-                <DropdownMenuItem
-                  onClick={handleStartEdit}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 outline-hidden dark:text-zinc-300 transition-colors"
-                >
-                  <Pencil size={16} />
-                  {dict.common.edit}
-                </DropdownMenuItem>
+                  <DropdownMenuSeparator />
 
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  onClick={handleDelete}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 outline-hidden focus:text-red-600 dark:text-red-400 dark:focus:text-red-400 transition-colors"
-                >
-                  <Trash2 size={16} />
-                  {dict.vocabulary.delete}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+                  <DropdownMenuItem
+                    onClick={handleDelete}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 outline-hidden focus:text-red-600 dark:text-red-400 dark:focus:text-red-400 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                    {dict.vocabulary.delete}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

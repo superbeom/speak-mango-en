@@ -33,7 +33,7 @@ export function useUserActions() {
     },
   );
 
-  const localGetActions = useLocalActionStore((state) => state.getActions);
+  const localActionsState = useLocalActionStore((state) => state.actions);
   const localToggle = useLocalActionStore((state) => state.toggleAction);
 
   const hasAction = useCallback(
@@ -42,9 +42,9 @@ export function useUserActions() {
         const list = type === "save" ? saveActions : learnActions;
         return list?.includes(expressionId) ?? false;
       }
-      return localGetActions(type).includes(expressionId);
+      return localActionsState[type].has(expressionId);
     },
-    [isPro, saveActions, learnActions, localGetActions],
+    [isPro, saveActions, learnActions, localActionsState],
   );
 
   const toggleAction = useCallback(

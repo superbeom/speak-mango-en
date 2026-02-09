@@ -191,5 +191,8 @@ export const de = {
     metaTitle: "Mein Profil",
     metaDescription:
       "Überprüfe deine gespeicherten Ausdrücke und übe mit deinen Vokabelheften und Lernmodi.",
+    learnedExpressions: "Gelernte Ausdrücke",
+    learnedMetaDescription:
+      "Überprüfen Sie die Ausdrücke, die Sie bisher gelernt haben.",
   },
 };
