@@ -4,6 +4,7 @@ import { getI18n } from "@/i18n/server";
 import { isAppError, VOCABULARY_ERROR } from "@/types/error";
 import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import { getVocabularyListDetails } from "@/services/queries/vocabulary";
+import { ROUTES } from "@/lib/routes";
 import { getAuthSession } from "@/lib/auth/utils";
 import VocabularyDetailLayout from "@/components/me/vocabulary/VocabularyDetailLayout";
 import LocalVocabularyDetail from "@/components/me/vocabulary/LocalVocabularyDetail";
@@ -75,5 +76,9 @@ export default async function VocabularyListPage({
     );
   }
 
-  return <VocabularyDetailLayout>{content}</VocabularyDetailLayout>;
+  return (
+    <VocabularyDetailLayout backHref={ROUTES.MY_PAGE}>
+      {content}
+    </VocabularyDetailLayout>
+  );
 }

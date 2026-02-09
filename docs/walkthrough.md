@@ -31,11 +31,17 @@
 - **Optimistic Fetching**: `keepPreviousData: true` 옵션을 사용하여 페이지 전환 시 다음 데이터가 준비될 때까지 현재 데이터를 유지함으로써, 사용자에게 끊김 없는 탐색 경험을 제공합니다.
 - **Data Synchronization**: 단어장 제목 수정, 삭제, 기본 설정 변경 등 Mutation 발생 시 SWR의 `mutate()`를 호출하여 UI와 실제 서버/로컬 저장소 간의 데이터 동기화를 보장합니다.
 
+#### D. Navigation UX Polish (`BackButton.tsx`, `VocabularyDetailLayout.tsx`)
+
+- **Explicit Redirect**: `BackButton` 컴포넌트에 `href` 프롭을 추가하여, 히스토리 뒤로가기 대신 특정 경로로 강제 이동할 수 있는 기능을 구현했습니다.
+- **My Page Anchor**: 단어장 상세 페이지의 레이아웃에서 뒤로가기 경로를 `/me`로 고정함으로써, 사용자가 유입 경로에 상관없이 자신의 단어장 목록으로 안전하게 돌아갈 수 있도록 설계했습니다.
+
 ### 3. Key Achievements (주요 성과)
 
 - ✅ **Full Consistency**: 유저 타입(Free/Pro)이나 데이터 환경에 상관없이 100% 동일한 로딩 화면 보장.
 - ✅ **Refined Navigation**: 페이지네이션 시 시각적 깜빡임 최소화 및 인터랙션 반응성 향상.
 - ✅ **Code Maintainability**: 수십 라인의 중복된 스켈레톤 코드를 단 한 줄의 컴포넌트 호출로 단순화.
+- ✅ **Navigation Safety**: 단어장 상세 뷰에서 명시적인 마이페이지 복귀 경로 확보 및 뒤로가기 동작 일원화.
 
 ## v0.16.3: Pro Vocabulary Animation Fix & Navigation Stability (2026-02-08)
 

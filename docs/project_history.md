@@ -20,6 +20,10 @@
     - **Enhancement**: `Pagination` 컴포넌트가 `onPageChange` 콜백을 지원하도록 고도화했습니다.
     - **Stable Client Navigation**: 로컬 단어장 등 클라이언트 사이드에서 페이지네이션을 처리할 때, 전체 페이지 리로드를 방지하고 부드러운 상태 전환이 가능하도록 인터랙션을 개선했습니다.
 
+4.  **Navigation UX Refinement**:
+    - **Strict Back Navigation**: 단어장 상세 페이지(`/me/[listId]`)에서 뒤로가기 버튼 클릭 시, 이전 히스토리에 의존하지 않고 항상 '마이페이지(`/me`)로 이동하도록 경로를 고정했습니다.
+    - **Predictability**: 사용자가 어느 경로로 진입했든 일관된 복귀 경로를 제공하여 탐색의 예측 가능성을 높였습니다.
+
 ## v0.16.3: Pro Vocabulary Animation Fix & Navigation Stability (2026-02-08)
 
 ### ✅ 진행 사항
@@ -37,7 +41,7 @@
 ### ✅ 진행 사항
 
 1.  **Vocabulary List Pagination**:
-    - **Server-side Support**: `get_vocabulary_list_details` SQL 함수를 업데이트하여 페이지네이션(`p_page`, `p_page_size`)을 지원하도록 개선했습니다. 이제 대량의 표현이 담긴 단어장도 전체를 한꺼번에 불러오지 않고 효율적으로 나누어 로션합니다.
+    - **Server-side Support**: `get_vocabulary_list_details` SQL 함수를 업데이트하여 페이지네이션(`p_page`, `p_page_size`)을 지원하도록 개선했습니다. 이제 대량의 표현이 담긴 단어장도 전체를 한꺼번에 불러오지 않고 효율적으로 나누어 로컬로 처리합니다.
     - **Total Count Integration**: 단어장 정보와 함께 전체 아이템 수(`total_count`)를 반환하여 클라이언트에서 정확한 페이지네이션 UI를 구성할 수 있는 기반을 마련했습니다.
     - **Query Layer Extension**: `getVocabularyListDetails` 서비스 함수가 페이지 파라미터를 지원하도록 확장했습니다.
 

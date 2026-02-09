@@ -16,12 +16,15 @@ interface MainHeaderProps {
   showSubHeader?: boolean;
   /** 로고 대신 뒤로가기 버튼 노출 여부 */
   showBackButton?: boolean;
+  /** 뒤로가기 버튼 클릭 시 이동할 경로 (설정 시 router.back() 대신 해당 경로로 이동) */
+  backHref?: string;
 }
 
 export default function MainHeader({
   transparentOnScroll = false,
   showSubHeader = false,
   showBackButton = false,
+  backHref,
 }: MainHeaderProps) {
   const { dict } = useI18n();
 
@@ -34,7 +37,11 @@ export default function MainHeader({
       }
     >
       <div className="flex items-center justify-between">
-        {showBackButton ? <BackButton label={dict.common.back} /> : <Logo />}
+        {showBackButton ? (
+          <BackButton label={dict.common.back} href={backHref} />
+        ) : (
+          <Logo />
+        )}
         <nav className="flex items-center gap-4">
           <Link
             href={ROUTES.QUIZ}
