@@ -2,6 +2,17 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.7: Staged Area & Local Storage UX Fixes (2026-02-10)
+
+### ✅ 진행 사항
+
+1.  **Local Vocabulary List Bug Fixes (Free User)**:
+    - **Empty State Synchronization**: 단어장 내 모든 아이템 삭제 시 SWR 캐시의 `keepPreviousData`로 인해 UI에 삭제된 항목이 남아있던 현상을 해결했습니다. `currentPageIds`가 비어있을 때 `displayItems`를 강제로 빈 배열로 처리하도록 개선했습니다.
+    - **Default List Sorting**: 무료 사용자가 다른 단어장을 기본(Default)으로 설정했을 때, 마이페이지 목록에서 최상단으로 즉시 이동하지 않던 문제를 해결했습니다. `formatVocabularyLists` 유틸리티를 통한 정합성 확보로 리스트 정렬의 신뢰도를 높였습니다.
+
+2.  **Staged Area Workflow Stability**:
+    - **Code Quality**: 로컬 단어장 데이터를 UI용으로 정렬 및 변환하는 로직을 `formatVocabularyLists` 유틸리티로 추출하여 `lib/utils.ts`에서 중앙 관리했습니다.
+
 ## v0.16.6: Pagination & Hooks Refactoring (2026-02-10)
 
 ### ✅ 진행 사항

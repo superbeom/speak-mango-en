@@ -109,7 +109,8 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
     },
   );
 
-  const displayItems: Expression[] = items || [];
+  const displayItems: Expression[] =
+    currentPageIds.length > 0 ? items || [] : [];
   const isLoading = (isSwrLoading && !items) || !_hasHydrated;
 
   // 리스트가 없으면 404 처리 (Hydration 완료 후)
@@ -135,8 +136,8 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
 
   const handleTitleSave = (newTitle: string) => {
     updateListTitle(listId, newTitle);
-    showToast(dict.vocabulary.saveSuccess);
     mutate();
+    showToast(dict.vocabulary.saveSuccess);
   };
 
   const handleListDelete = () => {
@@ -152,18 +153,19 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
 
   const handleSetDefault = () => {
     setDefaultList(listId);
-    showToast(dict.vocabulary.setDefaultSuccess);
     mutate();
+    showToast(dict.vocabulary.setDefaultSuccess);
   };
 
   const handleItemsDelete = () => {
     confirm({
       title: dict.vocabulary.delete,
       description: dict.vocabulary.itemsDeleteConfirm,
-      onConfirm: async () => {
+      onConfirm: () => {
         removeMultipleFromList(listId, Array.from(selectedIds));
-        showToast(dict.vocabulary.itemsDeleteSuccess);
+        mutate();
         toggleSelectionMode();
+        showToast(dict.vocabulary.itemsDeleteSuccess);
       },
     });
   };
@@ -241,9 +243,9 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
               removeMultipleFromList(listId, ids);
               showToast(dict.vocabulary.moveSuccess);
             }
+            mutate(); // 로컬 스토리지 변경은 즉시 반영되지만, SWR 캐시 무효화를 위해 호출
             closeBulkAction();
             toggleSelectionMode();
-            mutate(); // 로컬 스토리지 변경은 즉시 반영되지만, SWR 캐시 무효화를 위해 호출
           }}
         />
       )}

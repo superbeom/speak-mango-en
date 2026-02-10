@@ -8,7 +8,7 @@ import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { useEnableHover } from "@/hooks/useIsMobile";
 import { ROUTES } from "@/lib/routes";
-import { cn, formatMessage } from "@/lib/utils";
+import { cn, formatMessage, formatVocabularyLists } from "@/lib/utils";
 import InteractiveLink from "@/components/ui/InteractiveLink";
 import VocabularyEmptyState from "./VocabularyEmptyState";
 
@@ -122,12 +122,7 @@ const VocabularyListManager = memo(function VocabularyListManager({
 
   // Map local store lists
   const localLists: VocabularyListWithCount[] = useMemo(() => {
-    return Object.values(vocabularyLists).map((list) => ({
-      id: list.id,
-      title: list.title,
-      item_count: list.itemIds.size,
-      is_default: list.isDefault || false,
-    }));
+    return formatVocabularyLists(vocabularyLists);
   }, [vocabularyLists]);
 
   // Combine lists

@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { VocabularyListWithCount } from "@/types/vocabulary";
+import { LocalVocabularyList } from "@/store/useLocalActionStore";
 import { BASE_URL, STORAGE_BUCKET } from "@/constants";
 
 /**
@@ -90,4 +92,27 @@ export function getSafePageNumber(
 ): number {
   const pageNumber = Number(page);
   return !isNaN(pageNumber) && pageNumber > 0 ? pageNumber : defaultPage;
+}
+
+/**
+ * 로컬 단어장 목록을 정렬하고 UI 표시용 타입(VocabularyListWithCount)으로 변환합니다.
+ * 정렬 기준: 1. Default 우선, 2. 생성일 순
+ */
+export function formatVocabularyLists(
+  vocabularyLists: Record<string, LocalVocabularyList>,
+): VocabularyListWithCount[] {
+  return Object.values(vocabularyLists)
+    .sort((a, b) => {
+      // 1. Default 우선
+      if (a.isDefault && !b.isDefault) return -1;
+      if (!a.isDefault && b.isDefault) return 1;
+      // 2. 생성일 순
+      return a.createdAt.localeCompare(b.createdAt);
+    })
+    .map((list) => ({
+      id: list.id,
+      title: list.title,
+      item_count: list.itemIds.size,
+      is_default: list.isDefault || false,
+    }));
 }

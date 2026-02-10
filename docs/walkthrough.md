@@ -2,6 +2,28 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.7: Staged Area & Local Storage UX Fixes (2026-02-10)
+
+### 1. Goal (목표)
+
+- 무료 사용자(Free User) 환경에서 발생하던 단어장 관리 로직의 엣지 케이스들을 해결하여 데이터 정합성과 UI 일관성을 확보합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Local Storage UX Stability
+
+- **Empty State Fix**: `LocalVocabularyDetail`에서 모든 항목을 삭제했을 때, SWR의 이전 데이터 유지 속성으로 인해 화면에서 사라지지 않던 버그를 해결했습니다. `currentPageIds`가 0일 때 강제로 빈 배열을 할당하도록 로직을 수정했습니다.
+- **Default List Sorting**: 마이페이지에서 다른 단어장을 기본(Default)으로 지정해도 목록 상단으로 이동하지 않던 현상을 해결했습니다. `formatVocabularyLists` 유틸리티를 통해 정렬 로직을 단일화했습니다.
+
+#### B. Refinement & Clean Code
+
+- **Utility Extraction**: 로컬 스토어에 종속되어 있던 데이터 변환 로직을 `formatVocabularyLists` 유틸리티로 추출하여 `lib/utils.ts`로 이동했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Bug Resolution**: 무료 사용자가 겪을 수 있는 데이터 불일치 이슈(삭제 미반영, 정렬 미흡)를 원천 차단.
+- ✅ **Improved SOC**: 스토어와 UI 유틸리티 사이의 책임을 명확히 분리하여 코드 재사용성 향상.
+
 ## v0.16.6: Pagination & Hooks Refactoring (2026-02-10)
 
 ### 1. Goal (목표)

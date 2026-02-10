@@ -95,7 +95,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   // 페이지 전환 중 스켈레톤 노출을 위한 상태
   const [isPageTransition, setIsPageTransition] = useState(false);
 
-  const displayItems = data?.items || [];
+  const displayItems: Expression[] = data?.items || [];
   const displayTotalCount = data?.total_count || 0;
   const totalPages = Math.ceil(displayTotalCount / EXPRESSION_PAGE_SIZE);
   const isLoading = (isSwrLoading && !data) || isPageTransition;
@@ -146,8 +146,8 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
 
     try {
       await updateVocabularyListTitle(listId, newTitle);
-      showToast(dict.vocabulary.saveSuccess);
       mutate(); // 데이터 일관성을 위해 갱신
+      showToast(dict.vocabulary.saveSuccess);
     } catch (error) {
       setTitle(previousTitle);
       handleError(error);
@@ -159,8 +159,8 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     setIsDefault(true);
     try {
       await setDefaultVocabularyList(listId);
-      showToast(dict.vocabulary.setDefaultSuccess);
       mutate(); // 데이터 일관성을 위해 갱신
+      showToast(dict.vocabulary.setDefaultSuccess);
     } catch (error) {
       setIsDefault(previous);
       handleError(error);
@@ -187,9 +187,9 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
             listId,
             Array.from(selectedIds),
           );
+          mutate(); // 데이터 일관성을 위해 갱신
           showToast(dict.vocabulary.itemsDeleteSuccess);
           toggleSelectionMode();
-          mutate(); // 데이터 일관성을 위해 갱신
         } catch (error) {
           handleError(error);
         }
@@ -272,6 +272,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
                   ids,
                 );
               }
+              mutate(); // 복사/이동 후 목록 갱신!
               showToast(
                 bulkActionState.type === BULK_ACTION_TYPE.COPY
                   ? dict.vocabulary.copySuccess
@@ -279,7 +280,6 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
               );
               closeBulkAction();
               toggleSelectionMode();
-              mutate(); // 복사/이동 후 목록 갱신!
             } catch (error) {
               handleError(error); // 1. 사용자에게 에러 토스트를 보여줍니다.
               throw error; // 2. BulkVocabularyListModal에게 실패를 알려 로딩 상태(isSubmitting)를 해제하게 합니다.
