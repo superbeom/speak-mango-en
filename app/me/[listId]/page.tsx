@@ -30,13 +30,14 @@ export default async function VocabularyListPage({
   params,
   searchParams,
 }: PageProps) {
-  const { listId } = await params;
-  const { page } = await searchParams;
+  const [{ listId }, { page }, { isPro }] = await Promise.all([
+    params,
+    searchParams,
+    getAuthSession(),
+  ]);
 
   const currentPage = getSafePageNumber(page);
   const itemsPerPage = EXPRESSION_PAGE_SIZE;
-
-  const { isPro } = await getAuthSession();
 
   let content;
 

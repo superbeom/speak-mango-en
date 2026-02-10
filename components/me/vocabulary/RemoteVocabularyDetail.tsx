@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, memo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
@@ -9,6 +10,7 @@ import { useConfirm } from "@/context/ConfirmContext";
 import { useToast } from "@/context/ToastContext";
 import { Expression } from "@/types/expression";
 import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
+import { usePaginationState } from "@/hooks/ui/usePaginationState";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
 import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
@@ -24,10 +26,14 @@ import {
 import { ROUTES } from "@/lib/routes";
 import { SkeletonVocabularyDetail } from "@/components/ui/Skeletons";
 import Pagination from "@/components/ui/Pagination";
-import BulkActionModalWrapper from "@/components/vocabulary/BulkActionModalWrapper";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
+
+const BulkActionModalWrapper = dynamic(
+  () => import("@/components/vocabulary/BulkActionModalWrapper"),
+  { ssr: false },
+);
 
 interface RemoteVocabularyDetailProps {
   listId: string;
@@ -47,19 +53,13 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   currentPage: initialPage,
 }: RemoteVocabularyDetailProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { dict } = useI18n();
   const { confirm } = useConfirm();
   const { showToast } = useToast();
   const { handleError } = useAppErrorHandler();
 
   // URL의 page 번호와 내부 상태 동기화
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const [page, setPage] = useState(pageFromUrl);
-
-  useEffect(() => {
-    setPage(pageFromUrl);
-  }, [pageFromUrl]);
+  const { page, handlePageChange: onPageChangeHandler } = usePaginationState();
 
   // Fetch data using SWR for caching
   const {
@@ -129,14 +129,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   const handlePageChange = (newPage: number) => {
     // 페이지 이동 시에는 스켈레톤을 보여주기 위해
     setIsPageTransition(true);
-
-    setPage(newPage);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", newPage.toString());
-
-    router.push(`${ROUTES.VOCABULARY_LIST(listId)}?${params.toString()}`, {
-      scroll: false,
-    });
+    onPageChangeHandler(newPage, { scroll: false });
   };
 
   const handleToggleAll = () => {

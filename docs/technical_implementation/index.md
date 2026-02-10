@@ -2022,3 +2022,19 @@ export function useQuizGame(initialExpressions: Expression[]) {
   - 현재 페이지 강조 및 접근성(`aria-label`) 고려.
   - 페이지 번호가 많을 경우를 대비한 생략 표기(`PaginationEllipsis`) 지원.
   - 통일된 화살표 아이콘 사용으로 시각적 일관성 유지.
+
+## 27. Pagination Hook Architecture (페이지네이션 훅 아키텍처)
+
+대규모 데이터 리스트의 효율적인 렌더링과 사용자 경험을 위해 분리된 훅 구조를 채택했습니다.
+
+### 27.1 Separation of Concerns (관심사 분리)
+
+- **UI State (`usePaginationState`)**:
+  - 현재 페이지 번호(`currentPage`), 페이지당 항목 수(`pageSize`), 전체 페이지 수 계산 등 순수 UI 상태를 관리합니다.
+  - URL Query Parameter와의 동기화 로직은 제외하고, 컴포넌트 내부 상태에 집중하여 재사용성을 높였습니다.
+
+- **Data Fetching (`usePaginatedList`)**:
+  - `SWR` 또는 로컬 스토리지 데이터를 기반으로 실제 슬라이싱된 데이터 청크를 반환합니다.
+  - `usePaginationState`에서 받은 상태를 입력으로 사용하여 데이터 일관성을 유지합니다.
+
+- 이 구조는 데이터 소스(Remote/Local)가 변경되더라도 UI 상태 관리 로직을 수정할 필요가 없게 만들어주며, 테스트 용이성을 극대화합니다.

@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.6: Pagination & Hooks Refactoring (2026-02-10)
+
+### ✅ 진행 사항
+
+1.  **Hooks Organization (UI Hooks 분리)**:
+    - **Directory Restructuring**: `hooks/` 디렉토리 내에 UI 관련 훅들을 모아놓은 `hooks/ui/` 서브 디렉토리를 신설했습니다.
+    - **Refactoring**: `usePaginatedList.ts`를 `hooks/ui/`로 이동하고, `usePaginationState`를 분리하여 관심사를 명확히 했습니다.
+
+2.  **Pagination Logic Refinement**:
+    - **`usePaginationState`**: 페이지네이션 UI 상태(현재 페이지, 페이지 크기, 변경 핸들러)를 전담하는 커스텀 훅을 신설했습니다.
+    - **Separation of Concerns**: 데이터 페칭 로직(`usePaginatedList`)과 UI 상태 관리 로직(`usePaginationState`)을 분리하여 재사용성과 테스 용이성을 높였습니다.
+
+3.  **Learned Expressions Pagination**:
+    - **Integration**: 단어장 페이지와 학습 완료 페이지에서도 새로운 페이지네이션 훅 시스템을 적용하여 일관된 사용자 경험을 제공합니다.
+
 ## v0.16.5: Learned Expressions & Layout Refactoring (2026-02-09)
 
 ### ✅ 진행 사항

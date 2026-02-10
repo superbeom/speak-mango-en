@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, memo, useMemo } from "react";
-import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
@@ -9,6 +10,7 @@ import { useConfirm } from "@/context/ConfirmContext";
 import { useToast } from "@/context/ToastContext";
 import { Expression } from "@/types/expression";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
+import { usePaginationState } from "@/hooks/ui/usePaginationState";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
 import { getExpressionsByIds } from "@/services/queries/expressions";
@@ -16,10 +18,14 @@ import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import { ROUTES } from "@/lib/routes";
 import { SkeletonVocabularyDetail } from "@/components/ui/Skeletons";
 import Pagination from "@/components/ui/Pagination";
-import BulkActionModalWrapper from "@/components/vocabulary/BulkActionModalWrapper";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
+
+const BulkActionModalWrapper = dynamic(
+  () => import("@/components/vocabulary/BulkActionModalWrapper"),
+  { ssr: false },
+);
 
 interface LocalVocabularyDetailProps {
   listId: string;
@@ -29,7 +35,6 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   listId,
 }: LocalVocabularyDetailProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { dict } = useI18n();
   const { confirm } = useConfirm();
   const { showToast } = useToast();
@@ -64,12 +69,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   } = useBulkAction();
 
   // URL의 page 번호와 내부 상태 동기화
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const [page, setPage] = useState(pageFromUrl);
-
-  useEffect(() => {
-    setPage(pageFromUrl);
-  }, [pageFromUrl]);
+  const { page, handlePageChange: onPageChangeHandler } = usePaginationState();
 
   // 로컬 스토리지에서 현재 리스트 정보 가져오기
   const list = vocabularyLists[listId];
@@ -122,12 +122,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   const handlePageChange = async (newPage: number) => {
     // 페이지 이동 시에는 스켈레톤을 보여주기 위해 현재 데이터를 비움
     await mutate(undefined, { revalidate: false });
-
-    setPage(newPage);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", newPage.toString());
-
-    router.push(`${ROUTES.VOCABULARY_LIST(listId)}?${params.toString()}`);
+    onPageChangeHandler(newPage);
   };
 
   const handleToggleAll = () => {

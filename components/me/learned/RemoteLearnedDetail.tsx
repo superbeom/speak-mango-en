@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, memo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
 import { Expression } from "@/types/expression";
+import { usePaginationState } from "@/hooks/ui/usePaginationState";
 import { VIEW_MODE } from "@/constants/ui";
 import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
 import { getLearnedListDetails } from "@/services/queries/vocabulary";
@@ -26,19 +26,12 @@ const RemoteLearnedDetail = memo(function RemoteLearnedDetail({
   initialTotalCount,
   currentPage: initialPage,
 }: RemoteLearnedDetailProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { dict } = useI18n();
-
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const [page, setPage] = useState(pageFromUrl);
+  // URL의 page 번호와 내부 상태 동기화
+  const { page, handlePageChange: onPageChangeHandler } = usePaginationState();
 
   // 페이지 전환 중 스켈레톤 노출을 위한 상태
   const [isPageTransition, setIsPageTransition] = useState(false);
-
-  useEffect(() => {
-    setPage(pageFromUrl);
-  }, [pageFromUrl]);
 
   const { data, isLoading: isSwrLoading } = useSWR(
     ["learned-expressions", page],
@@ -74,12 +67,7 @@ const RemoteLearnedDetail = memo(function RemoteLearnedDetail({
   const handlePageChange = (newPage: number) => {
     // 페이지 이동 시에는 스켈레톤을 보여주기 위해
     setIsPageTransition(true);
-
-    setPage(newPage);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", newPage.toString());
-
-    router.push(`${ROUTES.LEARNED}?${params.toString()}`, { scroll: false });
+    onPageChangeHandler(newPage, { scroll: false });
   };
 
   if (isLoading) {

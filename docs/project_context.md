@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-02-07
+**최종 수정일**: 2026-02-10
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -68,7 +68,8 @@ speak-mango-en/
 │   └── triggers/        # 트리거 함수 및 정의 - 자동화된 데이터 관리
 ├── hooks/               # 커스텀 React 훅
 │   ├── user/            # 사용자 및 인증 관련 훅 (useAuthUser, useUserActions)
-│   └── quiz/            # 퀴즈 게임 관련 훅 (useQuizGame)
+│   ├── quiz/            # 퀴즈 게임 관련 훅 (useQuizGame)
+│   └── ui/              # UI 관련 훅 (usePaginationState, usePaginatedList)
 ├── i18n/                # 다국어 지원 로직 및 번역 파일
 ├── lib/                 # 핵심 로직 및 유틸리티
 │   ├── auth/            # 인증 설정 및 유틸리티

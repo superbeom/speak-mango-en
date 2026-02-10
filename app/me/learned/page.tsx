@@ -26,12 +26,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LearnedPage({ searchParams }: PageProps) {
-  const { page } = await searchParams;
+  const [{ page }, { isPro }] = await Promise.all([
+    searchParams,
+    getAuthSession(),
+  ]);
 
   const currentPage = getSafePageNumber(page);
   const itemsPerPage = EXPRESSION_PAGE_SIZE;
-
-  const { isPro } = await getAuthSession();
 
   let content;
 

@@ -2,6 +2,35 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.6: Pagination & Hooks Refactoring (2026-02-10)
+
+### 1. Goal (목표)
+
+- 비대해진 `hooks` 디렉토리를 정비하여 UI 로직과 비즈니스 로직을 분리하고, 페이지네이션 관련 훅을 재사용 가능한 단위로 리팩토링하여 유지보수성을 높입니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Hooks Directory Restructuring (`hooks/ui/`)
+
+- **Directory Separation**: `hooks/` 최상위에 있던 UI 관련 훅들을 `hooks/ui/` 서브 디렉토리로 이동했습니다.
+- **Migration**:
+  - `usePaginatedList.ts` -> `hooks/ui/usePaginatedList.ts`
+  - `usePaginationState.ts` (New) -> `hooks/ui/usePaginationState.ts`
+
+#### B. Logic Extraction (`usePaginationState`)
+
+- **Separation of Concerns**: 기존 `usePaginatedList`에 혼재되어 있던 '현재 페이지 관리', '핸들러' 등 순수 UI 상태 로직을 `usePaginationState`로 추출했습니다.
+- **Improved Testability**: 데이터 페칭과 무관한 상태 로직만 독립적으로 테스트하고 재사용할 수 있게 되었습니다.
+
+#### C. Learned Expressions Integration
+
+- **Standardization**: `/me/learned` 페이지에서도 `usePaginationState`와 `usePaginatedList` 조합을 사용하여, 단어장 상세 페이지와 동일한 코드 패턴으로 페이지네이션을 구현했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Clean Architecture**: `hooks` 디렉토리의 구조적 명확성 확보.
+- ✅ **Code Reusability**: 페이지네이션 상태 관리 로직의 모듈화로 중복 코드 감소.
+
 ## v0.16.5: Learned Expressions & Layout Refactoring (2026-02-09)
 
 ### 1. Goal (목표)

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, memo, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { memo, useMemo } from "react";
 import useSWR from "swr";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
 import { Expression } from "@/types/expression";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
+import { usePaginationState } from "@/hooks/ui/usePaginationState";
 import { getExpressionsByIds } from "@/services/queries/expressions";
 import { VIEW_MODE } from "@/constants/ui";
 import { EXPRESSION_PAGE_SIZE } from "@/constants/expressions";
@@ -17,18 +17,11 @@ import VocabularyDetailHeader from "@/components/me/vocabulary/VocabularyDetailH
 import VocabularyItemsGrid from "@/components/me/vocabulary/VocabularyItemsGrid";
 
 const LocalLearnedDetail = memo(function LocalLearnedDetail() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { dict } = useI18n();
   const { getActions, _hasHydrated } = useLocalActionStore();
 
   // URL의 page 번호와 내부 상태 동기화
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const [page, setPage] = useState(pageFromUrl);
-
-  useEffect(() => {
-    setPage(pageFromUrl);
-  }, [pageFromUrl]);
+  const { page, handlePageChange: onPageChangeHandler } = usePaginationState();
 
   // 로컬 스토리지에서 학습된 아이템 ID 가져오기
   const learnedIds = useMemo(
@@ -65,12 +58,7 @@ const LocalLearnedDetail = memo(function LocalLearnedDetail() {
   const handlePageChange = async (newPage: number) => {
     // 페이지 이동 시에는 스켈레톤을 보여주기 위해 현재 데이터를 비움
     await mutate(undefined, { revalidate: false });
-
-    setPage(newPage);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", newPage.toString());
-
-    router.push(`${ROUTES.LEARNED}?${params.toString()}`);
+    onPageChangeHandler(newPage);
   };
 
   if (isLoading) {
