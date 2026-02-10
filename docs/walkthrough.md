@@ -2,6 +2,37 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.8: Remote Page Flicker Fix & Pagination Stabilization (2026-02-10)
+
+### 1. Goal (목표)
+
+- Pro 사용자에게 발생하는 단어장 페이지 이동 중의 불필요한 스켈레톤 로딩 및 화면 깜빡임을 제거하여 프리미엄 사용자 경험을 완성합니다.
+- 서버 컴포넌트(Server Component)와 클라이언트 데이터 페칭(SWR) 간의 상태 불일치를 해결합니다.
+
+### 2. Implementation (구현 내용)
+
+- **Context**: 클라이언트 상태(`page`)를 먼저 변경하여 데이터를 불러온 뒤 URL을 업데이트하는 방식에서, URL 변경에 따른 Server Component 재실행이 2중 로딩(Double Loading)을 유발하여 화면이 깜빡이는 문제가 있었습니다. SWR 키가 URL 사후 업데이트 시점에 다시 평가되면서 발생하는 비효율을 제거해야 했습니다.
+- **Solution**: `useSWR` 옵션에 `keepPreviousData: true`를 적용하고, 데이터 페칭의 원천을 클라이언트 상태가 아닌 서버 Prop(`initialPage`)으로 일원화했습니다. 이를 통해 URL 업데이트와 데이터 페칭이 동기화되며 부드러운 전환이 가능해졌습니다.
+
+#### B. State Management Refactoring (`RemoteVocabularyDetail.tsx`, `RemoteLearnedDetail.tsx`)
+
+- **Removal of Redundant State**: 페이지 전환 중인지 여부를 관리하던 로컬 상태 `isPageTransition`과 이를 제어하는 `useEffect`를 제거했습니다. SWR 자체의 `isValidating` 상태만으로 충분하기 때문입니다.
+- **Loading Logic Simplification**:
+  - **Before**: `isLoading || isPageTransition`
+  - **After**: `isSwrLoading && !data` (데이터가 아예 없는 초기 진입 시에만 로딩 표시)
+- **Prop-driven Pagination**: 컴포넌트 내부에서 별도로 `page` 상태를 관리하지 않고, 상위(Server Component)에서 전달받은 `initialPage` Prop과 URL 쿼리 파라미터를 신뢰 가능한 단일 소스(Single Source of Truth)로 사용하도록 구조를 단순화했습니다.
+
+#### C. `usePaginationState` Role Adjustment
+
+- **Changed Role**: `usePaginationState` 훅은 이제 페이지 번호를 저장하는 역할이 아니라, URL을 업데이트하는 핸들러(`onPageChangeHandler`)를 제공하는 역할로만 제한적으로 사용됩니다.
+- **Benefit**: 데이터 페칭을 담당하는 `page` 값(Prop)과 URL을 업데이트하는 액션이 분리되어 순환 참조나 상태 불일치를 방지합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Zero Flicker**: 페이지네이션 시 스켈레톤 노출 없이 즉시 콘텐츠가 전환되는 부드러운 경험 제공.
+- ✅ **Simplified Component**: 불필요한 `useEffect`와 로컬 상태 제거로 코드 복잡도 감소.
+- ✅ **Robust Data Flow**: 서버에서 주입된 `initialPage`를 기준으로 SWR 키를 생성하여 하이드레이션 불일치 방지.
+
 ## v0.16.7: Staged Area & Local Storage UX Fixes (2026-02-10)
 
 ### 1. Goal (목표)

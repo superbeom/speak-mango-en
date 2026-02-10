@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.8: Remote Page Flicker Fix & Pagination Stabilization (2026-02-10)
+
+### ✅ 진행 사항
+
+1.  **Remote Page Flicker Fix (Pro User)**:
+    - **Problem**: 페이지네이션 이동 시 클라이언트 내부 상태로 먼저 로드된 후, URL이 사후 업데이트되면서 Server Component가 재실행되어 다시 재로드(Re-fetch)가 발생하는 깜빡임(Flicker) 문제를 해결했습니다. 기존에는 클라이언트 상태(`page`) 변경과 URL 업데이트 시점의 차이로 인해 불필요한 2중 로딩이 발생했습니다.
+    - **Solution**:
+      - **State Synchronization**: 데이터 페칭의 신뢰 소스(Source of Truth)를 클라이언트 내부 상태가 아닌 서버 Prop(`initialPage`)으로 일원화하여 URL 업데이트와 페칭 시점을 동기화했습니다.
+      - **SWR Optimization**: `keepPreviousData: true` 옵션을 활용하여 새 데이터가 도착할 때까지 이전 데이터를 유지하도록 했습니다.
+      - **Loading Logic**: `isLoading` 조건을 `isSwrLoading && !data`로 단순화하여, 초기 진입 시에만 스켈레톤을 보여주고 페이지 이동 중에는 기존 데이터를 유지하며 부드럽게 전환되도록 개선했습니다.
+    - **Prop-driven Pagination**: 컴포넌트 내부의 `page` 상태 대신 서버에서 전달받은 `initialPage` Prop과 URL 파라미터를 신뢰 소스(Source of Truth)로 사용하도록 리팩토링했습니다.
+
 ## v0.16.7: Staged Area & Local Storage UX Fixes (2026-02-10)
 
 ### ✅ 진행 사항

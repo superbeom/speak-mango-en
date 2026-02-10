@@ -2214,3 +2214,59 @@ export function useQuizGame(initialExpressions: Expression[]) {
   - `usePaginationState`에서 받은 상태를 입력으로 사용하여 데이터 일관성을 유지합니다.
 
 - 이 구조는 데이터 소스(Remote/Local)가 변경되더라도 UI 상태 관리 로직을 수정할 필요가 없게 만들어주며, 테스트 용이성을 극대화합니다.
+
+### 27.2 Remote Data Synchronization & Flicker Prevention (원격 동기화 및 깜빡임 방지)
+
+서버 데이터(Pro) 기반의 페이지네이션 시 발생하는 UI 깜빡임(Flicker) 현상을 해결하기 위해 훅과 데이터 페칭 전략을 최적화했습니다.
+
+#### 27.2.1 The Flicker Problem (깜빡임의 원인)
+
+- **Context**: SWR은 캐시 키(페이지 번호 등)가 변경되면 기본적으로 데이터를 `undefined`로 초기화하고 `isLoading` 상태로 진입합니다.
+- **Symptom**: 클라이언트 상태로 로드가 완료된 직후, URL 업데이트에 의해 Server Component가 재실행되면서 불필요한 재로드(Re-fetch)와 깜빡임이 발생하는 현상이 있었습니다. 이는 페이지네이션 이동 시 시각적 불안정성을 초래했습니다.
+
+#### 27.2.2 SWR keepPreviousData Strategy (데이터 유지 전략)
+
+- **Solution**: `useSWR` 설정에 `keepPreviousData: true`를 적용했습니다.
+- **Effect**:
+  - 새로운 키(`page + 1`)로 요청이 시작되어도, 응답이 올 때까지 기존 데이터(`page`)를 UI에 그대로 유지합니다.
+  - SWR의 `data`는 `undefined`가 되지 않으므로, 컴포넌트는 리렌더링 없이 부드럽게 대기 상태를 유지할 수 있습니다.
+
+#### 27.2.3 Prop-Driven Loading Logic (로딩 로직 단순화)
+
+- **Refactoring**: 복잡한 로컬 상태(`isPageTransition`)를 제거하고, 데이터 존재 유무(`!data`)와 SWR 로딩 상태(`isSwrLoading`)만을 조합하여 로딩 UI를 결정합니다.
+
+  ```typescript
+  // Before
+  const isLoading = isSwrLoading || isPageTransition;
+
+  // After
+  // 데이터가 아예 없는 '첫 진입' 시에만 스켈레톤 노출
+  const isLoading = isSwrLoading && !data;
+  ```
+
+- **Fallback Data**: 서버 사이드에서 주입된 `initialPage`와 `fallbackData`를 적극 활용하여, 하이드레이션(Hydration) 직후에도 `!data` 상태에 빠지지 않도록 보장합니다.
+
+#### 27.2.4 State Source Separation (상태 소스 분리)
+
+- **Role of usePaginationState**: URL을 업데이트하는 '핸들러(Provider)' 역할만 수행합니다.
+- **Role of Props**: 현재 페이지를 결정하는 '데이터(Consumer)' 역할은 서버 컴포넌트로부터 전달받은 `initialPage` Prop이 담당합니다.
+- **Benefit**: 클라이언트 상태와 URL 상태 간의 경쟁 상태(Race Condition)를 원천 차단하고 단방향 데이터 흐름을 확립했습니다.
+
+#### 27.2.5 Logic Flow (Pagination Execution Sequence)
+
+사용자가 '페이지 번호'를 클릭할 때 발생하는 일련의 데이터 흐름입니다 (Sync 최적화 버전):
+
+1.  **User Action**: 사용자가 `페이지 번호` 클릭 → `handlePageChange(newPage)` 호출.
+2.  **URL Update**: `usePaginationState`의 핸들러가 `router.push(?page=newPage)` 실행.
+3.  **Prop Propagation**:
+    - URL 변경에 따라 Next.js Server Component(`app/me/[listId]/page.tsx`, `app/me/learned/page.tsx`)가 재실행됩니다.
+    - 새로운 `page` 파라미터를 파싱하여 `RemoteVocabularyDetail`의 `initialPage` Prop으로 전달합니다.
+4.  **SWR Key Change**:
+    - **Single Source of Truth**: 컴포넌트는 내부 상태가 아닌 서버에서 받은 `initialPage` Prop을 SWR 키([..., initialPage])로 사용합니다.
+    - Prop 변경 시점에 SWR이 재검증(Revalidation)을 시작합니다.
+5.  **Steady State (Critical)**:
+    - **`keepPreviousData: true`** 설정으로 인해 SWR은 새로운 데이터가 올 때까지 **이전 페이지의 응답을 그대로 유지**합니다.
+    - URL이 업데이트되고 서버 컴포넌트가 재실행되는 과정 전체에서 UI는 중단 없이 표시됩니다.
+6.  **Data Update**:
+    - 서버 응답 도착 → SWR이 `data`를 새로운 목록으로 교체.
+    - 사용자는 URL 변경과 함께 목록이 부드럽게 교체되는 것을 확인하며, 사후 URL 업데이트로 인한 2중 로딩이 발생하지 않습니다.

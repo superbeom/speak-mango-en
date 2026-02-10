@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
+import { useState, memo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import useSWR, { useSWRConfig } from "swr";
@@ -58,8 +58,8 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   const { showToast } = useToast();
   const { handleError } = useAppErrorHandler();
 
-  // URL의 page 번호와 내부 상태 동기화
-  const { page, handlePageChange: onPageChangeHandler } = usePaginationState();
+  // URL의 내부 상태 동기화
+  const { handlePageChange: onPageChangeHandler } = usePaginationState();
 
   // Fetch data using SWR for caching
   const {
@@ -67,20 +67,17 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     mutate,
     isLoading: isSwrLoading,
   } = useSWR(
-    ["vocabulary-details", listId, page],
-    () => getVocabularyListDetails(listId, page, EXPRESSION_PAGE_SIZE),
+    ["vocabulary-details", listId, initialPage],
+    () => getVocabularyListDetails(listId, initialPage, EXPRESSION_PAGE_SIZE),
     {
-      fallbackData:
-        page === initialPage
-          ? {
-              id: listId,
-              title: initialTitle,
-              items: initialItems,
-              is_default: initialIsDefault,
-              total_count: initialTotalCount,
-              created_at: new Date().toISOString(),
-            }
-          : undefined,
+      fallbackData: {
+        id: listId,
+        title: initialTitle,
+        items: initialItems,
+        is_default: initialIsDefault,
+        total_count: initialTotalCount,
+        created_at: new Date().toISOString(),
+      },
       keepPreviousData: true,
       revalidateOnFocus: false,
     },
@@ -94,20 +91,10 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     data?.is_default ?? initialIsDefault,
   );
 
-  // 페이지 전환 중 스켈레톤 노출을 위한 상태
-  const [isPageTransition, setIsPageTransition] = useState(false);
-
   const displayItems: Expression[] = data?.items || [];
   const displayTotalCount = data?.total_count || 0;
   const totalPages = Math.ceil(displayTotalCount / EXPRESSION_PAGE_SIZE);
-  const isLoading = (isSwrLoading && !data) || isPageTransition;
-
-  // 데이터 로딩이 완료되면 페이지 전환 상태 해제
-  useEffect(() => {
-    if (data && !isSwrLoading) {
-      setIsPageTransition(false);
-    }
-  }, [data, isSwrLoading]);
+  const isLoading = isSwrLoading && !data;
 
   const {
     isSelectionMode,
@@ -129,9 +116,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   } = useBulkAction();
 
   const handlePageChange = (newPage: number) => {
-    // 페이지 이동 시에는 스켈레톤을 보여주기 위해
-    setIsPageTransition(true);
-    onPageChangeHandler(newPage, { scroll: false });
+    onPageChangeHandler(newPage);
   };
 
   const handleToggleAll = () => {
@@ -215,7 +200,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
 
   return (
     <motion.div
-      key={`${listId}-${page}`}
+      key={`${listId}-${initialPage}`}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -257,7 +242,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
         {totalPages > 1 && (
           <div className="pagination-container">
             <Pagination
-              currentPage={page}
+              currentPage={initialPage}
               totalPages={totalPages}
               baseUrl={ROUTES.VOCABULARY_LIST(listId)}
               onPageChange={handlePageChange}
