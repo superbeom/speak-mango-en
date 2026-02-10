@@ -113,3 +113,27 @@ export function useExpressionInfinite() {
     - "실시간 리더보드"나 "전체 사용자 통계" 기능 추가 시 `refreshInterval` 옵션과 함께 사용하면 완벽합니다.
 2.  **사용자 학습 진도**:
     - 퀴즈 결과 제출 후, 페이지 새로고침 없이 "나의 학습 현황" 대시보드를 즉시 업데이트하고 싶을 때 `mutate`(낙관적 업데이트)를 사용하면 매우 빠릿한 경험을 제공할 수 있습니다.
+
+---
+
+## 5. 전역 뮤테이트 및 캐시 무효화 (Global Mutate & Cache Invalidation)
+
+단일 리스트의 데이터 변경이 다른 리스트의 상태에 영향을 줄 때, `useSWRConfig`에서 제공하는 `globalMutate`를 사용하여 관련 캐시를 일괄적으로 무효화합니다.
+
+### 사용 사례: 기본 단어장(Default List) 변경
+
+- **문제**: 사용자가 'A' 단어장을 기본으로 설정하면, 기존에 기본이었던 'B' 단어장은 더 이상 기본이 아니게 됩니다. 하지만 'B' 단어장 상세 페이지의 SWR 캐시는 여전히 `is_default: true`인 상태로 남아 있어 UI 불일치가 발생합니다.
+- **해결**: `globalMutate`를 사용하여 특정 패턴을 가진 모든 캐시 키를 찾아 무효화합니다.
+
+```tsx
+const { mutate: globalMutate } = useSWRConfig();
+
+globalMutate(
+  (key) =>
+    Array.isArray(key) && // SWR 키가 배열 형태인지 확인
+    key[0] === "vocabulary-details" && // 단어장 상세 정보를 불러오는 키
+    key[1] !== listId, // 현재 활성화된 리스트를 제외한 나머지
+  undefined, // 갱신할 데이터를 직접 주지 않고 (서버에서 새로 가져올 것이므로)
+  { revalidate: true }, // "캐시가 상했으니 서버에서 다시 받아와라"고 명령
+);
+```

@@ -10,7 +10,8 @@
     - **Empty State Synchronization**: 단어장 내 모든 아이템 삭제 시 SWR 캐시의 `keepPreviousData`로 인해 UI에 삭제된 항목이 남아있던 현상을 해결했습니다. `currentPageIds`가 비어있을 때 `displayItems`를 강제로 빈 배열로 처리하도록 개선했습니다.
     - **Default List Sorting**: 무료 사용자가 다른 단어장을 기본(Default)으로 설정했을 때, 마이페이지 목록에서 최상단으로 즉시 이동하지 않던 문제를 해결했습니다. `formatVocabularyLists` 유틸리티를 통한 정합성 확보로 리스트 정렬의 신뢰도를 높였습니다.
 
-2.  **Staged Area Workflow Stability**:
+2.  **Staged Area & Remote Sync Stability**:
+    - **Global Cache Invalidation**: Pro 유저가 새로운 기본(Default) 단어장을 설정할 때, 이전 기본 단어장의 상태가 UI에 즉시 반영되지 않던 문제를 해결했습니다. `useSWRConfig`의 `globalMutate`를 사용하여 현재 리스트를 제외한 다른 모든 `vocabulary-details` 캐시를 무효화함으로써 데이터 정합성을 확보했습니다.
     - **Code Quality**: 로컬 단어장 데이터를 UI용으로 정렬 및 변환하는 로직을 `formatVocabularyLists` 유틸리티로 추출하여 `lib/utils.ts`에서 중앙 관리했습니다.
 
 ## v0.16.6: Pagination & Hooks Refactoring (2026-02-10)

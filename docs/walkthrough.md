@@ -15,7 +15,11 @@
 - **Empty State Fix**: `LocalVocabularyDetail`에서 모든 항목을 삭제했을 때, SWR의 이전 데이터 유지 속성으로 인해 화면에서 사라지지 않던 버그를 해결했습니다. `currentPageIds`가 0일 때 강제로 빈 배열을 할당하도록 로직을 수정했습니다.
 - **Default List Sorting**: 마이페이지에서 다른 단어장을 기본(Default)으로 지정해도 목록 상단으로 이동하지 않던 현상을 해결했습니다. `formatVocabularyLists` 유틸리티를 통해 정렬 로직을 단일화했습니다.
 
-#### B. Refinement & Clean Code
+#### B. Remote & Global Sync Stability
+
+- **Global Cache Invalidation**: `RemoteVocabularyDetail`에서 기본 단어장 설정(`setDefault`) 시, `globalMutate`를 사용하여 다른 모든 단어장 상세 데이터 캐시를 무효화했습니다. 이를 통해 이전 기본 단어장 페이지로 돌아갔을 때 별도의 새로고침 없이도 '기본' 마크가 제거된 최신 상태를 확인할 수 있습니다.
+
+#### C. Refinement & Clean Code
 
 - **Utility Extraction**: 로컬 스토어에 종속되어 있던 데이터 변환 로직을 `formatVocabularyLists` 유틸리티로 추출하여 `lib/utils.ts`로 이동했습니다.
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, memo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -86,6 +86,8 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     },
   );
 
+  const { mutate: globalMutate } = useSWRConfig();
+
   // Local state for optimistic updates (Title, Default)
   const [title, setTitle] = useState(data?.title || initialTitle);
   const [isDefault, setIsDefault] = useState(
@@ -159,8 +161,18 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     setIsDefault(true);
     try {
       await setDefaultVocabularyList(listId);
-      mutate(); // 데이터 일관성을 위해 갱신
+      mutate(); // 현재 리스트 갱신
       showToast(dict.vocabulary.setDefaultSuccess);
+
+      // 다른 모든 단어장 상세 페이지 캐시 무효화 (이전 디폴트 리스트의 상태 변경을 반영하기 위함)
+      globalMutate(
+        (key) =>
+          Array.isArray(key) &&
+          key[0] === "vocabulary-details" &&
+          key[1] !== listId,
+        undefined,
+        { revalidate: true },
+      );
     } catch (error) {
       setIsDefault(previous);
       handleError(error);
