@@ -2,6 +2,23 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.11: Learned Folder Design & Number Formatting (2026-02-11)
+
+### ✅ 진행 사항
+
+1.  **Learned Folder Hover Design Refinement**:
+    - **Visual Distinction**: 마이페이지의 '학습 완료(Learned)' 폴더가 호버 시에도 고유의 파란색 정체성을 유지하도록 디자인을 개선했습니다.
+    - **Hover Feedback**: 기본 `glass-panel-hover` 효과를 오버라이드하여, 호버 시 더 짙은 파란색 테두리와 그림자 효과를 부여함으로써 다른 폴더들과 차별화된 피드백을 제공합니다.
+    - **UX Polish**: 불필요한 스케일 애니메이션을 제거하고, 내부 개수 배지의 호버 효과를 정적인 상태로 유지하여 시각적 안정성을 확보했습니다.
+
+2.  **Locale-aware Number Formatting**:
+    - **Standardization**: 서비스 전반의 숫자 표시(아이템 개수, 선택된 개수 등)에 `toLocaleString()`을 적용하여 천 단위 구분 기호(,)를 포함하도록 통일했습니다.
+    - **Applied Areas**:
+      - `VocabularyListManager`: 단어장 목록의 아이템 개수.
+      - `VocabularyDetailHeader`: 단어장 상세 페이지 상단의 전체 개수.
+      - `VocabularyToolbar`: 선택 모드에서의 선택된 아이템 개수.
+    - **Readability**: 큰 숫자에 대한 가독성을 높이고 서비스의 전문성을 강화했습니다.
+
 ## v0.16.10: Learned Count Integration & Parallel Fetching (2026-02-11)
 
 ### ✅ 진행 사항

@@ -34,7 +34,7 @@ const SelectionCount = memo(({ count }: { count: number }) => {
   return (
     <div className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-400 tabular-nums pr-1 shrink-0">
       {formatMessage(dict.vocabulary.selectedCount, {
-        count: count.toString(),
+        count: count.toLocaleString(),
       })}
     </div>
   );

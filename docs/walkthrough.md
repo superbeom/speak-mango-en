@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.11: Learned Folder Design & Number Formatting (2026-02-11)
+
+### 1. Goal (목표)
+
+- '학습 완료(Learned)' 폴더의 호버 디자인을 정교하게 다듬어 브랜드 정체성을 강화하고 시각적 피드백의 만족도를 높입니다.
+- 서비스 전반의 숫자 표시 방식을 표준화하여 가독성과 전문성을 개선합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Refined Hover States (`VocabularyListManager.tsx`)
+
+- **Identity Overriding**: 기존 `glass-panel-hover`가 제공하는 일반적인 호버 효과 대신, Learned 폴더만을 위한 전용 호버 스타일을 구축했습니다.
+  - **Border**: `hover:border-blue-300/40` 등을 통해 파란색 테마를 유지.
+  - **Shadow**: `rgba(59,130,246,0.1)` 컬러의 파란색 섀도우를 적용하여 신비롭고 프리미엄한 감각을 부여.
+- **Micro-interaction Tuning**:
+  - 다른 폴더들과의 일관성을 위해 불필요한 `scale` 효과를 제거했습니다.
+  - 개수 배지(`Badge`)의 호버 브라이트닝 효과를 제거하여, 폴더 전체의 움직임 속에서도 정보의 가독성을 정적으로 유지했습니다.
+
+#### B. Global Number Formatting (`toLocaleString`)
+
+- **Standardization**: `itemCount` 및 `selectedCount`를 표시하는 모든 지점에 `toLocaleString()`을 적용했습니다.
+- **Affected Components**:
+  - `VocabularyListCard`: 마이페이지 목록 내 개수.
+  - `VocabularyDetailHeader`: 상세 페이지 헤더 내 개수.
+  - `SelectionCount`: 툴바 내 선택된 개수.
+- **Why**: 1,000단위 이상의 데이터가 쌓여갈 때 사용자가 숫자를 더 직관적으로 파악할 수 있도록 하기 위함입니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Design Consistency**: 브랜드 컬러(Blue)를 활용한 차별화된 인터랙션 완성.
+- ✅ **Improved Politeness**: 사용자 친화적인 숫자 포맷팅으로 인지 부하 감소.
+- ✅ **UI Stability**: 과도한 애니메이션 절제를 통한 차분하고 정교한 UI 구현.
+
 ## v0.16.10: Learned Count Integration & Parallel Fetching (2026-02-11)
 
 ### 1. Goal (목표)

@@ -175,6 +175,7 @@
   - [x] **UI**: 스켈레톤 통합(`SkeletonVocabularyDetail`) 및 일관된 로딩 경험 확보
   - [x] **Performance**: `useSWR` 도입을 통한 데이터 페칭 전략 최적화 및 캐싱 시스템 구축
   - [x] **UX**: 페이지네이션 콜백 지원 및 뒤로가기 경로 고정 (`/me` 리다이렉트)
+  - [x] **UI/UX**: 서비스 전반의 숫자 표시 방식 표준화 (`toLocaleString`)
 
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입

@@ -132,7 +132,7 @@ export default function VocabularyDetailHeader({
                     {title}
                   </motion.h1>
                   <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-zinc-500 dark:text-zinc-400 shrink-0 tabular-nums">
-                    {itemCount}
+                    {itemCount.toLocaleString()}
                   </span>
                   {isDefault && (
                     <div

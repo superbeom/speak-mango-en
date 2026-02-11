@@ -47,10 +47,15 @@ const VocabularyListCard = memo(function VocabularyListCard({
         className={cn(
           "group flex flex-col justify-between h-full p-5 rounded-2xl glass-panel",
           enableHover &&
+            !isLearned &&
             "glass-panel-hover dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]",
           // Learned 폴더 스타일
           isLearned &&
             "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 dark:border-blue-800/30",
+          // Learned 폴더 호버
+          isLearned &&
+            enableHover &&
+            "hover:bg-blue-100/40 dark:hover:bg-blue-900/15 hover:border-blue-300/40 dark:hover:border-blue-700/40 hover:shadow-md dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.1)] transition-all duration-300",
         )}
       >
         <div className="flex items-start justify-between mb-4">
@@ -82,9 +87,16 @@ const VocabularyListCard = memo(function VocabularyListCard({
           >
             {isLearned ? dict.me.learned : list.title}
           </span>
-          <span className="text-xs font-medium text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
+          <span
+            className={cn(
+              "text-xs font-medium px-2 py-1 rounded-md",
+              isLearned
+                ? "bg-white/60 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" // Learned
+                : "text-zinc-500 bg-zinc-100 dark:bg-zinc-800", // Default
+            )}
+          >
             {formatMessage(dict.vocabulary.itemsCount, {
-              count: (list.item_count ?? 0).toString(),
+              count: (list.item_count ?? 0).toLocaleString(),
             })}
           </span>
         </div>
