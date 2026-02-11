@@ -62,7 +62,7 @@ const LocalLearnedDetail = memo(function LocalLearnedDetail() {
   };
 
   if (isLoading) {
-    return <SkeletonVocabularyDetail />;
+    return <SkeletonVocabularyDetail readonly />;
   }
 
   return (

@@ -195,7 +195,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   };
 
   if (isLoading) {
-    return <SkeletonVocabularyDetail />;
+    return <SkeletonVocabularyDetail showToolbar />;
   }
 
   return (

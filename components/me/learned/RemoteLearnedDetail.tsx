@@ -57,7 +57,7 @@ const RemoteLearnedDetail = memo(function RemoteLearnedDetail({
   };
 
   if (isLoading) {
-    return <SkeletonVocabularyDetail />;
+    return <SkeletonVocabularyDetail readonly />;
   }
 
   return (

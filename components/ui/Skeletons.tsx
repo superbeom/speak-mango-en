@@ -338,14 +338,18 @@ export const SkeletonVocabularyListSection = memo(
  * 단어장 상세 페이지 - 헤더 스켈레톤
  */
 export const SkeletonVocabularyDetailHeader = memo(
-  function SkeletonVocabularyDetailHeader() {
+  function SkeletonVocabularyDetailHeader({
+    readonly = false,
+  }: {
+    readonly?: boolean;
+  }) {
     return (
       <div className="mb-8 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Skeleton className="h-8 w-48 sm:h-9 sm:w-64" />
           <Skeleton className="h-6 w-12 rounded-md" />
         </div>
-        <Skeleton className="h-10 w-10 rounded-lg" />
+        {!readonly && <Skeleton className="h-10 w-10 rounded-lg" />}
       </div>
     );
   },
@@ -369,19 +373,23 @@ export const SkeletonVocabularyToolbar = memo(
 /**
  * 단어장 상세 페이지 - 전체 레이아웃 스켈레톤
  */
-export const SkeletonVocabularyDetail = memo(
-  function SkeletonVocabularyDetail() {
-    return (
-      <div className="py-8">
-        <div className="layout-container">
-          <SkeletonVocabularyDetailHeader />
-        </div>
-
-        <div className="layout-container mt-8 space-y-10">
-          <SkeletonVocabularyToolbar />
-          <SkeletonExpressionList />
-        </div>
+export const SkeletonVocabularyDetail = memo(function SkeletonVocabularyDetail({
+  readonly = false,
+  showToolbar = false,
+}: {
+  readonly?: boolean;
+  showToolbar?: boolean;
+}) {
+  return (
+    <div className="py-8">
+      <div className="layout-container">
+        <SkeletonVocabularyDetailHeader readonly={readonly} />
       </div>
-    );
-  },
-);
+
+      <div className="layout-container mt-8 space-y-10">
+        {showToolbar && <SkeletonVocabularyToolbar />}
+        <SkeletonExpressionList />
+      </div>
+    </div>
+  );
+});

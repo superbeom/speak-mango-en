@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.9: Learned Page Skeleton & UI/Skeleton Alignment (2026-02-11)
+
+### 1. Goal (목표)
+
+- '학습 완료(`Learned`)' 페이지 진입 시 발생하는 시각적 끊김을 제거하기 위해 전용 로딩 스켈레톤을 구현합니다.
+- 스켈레톤 컴포넌트의 설계를 '기능 추가(Additive)' 방식으로 전환하여 다양한 레이아웃 요구사항에 유연하게 대응하고 실제 페이지와의 정합성을 확보합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Learned Page Loading Implementation (`app/me/learned/loading.tsx`)
+
+- **Dedicated Skeleton**: `/me/learned` 페이지 전용 `loading.tsx`를 신설하여 서버 사이드 로딩 시점을 처리했습니다.
+- **Consistency**: 단어장 상세 페이지와 동일한 베이스 구조를 유지하되, 툴바와 액션 버튼을 제외하여 사용자에게 로딩 중에도 최종 화면의 윤곽을 정확히 인지시킵니다.
+
+#### B. Component Refactoring: Additive Composition (`Skeletons.tsx`)
+
+- **`SkeletonVocabularyDetail` Integration**:
+  - **`showToolbar` (default: false)**: 필수가 아닌 요소를 기본값에서 제외함으로써, 복잡도가 낮은 페이지(Learned)는 코드를 간소화하고 필요한 페이지(Vocabulary)는 명시적으로 기능을 추가하도록 설계 원칙을 변경했습니다.
+  - **`readonly` Prop Propagation**: 페이지의 읽기 전용 상태를 하위 `SkeletonVocabularyDetailHeader`까지 전파하여, 우측 액션 버튼 스켈레톤의 노출 여부를 자동 제어합니다.
+- **Why**: "스켈레톤은 실제 UI의 거울이어야 한다"는 원칙에 따라 레이아웃 시프트(CLS)를 최소화하기 위한 조치입니다.
+
+#### C. Full Alignment Across Pages
+
+- **Applied Components**:
+  - `RemoteVocabularyDetail` / `LocalVocabularyDetail`: `showToolbar`, `readonly={false}` (Default) 적용.
+  - `RemoteLearnedDetail` / `LocalLearnedDetail` / `app/me/learned/loading.tsx`: `readonly={true}` (No Toolbar) 적용.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Perfect UI Sync**: 로딩 중 스켈레톤과 실제 렌더링 결과물 사이의 레이아웃 불협화음 완전 제거.
+- ✅ **Clean Component Interface**: `showToolbar={false}` 같은 명시적 거부 코드 없이 기능을 '누적'하는 직관적인 prop 설계.
+- ✅ **Universal Application**: 유저 티어(Pro/Free)나 데이터 소스에 관계없이 완벽히 일치하는 로딩 경험 보장.
+
 ## v0.16.8: Remote Page Flicker Fix & Pagination Stabilization (2026-02-10)
 
 ### 1. Goal (목표)

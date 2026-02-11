@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.9: Learned Page Skeleton & UI/Skeleton Alignment (2026-02-11)
+
+### ✅ 진행 사항
+
+1.  **Learned Page Skeleton Loading Implementation**:
+    - **New Landing**: `/me/learned` 페이지 진입 시 깜빡임을 방지하고 일관된 로딩 경험을 제공하기 위해 전용 스켈레톤(`app/me/learned/loading.tsx`)을 구현했습니다.
+    - **UI Alignment**: 학습 완료 페이지는 일반 단어장과 달리 툴바와 수정 권한이 없으므로, 이를 반영하여 스켈레톤에서도 해당 영역을 제거하여 실제 UI와 100% 일치하도록 구성했습니다.
+
+2.  **Vocabulary Skeleton Refactoring (Additive Composition)**:
+    - **Problem**: 기존 스켈레톤 컴포넌트(`SkeletonVocabularyDetail`)가 툴바를 강제로 포함하고 있어, 툴바가 없는 특수 페이지(Learned 등)와의 레이아웃 불일치가 발생했습니다.
+    - **Solution**:
+      - **Additive Design**: `showToolbar` 속성을 추가하고 기본값을 `false`로 설정하여, 필요한 기능만 '추가'해 나가는 구조로 개선했습니다.
+      - **Read-only Mode**: `readonly` 속성을 도입하여 `SkeletonVocabularyDetailHeader`에서 우측 액션 버튼(더보기) 스켈레톤의 노출 여부를 제어할 수 있게 했습니다.
+    - **Consistency**: 일반 단어장 상세 페이지와 학습 완료 페이지 모두 각자의 실제 레이아웃에 최적화된 스켈레톤을 사용하도록 일괄 업데이트했습니다.
+
 ## v0.16.8: Remote Page Flicker Fix & Pagination Stabilization (2026-02-10)
 
 ### ✅ 진행 사항

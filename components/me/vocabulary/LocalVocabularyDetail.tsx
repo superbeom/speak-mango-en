@@ -171,7 +171,7 @@ const LocalVocabularyDetail = memo(function LocalVocabularyDetail({
   };
 
   if (isLoading || isDeleting) {
-    return <SkeletonVocabularyDetail />;
+    return <SkeletonVocabularyDetail showToolbar />;
   }
 
   return (
