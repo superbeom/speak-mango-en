@@ -2,6 +2,36 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.10: Learned Count Integration & Parallel Fetching (2026-02-11)
+
+### 1. Goal (목표)
+
+- 마이페이지 대시보드에서 사용자의 학습 성취도를 즉각적으로 인지할 수 있도록 '학습 완료' 폴더에 실제 개수를 표시합니다.
+- 데이터 조회 시 네트워크 비용과 렌더링 지연을 최소화하는 최적화된 아키텍처를 적용합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Efficient Count Fetching (`getLearnedCount`)
+
+- **Supabase Optimization**: `head: true` 및 `count: exact` 옵션을 조합하여 데이터 전송량을 최소화하면서 정확한 개수만 조회하는 전용 쿼리 함수를 구현했습니다.
+- **Documentation**: `cache()` 적용 및 `withPro` 미적용 사유(HOC 호환성)를 주석으로 명시하여 유지보수성을 높였습니다.
+
+#### B. Parallel Data Orchestration (`VocabularyListContainer.tsx`)
+
+- **Parallelism**: 단어장 목록과 학습 개수를 각각 순차적으로 기다리지 않고, `Promise.all`로 한 번에 처리하여 응답 시간을 단축했습니다.
+
+#### C. Responsive UI Binding (`VocabularyListManager.tsx`)
+
+- **State Sync**:
+  - Pro 유저에게는 서버에서 계산된 `remoteLearnedCount`를 주입합니다.
+  - 무료 유저에게는 클라이언트 사이드 스토어의 `actions.learn.size`를 실시간 바인딩하여, 사용자가 표현 상세 페이지에서 '학습 완료'를 누르고 돌아왔을 때 즉시 숫자가 업데이트되도록 구현했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Information Density**: 정적인 텍스트를 동적 데이터로 교체하여 사용자 성취감 고취.
+- ✅ **Minimal Overhead**: `head: true` 쿼리를 통해 대량의 학습 데이터가 있어도 성능 저하 없는 개수 집계 성공.
+- ✅ **Cross-tier Consistency**: 무료/유료 유저 모두에게 동일한 '데이터 기반' UI 제공.
+
 ## v0.16.9: Learned Page Skeleton & UI/Skeleton Alignment (2026-02-11)
 
 ### 1. Goal (목표)

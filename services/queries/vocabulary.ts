@@ -181,3 +181,37 @@ export const getLearnedListDetails = cache(async function getLearnedListDetails(
     items: result.items,
   };
 });
+
+/**
+ * 학습 완료한(Is Learned) 표현의 전체 개수를 가져옵니다.
+ *
+ * @returns 학습 완료된 표현의 총 개수
+ */
+export const getLearnedCount = cache(
+  async function getLearnedCount(): Promise<number> {
+    /**
+     * Note: This function doesn't use withPro because cache() doesn't play well with HOFs directly within the export.
+     * Also, it handles the !isPro case by returning 0 instead of throwing.
+     */
+    const { userId, isPro } = await getAuthSession();
+
+    if (!userId || !isPro) {
+      return 0;
+    }
+
+    const supabase = await createServerSupabase();
+
+    const { count, error } = await supabase
+      .from("user_actions")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("action_type", "learn");
+
+    if (error) {
+      console.error("Failed to fetch learned count:", error);
+      return 0;
+    }
+
+    return count || 0;
+  },
+);

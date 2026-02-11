@@ -2,6 +2,20 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.10: Learned Count Integration & Parallel Fetching (2026-02-11)
+
+### ✅ 진행 사항
+
+1.  **Learned Expression Count Display**:
+    - **UI Enhancement**: 마이페이지(`/me`)의 '학습 완료(Learned)' 폴더에 정적인 'View All' 텍스트 대신 실제 학습한 표현의 총 개수를 표시하도록 개선했습니다.
+    - **Dual Data Source Support**:
+      - **Pro**: `getLearnedCount` 서버 쿼리를 통해 DB(`user_actions`)에서 정확한 집계 데이터를 가져옵니다.
+      - **Free**: 로컬 스토어(`useLocalActionStore`)의 `learn` 액션 상태를 직접 참조하여 실시간으로 개수를 반영합니다.
+
+2.  **Performance & Architecture Optimization**:
+    - **Parallel Fetching**: `VocabularyListContainer`에서 단어장 목록(`getVocabularyLists`)과 학습 완료 개수(`getLearnedCount`)를 `Promise.all`을 통해 병렬로 조회하여 서버 사이드 렌더링 속도를 최적화했습니다.
+    - **Head-only Query**: `getLearnedCount` 구현 시 Supabase의 `head: true` 옵션을 사용하여 실제 데이터 본문 전송 없이 개수만 빠르게 가져오도록 최적화했습니다.
+
 ## v0.16.9: Learned Page Skeleton & UI/Skeleton Alignment (2026-02-11)
 
 ### ✅ 진행 사항

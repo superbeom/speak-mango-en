@@ -15,6 +15,7 @@ import VocabularyEmptyState from "./VocabularyEmptyState";
 interface VocabularyListManagerProps {
   lists: VocabularyListWithCount[];
   isPro: boolean;
+  remoteLearnedCount?: number;
 }
 
 const LEARNED_FOLDER_ID = "learned";
@@ -82,11 +83,9 @@ const VocabularyListCard = memo(function VocabularyListCard({
             {isLearned ? dict.me.learned : list.title}
           </span>
           <span className="text-xs font-medium text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
-            {isLearned
-              ? "View All"
-              : formatMessage(dict.vocabulary.itemsCount, {
-                  count: (list.item_count ?? 0).toString(),
-                })}
+            {formatMessage(dict.vocabulary.itemsCount, {
+              count: (list.item_count ?? 0).toString(),
+            })}
           </span>
         </div>
       </div>
@@ -99,9 +98,10 @@ VocabularyListCard.displayName = "VocabularyListCard";
 const VocabularyListManager = memo(function VocabularyListManager({
   lists,
   isPro,
+  remoteLearnedCount = 0,
 }: VocabularyListManagerProps) {
   const { dict } = useI18n();
-  const { vocabularyLists } = useLocalActionStore();
+  const { vocabularyLists, actions } = useLocalActionStore();
   const [isMounted, setIsMounted] = useState(false);
   const enableHover = useEnableHover();
 
@@ -110,14 +110,16 @@ const VocabularyListManager = memo(function VocabularyListManager({
   }, []);
 
   // Learned List Item (Static)
+  const learnedCount = isPro ? remoteLearnedCount : actions.learn.size;
+
   const learnedList: VocabularyListWithCount = useMemo(
     () => ({
       id: LEARNED_FOLDER_ID,
       title: dict.me.learned,
-      item_count: 0, // TODO: Fetch learned count?
+      item_count: learnedCount,
       is_default: false,
     }),
-    [dict.me.learned],
+    [dict.me.learned, learnedCount],
   );
 
   // Map local store lists
