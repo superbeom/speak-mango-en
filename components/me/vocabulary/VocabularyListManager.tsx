@@ -2,14 +2,21 @@
 
 import { useEffect, useState, useMemo, memo } from "react";
 import { motion, useAnimation, Reorder, LayoutGroup } from "framer-motion";
-import { Folder, Plus, Star, BookOpenCheck } from "lucide-react";
+import { Folder, Plus, Star, BookOpenCheck, MoreVertical } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
+import { useVocabularyModalStore } from "@/store/useVocabularyModalStore";
 import { useEnableHover } from "@/hooks/useIsMobile";
 import { ROUTES } from "@/lib/routes";
 import { cn, formatMessage, formatVocabularyLists } from "@/lib/utils";
 import InteractiveLink from "@/components/ui/InteractiveLink";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import VocabularyEmptyState from "./VocabularyEmptyState";
 
 interface VocabularyListManagerProps {
@@ -116,6 +123,7 @@ const VocabularyListManager = memo(function VocabularyListManager({
   const { vocabularyLists, actions } = useLocalActionStore();
   const [isMounted, setIsMounted] = useState(false);
   const enableHover = useEnableHover();
+  const { openModal } = useVocabularyModalStore();
 
   useEffect(() => {
     setIsMounted(true);
@@ -170,11 +178,24 @@ const VocabularyListManager = memo(function VocabularyListManager({
           <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">
             {dict.me.myLists}
           </h3>
-          {isPro && (
-            <button className="p-2 -mr-2 text-zinc-400 transition-colors glass-panel rounded-full active:scale-90 overflow-hidden">
-              <Plus size={20} />
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2 -mr-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors rounded-full cursor-pointer outline-hidden">
+                  <MoreVertical size={20} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => openModal()}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 outline-hidden dark:text-zinc-300 transition-colors"
+                >
+                  <Plus size={16} />
+                  {dict.vocabulary.add}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         <Reorder.Group

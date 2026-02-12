@@ -12,7 +12,6 @@ import {
 } from "@/constants/ui";
 import { cn } from "@/lib/utils";
 import LoginModal from "@/components/auth/LoginModal";
-import VocabularyListModal from "@/components/vocabulary/VocabularyListModal";
 
 interface SaveButtonProps {
   expressionId: string;
@@ -25,14 +24,8 @@ export default function SaveButton({
   size = DEFAULT_ACTION_ICON_SIZE,
   className,
 }: SaveButtonProps) {
-  const {
-    isSaved,
-    isInitialLoading,
-    isListModalOpen,
-    setIsListModalOpen,
-    handleSaveToggle,
-    handleListActionSync,
-  } = useSaveAction(expressionId);
+  const { isSaved, isInitialLoading, openListModal, handleSaveToggle } =
+    useSaveAction(expressionId);
 
   const { dict } = useI18n();
   const { user } = useAuthUser();
@@ -56,7 +49,7 @@ export default function SaveButton({
     timerRef.current = setTimeout(() => {
       isLongPress.current = true;
       if (user) {
-        setIsListModalOpen(true);
+        openListModal();
       }
     }, 500); // 500ms long press
   };
@@ -122,16 +115,6 @@ export default function SaveButton({
         isOpen={isLoginModalOpen}
         onOpenChange={setIsLoginModalOpen}
       />
-
-      {/* List Modal */}
-      {user && (
-        <VocabularyListModal
-          isOpen={isListModalOpen}
-          onOpenChange={setIsListModalOpen}
-          expressionId={expressionId}
-          onListAction={handleListActionSync}
-        />
-      )}
     </>
   );
 }

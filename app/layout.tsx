@@ -15,6 +15,7 @@ import { SUPPORTED_LANGUAGES, LOCALE_DETAILS, defaultLocale } from "@/i18n";
 import { SERVICE_NAME, BASE_URL } from "@/constants";
 import { formatMessage } from "@/lib/utils";
 import ScrollToTop from "@/components/ScrollToTop";
+import VocabularyListGlobalModal from "@/components/vocabulary/VocabularyListGlobalModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -400,6 +401,7 @@ export default async function RootLayout({
                     <ExpressionProvider>
                       {children}
                       <ScrollToTop />
+                      <VocabularyListGlobalModal />
                     </ExpressionProvider>
                   </AudioProvider>
                 </ToastProvider>

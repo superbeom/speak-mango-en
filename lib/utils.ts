@@ -116,3 +116,13 @@ export function formatVocabularyLists(
       is_default: list.isDefault || false,
     }));
 }
+
+/**
+ * 현재 시간을 기준으로 1시간 단위의 고정 시드 문자열을 생성합니다.
+ * (예: 2024-03-11-15)
+ * 이는 서버 컴포넌트 리프레시 시 리스트가 불필요하게 변경되는 것을 방지합니다.
+ */
+export function getHourlySeed() {
+  const date = new Date();
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}`;
+}

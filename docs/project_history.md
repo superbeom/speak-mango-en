@@ -2,6 +2,24 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.16.12: Global Vocabulary Modal Store & Sync Reliability (2026-02-12)
+
+### ✅ 진행 사항
+
+1.  **Global Vocabulary Modal Store Implementation**:
+    - **Centralization**: 단어장 선택 모달의 상태(열림 여부, 대상 표현 ID, 콜백)를 개별 컴포넌트(`useSaveAction`)가 아닌 전역 Zustand 스토어(`useVocabularyModalStore`)로 이전했습니다.
+    - **Global Modal Strategy**: 앱 루트 레이아웃에 `VocabularyListGlobalModal`을 배치하여, 서비스 어디서든 모달 중첩이나 중복 생성 없이 일관된 싱글턴 모달을 호출할 수 있는 기반을 마련했습니다.
+    - **Refined Selection Logic**: `VocabularyListModal` 내부에서 사용 맥락(표현 저장 vs 단순 관리)을 감지하여 제목을 동적으로 변경하고, 저장 대상 표현이 없을 경우 리스트 선택을 비활성화하는 등 사용자의 실수를 방지하는 가드 로직을 강화했습니다.
+
+2.  **Robust Vocabulary Sync & Race Condition Fix**:
+    - **Centralized Synchronization**: `useSaveAction` 훅을 전면 리팩토링하여, 단어장 항목 추가/삭제에 따른 전역 '저장(Save)' 상태와의 동조화(`handleListActionSync`)를 중앙 집중화된 콜백 구조로 개선했습니다.
+    - **Race Condition Prevention**: `syncingRef`를 도입하여 고속 연타나 네트워크 지연 상황에서도 중복 요청이 발생하지 않도록 원자성을 확보했습니다.
+    - **Stability Polish**: `isMountedRef`를 통해 컴포넌트 언마운트 후의 비동기 상태 업데이트 에러를 원천 차단했습니다.
+
+3.  **Deterministic Random Feed (Hourly Seed)**:
+    - **Seed Persistence**: `getHourlySeed` 유틸리티를 추가하여, 메인 페이지의 랜덤 피드가 1시간 동안은 동일한 무작위 순서를 유지하도록 설계했습니다.
+    - **Benefit**: ISR(Incremental Static Regeneration) 및 SWR 캐싱 환경에서 서버와 클라이언트 간의 데이터 불일치를 방지하고, 페이지네이션이나 '더 보기' 중에도 리스트 순서가 뒤섞이지 않고 안정적으로 유지됩니다.
+
 ## v0.16.11: Learned Folder Design & Number Formatting (2026-02-11)
 
 ### ✅ 진행 사항

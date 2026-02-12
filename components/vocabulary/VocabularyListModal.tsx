@@ -17,7 +17,7 @@ import VocabularyPlanStatus from "./VocabularyPlanStatus";
 interface VocabularyListModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  expressionId: string;
+  expressionId?: string;
   trigger?: React.ReactNode;
   onListAction?: (listId: string, added: boolean) => void;
 }
@@ -64,8 +64,10 @@ export default function VocabularyListModal({
     setSavedListIds(nextSet);
 
     try {
-      await toggleInList(listId, expressionId, isCurrentlyIn);
-      onListAction?.(listId, !isCurrentlyIn);
+      if (expressionId) {
+        await toggleInList(listId, expressionId, isCurrentlyIn);
+        onListAction?.(listId, !isCurrentlyIn);
+      }
     } catch (error) {
       console.error("Failed to toggle list:", error);
       // Revert
@@ -77,6 +79,10 @@ export default function VocabularyListModal({
   const handleCreate = async (title: string) => {
     try {
       await createList(title);
+      // If used as a standalone creator (no expressionId), close after creation
+      if (!expressionId) {
+        onOpenChange(false);
+      }
     } catch (error: unknown) {
       handleError(error, VOCABULARY_ERROR.CREATE_FAILED);
     }
@@ -111,7 +117,7 @@ export default function VocabularyListModal({
         >
           <div className="flex items-center justify-between">
             <DialogPrimitive.Title className="text-lg font-semibold tracking-tight">
-              {dict.vocabulary.modalTitle}
+              {expressionId ? dict.vocabulary.modalTitle : dict.vocabulary.add}
             </DialogPrimitive.Title>
             <DialogPrimitive.Close className="rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-zinc-100 data-[state=open]:text-zinc-500 dark:ring-offset-zinc-950 dark:data-[state=open]:bg-zinc-800 dark:data-[state=open]:text-zinc-400 sm:cursor-pointer">
               <X className="h-4 w-4" />
@@ -127,10 +133,11 @@ export default function VocabularyListModal({
                 <VocabularyListItem
                   key={list.id}
                   list={list}
-                  isSelected={savedListIds.has(list.id)}
+                  isSelected={expressionId ? savedListIds.has(list.id) : false}
                   onToggle={() => handleToggle(list.id)}
                   isDefault={list.is_default}
                   onSetDefault={() => setDefaultList(list.id)}
+                  disabled={!expressionId}
                 />
               ))
             )}

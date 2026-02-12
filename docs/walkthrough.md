@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.16.12: Global Vocabulary Modal Store & Sync Reliability (2026-02-12)
+
+### 1. Goal (목표)
+
+- 개별 컴포넌트에 파편화되어 있던 단어장 관리 모달의 상태를 전역으로 통합하여 로직 중복을 제거하고 앱 어디서든 일관된 모달 호출을 지원합니다.
+- 저장(Save) 및 단어장 동기화 과정에서의 레이스 컨디션(Race Condition)을 원천 차단하여 데이터 정합성을 확보합니다.
+- 랜덤 피드의 무작위성을 시간 단위로 고정하여 서비스 전반의 데이터 일관성을 높입니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Global Modal Architecture (`useVocabularyModalStore`)
+
+- **Zustand Integration**: `isOpen`, `expressionId`, `onListAction` 콜백을 관리하는 전역 스토어를 신설했습니다.
+- **Global Modal Placement**: `VocabularyListGlobalModal`을 `app/layout.tsx`에 배치하여 DOM 중첩 이슈를 해결하고 Z-index 관리와 접근성을 개선했습니다.
+- **Dynamic Context**: `expressionId` 유무에 따라 모달 타이틀과 리스트 선택 가능 여부를 동적으로 제어하여 UI의 엄격함을 강화했습니다.
+
+#### B. Robust Sync Logic (`useSaveAction.ts`)
+
+- **Race Condition Guard**: `syncingRef` (useRef)를 사용하여 비동기 처리 중 추가 요청을 무시하는 잠금(Lock) 메커니즘을 적용했습니다.
+- **Ref-based Callback**: `handleListActionSync`를 통해 리스트의 변화를 감지하고, 모든 리스트에서 제거되었을 때 전역 `Save` 액션을 해제하는 동기화 로직을 캡슐화했습니다.
+- **Mount Safety**: `isMountedRef`를 활용하여 언마운트된 컴포넌트에서의 상태 업데이트를 방지함으로써 개발자 콘솔의 경고를 제거하고 안정성을 높였습니다.
+
+#### C. Fixed Hourly Seed (`utils.ts`)
+
+- **Implementation**: `getHourlySeed()` 함수를 통해 "YYYY-MM-DD-HH" 포맷의 시드를 생성합니다.
+- **Application**: 메인 피드의 랜덤 정렬 및 SWR 캐시 키에 주입하여, 1시간 동안은 사용자가 '더 보기'를 눌러도 데이터가 섞이거나 중복되지 않는 결정론적 무작위성(Deterministic Randomness)을 구현했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Architectural Clarity**: 모달 상태 전역화를 통해 UI 로직과 비즈니스 로직의 완전한 분리 달성.
+- ✅ **Execution Integrity**: 빠른 조작 시에도 데이터 유실이나 중복 요청이 없는 견고한 액션 스트림 확보.
+- ✅ **Improved Data Consistency**: 서버/클라이언트 간 랜덤 데이터 정합성 문제 해결.
+
 ## v0.16.11: Learned Folder Design & Number Formatting (2026-02-11)
 
 ### 1. Goal (목표)

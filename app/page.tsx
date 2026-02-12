@@ -7,7 +7,7 @@ import {
   EXPRESSION_SORT,
   ExpressionSortType,
 } from "@/constants/expressions";
-import { serializeFilters } from "@/lib/utils";
+import { serializeFilters, getHourlySeed } from "@/lib/utils";
 import { getExpressions } from "@/services/queries/expressions";
 import MainHeader from "@/components/MainHeader";
 import FilterBar from "@/components/FilterBar";
@@ -43,8 +43,8 @@ export default async function Home({ searchParams }: PageProps) {
   const sort: ExpressionSortType = isFiltered
     ? EXPRESSION_SORT.LATEST
     : EXPRESSION_SORT.RANDOM;
-  // SWR 캐시 키 충돌 방지를 위한 시드 생성 (랜덤 모드일 때만)
-  const seed = !isFiltered ? crypto.randomUUID() : undefined;
+  // SWR 캐시 키 충돌 방지 및 깜빡임 방지를 위해 시간 단위 시드 생성 (랜덤 모드일 때만)
+  const seed = !isFiltered ? getHourlySeed() : undefined;
 
   const filters = { category, search, tag, sort, seed };
   const cacheKey = serializeFilters(filters);

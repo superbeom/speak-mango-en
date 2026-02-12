@@ -267,7 +267,7 @@ body {
 }
 
 @utility vocab-list-item-default {
-  @apply bg-white border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800;
+  @apply bg-white border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 enabled:hover:bg-zinc-100 dark:enabled:hover:bg-zinc-800;
 }
 
 @utility vocab-list-item-disabled {

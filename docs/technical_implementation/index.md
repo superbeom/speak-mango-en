@@ -399,6 +399,7 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
   - **SSR Safety**: `persist` 미들웨어의 내부 로직 덕분에 Next.js Hydration 과정에서 불일치 에러 없이 안전하게 초기화됩니다.
 - **Structure**:
   - `store/useLocalActionStore.ts`: 실제 상태를 관리하는 Zustand 스토어.
+  - `store/useVocabularyModalStore.ts`: 단어장 선택 모달의 전역 상태 및 콜백 관리.
   - `services/repositories/LocalUserActionRepository.ts`: 스토어에 접근하는 비동기 어댑터 (Repository Pattern 유지).
 
 ### 5.3.1 SWR Optimistic Updates for User Actions
@@ -548,6 +549,7 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
 #### 6.9.2 Seed-based Deterministic Caching
 
 - **Cache Key Design**: SWR 캐시 키에 랜덤 `seed` 값을 포함시켜, 동일한 페이지 내에서 "새로고침" 시 명확한 데이터 갱신을 보장합니다.
+- **Hourly Seed**: `getHourlySeed()` 유틸리티를 활용하여 1시간 단위의 고정 시드를 생성합니다. 이는 ISR 환경에서 서버가 생성한 리스트 순서와 클라이언트 SWR이 요청한 순서가 일치하도록 강제하여, 하이드레이션 불일치와 아이템 깜빡임(Flicker)을 방지합니다.
 - **State Preservation**: 피드 내 "더 보기" 시에는 동일한 시드를 유지하여 데이터 중복 및 누락 없는 연속적인 탐색 경험을 제공합니다.
 
 #### 6.9.3 Client-side Integrity (Deduplication & Restoration)
@@ -1981,8 +1983,11 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 
 ### 22.2 Component Architecture (컴포넌트 구조)
 
+- **`VocabularyListGlobalModal` & `useVocabularyModalStore`**:
+  - 단어장 선택 모달의 상태를 전역 Zustand 스토어로 격리했습니다. 이를 통해 어느 컴포넌트에서나 `openModal(expressionId)` 호출만으로 일관된 UI를 노출할 수 있습니다.
 - **`VocabularyListModal`**:
   - `SaveButton` 클릭 시 또는 롱 프레스 시 노출되는 메인 인터페이스입니다.
+  - **Dynamic Title**: `expressionId` 유무를 통해 '표현을 단어장에 추가'하는 맥락인지, '단어장을 단순 관리'하는 맥락인지 구분하여 제목을 변경합니다.
   - 현재 표현이 담긴 단어장들을 체크박스 형태로 노출하며, 즉각적인 토글 인터랙션을 제공합니다.
   - 비로그인 사용자가 접근 시 `LoginModal`로 리다이렉션하여 데이터 무결성을 보장합니다.
 - **`CreateListForm`**:
@@ -2015,9 +2020,13 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 
 1.  **Selection Logic**: 사용자가 처음 저장 버튼을 누르면, 리스트가 있을 경우 디폴트 리스트에 자동으로 담고 `isSaved` 상태를 `true`로 만듭니다. 리스트가 하나도 없다면 단어장 만들기 모달을 띄웁니다.
 2.  **Bidirectional Sync**:
+    - **Global Callback Pattern**: 단어장 모달 전역화 이후, `useSaveAction`에서 `handleListActionSync` 콜백을 주입하여 모달 내의 변경사항을 실시간으로 마스터 `isSaved` 상태에 반영합니다.
     - 단어장 모달에서 마지막 남은 리스트의 체크를 해제하면 마스터 저장 상태(`isSaved`)도 `false`로 변경됩니다.
     - 반대로 마스터 저장 버튼을 눌러 저장을 취소하면, 해당 표현이 담긴 모든 단어장에서 한꺼번에 제거됩니다.
-3.  **Performance Optimization**: Zustand 스토어 구독 시 원본 객체(`raw state`)를 선택하고 가공은 컴포넌트 내에서 수행하도록 설계하여, 불필요한 참조 생성에 의한 무한 루프 렌더링을 방지했습니다.
+3.  **Race Condition & Safety**:
+    - **`syncingRef` Lock**: 고속 연타에 의한 저장/취소 요청 중첩을 방지하기 위해 `useRef` 기반의 실행 잠금 메커니즘을 적용했습니다.
+    - **`isMountedRef` Isolation**: 비동기 통신 중 컴포넌트가 언마운트될 경우 상태 업데이트를 중단하여 메모리 누수 및 에러를 차단합니다.
+4.  **Performance Optimization**: Zustand 스토어 구독 시 원본 객체(`raw state`)를 선택하고 가공은 컴포넌트 내에서 수행하도록 설계하여, 불필요한 참조 생성에 의한 무한 루프 렌더링을 방지했습니다.
 
 ### 22.6 Database Schema & Triggers
 

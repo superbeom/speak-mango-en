@@ -12,6 +12,7 @@ interface VocabularyListItemProps {
   onToggle: () => void;
   isDefault?: boolean;
   onSetDefault: () => void;
+  disabled?: boolean;
 }
 
 const VocabularyListItem = memo(function VocabularyListItem({
@@ -20,21 +21,23 @@ const VocabularyListItem = memo(function VocabularyListItem({
   onToggle,
   isDefault,
   onSetDefault,
+  disabled,
 }: VocabularyListItemProps) {
   const { dict } = useI18n();
 
   const longPressProps = useLongPress(
     () => {
-      if (!isDefault) onSetDefault();
+      if (!isDefault && !disabled) onSetDefault();
     },
-    () => onToggle(),
+    () => !disabled && onToggle(),
   );
 
   return (
     <button
       {...longPressProps}
+      disabled={disabled}
       className={cn(
-        "vocab-list-item sm:cursor-pointer",
+        "vocab-list-item sm:cursor-pointer disabled:cursor-default",
         isSelected ? "vocab-list-item-selected" : "vocab-list-item-default",
       )}
     >
@@ -56,7 +59,7 @@ const VocabularyListItem = memo(function VocabularyListItem({
         </div>
         <span className="text-xs text-zinc-400">
           {formatMessage(dict.vocabulary.itemsCount, {
-            count: (list.item_count ?? 0).toString(),
+            count: (list.item_count ?? 0).toLocaleString(),
           })}
         </span>
       </div>
