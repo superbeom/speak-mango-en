@@ -184,6 +184,12 @@
   - [x] **Performance**: 서버 응답 지연 시 stale 데이터 덮어쓰기 방지 (Race Condition 원천 차단)
   - [x] **UI/UX**: 단어장 추가/수정에 대한 0ms 반응성 확보(완전 낙관적 업데이트)
   - [x] **Maintenance**: 작동하지 않는 Reorder 기능 제거 및 `useMemo` 기반 리스트 렌더링 최적화
+  - [x] **Architecture**: `revalidatePath` 전면 제거 (Dynamic Route 불필요) 및 `revalidate.ts` 삭제
+  - [x] **Bug Fix**: 대량 삭제/이동/복사 시 `item_count` 즉시 반영 (스토어 직접 조정 + SWR 캐시 동기화)
+  - [x] **UI/UX**: 기본 단어장(is_default) 항상 목록 최상단 정렬 보장
+  - [x] **Bug Fix**: `syncOnSave`에서 기본 단어장을 명시적으로 탐색 (정렬 순서 의존 제거)
+  - [x] **Refactoring**: `RemoteVocabularyDetail` 스토어 구독 기반 리팩토링 (stale props 방지, isRefreshing 표시)
+  - [x] **Documentation**: 초기 계획서/검증 보고서 삭제 및 아키텍처 문서 통합
 
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입

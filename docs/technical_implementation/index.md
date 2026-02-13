@@ -2169,10 +2169,13 @@ export function useQuizGame(initialExpressions: Expression[]) {
 
 ### 25.2 Server-side Revalidation Strategy
 
-- **Objective**: 데이터 변경(생성, 수정, 삭제) 후 클라이언트 사이드 캐시를 즉시 갱신하여 최신 상태를 유지합니다.
-- **Implementation**:
-  - `lib/server/revalidate.ts`에 범용적인 유틸리티 함수를 정의했습니다.
-  - **Scoped Revalidation**: `revalidateMyPage()` ( `/me` 경로) 및 `revalidateVocabularyInfo(listId)` (`/me/[id]` 경로 및 태그 캐시)와 같이 영향 범위를 최소화하여 성능 최적화를 도모했습니다.
+- **현재 상태**: `services/actions/vocabulary.ts`의 모든 Server Actions에서 `revalidatePath` 호출이 **전면 제거**되었습니다.
+- **제거 근거**:
+  - `/me`, `/me/[listId]` 페이지는 `getAuthSession()` (쿠키)을 사용하는 **Dynamic Route**이므로 Next.js Full Route Cache가 적용되지 않습니다. 매 요청마다 서버가 DB에서 직접 쿼리합니다.
+  - 빠른 연속 저장 시 `revalidatePath`가 서버 재렌더링 큐를 생성하여 클라이언트 네비게이션을 방해하는 버그가 확인되었습니다.
+  - Zustand 스토어 + SWR 백그라운드 리페치가 클라이언트 상태를 완전히 관리하므로 서버 캐시 무효화는 불필요합니다.
+- **정리**: `lib/server/revalidate.ts` 파일은 더 이상 사용되지 않아 삭제되었습니다.
+- **상세**: `docs/technical_implementation/zustand_first_architecture.md`의 "revalidatePath 전면 제거" 섹션을 참조하세요.
 
 ### 25.3 Global Confirmation Dialog (`useConfirm`)
 

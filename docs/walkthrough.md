@@ -29,11 +29,45 @@
 - **Reorder Logic Removal**: 2열 그리드 구조에서 정상 작동하지 않고 성능 저하 및 이벤트 충돌만 일으키던 `framer-motion`의 `Reorder` 기능을 제거했습니다.
 - **Clean Rendering**: `useState` 대신 `useMemo`를 사용하여 목록을 정렬 및 필터링함으로써 불필요한 리렌더링을 방지하고 코드 복잡도를 낮췄습니다.
 
+#### D. revalidatePath 전면 제거 (`vocabulary.ts`, `revalidate.ts`)
+
+- **Root Cause 제거**: 모든 vocabulary server actions에서 `revalidateMyPage()`, `revalidateVocabularyInfo()` 호출을 제거했습니다.
+- **근거**:
+  - `/me`, `/me/[listId]`는 `getAuthSession()` 쿠키를 사용하는 Dynamic Route이므로 Next.js Full Route Cache가 적용되지 않습니다.
+  - 빠른 연속 저장 시 `revalidatePath`가 서버 재렌더링 큐를 생성, 이후 네비게이션에서 `/me`로 강제 리다이렉트되는 버그를 유발했습니다.
+- **데드 코드 삭제**: 사용처가 없어진 `lib/server/revalidate.ts` 파일을 완전 삭제했습니다.
+
+#### E. 대량 작업 시 Item Count 즉시 반영 (`RemoteVocabularyDetail.tsx`)
+
+- **Problem**: 대량 삭제/이동/복사 후 `displayTotalCount`가 갱신되지 않아 UI에 이전 값이 표시되었습니다.
+- **Solution**: 서버 액션 완료 후 `useVocabularyStore.getState().setLists()`로 `item_count`를 직접 조정하고 `globalMutate("vocabulary_lists", updatedLists, false)`로 SWR 캐시를 동기화합니다.
+- **Priority Chain**: `displayTotalCount = storeList?.item_count ?? data?.total_count ?? 0` — 스토어가 항상 우선합니다.
+
+#### F. 기본 단어장 정렬 및 명시적 탐색
+
+- **정렬 보장**: `useVocabularyLists`의 `lists` 계산과 `VocabularyListManager`의 `customLists` 필터링 모두에 `is_default` 기준 정렬을 추가하여, 기본 단어장이 항상 목록 최상단에 표시됩니다.
+- **명시적 탐색**: `useVocabularySync`의 `syncOnSave`에서 `availableLists[0]` 대신 `availableLists.find(l => l.is_default) || availableLists[0]`로 기본 단어장을 명시적으로 찾아, 정렬 순서 변경에 무관하게 동작합니다.
+
+#### G. RemoteVocabularyDetail 스토어-우선 리팩토링
+
+- **스토어 구독**: `useVocabularyStore((state) => state.lists.find(l => l.id === listId))`로 메타 정보를 직접 구독합니다. 클라이언트 사이드 네비게이션 시에도 즉시 정확한 title, is_default, item_count를 반영합니다.
+- **stale props 방지**: `revalidateOnMount: true` 설정으로 Router Cache에 의한 stale fallbackData 문제를 방지합니다.
+- **isRefreshing 표시**: SWR 백그라운드 리페치 중 스토어 카운트와 실제 표시 아이템 수가 다를 때 `opacity-50` 힌트를 표시합니다.
+- **삭제 후 동기화**: 삭제 시 DB 트리거가 새 기본 단어장을 설정하므로, `getVocabularyLists()`로 최신 목록을 받아 `resolveOperation(freshLists)`에 전달합니다.
+
+#### H. 문서 정리 및 통합
+
+- **삭제**: 초기 계획서(`vocabulary_zustand_refactor.md`)와 검증 보고서(`vocabulary_zustand_refactor_verification.md`)를 삭제했습니다. 현재 코드와 불일치하는 내용(revalidatePath 필수론, \_pendingOps 미사용 등)이 혼란을 주었습니다.
+- **통합**: `zustand_first_architecture.md`에 revalidatePath 제거 근거, 대량 작업 패턴, 파일별 감사 현황을 추가하여 단일 참조 문서로 통합했습니다.
+
 ### 3. Key Achievements (주요 성과)
 
 - ✅ **Snappy UI Experience**: 대기 시간 0ms의 즉각적인 단어장 관리 반응성 실현.
 - ✅ **Zero Race Condition**: 고속 인터랙션 시에도 데이터가 튀거나 덮어써지는 현상 완전 제거.
 - ✅ **Simplified Codebase**: 작동하지 않는 복잡한 외부 라이브러리 의존성을 제거하고 순수 상태 관리 로직으로 회귀.
+- ✅ **Accurate Item Counts**: 대량 삭제/이동/복사 후에도 아이템 수가 즉시 정확하게 반영.
+- ✅ **Zero Dead Code**: 사용되지 않는 `revalidatePath` 호출 및 파일을 전면 정리하여 코드베이스 단순화.
+- ✅ **Single Source Documentation**: 초기 계획서/검증 보고서를 삭제하고 아키텍처 문서 하나로 통합.
 
 ## v0.16.12: Global Vocabulary Modal Store & Sync Reliability (2026-02-12)
 
@@ -694,7 +728,7 @@
 
 #### D. Data Revalidation Strategy
 
-- **`revalidate.ts`**: `revalidatePath` 호출을 추상화하여, 서버 액션 완료 후 클라이언트 사이드의 데이터가 즉각 현행화되도록 설계했습니다. (`/me` 및 `/me/[listId]` 경로 중심)
+- **Data Revalidation**: 초기에는 `revalidate.ts`로 `revalidatePath`를 추상화했으나, Zustand-First 아키텍처 도입 이후 전면 제거되었습니다. 현재는 Zustand 스토어 낙관적 업데이트 + SWR 백그라운드 리페치로 데이터를 동기화합니다. (상세: `docs/technical_implementation/zustand_first_architecture.md`)
 
 ### 3. Key Achievements (주요 성과)
 

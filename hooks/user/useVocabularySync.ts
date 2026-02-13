@@ -44,12 +44,14 @@ export function useVocabularySync(expressionId: string) {
     async (availableLists: VocabularyListWithCount[]) => {
       if (availableLists.length === 0) return;
 
-      const firstList = availableLists[0];
+      // 기본 단어장을 명시적으로 찾는다 (정렬 순서에 의존하지 않음)
+      const defaultList =
+        availableLists.find((l) => l.is_default) || availableLists[0];
       if (isPro) {
         // toggleInList을 통해 Zustand 스토어 낙관적 업데이트까지 수행
-        await toggleInList(firstList.id, expressionId, false);
+        await toggleInList(defaultList.id, expressionId, false);
       } else {
-        localAddToList(firstList.id, expressionId);
+        localAddToList(defaultList.id, expressionId);
       }
     },
     [isPro, expressionId, localAddToList, toggleInList],

@@ -1,8 +1,8 @@
 # Zustand-First 아키텍처: Pro 유저 상태 관리 리팩토링
 
-> **작성일**: 2026-02-12
+> **작성일**: 2026-02-12 (최종 업데이트: 2026-02-13)
 > **상태**: Phase 1 완료 (Vocabulary Lists), Phase 2 계획 (User Actions)
-> **핵심 원칙**: "Zustand 스토어 우선, 서버 데이터는 초기 시드"
+> **핵심 원칙**: "Zustand 스토어 우선, 서버 데이터는 초기 시드, revalidatePath 불필요"
 
 ---
 
@@ -130,8 +130,35 @@ useUserActions.toggleAction():
 │                                                          │
 │   getVocabularyLists(), getUserActions()                 │
 │   addToVocabularyList(), toggleUserAction()              │
-│   revalidatePath() → Next.js 서버 캐시만 갱신                │
+│   revalidatePath() → 전면 제거 (아래 섹션 참조)                │
 └──────────────────────────────────────────────────────────┘
+```
+
+### revalidatePath 전면 제거
+
+`services/actions/vocabulary.ts`의 모든 Server Actions에서 `revalidateMyPage()`, `revalidateVocabularyInfo(listId)` 호출을 **전면 제거**했습니다.
+
+**제거 근거**:
+
+1. **Dynamic Rendering**: `/me`, `/me/[listId]` 페이지는 `getAuthSession()` (쿠키)을 사용하므로 Dynamic Route입니다. Next.js의 Full Route Cache가 적용되지 않아 매 요청마다 서버가 DB에서 직접 쿼리합니다.
+2. **네비게이션 방해**: 빠르게 여러 표현을 저장할 때 `revalidatePath`가 서버 재렌더링 큐를 생성하여, 이후 네비게이션 시 `/me` 페이지로 강제 리다이렉트되는 버그를 유발했습니다.
+3. **불필요한 중복**: Zustand 스토어 + SWR 백그라운드 리페치가 이미 클라이언트 상태를 완전히 관리하므로 서버 캐시 무효화는 불필요합니다.
+
+**데이터 흐름 (revalidatePath 제거 후)**:
+
+```
+사용자 액션 (저장/삭제/이동 등)
+  → optimistic*() → Zustand 즉시 업데이트
+  → 서버 액션 (백그라운드, DB만 처리, revalidatePath 없음)
+  → resolveOperation → 스토어 확정
+  → globalMutate → SWR 캐시 동기화
+
+페이지 네비게이션
+  /me        → Zustand 스토어에서 리스트 읽기
+  /me/[id]   → 스토어(메타) + SWR(items)
+
+  Server Component는 초기 시드만 (첫 방문 시)
+  이후 방문은 스토어가 우선
 ```
 
 ### 서버 컴포넌트에서의 데이터 사용 패턴
@@ -255,10 +282,40 @@ T4: 카드 B 서버 완료 → resolveOperation(freshDataB)
 | `hooks/user/useVocabularyLists.ts`                    | SWR → Zustand 동기화, `toggleInList`/`setDefaultList`에 낙관적 업데이트 + resolve 패턴, `isLoading: false`          | ✅ 완료 |
 | `hooks/user/useSaveAction.ts`                         | `isSyncing` state 제거, Race Condition 수정 (`await Promise.resolve` + Zustand 읽기), Stale Closure 수정 (ref 패턴) | ✅ 완료 |
 | `components/me/vocabulary/VocabularyListManager.tsx`  | Zustand 스토어 구독 (서버 prop → 스토어 우선), Reorder 코드 제거, `orderedLists` useState → `customLists` useMemo   | ✅ 완료 |
-| `components/me/vocabulary/RemoteVocabularyDetail.tsx` | 각 핸들러에 낙관적 업데이트 + `resolveOperation()` 추가, `handleTitleSave` catch의 `_pendingOps` 누수 수정          | ✅ 완료 |
+| `components/me/vocabulary/RemoteVocabularyDetail.tsx` | 각 핸들러에 낙관적 업데이트 + `resolveOperation()` 추가, 대량 작업 시 `setLists()`로 `item_count` 직접 조정         | ✅ 완료 |
 | `components/vocabulary/VocabularyListModal.tsx`       | `savedListIds`를 Zustand 스토어 구독으로 전환, `toggleGenRef`로 stale 응답 방지, `onListAction` fire-and-forget     | ✅ 완료 |
 | `components/vocabulary/VocabularyListItem.tsx`        | 프레젠테이셔널 컴포넌트로 전환 (이전 커밋에서 완료)                                                                 | ✅ 완료 |
 | `hooks/user/useVocabularySync.ts`                     | `syncOnSave`에서 `addToVocabularyList` 직접 호출 → `toggleInList` 사용 (Zustand 낙관적 업데이트 포함)               | ✅ 완료 |
+| `services/actions/vocabulary.ts`                      | `revalidatePath` 전면 제거 (Dynamic Route이므로 불필요, 네비게이션 방해 원인)                                       | ✅ 완료 |
+
+### 대량 작업 시 스토어 업데이트 패턴
+
+`optimisticToggle`은 단건 추가/삭제용입니다. 대량 삭제/이동/복사 시에는 서버 액션 완료 후 `setLists()`로 `item_count`를 직접 조정합니다:
+
+```typescript
+// 대량 삭제 후
+const deletedCount = selectedIds.size;
+const updatedLists = useVocabularyStore
+  .getState()
+  .lists.map((l) =>
+    l.id === listId
+      ? { ...l, item_count: Math.max(0, (l.item_count || 0) - deletedCount) }
+      : l,
+  );
+useVocabularyStore.getState().setLists(updatedLists);
+globalMutate("vocabulary_lists", updatedLists, false);
+
+// 이동 후 (소스 감소, 타겟 증가)
+const updatedLists = useVocabularyStore.getState().lists.map((l) => {
+  if (l.id === targetListId)
+    return { ...l, item_count: (l.item_count || 0) + count };
+  if (l.id === listId)
+    return { ...l, item_count: Math.max(0, (l.item_count || 0) - count) };
+  return l;
+});
+```
+
+**핵심**: `displayTotalCount = storeList?.item_count ?? data?.total_count ?? 0`에서 스토어가 우선이므로, 대량 작업 후에도 반드시 `setLists()`로 스토어를 업데이트해야 합니다.
 
 ---
 
@@ -575,4 +632,3 @@ useEffect(() => {
 ---
 
 > **참고**: 이 문서는 리팩토링의 진행 상황에 따라 지속적으로 업데이트됩니다.
-> 기존 초기 계획 문서는 `docs/technical_implementation/vocabulary_zustand_refactor.md`를 참조하세요.

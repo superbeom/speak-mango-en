@@ -164,13 +164,19 @@ const VocabularyListManager = memo(function VocabularyListManager({
     }
   }, [isPro, lists]);
 
-  // Learned 폴더를 제외한 커스텀 리스트
+  // Learned 폴더를 제외한 커스텀 리스트 (디폴트가 맨 앞에 오도록 정렬)
   const customLists = useMemo(
     () =>
-      activeLists.filter(
-        (l) =>
-          l.id !== LEARNED_FOLDER_ID && l.title?.toLowerCase() !== "learned",
-      ),
+      activeLists
+        .filter(
+          (l) =>
+            l.id !== LEARNED_FOLDER_ID && l.title?.toLowerCase() !== "learned",
+        )
+        .sort((a, b) => {
+          if (a.is_default && !b.is_default) return -1;
+          if (!a.is_default && b.is_default) return 1;
+          return 0;
+        }),
     [activeLists],
   );
 

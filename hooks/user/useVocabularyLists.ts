@@ -59,10 +59,15 @@ export function useVocabularyLists() {
   // UI는 Pro 유저일 때 Zustand 스토어에서 바로 표시 (즉시 반영)
   const zustandLists = useVocabularyStore(selectLists);
 
-  // Computed Lists (Memoized)
+  // Computed Lists (Memoized) — 항상 is_default가 맨 앞에 오도록 정렬
   const lists = useMemo(() => {
     if (isPro) {
-      return zustandLists.length > 0 ? zustandLists : serverData || [];
+      const source = zustandLists.length > 0 ? zustandLists : serverData || [];
+      return [...source].sort((a, b) => {
+        if (a.is_default && !b.is_default) return -1;
+        if (!a.is_default && b.is_default) return 1;
+        return 0;
+      });
     }
 
     const sortedLists = Object.values(vocabularyListsMap).sort((a, b) => {

@@ -3,10 +3,6 @@
 import { createAppError, VOCABULARY_ERROR } from "@/types/error";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { withPro } from "@/lib/server/actionUtils";
-import {
-  revalidateMyPage,
-  revalidateVocabularyInfo,
-} from "@/lib/server/revalidate";
 import { VocabularyList } from "@/types/vocabulary";
 
 /**
@@ -36,7 +32,6 @@ export const createVocabularyList = withPro(
       throw createAppError(VOCABULARY_ERROR.CREATE_FAILED);
     }
 
-    revalidateMyPage();
     return data;
   },
 );
@@ -66,9 +61,6 @@ export const addToVocabularyList = withPro(
       console.error("Failed to add to list:", error);
       throw createAppError(VOCABULARY_ERROR.ADD_FAILED);
     }
-
-    revalidateMyPage(); // To update counts
-    revalidateVocabularyInfo(listId);
   },
 );
 
@@ -96,9 +88,6 @@ export const removeFromVocabularyList = withPro(
       console.error("Failed to remove from list:", error);
       throw createAppError(VOCABULARY_ERROR.REMOVE_FAILED);
     }
-
-    revalidateMyPage();
-    revalidateVocabularyInfo(listId);
   },
 );
 
@@ -118,9 +107,6 @@ export const setDefaultVocabularyList = withPro(
       console.error("Failed to set default list:", error);
       throw createAppError(VOCABULARY_ERROR.UPDATE_FAILED);
     }
-
-    revalidateMyPage();
-    revalidateVocabularyInfo(listId);
   },
 );
 
@@ -142,9 +128,6 @@ export const updateVocabularyListTitle = withPro(
       console.error("Failed to update vocabulary list title:", error);
       throw createAppError(VOCABULARY_ERROR.UPDATE_FAILED);
     }
-
-    revalidateMyPage();
-    revalidateVocabularyInfo(listId);
   },
 );
 
@@ -165,9 +148,6 @@ export const deleteVocabularyList = withPro(
       console.error("Failed to delete vocabulary list:", error);
       throw createAppError(VOCABULARY_ERROR.DELETE_FAILED);
     }
-
-    revalidateMyPage();
-    // No need to revalidate /me/[listId] as it will 404
   },
 );
 
@@ -200,9 +180,6 @@ export const copyExpressionsToVocabularyList = withPro(
       console.error("Failed to copy to list:", error);
       throw createAppError(VOCABULARY_ERROR.COPY_FAILED);
     }
-
-    revalidateMyPage();
-    revalidateVocabularyInfo(listId);
   },
 );
 
@@ -234,10 +211,6 @@ export const moveExpressionsToVocabularyList = withPro(
       console.error("Failed to move expressions:", error);
       throw createAppError(VOCABULARY_ERROR.MOVE_FAILED);
     }
-
-    revalidateMyPage();
-    revalidateVocabularyInfo(sourceListId);
-    revalidateVocabularyInfo(targetListId);
   },
 );
 
@@ -266,8 +239,5 @@ export const removeExpressionsFromVocabularyList = withPro(
       console.error("Failed to remove multiple from list:", error);
       throw createAppError(VOCABULARY_ERROR.REMOVE_FAILED);
     }
-
-    revalidateMyPage();
-    revalidateVocabularyInfo(listId);
   },
 );

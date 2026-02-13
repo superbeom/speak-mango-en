@@ -16,7 +16,29 @@
     - **Stale Closure Resolution**: `useVocabularyModalStore`에 안정적인 Ref 기반 콜백(`stableListActionSync`)을 전달하여, 리액트 리렌더링 과정에서 발생하는 클로저 래핑 에러를 해결하고 저장 상태 일관성을 유지했습니다.
     - **Generation Guard**: `VocabularyListModal`에 `toggleGenRef`를 도입하여, 모달이 열린 직후에 도착하는 지연된 서버 응답이 최신 사용자 인터랙션을 무효화하지 않도록 보안을 강화했습니다.
 
-3.  **UI/UX Cleanup & Optimization**:
+3.  **revalidatePath 전면 제거 및 데드 코드 정리**:
+    - **Server Action 정리**: `services/actions/vocabulary.ts`의 모든 Server Actions에서 `revalidateMyPage()`, `revalidateVocabularyInfo()` 호출을 전면 제거했습니다. Dynamic Route(`getAuthSession` 쿠키 사용)이므로 Next.js Full Route Cache가 적용되지 않아 불필요했습니다.
+    - **네비게이션 버그 해결**: 빠른 연속 저장 시 `revalidatePath`가 서버 재렌더링 큐를 생성하여 `/me`로 강제 리다이렉트되는 버그를 원인 제거 방식으로 해결했습니다.
+    - **파일 삭제**: 더 이상 사용처가 없는 `lib/server/revalidate.ts` 파일을 완전 삭제했습니다.
+
+4.  **대량 작업 시 아이템 수 정확성 보장**:
+    - **item_count 즉시 반영**: 대량 삭제/이동/복사 후 `useVocabularyStore.setLists()`로 `item_count`를 직접 조정하고 `globalMutate`로 SWR 캐시를 동기화하여, `displayTotalCount`가 즉시 정확한 값을 표시하도록 수정했습니다.
+
+5.  **기본 단어장(Default List) 정렬 및 탐색 안정화**:
+    - **일관된 정렬**: `useVocabularyLists`와 `VocabularyListManager`에서 `is_default` 기준 정렬을 추가하여, 기본 단어장이 항상 목록 최상단에 표시되도록 보장했습니다.
+    - **명시적 탐색**: `useVocabularySync`의 `syncOnSave`에서 정렬 순서에 의존하지 않고 `availableLists.find(l => l.is_default)`로 기본 단어장을 명시적으로 찾도록 수정했습니다.
+
+6.  **RemoteVocabularyDetail 전면 리팩토링**:
+    - **스토어 구독**: 서버 props 대신 Zustand 스토어에서 메타 정보(title, is_default, item_count)를 직접 구독하여 클라이언트 사이드 네비게이션 시에도 즉시 정확한 데이터를 반영합니다.
+    - **stale props 방지**: `revalidateOnMount: true` 설정으로 Router Cache에 의한 stale props 문제를 방지합니다.
+    - **isRefreshing 상태**: SWR 백그라운드 리페치 중 스토어 카운트와 표시 아이템 수가 다를 때 미묘한 로딩 힌트(opacity 50%)를 표시합니다.
+    - **삭제 시 서버 동기화**: 단어장 삭제 후 DB 트리거가 새 기본 단어장을 설정하므로, `getVocabularyLists()`로 최신 데이터를 받아와 스토어와 SWR 캐시를 동기화합니다.
+
+7.  **문서 정리 및 통합**:
+    - **초기 계획서 삭제**: `vocabulary_zustand_refactor.md` (현재 코드와 불일치 다수)와 `vocabulary_zustand_refactor_verification.md`를 삭제했습니다.
+    - **아키텍처 문서 통합**: `zustand_first_architecture.md`에 revalidatePath 제거 근거, 대량 작업 패턴 등을 추가하여 단일 참조 문서로 통합했습니다.
+
+8.  **UI/UX Cleanup & Optimization**:
     - **Non-functional Code Removal**: 실제 작동하지 않던 2열 그리드 내 `framer-motion`의 `Reorder` 컴포넌트를 제거하고 일반 `motion.div`와 `useMemo` 기반의 단순화된 리스트 렌더링 구조로 개편하여 렌더링 성능을 개선했습니다.
     - **\_pendingOps Leak Fix**: `RemoteVocabularyDetail`의 에러 처리 로직을 수정하여, 제목 변경 실패 시에도 작업 카운터가 누수되지 않고 정상적으로 복귀되도록 안정성을 강화했습니다.
 
