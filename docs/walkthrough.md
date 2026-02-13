@@ -37,30 +37,39 @@
   - 빠른 연속 저장 시 `revalidatePath`가 서버 재렌더링 큐를 생성, 이후 네비게이션에서 `/me`로 강제 리다이렉트되는 버그를 유발했습니다.
 - **데드 코드 삭제**: 사용처가 없어진 `lib/server/revalidate.ts` 파일을 완전 삭제했습니다.
 
-#### E. 대량 작업 시 Item Count 즉시 반영 (`RemoteVocabularyDetail.tsx`)
+#### E. Bulk Actions Response Optimization
 
 - **Problem**: 대량 삭제/이동/복사 후 `displayTotalCount`가 갱신되지 않아 UI에 이전 값이 표시되었습니다.
-- **Solution**: 서버 액션 완료 후 `useVocabularyStore.getState().setLists()`로 `item_count`를 직접 조정하고 `globalMutate("vocabulary_lists", updatedLists, false)`로 SWR 캐시를 동기화합니다.
+- **Solution**: 서버 액션 완료 후 `useVocabularyListSync` 훅의 `adjustItemCounts`를 사용하여 연관된 모든 단어장의 `item_count`를 스토어에서 즉시 조정하고 SWR 캐시를 동기화합니다.
 - **Priority Chain**: `displayTotalCount = storeList?.item_count ?? data?.total_count ?? 0` — 스토어가 항상 우선합니다.
+- **Consistency**: 서버는 중복 항목을 무시하지만 클라이언트는 선택된 전체 개수를 더하므로, 아주 일시적으로 차이가 발생할 수 있으나 SWR 백그라운드 리페치가 즉시 정확한 값으로 교정합니다.
 
-#### F. 기본 단어장 정렬 및 명시적 탐색
+#### F. Sync Logic Centralization (`useVocabularyListSync.ts`)
+
+- **Dedicated Hook**: 단어장 상세 페이지에서 반복되는 스토어↔SWR 동기화 로직을 `useVocabularyListSync` 커스텀 훅으로 위임하여 `RemoteVocabularyDetail`의 복잡도를 낮췄습니다 (-62 lines).
+- **Core Helpers**:
+  - `resolveAndSyncLists`: 낙관적 작업 확정 및 스토어 데이터의 SWR 강제 반영.
+  - `adjustItemCounts`: 벌크 작업 후 여러 단어장의 아이템 카운트를 상대값(delta)으로 일괄 조정.
+  - `invalidateOtherDetailPages`: 기본 단어장 변경 등 상태 변화를 다른 리스트 상세 캐시에 전파.
+
+#### G. 기본 단어장 정렬 및 명시적 탐색
 
 - **정렬 보장**: `useVocabularyLists`의 `lists` 계산과 `VocabularyListManager`의 `customLists` 필터링 모두에 `is_default` 기준 정렬을 추가하여, 기본 단어장이 항상 목록 최상단에 표시됩니다.
 - **명시적 탐색**: `useVocabularySync`의 `syncOnSave`에서 `availableLists[0]` 대신 `availableLists.find(l => l.is_default) || availableLists[0]`로 기본 단어장을 명시적으로 찾아, 정렬 순서 변경에 무관하게 동작합니다.
 
-#### G. RemoteVocabularyDetail 스토어-우선 리팩토링
+#### H. RemoteVocabularyDetail 스토어-우선 리팩토링
 
 - **스토어 구독**: `useVocabularyStore((state) => state.lists.find(l => l.id === listId))`로 메타 정보를 직접 구독합니다. 클라이언트 사이드 네비게이션 시에도 즉시 정확한 title, is_default, item_count를 반영합니다.
 - **stale props 방지**: `revalidateOnMount: true` 설정으로 Router Cache에 의한 stale fallbackData 문제를 방지합니다.
 - **isRefreshing 표시**: SWR 백그라운드 리페치 중 스토어 카운트와 실제 표시 아이템 수가 다를 때 `opacity-50` 힌트를 표시합니다.
 - **삭제 후 동기화**: 삭제 시 DB 트리거가 새 기본 단어장을 설정하므로, `getVocabularyLists()`로 최신 목록을 받아 `resolveOperation(freshLists)`에 전달합니다.
 
-#### H. 문서 정리 및 통합
+#### I. 문서 정리 및 통합
 
 - **삭제**: 초기 계획서(`vocabulary_zustand_refactor.md`)와 검증 보고서(`vocabulary_zustand_refactor_verification.md`)를 삭제했습니다. 현재 코드와 불일치하는 내용(revalidatePath 필수론, \_pendingOps 미사용 등)이 혼란을 주었습니다.
 - **통합**: `zustand_first_architecture.md`에 revalidatePath 제거 근거, 대량 작업 패턴, 파일별 감사 현황을 추가하여 단일 참조 문서로 통합했습니다.
 
-#### I. 모달 로딩 상태 최적화 (isLoading 제거)
+#### J. 모달 로딩 상태 최적화 (isLoading 제거)
 
 - **Problem**: `useVocabularyLists`에서 SWR `fallbackData: []` 설정으로 인해 `isLoading`이 항상 `false`로 유지되어 실질적으로 무의미했습니다. 스켈레톤 UI도 잠깐 나타났다 사라지며 레이아웃 흔들림(CLS)을 유발했습니다.
 - **Solution**:
@@ -71,7 +80,7 @@
   - `SkeletonVocabularyList` import 및 사용처 전면 제거
 - **Impact**: 모달 렌더링 로직 단순화, CLS 감소, 네트워크 지연과 무관한 직접적인 사용자 액션 피드백 제공
 
-#### J. 범용 Empty State 컴포넌트 추출 (`EmptyListMessage.tsx`)
+#### K. 범용 Empty State 컴포넌트 추출 (`EmptyListMessage.tsx`)
 
 - **Problem**: `VocabularyListModal`, `BulkVocabularyListModal` 내에서 동일한 빈 상태 UI(`<div className="py-4 text-center text-sm text-zinc-500">`)가 중복되었습니다.
 - **Solution**:
@@ -82,7 +91,7 @@
 - **Usage**: `<EmptyListMessage message={dict.vocabulary.emptyState} />`
 - **Benefits**: 코드 중복 제거, 서버 컴포넌트 호환성 확보, 스타일 변경 시 단일 지점 수정
 
-#### K. 에러 처리 최적화 (catch 블록 정리)
+#### L. 에러 처리 및 롤백 전략 일원화
 
 - **Problem**: `RemoteVocabularyDetail`의 `handleTitleSave`, `handleSetDefault` catch 블록에서 `globalMutate(useVocabularyStore.getState().lists)`를 호출하여 잘못된 낙관적 데이터를 SWR 캐시에 확산시켰습니다.
 - **Analysis**:

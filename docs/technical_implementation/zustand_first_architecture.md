@@ -178,6 +178,30 @@ useUserActions.toggleAction():
 
 서버 컴포넌트에서 가져온 데이터는 **클라이언트 컴포넌트의 초기 시드**로만 사용:
 
+---
+
+## 4. 동기화 유틸리티 (useVocabularyListSync)
+
+상세 페이지(`RemoteVocabularyDetail`)의 복잡도를 낮추고 스토어↔SWR 캐시 간의 정합성을 보장하기 위해 중앙화된 동기화 훅을 사용합니다.
+
+### 핵심 기능
+
+1.  **`resolveAndSyncLists(serverData?)`**:
+    - `_pendingOps` 카운터를 감소시키고 작업을 확정합니다.
+    - 확정된 스토어 데이터를 `globalMutate("vocabulary_lists", ...)`를 통해 SWR 캐시에 강제 반영하여 다른 컴포넌트들(예: 마이페이지 목록)이 최신 상태를 즉시 읽게 합니다.
+2.  **`adjustItemCounts(adjustments)`**:
+    - 벌크 작업(삭제, 이동, 복사) 시 여러 단어장의 `item_count`를 상대값(`delta`)으로 일괄 조정합니다.
+    - 모든 조정값에 `Math.max(0, ...)`를 적용하여 음수 방지 가드를 태웁니다.
+3.  **`invalidateOtherDetailPages()`**:
+    - `is_default` 설정 변경 등 다른 단어장 상세 페이지의 데이터에 영향을 주는 액션 발생 시, 해당 캐시들을 일괄 무효화(`revalidate: true`)합니다.
+
+### 벌크 작업 정합성 가이드
+
+벌크 이동/복사 시 서버는 DB 제약 조건(`ON CONFLICT DO NOTHING`)에 의해 중복 항목을 무시하지만, 클라이언트는 낙관적 업데이트 시점에 어떤 항목이 중복인지 알 수 없습니다.
+
+- **정책**: 클라이언트는 일단 선택된 전체 개수만큼 카운트를 조정합니다.
+- **교정**: 서버 액션 완료 후 실행되는 SWR 백그라운드 리페치가 DB의 실제 결과값으로 카운트를 최종 교정합니다. (깜빡임 최소화)
+
 ```tsx
 // 서버 컴포넌트 (VocabularyListContainer.tsx)
 async function VocabularyListContent({ isPro }) {
@@ -430,6 +454,7 @@ interface UserActionStore {
 | `hooks/user/useSaveAction.ts`                         | `isSyncing` state                                 | ✅ 제거됨 (로딩 스피너 없음)                            |
 | `hooks/user/useVocabularySync.ts`                     | `toggleInList` 사용                               | ✅ 스토어 기반 낙관적 업데이트                          |
 | `components/vocabulary/BulkVocabularyListModal.tsx`   | `useVocabularyLists().lists`                      | ✅ 이미 Zustand 스토어 경유 (`useVocabularyLists` 내부) |
+| `hooks/user/useVocabularyListSync.ts`                 | 스토어↔SWR 캐시 동기화 유틸리티                   | ✅ 동기화 로직 중앙화 완료                              |
 
 #### ⬜ Phase 2에서 적용 예정
 

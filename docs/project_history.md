@@ -21,8 +21,9 @@
     - **네비게이션 버그 해결**: 빠른 연속 저장 시 `revalidatePath`가 서버 재렌더링 큐를 생성하여 `/me`로 강제 리다이렉트되는 버그를 원인 제거 방식으로 해결했습니다.
     - **파일 삭제**: 더 이상 사용처가 없는 `lib/server/revalidate.ts` 파일을 완전 삭제했습니다.
 
-4.  **대량 작업 시 아이템 수 정확성 보장**:
-    - **item_count 즉시 반영**: 대량 삭제/이동/복사 후 `useVocabularyStore.setLists()`로 `item_count`를 직접 조정하고 `globalMutate`로 SWR 캐시를 동기화하여, `displayTotalCount`가 즉시 정확한 값을 표시하도록 수정했습니다.
+4.  **item_count 즉시 반영 및 전용 훅 추출**:
+    - **useVocabularyListSync**: 단어장 상세 페이지에서 반복되던 스토어↔SWR 캐시 동기화 로직을 전용 커스텀 훅으로 추출하여 중앙 관리합니다 (`resolveAndSyncLists`, `adjustItemCounts`).
+    - **Bulk Action 정확성**: 대량 삭제/이동/복사 시 `adjustItemCounts`를 통해 관련 단어장들의 `item_count`를 즉시 조정하고 SWR 캐시를 동기화하여, UI 반응성과 정합성을 동시에 확보했습니다.
 
 5.  **기본 단어장(Default List) 정렬 및 탐색 안정화**:
     - **일관된 정렬**: `useVocabularyLists`와 `VocabularyListManager`에서 `is_default` 기준 정렬을 추가하여, 기본 단어장이 항상 목록 최상단에 표시되도록 보장했습니다.
@@ -50,11 +51,11 @@
     - **명칭 개선**: 초기 `SimpleEmptyState`에서 역할이 명확한 `EmptyListMessage`로 리네이밍했습니다.
     - **적용 위치**: `VocabularyListModal`, `BulkVocabularyListModal`에서 `<EmptyListMessage message={dict.vocabulary.emptyState} />`로 사용합니다.
 
-10. **에러 처리 최적화 (catch 블록 정리)**:
-    - **불필요한 globalMutate 제거**: `RemoteVocabularyDetail`의 `handleTitleSave`, `handleSetDefault` catch 블록에서 잘못된 낙관적 데이터를 SWR 캐시에 확산시키던 `globalMutate` 호출을 제거했습니다.
-    - **자동 복구 메커니즘**: 서버 에러 시 `resolveOperation()`만 호출하여 `_pendingOps` 가드를 해제하고, SWR 백그라운드 리페치가 자연스럽게 DB의 진본(Ground Truth) 데이터로 스토어를 복원하도록 개선했습니다.
-    - **명시적 롤백 유지**: `handleListDelete`처럼 데이터 소멸 작업에서는 에러 시 서버에서 최신 데이터를 받아와 `resolveOperation(rollbackLists)`에 전달하는 명시적 롤백 패턴을 유지했습니다.
-    - **레이스 컨디션 방지**: catch 블록에서 스토어와 SWR 캐시 간의 불필요한 상호 작용을 줄여 책임 분리를 명확히 하고 안정성을 향상시켰습니다.
+10. **에러 처리 및 롤백 전략 일원화**:
+
+
+    - **가드 해제 중심**: catch 블록에서 `globalMutate` 호출을 제거하고 `resolveOperation()`을 통한 `_pendingOps` 가드 해제에 집중합니다. 이후 SWR의 자동 리페치를 통해 정합성을 회복하는 모델을 표준화했습니다.
+    - **중앙화된 헬퍼 사용**: `useVocabularyListSync` 내부의 헬퍼들을 통해 에러 발생 시에도 일관된 복구 흐름을 유지합니다.
 
 11. **UI/UX Cleanup & Optimization**:
     - **Non-functional Code Removal**: 실제 작동하지 않던 2열 그리드 내 `framer-motion`의 `Reorder` 컴포넌트를 제거하고 일반 `motion.div`와 `useMemo` 기반의 단순화된 리스트 렌더링 구조로 개편하여 렌더링 성능을 개선했습니다.

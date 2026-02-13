@@ -61,10 +61,6 @@
 
 ### Vocabulary Management (단어장 관리 고도화)
 
-- [ ] **Batch Operations (RPC Optimization)**: 추후 리스트 편집 기능 구현 시, 다중 선택 항목의 일괄 처리를 위해 RPC 도입.
-  - **Scenario**: 사용자가 표현 여러 개를 선택하여 다른 리스트로 이동/복사하거나, 하나의 표현에 대해 여러 리스트를 동시에 체크/해제하고 '저장'하는 경우.
-  - **RPC Candidate**: `update_expression_lists` (다수 리스트 상태 동기화) 또는 `move_vocabulary_items` (이동 트랜잭션).
-  - **Goal**: N번의 API 호출을 1번의 RPC 호출로 줄여 네트워크 비용 절감 및 부분 실패(Partial Failure) 방지.
 - [ ] **Premium Conversion UX**: 유료 플랜 도입 시 수익성 극대화를 위한 UI 요소들 활성화.
   - **ProfileHeader (Membership Badge)**:
     ```tsx

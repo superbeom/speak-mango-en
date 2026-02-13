@@ -128,9 +128,13 @@
   - **Learn (학습 완료)**: 마스터한 표현을 체크하여 학습 진행도 관리 및 목록 최적화.
     - **학습 완료 목록 (Learned History)**: `/me/learned` 페이지를 통해 과거 학습 완료 처리한 표현들을 최신순으로 확인할 수 있습니다.
     - **Visual Identity (Folder)**: 마이페이지의 '학습 완료' 폴더에 파란색 테마와 전용 호버 효과(Shadow/Border)를 적용하여 다른 일반 단어장과 차별화된 시각적 중요도를 부여했습니다.
-    - **Global Management (Staged Area)**: 단어장 관리 모달을 전역 스토어(`useVocabularyModalStore`)로 통합하여 앱 어디서든 일관된 저장 환경을 제공합니다.
+    - **Global Management & Bulk Sync**: 단어장 관리 및 일괄 작업을 위한 시스템을 구축하여 앱 어디서든 일관된 조작 환경을 제공합니다.
+      - **Global Modal**: `useVocabularyModalStore`를 통해 앱 루트에서 단어장 선택 모달을 싱글턴으로 관리합니다.
+      - **Selection Mode (Bulk Actions)**: 여러 아이템을 선택하여 '이동', '복사', '삭제'할 수 있는 일괄 작업 모드를 지원합니다.
+      - **Sync Logic Centralization**: `useVocabularyListSync` 훅을 통해 스토어(Zustand)와 서버 캐시(SWR) 간의 정합성을 보장합니다.
       - **Performance Optimization**: SWR의 `fallbackData` 설정을 통해 로딩 지연 없이 단어장 목록이 즉시 노출되며, 불필요한 스켈레톤을 제거하여 훨씬 민첩한 UX를 제공합니다.
       - **Stability**: 개별 액션의 원자성을 보장하는 `_pendingOps` 가드와 지연된 서버 응답을 무효화하는 `toggleGenRef` 로직을 통해 레이스 컨디션 없는 **Staged Area UX**를 완성했습니다.
+      - **Real-time Item Counts**: 이동/복사 시 `adjustItemCounts`를 사용하여 연관된 모든 단어장의 카운트를 즉시 갱신하고, SWR 백그라운드 리페치가 최종적으로 정합성을 확인합니다.
     - **Pagination**: 저장된 학습 데이터가 많아질 경우를 대비해 페이지네이션을 지원하여 성능 저하 없이 탐색할 수 있습니다.
 - **마이페이지 (My Page - `/me`)**:
   - **대시보드**: 개인별 학습 현황과 저장된 데이터를 통합 관리하는 개인화된 공간.

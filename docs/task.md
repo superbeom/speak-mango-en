@@ -193,7 +193,7 @@
   - [x] **Performance**: 항상 `false`이던 `isLoading` 속성 제거 및 `isSubmitting` 기반 상태 관리 단순화
   - [x] **Refactoring**: 범용 Empty List 컴포넌트(`EmptyListMessage`) 추출 및 서버 컴포넌트 호환성 확보
   - [x] **Stability**: 서버 액션 실패 시 잘못된 낙관적 데이터가 SWR 캐시를 오염시키지 않도록 롤백 로직 수정
-
+  - [x] **Refactoring**: 단어장 동기화 로직 중앙화 및 `useVocabularyListSync` 훅 추출 완료
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입
   - [x] **UI/UX**: 마이페이지 중복 접근 방지 및 유저 메뉴 최적화

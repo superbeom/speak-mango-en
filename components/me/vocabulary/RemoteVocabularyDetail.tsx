@@ -3,7 +3,7 @@
 import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import useSWR, { useSWRConfig } from "swr";
+import useSWR from "swr";
 import { useVocabularyStore } from "@/store/useVocabularyStore";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
@@ -11,6 +11,7 @@ import { useConfirm } from "@/context/ConfirmContext";
 import { useToast } from "@/context/ToastContext";
 import { Expression } from "@/types/expression";
 import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
+import { useVocabularyListSync } from "@/hooks/user/useVocabularyListSync";
 import { usePaginationState } from "@/hooks/ui/usePaginationState";
 import { useVocabularyView } from "@/hooks/user/useVocabularyView";
 import { useBulkAction, BULK_ACTION_TYPE } from "@/hooks/user/useBulkAction";
@@ -89,7 +90,8 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     },
   );
 
-  const { mutate: globalMutate } = useSWRConfig();
+  const { resolveAndSyncLists, adjustItemCounts, invalidateOtherDetailPages } =
+    useVocabularyListSync(listId);
 
   // Zustand 스토어에서 최신 리스트 메타 정보를 구독
   // (클라이언트 사이드 네비게이션 시에도 즉시 정확한 데이터 반영)
@@ -165,13 +167,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     try {
       await updateVocabularyListTitle(listId, newTitle);
       mutate(); // 현재 리스트 상세 SWR 갱신
-      useVocabularyStore.getState().resolveOperation();
-      // 스토어의 최신 데이터를 SWR 캐시에 즉시 반영 (무효화만 하면 stale 데이터가 스토어를 덮어씀)
-      globalMutate(
-        "vocabulary_lists",
-        useVocabularyStore.getState().lists,
-        false,
-      );
+      resolveAndSyncLists();
       showToast(dict.vocabulary.saveSuccess);
     } catch (error) {
       setTitle(previousTitle);
@@ -189,26 +185,9 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     try {
       await setDefaultVocabularyList(listId);
       mutate(); // 현재 리스트 상세 SWR 갱신
-
-      // setDefault는 서버 부수 효과 없음 (is_default 플래그만 토글)
-      // → 낙관적 데이터가 정확하므로 서버 재조회 불필요
-      useVocabularyStore.getState().resolveOperation();
-      globalMutate(
-        "vocabulary_lists",
-        useVocabularyStore.getState().lists,
-        false,
-      );
+      resolveAndSyncLists();
       showToast(dict.vocabulary.setDefaultSuccess);
-
-      // 다른 모든 단어장 상세 페이지 캐시 무효화
-      globalMutate(
-        (key) =>
-          Array.isArray(key) &&
-          key[0] === "vocabulary-details" &&
-          key[1] !== listId,
-        undefined,
-        { revalidate: true },
-      );
+      invalidateOtherDetailPages();
     } catch (error) {
       setIsDefault(previous);
       useVocabularyStore.getState().resolveOperation();
@@ -225,18 +204,12 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
 
       // DB 트리거가 새 디폴트를 설정했으므로, 최신 데이터를 받아와 스토어 + SWR 캐시 동기화
       const freshLists = await getVocabularyLists();
-      useVocabularyStore.getState().resolveOperation(freshLists);
-      globalMutate("vocabulary_lists", freshLists, false); // 다른 페이지의 SWR 캐시도 갱신
+      resolveAndSyncLists(freshLists);
       showToast(dict.vocabulary.deleteSuccess);
       router.push(ROUTES.MY_PAGE);
     } catch (error) {
       const rollbackLists = await getVocabularyLists().catch(() => undefined);
-      useVocabularyStore.getState().resolveOperation(rollbackLists);
-      globalMutate(
-        "vocabulary_lists",
-        useVocabularyStore.getState().lists,
-        false,
-      );
+      resolveAndSyncLists(rollbackLists);
       handleError(error);
     }
   };
@@ -253,19 +226,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
             Array.from(selectedIds),
           );
           mutate(); // 현재 리스트 상세 SWR 갱신
-
-          // 스토어 item_count 즉시 반영 + SWR 캐시 동기화
-          const updatedLists = useVocabularyStore.getState().lists.map((l) =>
-            l.id === listId
-              ? {
-                  ...l,
-                  item_count: Math.max(0, (l.item_count || 0) - deletedCount),
-                }
-              : l,
-          );
-          useVocabularyStore.getState().setLists(updatedLists);
-          globalMutate("vocabulary_lists", updatedLists, false);
-
+          adjustItemCounts({ [listId]: -deletedCount });
           showToast(dict.vocabulary.itemsDeleteSuccess);
           toggleSelectionMode();
         } catch (error) {
@@ -358,29 +319,10 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
                 );
               }
               mutate(); // 현재 리스트 상세 SWR 갱신
-
-              // 스토어 item_count 즉시 반영 + SWR 캐시 동기화
-              const itemCount = ids.length;
-              const updatedLists = useVocabularyStore
-                .getState()
-                .lists.map((l) => {
-                  if (l.id === targetListId) {
-                    return {
-                      ...l,
-                      item_count: (l.item_count || 0) + itemCount,
-                    };
-                  }
-                  if (!isCopy && l.id === listId) {
-                    return {
-                      ...l,
-                      item_count: Math.max(0, (l.item_count || 0) - itemCount),
-                    };
-                  }
-                  return l;
-                });
-              useVocabularyStore.getState().setLists(updatedLists);
-              globalMutate("vocabulary_lists", updatedLists, false);
-
+              adjustItemCounts({
+                [targetListId]: ids.length,
+                ...(isCopy ? {} : { [listId]: -ids.length }),
+              });
               showToast(
                 isCopy
                   ? dict.vocabulary.copySuccess
