@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useI18n } from "@/context/I18nContext";
@@ -8,6 +8,10 @@ import { VOCABULARY_ERROR } from "@/types/error";
 import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
+import {
+  useVocabularyStore,
+  selectSavedListIds,
+} from "@/store/useVocabularyStore";
 import { SkeletonVocabularyList } from "@/components/ui/Skeletons";
 import LoginModal from "@/components/auth/LoginModal";
 import CreateListForm from "./CreateListForm";
@@ -40,13 +44,25 @@ export default function VocabularyListModal({
   const { dict } = useI18n();
   const { handleError } = useAppErrorHandler();
   const { user } = useAuthUser();
-  const [savedListIds, setSavedListIds] = useState<Set<string>>(new Set());
 
-  // Load saved state when modal opens
+  // 스토어에서 바로 가져옴 (로컬 State 제거)
+  const savedListIds = useVocabularyStore(
+    selectSavedListIds(expressionId || ""),
+  );
+
+  // 토글 발생 시 대기 중인 서버 응답이 낙관적 업데이트를 덮어쓰지 않도록
+  // generation counter로 stale 응답 무시
+  const toggleGenRef = useRef(0);
+
+  // 모달 열 때 최신 데이터 로드 → 스토어에 동기화
   useEffect(() => {
     if (isOpen && expressionId) {
+      const gen = toggleGenRef.current;
       getContainingListIds(expressionId).then((ids) => {
-        setSavedListIds(new Set(ids));
+        // 토글이 발생했으면 stale 응답이므로 무시
+        if (gen === toggleGenRef.current) {
+          useVocabularyStore.getState().syncSavedListIds(expressionId, ids);
+        }
       });
     }
   }, [isOpen, expressionId, getContainingListIds]);
@@ -54,24 +70,21 @@ export default function VocabularyListModal({
   const handleToggle = async (listId: string) => {
     const isCurrentlyIn = savedListIds.has(listId);
 
-    // Optimistic Update
-    const nextSet = new Set(savedListIds);
-    if (isCurrentlyIn) {
-      nextSet.delete(listId);
-    } else {
-      nextSet.add(listId);
-    }
-    setSavedListIds(nextSet);
+    // 대기 중인 getContainingListIds 응답 무효화
+    toggleGenRef.current++;
+
+    if (!expressionId) return;
+
+    // save 버튼 상태를 즉시 반영 (서버 응답 대기 전)
+    onListAction?.(listId, !isCurrentlyIn);
 
     try {
-      if (expressionId) {
-        await toggleInList(listId, expressionId, isCurrentlyIn);
-        onListAction?.(listId, !isCurrentlyIn);
-      }
+      // toggleInList 내부에서 optimisticToggle + savedListIds 업데이트 수행
+      await toggleInList(listId, expressionId, isCurrentlyIn);
     } catch (error) {
+      // 실패 시 롤백: save 상태 원복
+      onListAction?.(listId, isCurrentlyIn);
       console.error("Failed to toggle list:", error);
-      // Revert
-      setSavedListIds(new Set(savedListIds));
       handleError(error);
     }
   };
@@ -155,10 +168,6 @@ export default function VocabularyListModal({
               isLoading={isLoading}
               disabled={lists.length >= 5}
             />
-            {/* 
-              TODO: Currently we don't have a paid version, so we show simple limit status.
-              'vocabulary.freePlanLimit' (e.g., "Free Plan: 3 / 5 lists used") is kept for future use.
-            */}
             {/* 
               TODO: Currently we don't have a paid version, so we show simple limit status.
               'vocabulary.freePlanLimit' (e.g., "Free Plan: 3 / 5 lists used") is kept for future use.

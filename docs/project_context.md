@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-02-10
+**최종 수정일**: 2026-02-13
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -82,7 +82,8 @@ speak-mango-en/
 │   ├── actions/         # 데이터 변경 전용 Server Actions (withPro 적용)
 │   └── repositories/    # 데이터 레이어 추상화 (Local/Remote Hybrid Pattern)
 ├── store/               # 전역 상태 관리 (Zustand)
-│   └── useLocalActionStore.ts # 로컬 액션 상태 (localStorage 연동)
+│   ├── useLocalActionStore.ts # 로컬 액션 상태 (localStorage 연동 - Free 유저용)
+│   └── useVocabularyStore.ts  # 단어장 및 표현 상태 (Pro 유저용 - Zustand-First 아키텍처)
 ├── n8n/                 # n8n 자동화 관련 설정 및 템플릿
 │   └── expressions/     # 영어 표현(Expressions) 생성 워크플로우
 │       ├── code/        # 각 노드의 JavaScript 코드 파일 (단계별 분리)
@@ -128,6 +129,7 @@ speak-mango-en/
 │   ├── project_history.md   # 주요 의사결정 이력 및 Q&A 로그
 │   ├── technical_implementation/    # 주요 기능의 기술적 구현 상세
 │   │   ├── index.md                 # 구현 개요 및 알고리즘
+│   │   ├── zustand_first_architecture.md # Zustand-First 상태 관리 및 낙관적 업데이트 아키텍처 (Pro 유저용)
 │   │   └── use_swr_strategy.md      # Client-Side Data Fetching (useSWR) 전략
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
@@ -264,6 +266,10 @@ speak-mango-en/
   - **Separation of Concerns**: UI 컴포넌트는 렌더링에, 커스텀 훅은 비즈니스 로직에 집중하여 관심사 분리
   - **Reusability**: 훅을 통해 동일한 로직을 여러 컴포넌트에서 재사용
   - **Type Safety**: 훅의 반환 타입을 명시적으로 정의하여 컴포넌트에서의 타입 추론을 돕습니다.
+- **Zustand-First & Optimistic Update Strategy**:
+  - **Single Source of Truth**: Pro 유저의 중요 상태(단어장 등)는 Zustand 스토어를 신뢰의 단일 원천으로 삼습니다. SWR은 초기 데이터 시드 및 백그라운드 동기화 용도로만 사용합니다.
+  - **\_pendingOps Guard**: 진행 중인 비동기 작업(Pending Operations) 수를 추적하여 카운터가 0보다 클 경우 SWR의 백그라운드 리페치 데이터가 스토어를 덮어쓰지 못하도록 차단합니다.
+  - **Immediate Responsiveness**: 사용자 액션 시 스토어를 즉시 수정하여 0ms 수준의 UI 반응성을 보장하고, 서버 통신은 백그라운드에서 비동기로 처리합니다.
 
 ### Database
 

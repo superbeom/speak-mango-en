@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.0: Zustand-First Vocabulary Management Architecture (2026-02-13)
+
+### 1. Goal (목표)
+
+- SWR 캐시에 강하게 의존하던 단어장 상태 관리 체계를 Zustand 전역 스토어로 전환하여 데이터 응답의 즉각성을 확보합니다.
+- 백그라운드 데이터 동기화와 사용자 인터랙션이 충돌하는 레이스 컨디션을 가드 메커니즘(`_pendingOps`)을 통해 해결합니다.
+- 미사용/비정상 기능(Reorder 등)을 제거하고 순수 데이터 중심의 고성능 UI로 개편합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Zustand-First Store Architecture (`useVocabularyStore.ts`)
+
+- **Single Source of Truth**: 모든 단어장 목록(`lists`)과 특정 표현의 소속 리스트ID(`savedListIds`)를 Zustand 스토어에서 관리합니다.
+- **Optimistic State Tracking (`_pendingOps`)**: 진행 중인 비동기 작업을 카운팅하는 상태를 추가하여, 작업이 완료되기 전까지는 SWR의 백그라운드 리페치 데이터가 스토어를 덮어쓰지 못하도록 가드를 구축했습니다.
+- **Atomic Operations**: `resolveOperation()`을 통해 모든 병렬 작업이 완료된 시점에만 서버 데이터와 최종 동기화되도록 설계했습니다.
+
+#### B. Robust Save/Sync Logic Enhancement
+
+- **Race Condition Guard (`useSaveAction.ts`)**: `await Promise.resolve()`를 도입하여 낙관적 업데이트가 스토어에 완전히 반영된 후 후속 로직(Unsave 여부 판단 등)이 실행되도록 시점 조정을 완료했습니다.
+- **Stale Response Guard (`VocabularyListModal.tsx`)**: `toggleGenRef`를 사용하여 모달이 닫히거나 새로운 액션이 발생한 후에 도착하는 비정상적인 지연 응답을 무효화했습니다.
+- **Leak Prevention**: `RemoteVocabularyDetail`의 제목 수정 로직에서 에러 발생 시에도 `resolveOperation`이 호출되도록 보장하여 가드 카운터가 0으로 복귀되지 않는 버그를 수정했습니다.
+
+#### C. Grid Performance & Maintenance
+
+- **Reorder Logic Removal**: 2열 그리드 구조에서 정상 작동하지 않고 성능 저하 및 이벤트 충돌만 일으키던 `framer-motion`의 `Reorder` 기능을 제거했습니다.
+- **Clean Rendering**: `useState` 대신 `useMemo`를 사용하여 목록을 정렬 및 필터링함으로써 불필요한 리렌더링을 방지하고 코드 복잡도를 낮췄습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Snappy UI Experience**: 대기 시간 0ms의 즉각적인 단어장 관리 반응성 실현.
+- ✅ **Zero Race Condition**: 고속 인터랙션 시에도 데이터가 튀거나 덮어써지는 현상 완전 제거.
+- ✅ **Simplified Codebase**: 작동하지 않는 복잡한 외부 라이브러리 의존성을 제거하고 순수 상태 관리 로직으로 회귀.
+
 ## v0.16.12: Global Vocabulary Modal Store & Sync Reliability (2026-02-12)
 
 ### 1. Goal (목표)

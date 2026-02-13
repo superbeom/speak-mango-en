@@ -2,6 +2,24 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.0: Zustand-First Vocabulary Refactoring & Performance Polish (2026-02-13)
+
+### ✅ 진행 사항
+
+1.  **Zustand-First Architecture (Phase 1: Vocabulary Lists)**:
+    - **Single Source of Truth**: Pro 사용자의 단어장 목록 및 표현 매핑 상태 관리를 SWR 캐시 의존형에서 Zustand 전역 스토어(`useVocabularyStore`) 중심으로 전면 리팩토링했습니다.
+    - **Optimistic UI Guards (`_pendingOps`)**: 진행 중인 비동기 작업 수(Counter)를 추적하는 가드 메커니즘을 도입하여, 서버 응답 대기 중에 발생하는 SWR 백그라운드 리페치가 최신 낙관적 업데이트를 덮어쓰는 레이스 컨디션을 근본적으로 해결했습니다.
+    - **Immediate Visual Feedback**: 단어장 추가/이름 변경/삭제/기본 설정 시 서버 응답을 기다리지 않고 UI가 즉시 갱신되어, 500ms~1s 수준의 지연 없는 매끄러운 반응성을 확보했습니다.
+
+2.  **Robust Async Interaction & Multi-tab Sync**:
+    - **Race Condition Guard**: `useSaveAction`에 마이크로태스크 양보(`await Promise.resolve()`) 패턴을 도입하여, 저장 상태 동기화가 항상 최신화된 Zustand 낙관적 데이터를 참조하도록 보장했습니다.
+    - **Stale Closure Resolution**: `useVocabularyModalStore`에 안정적인 Ref 기반 콜백(`stableListActionSync`)을 전달하여, 리액트 리렌더링 과정에서 발생하는 클로저 래핑 에러를 해결하고 저장 상태 일관성을 유지했습니다.
+    - **Generation Guard**: `VocabularyListModal`에 `toggleGenRef`를 도입하여, 모달이 열린 직후에 도착하는 지연된 서버 응답이 최신 사용자 인터랙션을 무효화하지 않도록 보안을 강화했습니다.
+
+3.  **UI/UX Cleanup & Optimization**:
+    - **Non-functional Code Removal**: 실제 작동하지 않던 2열 그리드 내 `framer-motion`의 `Reorder` 컴포넌트를 제거하고 일반 `motion.div`와 `useMemo` 기반의 단순화된 리스트 렌더링 구조로 개편하여 렌더링 성능을 개선했습니다.
+    - **\_pendingOps Leak Fix**: `RemoteVocabularyDetail`의 에러 처리 로직을 수정하여, 제목 변경 실패 시에도 작업 카운터가 누수되지 않고 정상적으로 복귀되도록 안정성을 강화했습니다.
+
 ## v0.16.12: Global Vocabulary Modal Store & Sync Reliability (2026-02-12)
 
 ### ✅ 진행 사항

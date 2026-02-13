@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
+import { useVocabularyStore, selectLists } from "@/store/useVocabularyStore";
 import { createAppError, VOCABULARY_ERROR } from "@/types/error";
 import { VocabularyListWithCount } from "@/types/vocabulary";
 import {
@@ -20,21 +21,24 @@ import {
 export function useVocabularyLists() {
   const { isPro } = useAuthUser();
 
-  // SWR for Pro Users
-  // Key must be null if not pro to disable fetching
-  const {
-    data: remoteLists,
-    isLoading: isRemoteLoading,
-    mutate,
-  } = useSWR<VocabularyListWithCount[]>(
+  // SWR은 데이터 소스로만 사용 (백그라운드 동기화)
+  const { data: serverData, mutate } = useSWR<VocabularyListWithCount[]>(
     isPro ? "vocabulary_lists" : null,
     () => getVocabularyLists(),
     {
       dedupingInterval: 5000,
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
       fallbackData: [],
     },
   );
+
+  // SWR 데이터 변경 시 스토어에 동기화
+  // syncWithServer 내부에서 _pendingOps > 0이면 자동 스킵
+  useEffect(() => {
+    if (serverData && serverData.length > 0) {
+      useVocabularyStore.getState().syncWithServer(serverData);
+    }
+  }, [serverData]);
 
   // Local Store Selectors
   const vocabularyListsMap = useLocalActionStore(
@@ -52,10 +56,13 @@ export function useVocabularyLists() {
     (state) => state.setDefaultList,
   );
 
+  // UI는 Pro 유저일 때 Zustand 스토어에서 바로 표시 (즉시 반영)
+  const zustandLists = useVocabularyStore(selectLists);
+
   // Computed Lists (Memoized)
   const lists = useMemo(() => {
     if (isPro) {
-      return remoteLists || [];
+      return zustandLists.length > 0 ? zustandLists : serverData || [];
     }
 
     const sortedLists = Object.values(vocabularyListsMap).sort((a, b) => {
@@ -70,7 +77,7 @@ export function useVocabularyLists() {
       item_count: l.itemIds.size,
       is_default: l.isDefault || false,
     }));
-  }, [isPro, remoteLists, vocabularyListsMap]);
+  }, [isPro, zustandLists, serverData, vocabularyListsMap]);
 
   const createList = useCallback(
     async (title: string): Promise<string | undefined> => {
@@ -80,9 +87,14 @@ export function useVocabularyLists() {
         }
         return localCreateList(title);
       }
-      const newList = await createVocabularyList(title);
-      await mutate(); // Refresh SWR cache and wait for update
-      return newList?.id;
+
+      try {
+        const newList = await createVocabularyList(title);
+        await mutate();
+        return newList?.id;
+      } catch (error) {
+        throw error;
+      }
     },
     [isPro, lists.length, localCreateList, mutate],
   );
@@ -98,17 +110,32 @@ export function useVocabularyLists() {
         return;
       }
 
-      if (isCurrentlyIn) {
-        await removeFromVocabularyList(listId, expressionId);
-      } else {
-        await addToVocabularyList(listId, expressionId);
+      // 낙관적 업데이트 (_pendingOps 자동 증가)
+      const add = !isCurrentlyIn;
+      useVocabularyStore.getState().optimisticToggle(listId, expressionId, add);
+
+      try {
+        if (isCurrentlyIn) {
+          await removeFromVocabularyList(listId, expressionId);
+        } else {
+          await addToVocabularyList(listId, expressionId);
+        }
+        // 서버 액션 완료 → 최신 데이터로 resolve
+        const freshData = await mutate();
+        useVocabularyStore.getState().resolveOperation(freshData || undefined);
+      } catch (error) {
+        // 실패 시 resolved + 서버 데이터로 롤백
+        const rollbackData = await mutate();
+        useVocabularyStore
+          .getState()
+          .resolveOperation(rollbackData || serverData || undefined);
+        throw error;
       }
-      mutate(); // Refresh SWR cache to update counts
     },
-    [isPro, localRemoveFromList, localAddToList, mutate],
+    [isPro, localRemoveFromList, localAddToList, mutate, serverData],
   );
 
-  // Helper to get which lists contain the expression
+  // 특정 표현이 포함된 리스트 ID 조회
   const getContainingListIds = useCallback(
     async (expressionId: string): Promise<string[]> => {
       if (!isPro) {
@@ -125,14 +152,23 @@ export function useVocabularyLists() {
         localSetDefaultList(listId);
         return;
       }
+
+      // 낙관적 업데이트 (_pendingOps 자동 증가)
+      useVocabularyStore.getState().optimisticSetDefault(listId);
+
       try {
         await setDefaultVocabularyList(listId);
-        mutate();
+        const freshData = await mutate();
+        useVocabularyStore.getState().resolveOperation(freshData || undefined);
       } catch (error) {
-        console.error("Failed to set default list", error);
+        const rollbackData = await mutate();
+        useVocabularyStore
+          .getState()
+          .resolveOperation(rollbackData || serverData || undefined);
+        throw error;
       }
     },
-    [isPro, localSetDefaultList, mutate],
+    [isPro, localSetDefaultList, mutate, serverData],
   );
 
   const refreshLists = useCallback(async () => {
@@ -141,7 +177,7 @@ export function useVocabularyLists() {
 
   return {
     lists,
-    isLoading: isPro ? isRemoteLoading : false,
+    isLoading: false,
     createList,
     toggleInList,
     getContainingListIds,

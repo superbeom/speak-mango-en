@@ -179,6 +179,11 @@
 - [x] **Architecture**: 전역 단어장 모달 스토어(`useVocabularyModalStore`) 도입 및 로직 중앙화
 - [x] **Logic**: 단어장 동기화 레이스 컨디션 방지(`syncingRef`) 및 안정성 강화
 - [x] **Performance**: 시간 기반 시드(`getHourlySeed`) 도입을 통한 랜덤 피드 정합성 확보
+- [x] **Refactoring**: Zustand-First 단어장 아키텍처 도입 및 성능 고도화
+  - [x] **Architecture**: 전역 `useVocabularyStore` (Zustand + Immer) 설계 및 `_pendingOps` 가드 도입
+  - [x] **Performance**: 서버 응답 지연 시 stale 데이터 덮어쓰기 방지 (Race Condition 원천 차단)
+  - [x] **UI/UX**: 단어장 추가/수정에 대한 0ms 반응성 확보(완전 낙관적 업데이트)
+  - [x] **Maintenance**: 작동하지 않는 Reorder 기능 제거 및 `useMemo` 기반 리스트 렌더링 최적화
 
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입

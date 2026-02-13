@@ -6,7 +6,6 @@ import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
 import { getVocabularyLists } from "@/services/queries/vocabulary";
-import { addToVocabularyList } from "@/services/actions/vocabulary";
 
 export function useVocabularySync(expressionId: string) {
   const { isPro } = useAuthUser();
@@ -47,12 +46,13 @@ export function useVocabularySync(expressionId: string) {
 
       const firstList = availableLists[0];
       if (isPro) {
-        await addToVocabularyList(firstList.id, expressionId);
+        // toggleInList을 통해 Zustand 스토어 낙관적 업데이트까지 수행
+        await toggleInList(firstList.id, expressionId, false);
       } else {
         localAddToList(firstList.id, expressionId);
       }
     },
-    [isPro, expressionId, localAddToList],
+    [isPro, expressionId, localAddToList, toggleInList],
   );
 
   const syncOnUnsave = useCallback(async () => {

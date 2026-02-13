@@ -4,6 +4,7 @@ import { useState, memo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import useSWR, { useSWRConfig } from "swr";
+import { useVocabularyStore } from "@/store/useVocabularyStore";
 import { motion } from "framer-motion";
 import { useI18n } from "@/context/I18nContext";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -130,13 +131,18 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   const handleTitleSave = async (newTitle: string) => {
     const previousTitle = title;
     setTitle(newTitle);
+    // Zustand 스토어 낙관적 업데이트 (_pendingOps++)
+    useVocabularyStore.getState().optimisticUpdateTitle(listId, newTitle);
 
     try {
       await updateVocabularyListTitle(listId, newTitle);
       mutate(); // 데이터 일관성을 위해 갱신
+      useVocabularyStore.getState().resolveOperation();
       showToast(dict.vocabulary.saveSuccess);
     } catch (error) {
       setTitle(previousTitle);
+      useVocabularyStore.getState().resolveOperation();
+      // UI만 롤백, 스토어는 syncWithServer가 서버 데이터로 덮어쓰도록 둠
       handleError(error);
     }
   };
@@ -144,12 +150,16 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
   const handleSetDefault = async () => {
     const previous = isDefault;
     setIsDefault(true);
+    // Zustand 스토어 낙관적 업데이트 (_pendingOps++)
+    useVocabularyStore.getState().optimisticSetDefault(listId);
+
     try {
       await setDefaultVocabularyList(listId);
       mutate(); // 현재 리스트 갱신
+      useVocabularyStore.getState().resolveOperation();
       showToast(dict.vocabulary.setDefaultSuccess);
 
-      // 다른 모든 단어장 상세 페이지 캐시 무효화 (이전 디폴트 리스트의 상태 변경을 반영하기 위함)
+      // 다른 모든 단어장 상세 페이지 캐시 무효화
       globalMutate(
         (key) =>
           Array.isArray(key) &&
@@ -160,16 +170,22 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
       );
     } catch (error) {
       setIsDefault(previous);
+      useVocabularyStore.getState().resolveOperation();
       handleError(error);
     }
   };
 
   const handleListDelete = async () => {
+    // Zustand 스토어 낙관적 업데이트 (_pendingOps++)
+    useVocabularyStore.getState().optimisticDeleteList(listId);
+
     try {
       await deleteVocabularyList(listId);
+      useVocabularyStore.getState().resolveOperation();
       showToast(dict.vocabulary.deleteSuccess);
       router.push(ROUTES.MY_PAGE);
     } catch (error) {
+      useVocabularyStore.getState().resolveOperation();
       handleError(error);
     }
   };

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useMemo, memo } from "react";
-import { motion, useAnimation, Reorder, LayoutGroup } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { Folder, Plus, Star, BookOpenCheck, MoreVertical } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 import { VocabularyListWithCount } from "@/types/vocabulary";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
+import { useVocabularyStore, selectLists } from "@/store/useVocabularyStore";
 import { useVocabularyModalStore } from "@/store/useVocabularyModalStore";
 import { useEnableHover } from "@/hooks/useIsMobile";
 import { ROUTES } from "@/lib/routes";
@@ -37,9 +38,6 @@ const VocabularyListCard = memo(function VocabularyListCard({
   const controls = useAnimation();
   const { dict } = useI18n();
   const isLearned = list.id === LEARNED_FOLDER_ID;
-
-  // Learned 폴더는 드래그 불가
-  // Default 폴더도 드래그는 가능하지만 최상위 유지는 로직에서 처리 필요 (여기서는 UI만)
 
   return (
     <InteractiveLink
@@ -142,29 +140,39 @@ const VocabularyListManager = memo(function VocabularyListManager({
     [dict.me.learned, learnedCount],
   );
 
-  // Map local store lists
+  // Map local store lists (Free 유저)
   const localLists: VocabularyListWithCount[] = useMemo(() => {
     return formatVocabularyLists(vocabularyLists);
   }, [vocabularyLists]);
 
-  // Combine lists
-  const [orderedLists, setOrderedLists] = useState<VocabularyListWithCount[]>(
-    [],
-  );
+  // Pro 유저: Zustand 스토어에 낙관적 데이터가 있으면 우선 사용, 없으면 서버 prop 사용
+  const zustandLists = useVocabularyStore(selectLists);
+  const activeLists = isPro
+    ? zustandLists.length > 0
+      ? zustandLists
+      : lists
+    : localLists;
 
+  // 서버 prop을 초기 데이터로 스토어에 동기화 (스토어가 비어있을 때만)
   useEffect(() => {
-    const customLists = (isPro ? lists : localLists).filter(
-      (l) => l.id !== LEARNED_FOLDER_ID && l.title?.toLowerCase() !== "learned",
-    );
-    setOrderedLists(customLists);
-  }, [isPro, isMounted, lists, localLists]);
+    if (
+      isPro &&
+      lists.length > 0 &&
+      useVocabularyStore.getState().lists.length === 0
+    ) {
+      useVocabularyStore.getState().syncWithServer(lists);
+    }
+  }, [isPro, lists]);
 
-  const handleReorder = (newOrder: VocabularyListWithCount[]) => {
-    setOrderedLists(newOrder);
-
-    // TODO: Persist order to DB or Local
-    // const customListsOnly = newOrder.filter(l => l.id !== LEARNED_FOLDER_ID);
-  };
+  // Learned 폴더를 제외한 커스텀 리스트
+  const customLists = useMemo(
+    () =>
+      activeLists.filter(
+        (l) =>
+          l.id !== LEARNED_FOLDER_ID && l.title?.toLowerCase() !== "learned",
+      ),
+    [activeLists],
+  );
 
   // If not mounted yet (for hydration safety), render null
   if (!isPro && !isMounted) {
@@ -172,65 +180,56 @@ const VocabularyListManager = memo(function VocabularyListManager({
   }
 
   return (
-    <LayoutGroup>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">
-            {dict.me.myLists}
-          </h3>
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-2 -mr-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors rounded-full cursor-pointer outline-hidden">
-                  <MoreVertical size={20} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => openModal()}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 outline-hidden dark:text-zinc-300 transition-colors"
-                >
-                  <Plus size={16} />
-                  {dict.vocabulary.add}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between px-1">
+        <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">
+          {dict.me.myLists}
+        </h3>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 -mr-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors rounded-full cursor-pointer outline-hidden">
+                <MoreVertical size={20} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => openModal()}
+                className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 outline-hidden dark:text-zinc-300 transition-colors"
+              >
+                <Plus size={16} />
+                {dict.vocabulary.add}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-
-        <Reorder.Group
-          axis="y"
-          values={orderedLists}
-          onReorder={handleReorder}
-          className="grid grid-cols-2 gap-3 sm:gap-4 relative"
-          layoutScroll
-        >
-          {/* Static Learned Folder - Always show as first item */}
-          <motion.div layout id={LEARNED_FOLDER_ID} className="relative h-full">
-            <VocabularyListCard list={learnedList} enableHover={enableHover} />
-          </motion.div>
-
-          {/* Custom Lists */}
-          {orderedLists.map((list) => (
-            <Reorder.Item
-              key={list.id}
-              value={list}
-              dragListener={true}
-              className="h-full"
-              style={{ position: "relative" }}
-            >
-              <VocabularyListCard list={list} enableHover={enableHover} />
-            </Reorder.Item>
-          ))}
-        </Reorder.Group>
-
-        {orderedLists.length === 0 && (
-          <div className="mt-2">
-            <VocabularyEmptyState description={dict.me.emptyState} />
-          </div>
-        )}
       </div>
-    </LayoutGroup>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        {/* Static Learned Folder - Always show as first item */}
+        <motion.div layout id={LEARNED_FOLDER_ID} className="relative h-full">
+          <VocabularyListCard list={learnedList} enableHover={enableHover} />
+        </motion.div>
+
+        {/* Custom Lists */}
+        {customLists.map((list) => (
+          <motion.div
+            key={list.id}
+            layout
+            className="h-full"
+            style={{ position: "relative" }}
+          >
+            <VocabularyListCard list={list} enableHover={enableHover} />
+          </motion.div>
+        ))}
+      </div>
+
+      {customLists.length === 0 && (
+        <div className="mt-2">
+          <VocabularyEmptyState description={dict.me.emptyState} />
+        </div>
+      )}
+    </div>
   );
 });
 
