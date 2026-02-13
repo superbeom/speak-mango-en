@@ -182,7 +182,6 @@ export function useVocabularyLists() {
 
   return {
     lists,
-    isLoading: false,
     createList,
     toggleInList,
     getContainingListIds,

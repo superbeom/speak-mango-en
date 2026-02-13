@@ -9,13 +9,11 @@ import { cn } from "@/lib/utils";
 
 interface CreateListFormProps {
   onCreate: (title: string) => Promise<void>;
-  isLoading?: boolean;
   disabled?: boolean;
 }
 
 export default function CreateListForm({
   onCreate,
-  isLoading: isExternalLoading,
   disabled,
 }: CreateListFormProps) {
   const { dict } = useI18n();
@@ -24,12 +22,10 @@ export default function CreateListForm({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isLoading = isExternalLoading || isSubmitting;
-
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!title.trim() || isLoading) return;
+      if (!title.trim() || isSubmitting) return;
 
       setIsSubmitting(true);
       try {
@@ -42,7 +38,7 @@ export default function CreateListForm({
         setIsSubmitting(false);
       }
     },
-    [title, isLoading, onCreate, handleError],
+    [title, isSubmitting, onCreate, handleError],
   );
 
   if (!isExpanded) {
@@ -65,23 +61,23 @@ export default function CreateListForm({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={dict.vocabulary.placeholder}
-        disabled={isLoading}
+        disabled={isSubmitting}
         className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm input-focus-brand disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
         autoFocus
       />
       <button
         type="submit"
-        disabled={!title.trim() || isLoading}
+        disabled={!title.trim() || isSubmitting}
         className={cn(
           "flex items-center justify-center min-w-[60px] rounded-lg px-4 py-2 text-sm font-medium btn-brand-indigo disabled:opacity-50",
-          isLoading
+          isSubmitting
             ? "sm:cursor-wait"
             : title.trim()
               ? "sm:cursor-pointer"
               : "sm:cursor-not-allowed",
         )}
       >
-        {isLoading ? (
+        {isSubmitting ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           dict.vocabulary.add
@@ -90,7 +86,7 @@ export default function CreateListForm({
       <button
         type="button"
         onClick={() => setIsExpanded(false)}
-        disabled={isLoading}
+        disabled={isSubmitting}
         className="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 enabled:hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-300 dark:enabled:hover:bg-zinc-800 sm:cursor-pointer disabled:sm:cursor-not-allowed"
       >
         {dict.vocabulary.cancel}

@@ -38,7 +38,25 @@
     - **초기 계획서 삭제**: `vocabulary_zustand_refactor.md` (현재 코드와 불일치 다수)와 `vocabulary_zustand_refactor_verification.md`를 삭제했습니다.
     - **아키텍처 문서 통합**: `zustand_first_architecture.md`에 revalidatePath 제거 근거, 대량 작업 패턴 등을 추가하여 단일 참조 문서로 통합했습니다.
 
-8.  **UI/UX Cleanup & Optimization**:
+8.  **모달 로딩 상태 최적화 (isLoading 제거)**:
+    - **항상 false였던 isLoading 제거**: `useVocabularyLists`에서 SWR `fallbackData: []` 설정으로 인해 `isLoading`이 항상 `false`로 유지되어 실질적으로 무의미했습니다. 이를 제거하고 `lists.length === 0` 조건만으로 빈 상태를 판단하도록 단순화했습니다.
+    - **isSubmitting 중심 제어**: `CreateListForm`에서 외부 `isLoading` prop 의존성을 제거하고, 내부 `isSubmitting` 상태만으로 버튼 활성화 및 스피너를 제어하도록 리팩토링했습니다.
+    - **스켈레톤 제거**: SWR 캐시가 즉시 응답하므로 잠깐 나타났다 사라지는 `SkeletonVocabularyList`를 제거하여 레이아웃 흔들림(CLS)을 감소시켰습니다.
+    - **영향 범위**: `VocabularyListModal`, `BulkVocabularyListModal`, `CreateListForm`, `VocabularyPlanStatus` 컴포넌트에서 `isLoading` 관련 코드를 전면 제거했습니다.
+
+9.  **범용 Empty State 컴포넌트 추출**:
+    - **EmptyListMessage 생성**: 모달 내 중복되던 빈 상태 UI(`<div className="py-4 text-center text-sm text-zinc-500">`)를 독립 컴포넌트로 추출했습니다.
+    - **서버 컴포넌트 호환**: `"use client"` 지시어와 `useI18n` 훅을 제거하고, `message` prop을 필수로 받는 순수 UI 컴포넌트로 설계하여 서버/클라이언트 양쪽에서 사용 가능하도록 했습니다.
+    - **명칭 개선**: 초기 `SimpleEmptyState`에서 역할이 명확한 `EmptyListMessage`로 리네이밍했습니다.
+    - **적용 위치**: `VocabularyListModal`, `BulkVocabularyListModal`에서 `<EmptyListMessage message={dict.vocabulary.emptyState} />`로 사용합니다.
+
+10. **에러 처리 최적화 (catch 블록 정리)**:
+    - **불필요한 globalMutate 제거**: `RemoteVocabularyDetail`의 `handleTitleSave`, `handleSetDefault` catch 블록에서 잘못된 낙관적 데이터를 SWR 캐시에 확산시키던 `globalMutate` 호출을 제거했습니다.
+    - **자동 복구 메커니즘**: 서버 에러 시 `resolveOperation()`만 호출하여 `_pendingOps` 가드를 해제하고, SWR 백그라운드 리페치가 자연스럽게 DB의 진본(Ground Truth) 데이터로 스토어를 복원하도록 개선했습니다.
+    - **명시적 롤백 유지**: `handleListDelete`처럼 데이터 소멸 작업에서는 에러 시 서버에서 최신 데이터를 받아와 `resolveOperation(rollbackLists)`에 전달하는 명시적 롤백 패턴을 유지했습니다.
+    - **레이스 컨디션 방지**: catch 블록에서 스토어와 SWR 캐시 간의 불필요한 상호 작용을 줄여 책임 분리를 명확히 하고 안정성을 향상시켰습니다.
+
+11. **UI/UX Cleanup & Optimization**:
     - **Non-functional Code Removal**: 실제 작동하지 않던 2열 그리드 내 `framer-motion`의 `Reorder` 컴포넌트를 제거하고 일반 `motion.div`와 `useMemo` 기반의 단순화된 리스트 렌더링 구조로 개편하여 렌더링 성능을 개선했습니다.
     - **\_pendingOps Leak Fix**: `RemoteVocabularyDetail`의 에러 처리 로직을 수정하여, 제목 변경 실패 시에도 작업 카운터가 누수되지 않고 정상적으로 복귀되도록 안정성을 강화했습니다.
 

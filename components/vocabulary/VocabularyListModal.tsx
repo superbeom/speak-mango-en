@@ -12,8 +12,8 @@ import {
   useVocabularyStore,
   selectSavedListIds,
 } from "@/store/useVocabularyStore";
-import { SkeletonVocabularyList } from "@/components/ui/Skeletons";
 import LoginModal from "@/components/auth/LoginModal";
+import EmptyListMessage from "./EmptyListMessage";
 import CreateListForm from "./CreateListForm";
 import VocabularyListItem from "./VocabularyListItem";
 import VocabularyPlanStatus from "./VocabularyPlanStatus";
@@ -38,7 +38,6 @@ export default function VocabularyListModal({
     createList,
     toggleInList,
     getContainingListIds,
-    isLoading,
     setDefaultList,
   } = useVocabularyLists();
   const { dict } = useI18n();
@@ -139,8 +138,8 @@ export default function VocabularyListModal({
           </div>
 
           <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto py-2">
-            {isLoading && lists.length === 0 ? (
-              <SkeletonVocabularyList />
+            {lists.length === 0 ? (
+              <EmptyListMessage message={dict.vocabulary.emptyState} />
             ) : (
               lists.map((list) => (
                 <VocabularyListItem
@@ -154,28 +153,18 @@ export default function VocabularyListModal({
                 />
               ))
             )}
-
-            {lists.length === 0 && !isLoading && (
-              <div className="py-4 text-center text-sm text-zinc-500">
-                {dict.vocabulary.emptyState}
-              </div>
-            )}
           </div>
 
           <div className="border-t border-zinc-100 pt-4 dark:border-zinc-800">
             <CreateListForm
               onCreate={handleCreate}
-              isLoading={isLoading}
               disabled={lists.length >= 5}
             />
             {/* 
               TODO: Currently we don't have a paid version, so we show simple limit status.
               'vocabulary.freePlanLimit' (e.g., "Free Plan: 3 / 5 lists used") is kept for future use.
             */}
-            <VocabularyPlanStatus
-              currentCount={lists.length}
-              isLoading={isLoading}
-            />
+            <VocabularyPlanStatus currentCount={lists.length} />
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

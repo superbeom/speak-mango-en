@@ -190,6 +190,9 @@
   - [x] **Bug Fix**: `syncOnSave`에서 기본 단어장을 명시적으로 탐색 (정렬 순서 의존 제거)
   - [x] **Refactoring**: `RemoteVocabularyDetail` 스토어 구독 기반 리팩토링 (stale props 방지, isRefreshing 표시)
   - [x] **Documentation**: 초기 계획서/검증 보고서 삭제 및 아키텍처 문서 통합
+  - [x] **Performance**: 항상 `false`이던 `isLoading` 속성 제거 및 `isSubmitting` 기반 상태 관리 단순화
+  - [x] **Refactoring**: 범용 Empty List 컴포넌트(`EmptyListMessage`) 추출 및 서버 컴포넌트 호환성 확보
+  - [x] **Stability**: 서버 액션 실패 시 잘못된 낙관적 데이터가 SWR 캐시를 오염시키지 않도록 롤백 로직 수정
 
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입

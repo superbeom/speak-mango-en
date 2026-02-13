@@ -60,6 +60,41 @@
 - **삭제**: 초기 계획서(`vocabulary_zustand_refactor.md`)와 검증 보고서(`vocabulary_zustand_refactor_verification.md`)를 삭제했습니다. 현재 코드와 불일치하는 내용(revalidatePath 필수론, \_pendingOps 미사용 등)이 혼란을 주었습니다.
 - **통합**: `zustand_first_architecture.md`에 revalidatePath 제거 근거, 대량 작업 패턴, 파일별 감사 현황을 추가하여 단일 참조 문서로 통합했습니다.
 
+#### I. 모달 로딩 상태 최적화 (isLoading 제거)
+
+- **Problem**: `useVocabularyLists`에서 SWR `fallbackData: []` 설정으로 인해 `isLoading`이 항상 `false`로 유지되어 실질적으로 무의미했습니다. 스켈레톤 UI도 잠깐 나타났다 사라지며 레이아웃 흔들림(CLS)을 유발했습니다.
+- **Solution**:
+  - `useVocabularyLists`의 반환값에서 `isLoading: false` 제거
+  - `lists.length === 0` 조건만으로 빈 상태 판단
+  - `CreateListForm`에서 외부 `isLoading` prop 제거, 내부 `isSubmitting` 상태만으로 버튼 활성화 및 스피너 제어
+  - `VocabularyPlanStatus`에서 `isLoading ? "-" : count` 로직 제거, 항상 숫자 직접 표시
+  - `SkeletonVocabularyList` import 및 사용처 전면 제거
+- **Impact**: 모달 렌더링 로직 단순화, CLS 감소, 네트워크 지연과 무관한 직접적인 사용자 액션 피드백 제공
+
+#### J. 범용 Empty State 컴포넌트 추출 (`EmptyListMessage.tsx`)
+
+- **Problem**: `VocabularyListModal`, `BulkVocabularyListModal` 내에서 동일한 빈 상태 UI(`<div className="py-4 text-center text-sm text-zinc-500">`)가 중복되었습니다.
+- **Solution**:
+  - 독립 컴포넌트 `EmptyListMessage` 생성
+  - `"use client"` 지시어 및 `useI18n` 훅 제거하여 순수 UI 컴포넌트화
+  - `message: string` prop을 필수로 받아 서버/클라이언트 양쪽에서 사용 가능
+  - 초기 명칭 `SimpleEmptyState`에서 역할이 명확한 `EmptyListMessage`로 리네이밍
+- **Usage**: `<EmptyListMessage message={dict.vocabulary.emptyState} />`
+- **Benefits**: 코드 중복 제거, 서버 컴포넌트 호환성 확보, 스타일 변경 시 단일 지점 수정
+
+#### K. 에러 처리 최적화 (catch 블록 정리)
+
+- **Problem**: `RemoteVocabularyDetail`의 `handleTitleSave`, `handleSetDefault` catch 블록에서 `globalMutate(useVocabularyStore.getState().lists)`를 호출하여 잘못된 낙관적 데이터를 SWR 캐시에 확산시켰습니다.
+- **Analysis**:
+  - 에러 발생 시 스토어에는 아직 낙관적 데이터가 남아있는 상태
+  - 이 시점에 스토어 데이터를 SWR 캐시에 쓰면 잘못된 상태가 전파됨
+  - `resolveOperation()`만 호출하면 `_pendingOps`가 0이 되고, SWR 백그라운드 리페치가 자연스럽게 DB 진본 데이터로 스토어를 복원함
+- **Solution**:
+  - `handleTitleSave`, `handleSetDefault` catch 블록에서 `globalMutate` 제거
+  - `resolveOperation()`만 호출하여 가드 해제 → SWR 자동 복구 메커니즘 활용
+  - `handleListDelete`는 데이터 소멸 작업이므로 에러 시 서버에서 최신 데이터를 받아와 `resolveOperation(rollbackLists)`에 전달하는 명시적 롤백 패턴 유지
+- **Benefits**: 레이스 컨디션 방지, 스토어와 SWR 캐시 간 책임 분리 명확화, 안정성 향상
+
 ### 3. Key Achievements (주요 성과)
 
 - ✅ **Snappy UI Experience**: 대기 시간 0ms의 즉각적인 단어장 관리 반응성 실현.

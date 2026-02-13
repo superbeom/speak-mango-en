@@ -6,7 +6,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useI18n } from "@/context/I18nContext";
 import { useVocabularyLists } from "@/hooks/user/useVocabularyLists";
 import { cn, formatMessage } from "@/lib/utils";
-import { SkeletonVocabularyList } from "@/components/ui/Skeletons";
+import EmptyListMessage from "./EmptyListMessage";
 import CreateListForm from "./CreateListForm";
 import VocabularyPlanStatus from "./VocabularyPlanStatus";
 
@@ -27,7 +27,7 @@ export default function BulkVocabularyListModal({
   onSubmit,
   currentListId,
 }: BulkVocabularyListModalProps) {
-  const { lists, createList, isLoading } = useVocabularyLists();
+  const { lists, createList } = useVocabularyLists();
   const { dict } = useI18n();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,8 +82,8 @@ export default function BulkVocabularyListModal({
           </div>
 
           <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto py-2">
-            {isLoading && lists.length === 0 ? (
-              <SkeletonVocabularyList />
+            {lists.length === 0 ? (
+              <EmptyListMessage message={dict.vocabulary.emptyState} />
             ) : (
               lists.map((list) => {
                 const isDisabled = list.id === currentListId;
@@ -143,25 +143,15 @@ export default function BulkVocabularyListModal({
                 );
               })
             )}
-
-            {lists.length === 0 && !isLoading && (
-              <div className="py-4 text-center text-sm text-zinc-500">
-                {dict.vocabulary.emptyState}
-              </div>
-            )}
           </div>
 
           <div className="border-t border-zinc-100 pt-4 dark:border-zinc-800 space-y-4">
             <CreateListForm
               onCreate={handleCreate}
-              isLoading={isLoading}
               disabled={lists.length >= 5}
             />
 
-            <VocabularyPlanStatus
-              currentCount={lists.length}
-              isLoading={isLoading}
-            />
+            <VocabularyPlanStatus currentCount={lists.length} />
 
             <button
               onClick={handleSubmit}

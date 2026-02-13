@@ -161,6 +161,19 @@ useUserActions.toggleAction():
   이후 방문은 스토어가 우선
 ```
 
+### 롤백(Rollback) 및 정합성 보장 전략
+
+서버 액션 실패 시 낙관적으로 업데이트된 스토어 데이터를 복구하는 두 가지 경로를 운영합니다:
+
+1. **자동 복구 (SWR Background Revalidation)**:
+   - 서버 에러 발생 시 `resolveOperation()`을 호출하여 `_pendingOps` 가드만 해제합니다.
+   - 이때 스토어 데이터를 강제로 서버 데이터로 덮어쓰지(mutate) 않습니다.
+   - 가드가 해제된 직후 발생하는 SWR의 백그라운드 리페치가 DB의 진본(Ground Truth) 데이터를 가져와 스토어를 자연스럽게 올바른 상태로 되돌립니다.
+2. **명시적 롤백 (Manual Rollback)**:
+   - 삭제와 같이 데이터가 소멸하는 작업에서는 에러 발생 시 `globalMutate`를 통해 이전 캐시 데이터를 복원하여 즉시 롤백을 유도할 수 있습니다.
+
+**핵심**: `catch` 블록에서 불필요한 `globalMutate` 호출을 줄임으로써, 레이스 컨디션을 방지하고 SWR과 Zustand 간의 책임 분리를 명확히 했습니다.
+
 ### 서버 컴포넌트에서의 데이터 사용 패턴
 
 서버 컴포넌트에서 가져온 데이터는 **클라이언트 컴포넌트의 초기 시드**로만 사용:
@@ -287,6 +300,20 @@ T4: 카드 B 서버 완료 → resolveOperation(freshDataB)
 | `components/vocabulary/VocabularyListItem.tsx`        | 프레젠테이셔널 컴포넌트로 전환 (이전 커밋에서 완료)                                                                 | ✅ 완료 |
 | `hooks/user/useVocabularySync.ts`                     | `syncOnSave`에서 `addToVocabularyList` 직접 호출 → `toggleInList` 사용 (Zustand 낙관적 업데이트 포함)               | ✅ 완료 |
 | `services/actions/vocabulary.ts`                      | `revalidatePath` 전면 제거 (Dynamic Route이므로 불필요, 네비게이션 방해 원인)                                       | ✅ 완료 |
+| `components/vocabulary/EmptyListMessage.tsx`          | 모달 내 중복되던 빈 상태 UI를 순수 UI 컴포넌트로 추출. 서버 컴포넌트 호환성 확보.                                   | ✅ 완료 |
+
+### 모달 데이터 로딩 및 상태 관리 최적화
+
+Zustand 도입 이후, 모달 내의 데이터 흐름을 대폭 단순화했습니다:
+
+1. **isLoading 상태 제거**:
+   - `useVocabularyLists` 훅은 이제 SWR의 `fallbackData: []`를 활용합니다.
+   - 데이터 페칭 중에도 `lists`는 항상 배열(초기값 `[]`)을 유지하므로, 별도의 `isLoading` 플래그 없이 `lists.length === 0` 만으로 로딩과 빈 상태를 동시에 제어합니다.
+2. **isSubmitting 중심 제어**:
+   - 외부 로딩 상태(`isLoading`)에 의존하던 버튼 활성화 및 스피너 로직을 컴포넌트 내부의 `isSubmitting` 상태로 단일화했습니다.
+   - 이를 통해 네트워크 지연과 상관없이 사용자 액션에 대한 직접적인 피드백만 제공하여 UI 민첩성을 높였습니다.
+3. **스켈레톤(Skeleton) 제거**:
+   - SWR 캐시가 즉시 응답하므로, 잠깐 나타났다 사라지는 `SkeletonVocabularyList`를 제거했습니다. 이는 레이아웃 흔들림(CLS)을 줄이고 초기 렌더링 부하를 감소시킵니다.
 
 ### 대량 작업 시 스토어 업데이트 패턴
 

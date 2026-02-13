@@ -176,11 +176,6 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     } catch (error) {
       setTitle(previousTitle);
       useVocabularyStore.getState().resolveOperation();
-      globalMutate(
-        "vocabulary_lists",
-        useVocabularyStore.getState().lists,
-        false,
-      );
       handleError(error);
     }
   };
@@ -217,11 +212,6 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
     } catch (error) {
       setIsDefault(previous);
       useVocabularyStore.getState().resolveOperation();
-      globalMutate(
-        "vocabulary_lists",
-        useVocabularyStore.getState().lists,
-        false,
-      );
       handleError(error);
     }
   };

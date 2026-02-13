@@ -4,13 +4,11 @@ import { formatMessage } from "@/lib/utils";
 interface VocabularyPlanStatusProps {
   currentCount: number;
   maxCount?: number;
-  isLoading?: boolean;
 }
 
 export default function VocabularyPlanStatus({
   currentCount,
   maxCount = 5,
-  isLoading = false,
 }: VocabularyPlanStatusProps) {
   const { dict } = useI18n();
 
@@ -18,7 +16,7 @@ export default function VocabularyPlanStatus({
     <div className="mt-2 text-center">
       <p className="text-xs font-medium text-zinc-500">
         {formatMessage(dict.vocabulary.planStatus, {
-          count: isLoading ? "-" : currentCount.toString(),
+          count: currentCount.toString(),
           total: maxCount.toString(),
         })}
       </p>
