@@ -2,6 +2,23 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.1: UI Consistency & Skeleton Centralization (2026-02-13)
+
+### ✅ 진행 사항
+
+1.  **Skeleton System Centralization**:
+    - **New Reusable Skeletons**: `SkeletonAuthButton` (아바타/인증용)과 `SkeletonTextSmall` (카테고리/버튼/링크용) 컴포넌트를 신설하여 `Skeletons.tsx`에 중앙화했습니다.
+    - **Hardcoding Removal**: `SkeletonNavbar`, `SkeletonCard`, `SkeletonDetail` 등에서 산재해 있던 `h-4 w-16` 등의 하드코딩된 규격을 중앙 관리 컴포넌트로 전면 교체하여 디자인 일관성과 유지보수성을 높였습니다.
+
+2.  **Auth UI & Logout UX Refinement**:
+    - **Shared Loading State**: `AuthButton`과 `UserMenu`에서 로그아웃/로딩 중 사용하던 하드코딩된 스켈레톤 div를 `SkeletonAuthButton`으로 일원화했습니다.
+    - **Smart Logout Redirection**: 로그아웃 시 무조건 홈으로 튕겨나가는 대신, `/me` 계열의 개인 페이지에서만 홈으로 리다이렉트하고 일반 공개 페이지(홈, 상세)에서는 현재 위치를 유지하도록 개선했습니다.
+    - **Explicit Intent**: `next-auth`의 `signOut` 호출 시 `callbackUrl`을 라이브러리 기본값(`undefined`)에 의존하지 않고 `pathname`을 명시적으로 전달하여 코드의 가독성과 예측 가능성을 높였습니다.
+
+3.  **Loading Stability Fixes**:
+    - **Auth Awareness**: `useUserActions` 훅에서 프로 유저 여부뿐만 아니라 인증 세션의 로딩 상태(`isAuthLoading`)를 감지하도록 수정하여, 세션 확인 중에 버튼이 잘못된 상태(비활성/누락)로 노출되는 현상을 수정했습니다.
+    - **SaveButton State Protection**: 초기 세션 확인 및 데이터 페칭 중에 버튼의 인터랙션을 완벽히 차단하여 데이터 정합성 오류를 방지했습니다.
+
 ## v0.17.0: Zustand-First Vocabulary Refactoring & Performance Polish (2026-02-13)
 
 ### ✅ 진행 사항
@@ -52,8 +69,6 @@
     - **적용 위치**: `VocabularyListModal`, `BulkVocabularyListModal`에서 `<EmptyListMessage message={dict.vocabulary.emptyState} />`로 사용합니다.
 
 10. **에러 처리 및 롤백 전략 일원화**:
-
-
     - **가드 해제 중심**: catch 블록에서 `globalMutate` 호출을 제거하고 `resolveOperation()`을 통한 `_pendingOps` 가드 해제에 집중합니다. 이후 SWR의 자동 리페치를 통해 정합성을 회복하는 모델을 표준화했습니다.
     - **중앙화된 헬퍼 사용**: `useVocabularyListSync` 내부의 헬퍼들을 통해 에러 발생 시에도 일관된 복구 흐름을 유지합니다.
 

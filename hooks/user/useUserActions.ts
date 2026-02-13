@@ -9,7 +9,7 @@ import { getUserActions } from "@/services/queries/user";
 import { toggleUserAction } from "@/services/actions/user";
 
 export function useUserActions() {
-  const { isPro } = useAuthUser();
+  const { isPro, isLoading: isAuthLoading } = useAuthUser();
 
   const {
     data: saveActions,
@@ -82,8 +82,8 @@ export function useUserActions() {
     hasAction,
     toggleAction,
     isLoading: {
-      save: isPro ? isSaveLoading : false,
-      learn: isPro ? isLearnLoading : false,
+      save: isAuthLoading || (isPro ? isSaveLoading : false),
+      learn: isAuthLoading || (isPro ? isLearnLoading : false),
     },
   };
 }

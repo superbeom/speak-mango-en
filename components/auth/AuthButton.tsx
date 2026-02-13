@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useI18n } from "@/context/I18nContext";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
+import { SkeletonAuthButton } from "@/components/ui/Skeletons";
 import LoginModal from "./LoginModal";
 import UserMenu from "./UserMenu";
 
@@ -13,7 +14,7 @@ export default function AuthButton() {
 
   // Loading skeleton
   if (status === "loading") {
-    return <div className="skeleton-avatar" />;
+    return <SkeletonAuthButton />;
   }
 
   // Logged In: User Menu

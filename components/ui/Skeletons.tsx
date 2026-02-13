@@ -23,6 +23,20 @@ export function Skeleton({
 }
 
 /**
+ * 아바타/인증 버튼용 원형 스켈레톤
+ */
+export const SkeletonAuthButton = memo(function SkeletonAuthButton() {
+  return <div className="skeleton-avatar" />;
+});
+
+/**
+ * 소형 텍스트용 스켈레톤 (카테고리, 버튼, 링크 등)
+ */
+export const SkeletonTextSmall = memo(function SkeletonTextSmall() {
+  return <Skeleton className="h-4 w-16" />;
+});
+
+/**
  * 상단 네비게이션 바 형태의 스켈레톤
  */
 export const SkeletonNavbar = memo(function SkeletonNavbar({
@@ -47,7 +61,7 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
         {page === SKELETON_PAGE.QUIZ ? (
           <>
             {/* Back Button Skeleton */}
-            <Skeleton className="h-4 w-16" />
+            <SkeletonTextSmall />
             {/* Page Title Skeleton */}
             <Skeleton className="h-7 w-24" />
           </>
@@ -57,7 +71,7 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
             <Skeleton className="h-7 w-32" />
             <div className="flex items-center gap-4">
               {/* Quiz Link Skeleton */}
-              <Skeleton className="h-4 w-16" />
+              <SkeletonTextSmall />
               {/* Nav/SubHeader Skeleton (Desktop only) */}
               <div className="hidden sm:flex items-center gap-4">
                 <Skeleton className="h-4 w-1" />
@@ -69,7 +83,7 @@ export const SkeletonNavbar = memo(function SkeletonNavbar({
                 )}
               </div>
               {/* Auth Button Skeleton */}
-              <div className="skeleton-avatar" />
+              <SkeletonAuthButton />
             </div>
           </>
         )}
@@ -101,7 +115,7 @@ export const SkeletonCard = memo(function SkeletonCard() {
           {/* Domain Tag Skeleton */}
           <Skeleton className="h-6 w-20 rounded-full" />
           {/* Category Label Skeleton */}
-          <Skeleton className="h-4 w-16" />
+          <SkeletonTextSmall />
         </div>
         {/* Expression Title Skeleton */}
         <Skeleton className="h-8 w-3/4 mb-3" />
@@ -154,7 +168,7 @@ export const SkeletonDetail = memo(function SkeletonDetail() {
             {/* Domain Tag Skeleton */}
             <Skeleton className="h-6 w-20 rounded-full" />
             {/* Category Label Skeleton */}
-            <Skeleton className="h-4 w-16" />
+            <SkeletonTextSmall />
           </div>
 
           {/* Expression & Meaning Skeleton */}

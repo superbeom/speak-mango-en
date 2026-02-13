@@ -2,6 +2,38 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.1: UI Consistency & Skeleton Centralization (2026-02-13)
+
+### 1. Goal (목표)
+
+- 서비스 전반에 걸쳐 파편화된 UI 스타일과 로딩 스켈레톤 규격을 표준화하여 시각적 완성도를 높입니다.
+- 로그아웃 과정에서의 리다이렉션 로직을 정교화하여 사용자 탐색의 연속성을 보장합니다.
+- 인증 및 저장 액션의 초기 로딩 상태 감지 신뢰도를 개선합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Centralized Skeleton System (`Skeletons.tsx`)
+
+- **`SkeletonAuthButton`**: `AuthButton`과 `UserMenu`에서 중복 사용되던 원형 아바타 스켈레톤을 단일 컴포넌트로 관리합니다.
+- **`SkeletonTextSmall`**: `h-4 w-16` 규격의 소형 텍스트 스켈레톤을 정의하여 카테고리 레이블, 네비게이션 링크, 뒤로가기 버튼 등에 일괄 적용했습니다. 하드코딩된 Tailwind 클래스 의존성을 제거했습니다.
+
+#### B. Smart Logout Redirection (`UserMenu.tsx`)
+
+- **Context-aware Redirect**:
+  - `pathname.startsWith(ROUTES.MY_PAGE)`인 경우에만 `ROUTES.HOME`으로 리다이렉트합니다.
+  - 그 외 공개 페이지에서는 `pathname`을 그대로 사용하여 현재 페이지에 머물도록 함으로써 불필요한 홈 이동을 방지했습니다.
+- **Explicit Redirection**: `signOut` 호출 시 `callbackUrl` 값으로 `undefined` 대신 명시적인 `pathname`을 전달하여 동작의 명확성을 확보했습니다.
+
+#### C. Auth-Aware Action Loading (`useUserActions.ts`)
+
+- **Sync Issue Resolution**: 인증 세션 확인 전(`isAuthLoading`)에 액션 버튼이 잘못된 상태로 렌더링되거나 누락되는 문제를 방지하기 위해, 버튼의 `isLoading` 통합 상태에 인증 대기 상태를 결합했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Aesthetic Integrity**: 상세 페이지와 대시보드 간의 디자인 언어 통일성 확보.
+- ✅ **Infrastructure Cleanliness**: 하드코딩된 레이아웃 규격을 전역 스켈레톤 상수로 전환하여 관리 효율 증대.
+- ✅ **UX Predictability**: 상황에 맞는 영리한 리다이렉션으로 탐색 단절 최소화.
+
 ## v0.17.0: Zustand-First Vocabulary Management Architecture (2026-02-13)
 
 ### 1. Goal (목표)

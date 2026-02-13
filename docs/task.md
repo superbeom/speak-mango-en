@@ -194,6 +194,10 @@
   - [x] **Refactoring**: 범용 Empty List 컴포넌트(`EmptyListMessage`) 추출 및 서버 컴포넌트 호환성 확보
   - [x] **Stability**: 서버 액션 실패 시 잘못된 낙관적 데이터가 SWR 캐시를 오염시키지 않도록 롤백 로직 수정
   - [x] **Refactoring**: 단어장 동기화 로직 중앙화 및 `useVocabularyListSync` 훅 추출 완료
+  - [x] **UI/UX**: 서비스 전반의 시각적 일관성 및 로딩 UX 고도화
+    - [x] **Architecture**: 흩어져 있던 스켈레톤 규격 중앙화 (`SkeletonAuthButton`, `SkeletonTextSmall`)
+    - [x] **UX**: 페이지 성격에 따른 로그아웃 스마트 리다이렉션 로직 구현
+    - [x] **Stability**: 인증 로딩 상태(`isAuthLoading`)를 고려한 액션 버튼 비활성화 가드 강화
 - [/] **Phase 4: Feature Gating & Trial**
   - [x] **Auth**: 사용자 티어 조회 SQL 함수 (`get_user_tier`) 도입
   - [x] **UI/UX**: 마이페이지 중복 접근 방지 및 유저 메뉴 최적화

@@ -81,12 +81,15 @@ export default function LearnButton({
         onClick={handleToggle}
         disabled={isInitialLoading}
         className={cn(
-          "group flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all sm:active:scale-95 focus:outline-none sm:cursor-pointer",
+          "group flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all focus:outline-none",
           isInitialLoading
-            ? "bg-zinc-100 text-zinc-400 cursor-wait dark:bg-zinc-800"
-            : isLearned
-              ? "bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-500/20"
-              : "bg-white text-zinc-700 shadow-sm hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700",
+            ? "bg-zinc-100 text-zinc-400 cursor-wait pointer-events-none dark:bg-zinc-800"
+            : cn(
+                "sm:cursor-pointer sm:active:scale-95",
+                isLearned
+                  ? "bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-500/20"
+                  : "bg-white/90 text-zinc-700 shadow-sm hover:bg-white dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700",
+              ),
           className,
         )}
       >

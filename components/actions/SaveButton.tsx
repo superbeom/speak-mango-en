@@ -83,12 +83,15 @@ export default function SaveButton({
         onClick={handleClick}
         disabled={isInitialLoading}
         className={cn(
-          "group flex items-center gap-1.5 transition-colors focus:outline-none sm:cursor-pointer touch-manipulation",
+          "group flex items-center gap-1.5 transition-colors focus:outline-none touch-manipulation",
           isInitialLoading
-            ? "cursor-wait opacity-70"
-            : isSaved
-              ? "text-yellow-500"
-              : "text-zinc-400 hover:text-yellow-400 dark:text-zinc-500 dark:hover:text-yellow-400",
+            ? "cursor-wait opacity-70 pointer-events-none"
+            : cn(
+                "sm:cursor-pointer",
+                isSaved
+                  ? "text-yellow-500"
+                  : "text-zinc-400 hover:text-yellow-400 dark:text-zinc-500 dark:hover:text-yellow-400",
+              ),
           className,
         )}
         aria-label={isSaved ? dict.detail.actionUnsave : dict.detail.actionSave}

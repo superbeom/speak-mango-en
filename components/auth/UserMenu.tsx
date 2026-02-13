@@ -11,6 +11,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Avatar from "@radix-ui/react-avatar";
 import { useI18n } from "@/context/I18nContext";
 import { ROUTES } from "@/lib/routes";
+import { SkeletonAuthButton } from "@/components/ui/Skeletons";
 
 interface UserMenuProps {
   user: User;
@@ -23,11 +24,15 @@ export default function UserMenu({ user }: UserMenuProps) {
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
-    await signOut({ callbackUrl: ROUTES.HOME });
+    // My Page 계열(/me)에서 로그아웃 시 홈으로, 그 외 페이지에선 현재 페이지 유지(pathname)
+    const callbackUrl = pathname.startsWith(ROUTES.MY_PAGE)
+      ? ROUTES.HOME
+      : pathname;
+    await signOut({ callbackUrl });
   };
 
   if (isLoggingOut) {
-    return <div className="skeleton-avatar" />;
+    return <SkeletonAuthButton />;
   }
 
   return (
