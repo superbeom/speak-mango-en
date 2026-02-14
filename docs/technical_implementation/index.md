@@ -2024,7 +2024,7 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
     - 단어장 모달에서 마지막 남은 리스트의 체크를 해제하면 마스터 저장 상태(`isSaved`)도 `false`로 변경됩니다.
     - 반대로 마스터 저장 버튼을 눌러 저장을 취소하면, 해당 표현이 담긴 모든 단어장에서 한꺼번에 제거됩니다.
 3.  **Race Condition & Safety**:
-    - **`syncingRef` Lock**: 고속 연타에 의한 저장/취소 요청 중첩을 방지하기 위해 `useRef` 기반의 실행 잠금 메커니즘을 적용했습니다.
+    - **`_pendingOps` 가드**: Zustand 스토어(`useUserActionStore`, `useVocabularyStore`)의 `_pendingOps` 카운터를 통해 동시 비동기 작업의 일관성을 보장합니다. 진행 중인 작업이 있을 때(`_pendingOps > 0`) 서버의 stale 데이터가 낙관적 상태를 덮어쓰지 못하도록 방지합니다.
     - **`isMountedRef` Isolation**: 비동기 통신 중 컴포넌트가 언마운트될 경우 상태 업데이트를 중단하여 메모리 누수 및 에러를 차단합니다.
 4.  **Performance Optimization**: Zustand 스토어 구독 시 원본 객체(`raw state`)를 선택하고 가공은 컴포넌트 내에서 수행하도록 설계하여, 불필요한 참조 생성에 의한 무한 루프 렌더링을 방지했습니다.
 

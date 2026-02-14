@@ -2,6 +2,50 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.3: Zustand-First User Actions & Optimistic Sync (2026-02-14)
+
+### 1. Goal (목표)
+
+- Save/Learn 액션 상태 관리를 SWR 의존형에서 Zustand-First 아키텍처(Phase 2)로 전환합니다.
+- 기존 `syncingRef` Lock을 `_pendingOps` 카운터로 교체하여 UI 블로킹 없이 동시 작업 일관성을 보장합니다.
+- Free 유저의 단어장 모달 `isSelected` 상태 동기화 누락 및 `item_count` 멱등성 문제를 수정합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. User Action Store (`store/useUserActionStore.ts`)
+
+- **Phase 1 패턴 재사용**: `useVocabularyStore`와 동일한 Immer + `_pendingOps` + `optimisticToggle`/`resolveOperation` 패턴을 적용했습니다.
+- **O(1) 조회**: `Set<string>`을 사용하여 `savedIds.has(expressionId)` 조회가 상수 시간에 수행됩니다. 기존 `Array.includes()`의 O(n) 대비 성능 개선.
+- **`_initialized` 플래그**: SWR의 첫 데이터 도착 시 `true`로 설정되어, 로딩 스피너 표시를 스토어가 직접 관리합니다.
+
+#### B. User Actions Hook Refactoring (`hooks/user/useUserActions.ts`)
+
+- **Reactive Subscription**: `hasAction`이 `useUserActionStore`의 `savedIds`/`learnedIds`를 구독하여 컴포넌트가 자동으로 re-render됩니다. 기존 `getState().has()` 방식은 imperative 읽기라 re-render를 트리거하지 않았습니다.
+- **SWR Seeder 패턴**: SWR은 초기 데이터를 스토어에 주입(`syncWithServer`)하는 역할만 수행합니다. 성공적인 토글 후 `mutateFn()` 호출을 제거하여 POST 1개 감소.
+- **`revalidateOnFocus: true`**: 탭 복귀 시 SWR이 자동으로 최신 데이터를 가져와 `syncWithServer`로 스토어를 교정합니다.
+
+#### C. `syncingRef` → `_pendingOps` 전환 (`hooks/user/useSaveAction.ts`)
+
+- **Before**: `syncingRef`가 서버 액션 완료까지 사용자 클릭을 ~6초 차단. UI는 블로킹 상태.
+- **After**: `_pendingOps`가 동시 작업 수를 추적. 0이 아닌 동안 SWR의 stale 데이터가 낙관적 상태를 덮어쓰지 못하지만, 사용자 클릭은 즉시 가능. UI는 논블로킹.
+
+#### D. Free 유저 모달 동기화 (`hooks/user/useVocabularyLists.ts`)
+
+- **문제**: Free 유저가 `toggleInList`으로 리스트를 토글할 때 `useLocalActionStore`만 업데이트하고 `useVocabularyStore.savedListIds`는 업데이트하지 않아, 모달의 `isSelected` UI가 갱신되지 않았습니다.
+- **해결**: 모달이 열려있을 때(`savedListIds` 매핑이 존재할 때) `savedListIds`도 함께 업데이트합니다.
+
+#### E. `item_count` 멱등성 (`store/useVocabularyStore.ts`)
+
+- **문제**: 빠른 연속 토글 시 `optimisticToggle`이 매번 `item_count`를 증감하여 비정상적으로 누적.
+- **해결**: `savedListIds` 매핑이 존재하면 실제 상태 변경 시에만 카운트 조정. 매핑이 없으면(서버 기존 데이터) 호출자 의도를 신뢰하여 기존 동작 유지.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Non-blocking UX**: Save/Learn 버튼 클릭 즉시 UI 반영, 서버 응답 대기 없이 재클릭 가능.
+- ✅ **POST 감소**: 저장 1회당 POST 4개 → 3개 (mutateFn 리페치 제거).
+- ✅ **Free/Pro 일관성**: 두 유저 타입 모두 모달에서 동일한 `isSelected` 즉시 반영 경험.
+- ✅ **데이터 정합성**: 빠른 연속 토글에서도 `item_count` 정확도 유지.
+
 ## v0.17.2: Staged Area Sync Accuracy & Auto-Correction (2026-02-14)
 
 ### 1. Goal (목표)

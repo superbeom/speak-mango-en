@@ -1,7 +1,7 @@
 # Zustand-First 아키텍처: Pro 유저 상태 관리 리팩토링
 
-> **작성일**: 2026-02-12 (최종 업데이트: 2026-02-13)
-> **상태**: Phase 1 완료 (Vocabulary Lists), Phase 2 계획 (User Actions)
+> **작성일**: 2026-02-12 (최종 업데이트: 2026-02-14)
+> **상태**: Phase 1 완료 (Vocabulary Lists), Phase 2 완료 (User Actions), Phase 3 계획 (Save RPC 통합)
 > **핵심 원칙**: "Zustand 스토어 우선, 서버 데이터는 초기 시드, revalidatePath 불필요"
 
 ---
@@ -13,10 +13,11 @@
 3. [어떻게 하는가 (How)](#3-어떻게-하는가-how)
 4. [\_pendingOps 메커니즘](#4-_pendingops-메커니즘)
 5. [Phase 1: Vocabulary Lists (완료)](#5-phase-1-vocabulary-lists-완료)
-6. [Phase 2: User Actions (계획)](#6-phase-2-user-actions-계획)
+6. [Phase 2: User Actions (완료)](#6-phase-2-user-actions-완료)
 7. [파일별 검토 결과](#7-파일별-검토-결과)
 8. [데이터 흐름 다이어그램](#8-데이터-흐름-다이어그램)
 9. [신뢰성 및 예외 처리](#9-신뢰성-및-예외-처리)
+10. [Phase 3: Save RPC 통합 (계획)](#10-phase-3-save-rpc-통합-계획)
 
 ---
 
@@ -30,8 +31,8 @@ Pro 유저가 서버(Supabase)와 동기화하는 **모든 클라이언트 상�
 | ------------------------------------------------------ | --------------------------------------- | -------------- | ------------------------- |
 | **단어장 목록** (lists, item_count, is_default, title) | `vocabulary_lists` + `vocabulary_items` | SWR 직접 사용  | ✅ Zustand (Phase 1 완료) |
 | **단어장 내 표현 매핑** (savedListIds)                 | `vocabulary_items`                      | SWR 직접 사용  | ✅ Zustand (Phase 1 완료) |
-| **저장 상태** (save actions)                           | `user_actions` (action_type='save')     | SWR 직접 사용  | ⬜ Zustand (Phase 2 계획) |
-| **학습 상태** (learn actions)                          | `user_actions` (action_type='learn')    | SWR 직접 사용  | ⬜ Zustand (Phase 2 계획) |
+| **저장 상태** (save actions)                           | `user_actions` (action_type='save')     | SWR 직접 사용  | ✅ Zustand (Phase 2 완료) |
+| **학습 상태** (learn actions)                          | `user_actions` (action_type='learn')    | SWR 직접 사용  | ✅ Zustand (Phase 2 완료) |
 
 ### 핵심 규칙
 
@@ -370,9 +371,9 @@ const updatedLists = useVocabularyStore.getState().lists.map((l) => {
 
 ---
 
-## 6. Phase 2: User Actions (계획)
+## 6. Phase 2: User Actions (완료)
 
-### 현재 구조 (`useUserActions.ts`)
+### 이전 구조 (`useUserActions.ts`)
 
 ```typescript
 // SWR로 서버 데이터 페칭
@@ -398,43 +399,50 @@ const toggleAction = async (expressionId, type) => {
 2. **hasAction()이 SWR data에 의존**: 배열 검색 (`includes`)으로 O(n) 성능
 3. **LearnButton의 `isLoading.learn`**: SWR의 `isLoading`에 의존하여 초기 로딩 스피너 존재
 
-### Phase 2 구현 계획
+### Phase 2 구현 완료 ✅
 
-#### 새 스토어: `store/useUserActionStore.ts`
+#### 스토어: `store/useUserActionStore.ts`
 
 ```typescript
 interface UserActionStore {
   savedIds: Set<string>; // save 액션이 적용된 expressionId 집합
   learnedIds: Set<string>; // learn 액션이 적용된 expressionId 집합
   _pendingOps: number;
+  _initialized: { save: boolean; learn: boolean }; // SWR 초기 데이터 수신 여부
 
-  // 초기화
+  // 서버 동기화용: _pendingOps === 0일 때만 적용
   syncWithServer: (type: ActionType, ids: string[]) => void;
 
-  // 낙관적 업데이트
+  // 낙관적 업데이트 (_pendingOps++)
   optimisticToggle: (expressionId: string, type: ActionType) => void;
+
+  // 작업 완료: _pendingOps--, 0이면 서버 데이터로 동기화
   resolveOperation: (type: ActionType, serverIds?: string[]) => void;
 
-  // 조회
+  // O(1) 조회
   has: (expressionId: string, type: ActionType) => boolean;
 }
 ```
 
-#### 수정 대상 파일
+#### 수정된 파일
 
-| 파일                                 | 현재                                       | 목표                                    |
-| ------------------------------------ | ------------------------------------------ | --------------------------------------- |
-| `hooks/user/useUserActions.ts`       | SWR data 직접 사용                         | Zustand 스토어 구독 + SWR은 초기 시드만 |
-| `hooks/user/useSaveToggle.ts`        | `useUserActions.hasAction` 사용 (SWR 의존) | 스토어의 `has()` 사용                   |
-| `hooks/user/useSaveAction.ts`        | `syncingRef` 가드                          | 스토어 기반 즉시 업데이트               |
-| `components/actions/LearnButton.tsx` | `useUserActions.isLoading.learn`           | 스토어에서 즉시 읽기 (로딩 제거)        |
+| 파일                                 | 이전                                       | 현재 (완료)                                |
+| ------------------------------------ | ------------------------------------------ | ------------------------------------------ |
+| `store/useUserActionStore.ts`        | (신규)                                     | Immer + Set + \_pendingOps 패턴 ✅         |
+| `hooks/user/useUserActions.ts`       | SWR data 직접 사용                         | Zustand 스토어 구독 + SWR은 초기 시드만 ✅ |
+| `hooks/user/useSaveToggle.ts`        | `useUserActions.hasAction` 사용 (SWR 의존) | 스토어의 반응형 `has()` 사용 ✅            |
+| `hooks/user/useSaveAction.ts`        | `syncingRef` 가드 (블로킹)                 | `_pendingOps` 기반 즉시 업데이트 ✅        |
+| `hooks/user/useVocabularyLists.ts`   | Free 유저 savedListIds 미동기화            | 모달 열림 시 savedListIds 동기화 ✅        |
+| `store/useVocabularyStore.ts`        | item_count 비멱등적 증감                   | savedListIds 기반 멱등성 보장 ✅           |
+| `components/actions/LearnButton.tsx` | 변경 없음 (API 호환)                       | `useUserActions` API 유지로 자동 적용 ✅   |
 
-#### 기대 효과
+#### 달성된 효과
 
-- **저장/학습 버튼**: 클릭 즉시 상태 전환 (로딩 스피너 없음)
-- **피드 스크롤**: 저장한 표현이 즉시 시각적으로 반영
-- **탭 전환**: `revalidateOnFocus`의 stale 데이터에 영향 받지 않음
-- **다중 작업**: 빠르게 여러 표현을 저장해도 상태 일관성 유지
+- **저장/학습 버튼**: 클릭 즉시 상태 전환, 서버 응답 대기 없이 재클릭 가능
+- **POST 감소**: 저장 1회당 POST 4개 → 3개 (`mutateFn` 리페치 제거)
+- **탭 전환**: `revalidateOnFocus: true`로 백그라운드 자동 정합성 보장
+- **다중 작업**: `_pendingOps` 가드로 빠르게 여러 표현을 저장해도 상태 일관성 유지
+- **Free/Pro 일관성**: 단어장 모달의 `isSelected` UI가 두 유저 타입 모두 즉시 반영
 
 ---
 
@@ -456,13 +464,13 @@ interface UserActionStore {
 | `components/vocabulary/BulkVocabularyListModal.tsx`   | `useVocabularyLists().lists`                      | ✅ 이미 Zustand 스토어 경유 (`useVocabularyLists` 내부) |
 | `hooks/user/useVocabularyListSync.ts`                 | 스토어↔SWR 캐시 동기화 유틸리티                   | ✅ 동기화 로직 중앙화 완료                              |
 
-#### ⬜ Phase 2에서 적용 예정
+#### ✅ Phase 2 적용 완료
 
-| 파일                                 | 서버 데이터 사용 방식                            | 현재 문제                                           |
-| ------------------------------------ | ------------------------------------------------ | --------------------------------------------------- |
-| `hooks/user/useUserActions.ts`       | SWR → `getUserActions()`                         | SWR 캐시 직접 사용, 백그라운드 리페치 시 stale 가능 |
-| `hooks/user/useSaveToggle.ts`        | `useUserActions.hasAction()`                     | SWR data 의존                                       |
-| `components/actions/LearnButton.tsx` | `useUserActions.hasAction()` + `isLoading.learn` | SWR 로딩 상태 의존                                  |
+| 파일                                 | 이전 방식                                        | 현재 (완료)                                |
+| ------------------------------------ | ------------------------------------------------ | ------------------------------------------ |
+| `hooks/user/useUserActions.ts`       | SWR → `getUserActions()`                         | ✅ Zustand 스토어 구독 + SWR은 초기 시드만 |
+| `hooks/user/useSaveToggle.ts`        | `useUserActions.hasAction()`                     | ✅ 스토어의 반응형 `has()` 사용            |
+| `components/actions/LearnButton.tsx` | `useUserActions.hasAction()` + `isLoading.learn` | ✅ `_initialized` 플래그 기반 로딩 관리    |
 
 #### ℹ️ 적용 불필요 (서버 컴포넌트 전용)
 
@@ -478,12 +486,12 @@ interface UserActionStore {
 
 스키마(`docs/database/schema.md`)와 유저 시스템(`docs/users/user_system_plan.md`)을 검토한 결과:
 
-1. **`user_actions` (save/learn)**: Phase 2에서 Zustand 스토어로 전환 예정 ✅
+1. **`user_actions` (save/learn)**: ✅ Phase 2에서 Zustand 스토어(`useUserActionStore`)로 전환 완료
 2. **`vocabulary_items` (savedListIds)**: Phase 1에서 이미 `savedListIds: Map`으로 관리 중 ✅
 3. **`vocabulary_lists`**: Phase 1에서 이미 `lists: []`로 관리 중 ✅
 4. **`user_custom_cards`**: 아직 미구현 기능 (Phase 6에서 구현 예정) → 해당 없음
 5. **`ranking_stats`**: 읽기 전용 집계 데이터 → Zustand 불필요
-6. **`learnedCount`**: `VocabularyListContainer`에서 서버 prop으로 전달 → `VocabularyListManager`에서 사용. 현재 Pro 유저는 `remoteLearnedCount`를 서버에서 받지만, Phase 2에서 `useUserActionStore.learnedIds.size`로 대체하면 즉시 반영됨
+6. **`learnedCount`**: `VocabularyListContainer`에서 서버 prop으로 전달 → `VocabularyListManager`에서 사용. Phase 2 완료로 `useUserActionStore.learnedIds.size`를 통한 즉시 반영이 가능해짐 (향후 적용 검토)
 
 ---
 
@@ -527,7 +535,7 @@ resolveOperation(freshData)
      │ 0이면 서버 데이터로 교체
 ```
 
-### Phase 2 (계획): User Actions
+### Phase 2 (완료): User Actions
 
 ```
 [표현 카드]                          [/me 페이지]
@@ -539,7 +547,7 @@ useUserActions                    VocabularyListManager
      │ optimisticToggle()                 │ learnedIds.size
      ▼                                    ▼
 ┌──────────────────────┐         ┌──────────────────────┐
-│  UserAction Store    │         │  (Phase 2 적용 후)     │
+│  UserAction Store    │         │  (Phase 2 적용 완료)   │
 │                      │         │                      │
 │  savedIds: Set ✅    │         │  학습 완료 수도          │
 │  learnedIds: Set ✅  │         │  스토어에서 즉시 반영     │
@@ -604,7 +612,7 @@ export function useBeforeUnloadGuard() {
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const pendingOps = useVocabularyStore.getState()._pendingOps;
-      // Phase 2 이후: + useUserActionStore.getState()._pendingOps
+      // Phase 2 완료: + useUserActionStore.getState()._pendingOps
 
       if (pendingOps > 0) {
         e.preventDefault();
@@ -675,7 +683,7 @@ useEffect(() => {
 
 | 전략                          | 복잡도 | 적용 시점                     | 상태    |
 | ----------------------------- | ------ | ----------------------------- | ------- |
-| A. `beforeunload` 경고        | 낮음   | Phase 2 완료 후               | ⬜ 계획 |
+| A. `beforeunload` 경고        | 낮음   | Phase 2 완료 → 적용 가능      | ⬜ 계획 |
 | B. `keepalive` / `sendBeacon` | 중간   | 필요 시 (API Route 추가 필요) | ⬜ 보류 |
 | C. 로컬 큐 + 재전송           | 높음   | PWA/오프라인 지원 시          | ⬜ 미래 |
 
@@ -684,3 +692,279 @@ useEffect(() => {
 ---
 
 > **참고**: 이 문서는 리팩토링의 진행 상황에 따라 지속적으로 업데이트됩니다.
+
+---
+
+## 10. Phase 3: Save RPC 통합 (계획)
+
+> Phase 1-2에서 구축한 Zustand 인프라 위에서, **서버 측 데이터 모델과 호출 구조를 최적화**하는 단계입니다.
+
+### 문제 정의
+
+#### 이중 관리로 인한 데이터 불일치
+
+현재 "이 표현이 저장됨"이라는 사실이 **두 개의 테이블에 동시 기록**됨:
+
+```
+1. user_actions:    (user_id, expression_id, action_type='save')
+2. vocabulary_items: (list_id, expression_id)
+```
+
+`save`는 `vocabulary_items` 멤버십과 100% 동일하므로 **제거 가능** (`learn`은 독립적이므로 유지).
+
+#### 과도한 서버 호출
+
+저장 버튼 **1회 클릭** 시 발생하는 POST 요청:
+
+| #   | 호출                                | 목적                  | 소요 시간 |
+| --- | ----------------------------------- | --------------------- | --------- |
+| 1   | `toggleUserAction(expr, "save")`    | user_actions 토글     | ~1.5초    |
+| 2   | `addToVocabularyList(listId, expr)` | vocabulary_items 추가 | ~1.5초    |
+| 3   | `mutate()` → `getVocabularyLists()` | SWR 리페치            | ~1.5초    |
+
+**총 3개 POST**, 해제 시에는 `getContainingListIds` 쿼리까지 추가.
+
+### 목표 아키텍처
+
+#### Before → After 비교
+
+| 항목                  | Before (현재)                                  | After (Phase 3)                      |
+| --------------------- | ---------------------------------------------- | ------------------------------------ |
+| "저장됨" 판단         | `user_actions(save)` 조회                      | `vocabulary_items` 조인 조회         |
+| 저장 토글             | `toggleUserAction` + `addToList` (2 서버 액션) | **`toggle_save_expression` RPC 1개** |
+| 해제 토글             | `toggleUserAction` + N개 `removeFromList`      | **`toggle_save_expression` RPC 1개** |
+| POST 수 (저장)        | 3                                              | **1**                                |
+| POST 수 (해제)        | 3+                                             | **1**                                |
+| Race Condition        | ⚠️ 병렬 서버 호출                              | **없음** (단일 트랜잭션)             |
+| SWR 리페치            | 필요 (별도 POST)                               | **불필요** (RPC가 데이터 반환)       |
+| `user_actions` 테이블 | `save` + `learn`                               | **`learn` 전용**                     |
+
+#### 새로운 저장 흐름
+
+```
+사용자 클릭 (0ms)
+  ├─ optimisticToggle → Zustand 스토어 즉시 업데이트 → UI 즉시 반영
+  │
+  └─ toggleSaveExpression(expressionId) → POST 1개 (서버 RPC)
+       ├─ 서버: 저장 여부 확인 (vocabulary_items에서)
+       ├─ 서버: 토글 수행 (추가 또는 전체 제거)
+       └─ 서버: 최신 단어장 데이터 반환
+
+  → resolveOperation(freshData)  (~1.5초 후)
+```
+
+### 구현 단계
+
+#### Step 1-2: DB 함수 생성
+
+**`toggle_save_expression`** (RPC):
+
+```sql
+create or replace function speak_mango_en.toggle_save_expression(
+  p_expression_id uuid
+)
+returns json
+language plpgsql
+security definer
+set search_path = speak_mango_en, public
+as $$
+declare
+  v_user_id uuid = auth.uid();
+  v_is_saved boolean;
+  v_default_list_id uuid;
+begin
+  if v_user_id is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  -- 1. 저장 여부 확인 (vocabulary_items 기반)
+  select exists (
+    select 1 from vocabulary_items vi
+    join vocabulary_lists vl on vl.id = vi.list_id
+    where vl.user_id = v_user_id and vi.expression_id = p_expression_id
+  ) into v_is_saved;
+
+  if v_is_saved then
+    -- 2a. 해제: 모든 단어장에서 제거
+    delete from vocabulary_items
+    where expression_id = p_expression_id
+      and list_id in (
+        select id from vocabulary_lists where user_id = v_user_id
+      );
+  else
+    -- 2b. 저장: 기본 단어장에 추가
+    select id into v_default_list_id
+    from vocabulary_lists
+    where user_id = v_user_id and is_default = true
+    limit 1;
+
+    if v_default_list_id is not null then
+      insert into vocabulary_items (list_id, expression_id)
+      values (v_default_list_id, p_expression_id)
+      on conflict (list_id, expression_id) do nothing;
+    end if;
+  end if;
+
+  -- 3. 최신 단어장 데이터 반환 (SWR 리페치 대체)
+  return (
+    select coalesce(json_agg(row_to_json(t)), '[]'::json)
+    from (
+      select vl.id, vl.title, vl.is_default,
+             count(vi.expression_id)::int as item_count
+      from vocabulary_lists vl
+      left join vocabulary_items vi on vi.list_id = vl.id
+      where vl.user_id = v_user_id
+      group by vl.id, vl.title, vl.is_default
+      order by vl.is_default desc, vl.created_at asc
+    ) t
+  );
+end;
+$$;
+```
+
+**`get_saved_expression_ids`** (`getUserActions("save")` 대체용):
+
+```sql
+create or replace function speak_mango_en.get_saved_expression_ids()
+returns setof uuid
+language sql
+security invoker
+stable
+as $$
+  select distinct vi.expression_id
+  from vocabulary_items vi
+  join vocabulary_lists vl on vl.id = vi.list_id
+  where vl.user_id = auth.uid();
+$$;
+```
+
+#### Step 3-4: Server Action/Query
+
+| 파일                       | 변경                                                                         |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| `services/actions/user.ts` | `toggleSaveExpression(expressionId)` 추가, `toggleUserAction`은 `learn` 전용 |
+| `services/queries/user.ts` | `getSavedExpressionIds()` 추가, `getUserActions("save")` 대체                |
+
+#### Step 5-6: Hook 리팩토링
+
+| 파일                           | 변경                                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks/user/useUserActions.ts` | save SWR 키 → `["saved_expressions"]` + `getSavedExpressionIds`, `toggleAction("save")` → RPC 호출 + vocabulary store 직접 갱신 |
+| `hooks/user/useSaveAction.ts`  | `Promise.all` 제거, 단일 호출로 통합. `syncOnSave`/`syncOnUnsave` 제거 가능                                                     |
+
+#### Step 7-9: Store/Hook 정리
+
+| 파일                              | 변경                                                    |
+| --------------------------------- | ------------------------------------------------------- |
+| `hooks/user/useSaveToggle.ts`     | 내부 동작 변경 없음 (API 유지)                          |
+| `store/useUserActionStore.ts`     | `savedIds` 초기화 소스 변경 (→ `getSavedExpressionIds`) |
+| `store/useVocabularyStore.ts`     | RPC 응답의 lists 데이터로 직접 갱신 경로 추가           |
+| `hooks/user/useVocabularySync.ts` | `syncOnSave`/`syncOnUnsave` 축소/제거                   |
+
+#### Step 10: 검증 및 정리
+
+- 모든 테스트 시나리오 검증 (검증 체크리스트 참조)
+- `user_actions` 테이블에서 기존 `save` 데이터 정리 (마이그레이션)
+- 문서 업데이트: `schema.md`, `user_system_plan.md`, `project_history.md`, `walkthrough.md`
+
+### 파일 변경 매트릭스
+
+#### 신규 파일
+
+| 파일                                              | 설명                               |
+| ------------------------------------------------- | ---------------------------------- |
+| `database/functions/toggle_save_expression.sql`   | 저장 토글 + 단어장 데이터 반환 RPC |
+| `database/functions/get_saved_expression_ids.sql` | 저장된 표현 ID 목록 조회 RPC       |
+
+#### 수정 파일
+
+| 파일                              | 변경 내용                                        | 영향도   |
+| --------------------------------- | ------------------------------------------------ | -------- |
+| `services/actions/user.ts`        | `toggleSaveExpression` 추가                      | 낮음     |
+| `services/queries/user.ts`        | `getSavedExpressionIds` 추가                     | 낮음     |
+| `hooks/user/useUserActions.ts`    | save SWR 키 변경, toggleAction("save") 로직 교체 | **높음** |
+| `hooks/user/useSaveAction.ts`     | `Promise.all` 제거, 단일 호출로 단순화           | **높음** |
+| `hooks/user/useVocabularySync.ts` | `syncOnSave`/`syncOnUnsave` 축소/제거            | 중간     |
+| `store/useUserActionStore.ts`     | save 초기화 소스 변경                            | 중간     |
+| `store/useVocabularyStore.ts`     | RPC 응답으로 lists 갱신 경로 추가                | 낮음     |
+
+#### 변경하지 않는 파일 (API 호환)
+
+| 파일                                            | 이유                                    |
+| ----------------------------------------------- | --------------------------------------- |
+| `components/actions/SaveButton.tsx`             | `useSaveAction`의 API 표면 동일         |
+| `components/actions/LearnButton.tsx`            | `useUserActions`의 learn 경로 변경 없음 |
+| `components/vocabulary/VocabularyListModal.tsx` | `useVocabularyStore` 구독 방식 동일     |
+| `components/vocabulary/VocabularyListItem.tsx`  | props 변경 없음                         |
+
+### 검증 체크리스트
+
+#### 기존 기능 보존 (Regression Test)
+
+**Pro 유저 — 저장(Save)**:
+
+- [ ] 표현 카드의 저장 버튼 클릭 → 즉시 노란색 북마크로 전환
+- [ ] 저장된 표현의 저장 버튼 클릭 → 즉시 빈 북마크로 전환
+- [ ] 저장 버튼 길게 누름 → 단어장 모달 열림
+- [ ] 모달에서 리스트 선택 → isSelected UI 즉시 반영 + 항목 수 +1
+- [ ] 모달에서 리스트 해제 → isSelected UI 즉시 해제 + 항목 수 -1
+- [ ] 모달에서 모든 리스트 해제 → 저장 버튼 빈 북마크로 전환
+- [ ] 단어장이 없는 상태에서 저장 → 단어장 생성 모달 열림
+- [ ] 페이지 새로고침 후 저장 상태 유지
+- [ ] 탭 전환 후 돌아와도 저장 상태 유지
+
+**Pro 유저 — 학습(Learn)**:
+
+- [ ] 학습 버튼 클릭 → 즉시 녹색으로 전환 + 스크롤 이동
+- [ ] 학습 완료된 표현 다시 클릭 → 즉시 해제
+- [ ] `/me/learned` 페이지에서 학습 완료 목록 정상 표시
+
+**Free 유저**:
+
+- [ ] 저장/학습 버튼 클릭 → 즉시 UI 전환 (로컬 스토리지)
+- [ ] 모달에서 리스트 선택/해제 → isSelected UI 즉시 반영
+
+**비로그인 유저**:
+
+- [ ] 저장/학습 버튼 클릭 → 로그인 모달 표시
+
+**단어장 기능 (Phase 1 보존)**:
+
+- [ ] 단어장 생성/삭제/이름 변경
+- [ ] 기본 단어장 변경
+- [ ] 벌크 복사/이동/삭제 → item_count 정확히 반영
+
+#### 버그 수정 검증
+
+- [ ] **[Bug 1]** 저장 해제 후 바로 모달 열어도 isSelected가 정확히 해제 상태
+- [ ] **[Bug 2]** 빠른 연속 토글 후 모달 열어도 item_count가 정확히 반영
+- [ ] **[Bug 3]** 저장 버튼 빠르게 연속 클릭 가능 (렌더링 중 블로킹 없음)
+
+#### 성능 개선 검증
+
+- [ ] 저장 1회 클릭 시 서버 터미널에 POST **1개**만 표시
+- [ ] 해제 1회 클릭 시 서버 터미널에 POST **1개**만 표시
+- [ ] 빠른 연속 토글 (5회) 시 POST **5개** (이전: 15-20개)
+- [ ] 저장/해제 후 item_count 정합 복구 시간: ~1.5초 (이전: ~3-6초)
+
+### 롤백 계획
+
+- `toggle_save_expression` RPC는 additive (기존 함수 미수정) → RPC 삭제만으로 롤백
+- `user_actions(save)` 데이터 삭제는 **모든 검증 완료 후** 별도 마이그레이션으로 수행
+- Git 브랜치 전략: `feature/save-action-rpc` 브랜치에서 작업 → 검증 완료 후 merge
+
+### 구현 순서 요약
+
+```
+Step 1-2: DB 함수 생성 (toggle_save_expression, get_saved_expression_ids)
+    ↓
+Step 3-4: Server Action/Query 추가 (toggleSaveExpression, getSavedExpressionIds)
+    ↓
+Step 5-6: Hook 리팩토링 (useUserActions, useSaveAction)
+    ↓
+Step 7-9: Store/Hook 정리 (useSaveToggle, useVocabularySync, stores)
+    ↓
+Step 10: 검증 (체크리스트) + 문서 업데이트
+```
+
+각 Step 완료 후 `npx tsc --noEmit`으로 타입 체크, 브라우저 테스트로 기능 확인.

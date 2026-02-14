@@ -55,16 +55,28 @@ export const useVocabularyStore = create<VocabularyStore>()(
       set((state) => {
         state._pendingOps++;
 
+        // savedListIds 매핑 확인
+        const currentSet = state.savedListIds.get(expressionId);
+        const isCurrentlyInList = currentSet?.has(listId) ?? false;
+
+        // 멱등성 판단:
+        // - 매핑이 없으면(undefined): 호출자의 의도를 신뢰 (기존 동작 유지)
+        // - 매핑이 있으면: 실제 상태 변경 시에만 카운트 조정 (중복 방지)
+        const shouldAdjust =
+          currentSet === undefined
+            ? true
+            : add
+              ? !isCurrentlyInList
+              : isCurrentlyInList;
+
         const listIndex = state.lists.findIndex((l) => l.id === listId);
-        if (listIndex !== -1) {
-          const currentCount = state.lists[listIndex].item_count || 0;
+        if (listIndex !== -1 && shouldAdjust) {
           state.lists[listIndex].item_count = add
-            ? currentCount + 1
-            : Math.max(0, currentCount - 1);
+            ? (state.lists[listIndex].item_count || 0) + 1
+            : Math.max(0, (state.lists[listIndex].item_count || 0) - 1);
         }
 
         // savedListIds 업데이트
-        const currentSet = state.savedListIds.get(expressionId);
         if (add) {
           if (currentSet) {
             currentSet.add(listId);

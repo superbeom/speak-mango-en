@@ -2,6 +2,28 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.3: Zustand-First User Actions & Optimistic Sync (2026-02-14)
+
+### ✅ 진행 사항
+
+1.  **Zustand-First Architecture (Phase 2: User Actions)**:
+    - **`useUserActionStore` 신설**: Save/Learn 상태를 관리하는 전용 Zustand 스토어를 생성했습니다. `Set<string>`을 사용하여 O(1) 조회 성능을 확보하고, `_pendingOps` 카운터와 `optimisticToggle`/`resolveOperation` 패턴을 적용하여 Phase 1(`useVocabularyStore`)과 동일한 낙관적 업데이트 아키텍처를 구현했습니다.
+    - **`useUserActions` 리팩토링**: SWR 데이터를 직접 사용하던 방식에서 Zustand 스토어 구독 방식으로 전환했습니다. `hasAction`은 스토어의 `savedIds`/`learnedIds`를 리액티브하게 구독하여 컴포넌트 re-render를 보장합니다. `isLoading`은 스토어의 `_initialized` 플래그를 사용합니다.
+    - **SWR → Seeder 역할 변경**: SWR은 이제 초기 데이터 시드 및 `revalidateOnFocus` 기반 백그라운드 정합성 보장 역할만 수행합니다. 성공적인 토글 후 `mutateFn()` 리페치를 제거하여 불필요한 POST 요청을 감소시켰습니다.
+
+2.  **`syncingRef` 제거 및 `_pendingOps` 전환**:
+    - **Legacy Guard 제거**: `useSaveAction.ts`에서 서버 액션 완료까지 사용자 인터랙션을 ~6초 차단하던 `syncingRef` Lock을 제거했습니다.
+    - **Modern Guard 적용**: 동시 작업의 일관성은 `useUserActionStore`와 `useVocabularyStore`의 `_pendingOps` 카운터가 보장합니다. 사용자는 서버 응답을 기다리지 않고 즉시 재클릭할 수 있습니다.
+
+3.  **Free 유저 단어장 모달 동기화 수정**:
+    - **`savedListIds` 동기화**: Free 유저가 `toggleInList`으로 리스트를 토글할 때 `useVocabularyStore.savedListIds`도 함께 업데이트하도록 수정하여, 모달의 `isSelected` UI가 즉시 정확하게 반영되도록 했습니다.
+
+4.  **`item_count` 멱등성 보장**:
+    - **`useVocabularyStore.optimisticToggle` 개선**: `savedListIds` 매핑이 존재할 경우, 실제 상태 변경 시에만 `item_count`를 조정하도록 수정했습니다. 매핑이 없는 경우(서버에서 로드된 기존 데이터)에는 기존 동작(호출자 의도 신뢰)을 유지합니다. 이를 통해 빠른 연속 토글 시 `item_count`가 비정상적으로 증가하는 문제를 방지합니다.
+
+5.  **문서 현행화**:
+    - `syncingRef` 참조를 포함한 문서(`task.md`, `index.md`, `zustand_first_architecture.md`)를 `_pendingOps` 기반 설명으로 업데이트했습니다.
+
 ## v0.17.2: Staged Area Sync Accuracy & Auto-Correction (2026-02-14)
 
 ### ✅ 진행 사항

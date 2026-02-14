@@ -177,7 +177,7 @@
   - [x] **UX**: 페이지네이션 콜백 지원 및 뒤로가기 경로 고정 (`/me` 리다이렉트)
   - [x] **UI/UX**: 서비스 전반의 숫자 표시 방식 표준화 (`toLocaleString`)
 - [x] **Architecture**: 전역 단어장 모달 스토어(`useVocabularyModalStore`) 도입 및 로직 중앙화
-- [x] **Logic**: 단어장 동기화 레이스 컨디션 방지(`syncingRef`) 및 안정성 강화
+- [x] **Logic**: 단어장 동기화 레이스 컨디션 방지(`_pendingOps` 가드) 및 안정성 강화
 - [x] **Performance**: 시간 기반 시드(`getHourlySeed`) 도입을 통한 랜덤 피드 정합성 확보
 - [x] **Refactoring**: Zustand-First 단어장 아키텍처 도입 및 성능 고도화
   - [x] **Architecture**: 전역 `useVocabularyStore` (Zustand + Immer) 설계 및 `_pendingOps` 가드 도입

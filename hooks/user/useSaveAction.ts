@@ -25,7 +25,6 @@ export function useSaveAction(expressionId: string) {
   const { getActiveLists, syncOnSave, syncOnUnsave, getContainingListIds } =
     useVocabularySync(expressionId);
 
-  const syncingRef = useRef(false);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -102,10 +101,9 @@ export function useSaveAction(expressionId: string) {
 
   const handleSaveToggle = useCallback(async () => {
     if (!user) return { shouldOpenLoginModal: true };
-    if (syncingRef.current) return { shouldOpenLoginModal: false }; // Critical #1: Race condition fix
 
-    syncingRef.current = true;
-
+    // _pendingOps가 동시 작업의 일관성을 보장.
+    // optimisticToggle → 즉시 UI 반영 → 서버 액션은 백그라운드.
     const willSave = !isSaved;
 
     if (willSave) {
@@ -114,7 +112,6 @@ export function useSaveAction(expressionId: string) {
 
         if (availableLists.length === 0) {
           openListModal();
-          syncingRef.current = false;
           return { shouldOpenLoginModal: false };
         }
 
@@ -122,16 +119,12 @@ export function useSaveAction(expressionId: string) {
         await Promise.all([toggleSaveState(), syncOnSave(availableLists)]);
       } catch (error) {
         if (isMountedRef.current) console.error("Save sync failed:", error);
-      } finally {
-        syncingRef.current = false;
       }
     } else {
       try {
         await Promise.all([toggleSaveState(), syncOnUnsave()]);
       } catch (error) {
         if (isMountedRef.current) console.error("Unsave sync failed:", error);
-      } finally {
-        syncingRef.current = false;
       }
     }
 

@@ -112,6 +112,22 @@ export function useVocabularyLists() {
         } else {
           localAddToList(listId, expressionId);
         }
+
+        // 모달이 열려있으면 savedListIds도 동기화 (isSelected UI 반영)
+        const currentSavedIds = useVocabularyStore
+          .getState()
+          .savedListIds.get(expressionId);
+        if (currentSavedIds !== undefined) {
+          const updated = new Set(currentSavedIds);
+          if (isCurrentlyIn) {
+            updated.delete(listId);
+          } else {
+            updated.add(listId);
+          }
+          useVocabularyStore
+            .getState()
+            .syncSavedListIds(expressionId, Array.from(updated));
+        }
         return;
       }
 
