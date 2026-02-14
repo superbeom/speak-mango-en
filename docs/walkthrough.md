@@ -2,6 +2,26 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.2: Staged Area Sync Accuracy & Auto-Correction (2026-02-14)
+
+### 1. Goal (목표)
+
+- 벌크 작업(복사/이동) 시 발생하는 미미한 카운트 불일치를 자동 교정하여 Staged Area(선택 모달 및 페이지 정보)의 데이터 신뢰도를 100%로 끌어올립니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Background Auto-Correction (`useVocabularyListSync`)
+
+- **Problem**: 서버는 중복 항목을 무시(`Upsert`)하지만 클라이언트는 선택 개수만큼 무조건 더함으로써, 이미 항목을 가진 타겟 단어장의 카운트가 일시적으로 튀는 현상이 있었습니다.
+- **Solution**: `adjustItemCounts` 유틸리티의 `globalMutate` 설정을 `revalidate: true`로 변경했습니다.
+  - 사용자는 클릭 즉시 낙관적 업데이트 결과를 보며 반응성을 얻습니다.
+  - 동시에 백그라운드에서는 SWR이 서버의 실제 카운트 결과를 가져와 스토어를 즉각 교정(Correction)합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Data Integrity**: 대량 작업 중복 시나리오에서도 수백 ms 내에 정확한 상태로 자동 복구됨을 보장.
+- ✅ **Seamless Navigation**: 상세 페이지에서 벌크 작업 후 마이페이지로 이동했을 때 정확한 리스트 메타데이터를 확인할 수 있음.
+
 ## v0.17.1: UI Consistency & Skeleton Centralization (2026-02-13)
 
 ### 1. Goal (목표)

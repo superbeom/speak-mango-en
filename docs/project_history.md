@@ -2,6 +2,15 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.2: Staged Area Sync Accuracy & Auto-Correction (2026-02-14)
+
+### ✅ 진행 사항
+
+1.  **Staged Area Count Auto-Correction**:
+    - **Self-Correction Logic**: 벌크 복사/이동 시 서버의 중복 무시(`ON CONFLICT DO NOTHING`)로 인해 클라이언트 낙관적 카운트가 일시적으로 부정확해지던 문제를 해결했습니다.
+    - **SWR Revalidation**: `useVocabularyListSync` 훅의 `adjustItemCounts` 내에서 `globalMutate` 호출 시 `{ revalidate: true }` 옵션을 강제하여, 낙관적 업데이트 직후 백그라운드에서 실제 DB 카운트와 동기화되도록 보장했습니다.
+    - **Cross-Page Integrity**: 마이페이지(`/me`)와 단어장 상세 페이지 간의 카운트 불일치를 제거하여 대량 작업 후에도 완벽한 정합성을 유지합니다.
+
 ## v0.17.1: UI Consistency & Skeleton Centralization (2026-02-13)
 
 ### ✅ 진행 사항

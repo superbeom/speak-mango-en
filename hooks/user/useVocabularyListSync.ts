@@ -28,6 +28,8 @@ export function useVocabularyListSync(listId: string) {
   );
 
   // item_count 일괄 조정 + SWR 캐시 동기화
+  // revalidate: true → 서버 중복 무시(ON CONFLICT DO NOTHING)로 인한
+  // 부정확한 낙관적 카운트를 백그라운드 리페치로 자동 교정
   const adjustItemCounts = useCallback(
     (adjustments: Record<string, number>) => {
       const updatedLists = useVocabularyStore.getState().lists.map((l) => {
@@ -37,7 +39,7 @@ export function useVocabularyListSync(listId: string) {
           : l;
       });
       useVocabularyStore.getState().setLists(updatedLists);
-      globalMutate("vocabulary_lists", updatedLists, false);
+      globalMutate("vocabulary_lists", updatedLists, { revalidate: true });
     },
     [globalMutate],
   );
