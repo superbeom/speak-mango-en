@@ -48,6 +48,8 @@ export const fr = {
     codes: {
       UNAUTHORIZED: "Veuillez vous connecter pour continuer.",
       PREMIUM_REQUIRED: "Ceci est une fonctionnalité premium.",
+      RATE_LIMIT_EXCEEDED:
+        "Trop de requêtes. Veuillez réessayer dans un moment.",
       ACTION_TOGGLE_FAILED: "Échec de la mise à jour du statut.",
       ACTION_SYNC_FAILED: "Échec de la synchronisation des données.",
       VOCABULARY_FETCH_FAILED: "Échec du chargement des listes.",

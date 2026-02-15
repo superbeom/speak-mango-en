@@ -42,6 +42,7 @@ export const ar = {
     codes: {
       UNAUTHORIZED: "يرجى تسجيل الدخول للمتابعة.",
       PREMIUM_REQUIRED: "هذه ميزة مميزة.",
+      RATE_LIMIT_EXCEEDED: "طلبات كثيرة جدًا. يرجى المحاولة مرة أخرى بعد قليل.",
       ACTION_TOGGLE_FAILED: "فشل تحديث الحالة.",
       ACTION_SYNC_FAILED: "فشل مزامنة البيانات.",
       VOCABULARY_FETCH_FAILED: "فشل تحميل القوائم.",

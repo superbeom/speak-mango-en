@@ -2,6 +2,20 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.7: Rate Limiting & Security Hardening (2026-02-15)
+
+### ✅ 진행 사항
+
+1.  **Server Action Rate Limiting**:
+    - **In-Memory Sliding Window**: `lib/server/rateLimiter.ts`를 구현하여 외부 의존성(Redis 등) 없이 가벼운 서버 사이드 속도 제한을 적용했습니다.
+    - **Pro Action Protection**: `withPro` 래퍼에 `checkRateLimit`을 통합하여, 저장/학습/단어장 관리 등 모든 유료 기능에 대해 분당 60회의 요청 제한을 두어 시스템 남용을 방지했습니다.
+
+2.  **Auth Route Protection**:
+    - **IP-based Limiting**: `proxy.ts` (Middleware) 레벨에서 `/api/auth/*` 경로에 대한 IP 기반 속도 제한(분당 20회)을 적용하여 무차별 로그인 시도 및 세션 생성 부하를 차단했습니다.
+
+3.  **Client-side Optimization**:
+    - **LearnButton Stabilization**: `LearnButton` 컴포넌트에서 초기 데이터 로딩 중 발생할 수 있는 중복 클릭을 `isInitialLoading` 상태로 방어하고, 에러 발생 시의 낙관적 업데이트 롤백 UX를 검증했습니다.
+
 ## v0.17.6: 비로그인(Anonymous) 세션 보안 가드 강화 (2026-02-15)
 
 ### ✅ 진행 사항

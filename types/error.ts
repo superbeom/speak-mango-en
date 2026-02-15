@@ -11,7 +11,10 @@ export interface AppError {
 /**
  * 공통으로 사용되는 에러 코드
  */
-export type CommonErrorCode = "UNAUTHORIZED" | "PREMIUM_REQUIRED";
+export type CommonErrorCode =
+  | "UNAUTHORIZED"
+  | "PREMIUM_REQUIRED"
+  | "RATE_LIMIT_EXCEEDED";
 
 /**
  * 사용자 활동(저장, 학습 등) 관련 작업을 위한 에러 코드
@@ -44,6 +47,7 @@ export type VocabularyErrorCode =
 export const COMMON_ERROR = {
   UNAUTHORIZED: "UNAUTHORIZED",
   PREMIUM_REQUIRED: "PREMIUM_REQUIRED",
+  RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED",
 } as const;
 
 /**
@@ -91,14 +95,17 @@ export function isAppError(error: unknown): error is AppError {
 /**
  * 에러 코드로 표준화된 AppError를 생성합니다.
  * 에러 코드는 i18n 조회를 위한 메시지와 코드 역할을 모두 수행합니다.
+ *
+ * Error 인스턴스를 생성하여 Next.js Server Action 경계를 넘을 때
+ * .message 속성이 보존되도록 합니다. (plain object는 직렬화 시 손실됨)
+ *
  * @param code - 에러 코드
- * @returns 메시지와 코드에 모두 해당 코드가 설정된 AppError 객체
+ * @returns message에 해당 코드가 설정된 Error 기반 AppError 객체
  */
 export function createAppError(
   code: VocabularyErrorCode | ActionErrorCode,
 ): AppError {
-  return {
-    message: code,
-    code,
-  };
+  const error = new Error(code);
+  (error as AppError).code = code;
+  return error as AppError;
 }

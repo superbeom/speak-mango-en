@@ -48,6 +48,8 @@ export const de = {
     codes: {
       UNAUTHORIZED: "Bitte melden Sie sich an, um fortzufahren.",
       PREMIUM_REQUIRED: "Dies ist eine Premium-Funktion.",
+      RATE_LIMIT_EXCEEDED:
+        "Zu viele Anfragen. Bitte versuchen Sie es später erneut.",
       ACTION_TOGGLE_FAILED: "Statusaktualisierung fehlgeschlagen.",
       ACTION_SYNC_FAILED: "Fehler beim Synchronisieren der Daten.",
       VOCABULARY_FETCH_FAILED: "Listen konnten nicht geladen werden.",

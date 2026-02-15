@@ -153,8 +153,9 @@
 - [24. Error Handling Architecture (에러 핸들링 아키텍처)](#24-error-handling-architecture-에러-핸들링-아키텍처)
   - [24.1 Centralized Error Hook (`useAppErrorHandler`)](#241-centralized-error-hook-useapperrorhandler)
   - [24.2 Unified Error Types (`types/error.ts`)](#242-unified-error-types-types/errorts)
-  - [24.3 Global Toast System (`ToastContext`)](#243-global-toast-system-toastcontext)
-  - [24.4 Custom Hook Pattern with Reducer (`useQuizGame`)](#244-custom-hook-pattern-with-reducer-usequizgame)
+  - [24.3 Server Action 에러 직렬화 (`createAppError`)](#243-server-action-에러-직렬화-createapperror)
+  - [24.4 Global Toast System (`ToastContext`)](#244-global-toast-system-toastcontext)
+  - [24.5 Custom Hook Pattern with Reducer (`useQuizGame`)](#245-custom-hook-pattern-with-reducer-usequizgame)
 - [25. Pro Tier Infrastructure & Advanced Vocabulary Management](#25-pro-tier-infrastructure-advanced-vocabulary-management)
   - [25.1 Server Action Security HOF (`withPro`)](#251-server-action-security-hof-withpro)
   - [25.2 Server-side Revalidation Strategy](#252-server-side-revalidation-strategy)
@@ -165,6 +166,9 @@
   - [26.2 Navigation Components (`Pagination.tsx`)](#262-navigation-components-paginationtsx)
 - [27. Pagination Hook Architecture (페이지네이션 훅 아키텍처)](#27-pagination-hook-architecture-페이지네이션-훅-아키텍처)
   - [27.1 Separation of Concerns (관심사 분리)](#271-separation-of-concerns-관심사-분리)
+- [28. Rate Limiting System (속도 제한 시스템)](#28-rate-limiting-system-속도-제한-시스템)
+  - [28.1 Overview](#281-overview)
+  - [28.2 Scope](#282-scope)
 
 ---
 
@@ -2093,13 +2097,69 @@ NextAuth와 Supabase의 스키마 명명 규칙 충돌(CamelCase vs SnakeCase)�
 - **Consolidation**: 기존의 `ACTION_UNAUTHORIZED` 등 파편화된 에러 코드를 `UNAUTHORIZED`와 같이 범용적인 코드로 통합하여 관리 복잡도를 줄였습니다.
 - **i18n Integration**: 에러 코드에 대응하는 다국어 메시지 키를 매핑하여, 에러 발생 시 즉시 번역된 메시지를 제공할 수 있는 기반을 마련했습니다.
 
-### 24.3 Global Toast System (`ToastContext`)
+### 24.3 Server Action 에러 직렬화 (`createAppError`)
+
+#### 문제 (Problem)
+
+Server Action에서 `throw createAppError("RATE_LIMIT_EXCEEDED")`로 에러를 던지면, 클라이언트의 `handleError`에서 에러 코드 기반 다국어 메시지 대신 **"An unexpected error occurred."** 라는 generic 메시지가 표시되었습니다.
+
+#### 원인 (Root Cause)
+
+Next.js Server Action은 서버에서 throw된 에러를 **네트워크를 통해 직렬화(Serialization)** 하여 클라이언트에 전달합니다. 이때 **`Error` 인스턴스의 `.message` 속성만 보존**하고, plain object는 보안상의 이유로 원본 데이터를 전달하지 않습니다.
+
+```
+[서버]                                        [클라이언트]
+throw new Error("CODE")      → 직렬화 →   catch(error) → error.message = "CODE"        ✅ 보존
+throw { message: "CODE" }    → 직렬화 →   catch(error) → error.message = "An error..." ❌ 손실
+```
+
+기존 `createAppError`는 plain object를 반환했으므로, Server Action 경계를 넘을 때 `.message`가 손실되었습니다.
+
+#### 수정 (Fix)
+
+```typescript
+// ❌ 이전: plain object (Server Action 경계에서 message 손실)
+export function createAppError(code: ...): AppError {
+  return {
+    message: code,
+    code,
+  };
+}
+
+// ✅ 현재: Error 인스턴스 (Next.js가 .message를 보존)
+export function createAppError(code: ...): AppError {
+  const error = new Error(code);
+  (error as AppError).code = code;
+  return error as AppError;
+}
+```
+
+#### 영향 범위 (Impact)
+
+이 수정은 `createAppError`를 사용하는 **모든 에러 코드**에 적용됩니다:
+
+- `RATE_LIMIT_EXCEEDED` (Rate Limiting)
+- `UNAUTHORIZED`, `PREMIUM_REQUIRED` (인증/권한)
+- `VOCABULARY_CREATE_FAILED`, `VOCABULARY_ADD_FAILED` 등 (단어장 작업)
+- `ACTION_TOGGLE_FAILED`, `ACTION_SYNC_FAILED` (사용자 액션)
+
+기존에도 이 에러들은 모두 generic 메시지("An unexpected error occurred.")로 표시되고 있었지만, 정상적인 사용 흐름에서 Server Action 에러가 발생하는 경우가 드물어 발견되지 않았습니다.
+
+#### 호환성 (Compatibility)
+
+다른 코드의 수정은 **불필요**합니다:
+
+- `isAppError` 타입 가드: `typeof error === "object" && "message" in error` — `Error` 인스턴스도 통과
+- `handleError`: `error.message`로 에러 코드를 읽음 — `Error.message`와 동일
+- `createAppError` 호출부: `throw createAppError(CODE)` — 변경 없음
+
+### 24.4 Global Toast System (`ToastContext`)
 
 - **Structure**: `context/ToastContext.tsx`
 - **Role**: 애플리케이션 최상위(`layout.tsx`)에서 `ToastProvider`로 감싸져 있어, 어디서든 `useToast()` 훅을 통해 알림을 띄울 수 있습니다.
 - **Integration**: `useAppErrorHandler`와 긴밀하게 통합되어, 에러 발생 -> 핸들러 호출 -> 토스트 알림으로 이어지는 일관된 파이프라인을 형성합니다.
 
-### 24.4 Custom Hook Pattern with Reducer (`useQuizGame`)
+### 24.5 Custom Hook Pattern with Reducer (`useQuizGame`)
 
 **Problem**: 퀴즈 게임(`QuizGame.tsx`) 컴포넌트에 상태 관리, 비즈니스 로직, 세션 스토리지, 분석 트래킹 로직이 복잡하게 섞여 있어 컴포넌트가 비대해지고 유지보수가 어려웠습니다.
 
@@ -2281,3 +2341,18 @@ export function useQuizGame(initialExpressions: Expression[]) {
 6.  **Data Update**:
     - 서버 응답 도착 → SWR이 `data`를 새로운 목록으로 교체.
     - 사용자는 URL 변경과 함께 목록이 부드럽게 교체되는 것을 확인하며, 사후 URL 업데이트로 인한 2중 로딩이 발생하지 않습니다.
+
+---
+
+## 28. Rate Limiting System (속도 제한 시스템)
+
+> 상세 내용은 [Rate Limiting: 서버 액션 및 인증 라우트 보호](./rate_limiting.md) 문서를 참조하십시오.
+
+### 28.1 Overview
+
+서비스의 안정성과 보안을 위해 **In-Memory Sliding Window** 알고리즘을 기반으로 한 서버 사이드 속도 제한 시스템을 도입했습니다. 외부 의존성(Redis 등) 없이 가볍게 동작하며, Vercel Serverless/Edge 환경에 최적화되어 있습니다.
+
+### 28.2 Scope
+
+- **Server Actions (Phase 1)**: `withPro` 래퍼를 통과하는 모든 쓰기 작업(저장, 학습, 단어장 관리 등)에 대해 **사용자 ID 기준**으로 분당 60회의 요청을 제한합니다.
+- **Auth Routes (Phase 2)**: `/api/auth` 엔드포인트(로그인, 세션 조회 등)에 대해 **IP 기준**으로 분당 20회의 요청을 제한하여 무차별 대입 및 부하를 차단합니다.

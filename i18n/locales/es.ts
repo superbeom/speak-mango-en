@@ -47,6 +47,8 @@ export const es = {
     codes: {
       UNAUTHORIZED: "Por favor, inicia sesión para continuar.",
       PREMIUM_REQUIRED: "Esta es una función premium.",
+      RATE_LIMIT_EXCEEDED:
+        "Demasiadas solicitudes. Inténtalo de nuevo en un momento.",
       ACTION_TOGGLE_FAILED: "Error al actualizar el estado.",
       ACTION_SYNC_FAILED: "Error al sincronizar los datos.",
       VOCABULARY_FETCH_FAILED: "Error al cargar las listas.",

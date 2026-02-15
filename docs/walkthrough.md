@@ -2,6 +2,30 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.7: Rate Limiting & Security Hardening (2026-02-15)
+
+### 1. Goal (목표)
+
+- 악의적인 사용자나 봇에 의한 API 남용(Abuse)을 방지하여 서버 리소스를 보호합니다.
+- 인증 엔드포인트에 대한 무차별 대입 공격(Brute Force) 및 Looping 요청을 차단하여 보안성을 강화합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Server-Side Rate Limiter (`lib/server/rateLimiter.ts`)
+
+- **Algorithm**: Sliding Window Counter 알고리즘을 채택하여 Fixed Window의 경계 문제(Burst)를 완화했습니다.
+- **In-Memory Store**: `Map`을 사용하여 별도의 인프라 도입 없이 구현했으며, 5분 주기의 자동 정리(Cleanup) 로직을 포함하여 메모리 누수를 방지했습니다.
+
+#### B. Middleware Integration (`proxy.ts`)
+
+- **Auth Protection**: `proxy.ts`의 최상단에 IP 기반 Rate Limit 로직을 인라인으로 구현하여, `/api/auth` 경로로 들어오는 과도한 요청을 Edge Runtime에서 즉시 차단(429 Too Many Requests)합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Security**: 인증된 사용자의 API 남용 및 봇 공격에 대한 효과적인 방어책 마련.
+- ✅ **Stability**: 과도한 트래픽으로 인한 DB 커넥션 풀 고갈 예방.
+- ✅ **Zero Cost**: 외부 Rate Limit 서비스(Upstash 등) 없이 자체 구현으로 인프라 비용 절감.
+
 ## v0.17.6: 비로그인(Anonymous) 세션 보안 가드 강화 (2026-02-15)
 
 ### 1. Goal (목표)

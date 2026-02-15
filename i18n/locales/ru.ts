@@ -47,6 +47,7 @@ export const ru = {
     codes: {
       UNAUTHORIZED: "Пожалуйста, войдите, чтобы продолжить.",
       PREMIUM_REQUIRED: "Это премиум-функция.",
+      RATE_LIMIT_EXCEEDED: "Слишком много запросов. Попробуйте позже.",
       ACTION_TOGGLE_FAILED: "Не удалось обновить статус.",
       ACTION_SYNC_FAILED: "Не удалось синхронизировать данные.",
       VOCABULARY_FETCH_FAILED: "Не удалось загрузить списки.",

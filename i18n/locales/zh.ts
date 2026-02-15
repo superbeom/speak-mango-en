@@ -42,6 +42,7 @@ export const zh = {
     codes: {
       UNAUTHORIZED: "请登录以继续。",
       PREMIUM_REQUIRED: "这是高级功能。",
+      RATE_LIMIT_EXCEEDED: "请求过多，请稍后再试。",
       ACTION_TOGGLE_FAILED: "更新状态失败。",
       ACTION_SYNC_FAILED: "数据同步失败。",
       VOCABULARY_FETCH_FAILED: "加载列表失败。",

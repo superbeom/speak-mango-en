@@ -7,8 +7,84 @@ import {
 } from "@/i18n";
 import { ROUTES } from "@/lib/routes";
 
+// ---------------------------------------------------------------------------
+// Auth Rate Limiter (Inline — Edge Runtime 호환)
+// ---------------------------------------------------------------------------
+
+const AUTH_RATE_LIMIT = 20; // 분당 최대 요청 수
+const AUTH_WINDOW_MS = 60_000; // 1분 윈도우
+const AUTH_CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5분마다 정리
+const authStore = new Map<string, number[]>();
+let lastAuthCleanup = Date.now();
+
+function cleanupAuthStoreIfNeeded(): void {
+  const now = Date.now();
+  if (now - lastAuthCleanup < AUTH_CLEANUP_INTERVAL_MS) return;
+  lastAuthCleanup = now;
+
+  const cutoff = now - AUTH_WINDOW_MS;
+  for (const [key, timestamps] of authStore) {
+    const valid = timestamps.filter((t) => t > cutoff);
+    if (valid.length === 0) {
+      authStore.delete(key);
+    } else {
+      authStore.set(key, valid);
+    }
+  }
+}
+
+function isAuthRateLimited(ip: string): boolean {
+  cleanupAuthStoreIfNeeded();
+
+  const now = Date.now();
+  const windowStart = now - AUTH_WINDOW_MS;
+
+  const timestamps = authStore.get(ip) || [];
+  const valid = timestamps.filter((t) => t > windowStart);
+
+  if (valid.length >= AUTH_RATE_LIMIT) {
+    authStore.set(ip, valid);
+    return true;
+  }
+
+  valid.push(now);
+  authStore.set(ip, valid);
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Proxy
+// ---------------------------------------------------------------------------
+
 export function proxy(request: NextRequest) {
   const url = request.nextUrl;
+
+  // 0. Auth Rate Limit: /api/auth 경로에 대한 IP 기반 요청 빈도 제한
+  if (url.pathname.startsWith("/api/auth")) {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+
+    if (isAuthRateLimited(ip)) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Too Many Requests",
+          message: "Too many requests. Please try again later.",
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": "60",
+          },
+        },
+      );
+    }
+
+    // Auth 라우트는 locale 등 후속 처리 불필요 — 바로 통과
+    return NextResponse.next();
+  }
 
   // 1. /studio 경로 보안 설정 (Basic Auth)
   if (url.pathname.startsWith(ROUTES.STUDIO)) {
@@ -120,12 +196,14 @@ export function proxy(request: NextRequest) {
   });
 }
 
-// 프록시(미들웨어)가 적용될 경로 설정
+// 프록시가 적용될 경로 설정
 export const config = {
   matcher: [
+    // Auth 라우트: Rate Limit 적용
+    "/api/auth/:path*",
     /*
-     * 아래 경로를 제외한 모든 요청에 미들웨어 적용:
-     * - api (API 라우트)
+     * 아래 경로를 제외한 모든 요청에 프록시 적용:
+     * - api (API 라우트 — auth 제외는 위에서 처리)
      * - _next/static (정적 파일)
      * - _next/image (이미지 최적화 파일)
      * - favicon.ico (파비콘)

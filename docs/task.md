@@ -104,6 +104,7 @@
 - [x] **Refactoring**: 공유 버튼 토스트 시스템 전환 (`ToastContext` 연동)
 - [ ] **UI/UX**: 아카이브 / 인덱스 페이지 구현
 - [x] **Security**: Supabase RLS 설정 및 보안 강화 (Full RLS Coverage 완료)
+- [x] **Security**: Rate Limiting 시스템 도입 (Server Actions & Auth Routes)
 
 ## Phase 5: Analytics (데이터 분석)
 

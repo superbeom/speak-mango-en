@@ -44,6 +44,7 @@ export const en = {
     codes: {
       UNAUTHORIZED: "Please sign in to continue.",
       PREMIUM_REQUIRED: "This is a premium feature.",
+      RATE_LIMIT_EXCEEDED: "Too many requests. Please try again shortly.",
       ACTION_TOGGLE_FAILED: "Failed to update save status.",
       ACTION_SYNC_FAILED: "Failed to sync data.",
       VOCABULARY_FETCH_FAILED: "Failed to load lists.",

@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { CheckCircle, Circle, Loader2 } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
+import { useAppErrorHandler } from "@/hooks/useAppErrorHandler";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useUserActions } from "@/hooks/user/useUserActions";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ export default function LearnButton({
   scrollToId,
 }: LearnButtonProps) {
   const { dict } = useI18n();
+  const { handleError } = useAppErrorHandler();
   const { user } = useAuthUser();
   const { toggleAction, hasAction, isLoading } = useUserActions();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,6 +73,7 @@ export default function LearnButton({
       }
     } catch (error) {
       console.error("Failed to toggle learn:", error);
+      handleError(error);
       // Rollback is handled by SWR inside useUserActions
     }
   };

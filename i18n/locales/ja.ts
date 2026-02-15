@@ -44,6 +44,8 @@ export const ja = {
     codes: {
       UNAUTHORIZED: "ログインが必要です。",
       PREMIUM_REQUIRED: "プレミアム機能です。",
+      RATE_LIMIT_EXCEEDED:
+        "リクエストが多すぎます。しばらくしてから再試行してください。",
       ACTION_TOGGLE_FAILED: "状態の更新に失敗しました。",
       ACTION_SYNC_FAILED: "データの同期に失敗しました。",
       VOCABULARY_FETCH_FAILED: "リストの読み込みに失敗しました。",

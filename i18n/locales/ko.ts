@@ -43,6 +43,7 @@ export const ko = {
     codes: {
       UNAUTHORIZED: "로그인이 필요합니다.",
       PREMIUM_REQUIRED: "프리미엄 기능입니다.",
+      RATE_LIMIT_EXCEEDED: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
       ACTION_TOGGLE_FAILED: "상태 변경에 실패했습니다.",
       ACTION_SYNC_FAILED: "데이터 동기화에 실패했습니다.",
       VOCABULARY_FETCH_FAILED: "목록을 불러오는데 실패했습니다.",

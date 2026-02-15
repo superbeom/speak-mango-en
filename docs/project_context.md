@@ -1,6 +1,6 @@
 # Project Context & Rules: Speak Mango
 
-**최종 수정일**: 2026-02-13
+**최종 수정일**: 2026-02-15
 
 ## 1. 프로젝트 개요 (Project Overview)
 
@@ -130,7 +130,8 @@ speak-mango-en/
 │   ├── technical_implementation/    # 주요 기능의 기술적 구현 상세
 │   │   ├── index.md                 # 구현 개요 및 알고리즘
 │   │   ├── zustand_first_architecture.md # Zustand-First 상태 관리 및 낙관적 업데이트 아키텍처 (Pro 유저용)
-│   │   └── use_swr_strategy.md      # Client-Side Data Fetching (useSWR) 전략
+│   │   ├── use_swr_strategy.md      # Client-Side Data Fetching (useSWR) 전략
+│   │   └── rate_limiting.md         # Rate Limiting 설계 및 구현 (In-Memory Sliding Window)
 │   ├── task.md              # 작업 목록 및 진행 상태 관리
 │   ├── walkthrough.md       # 버전별 기능 구현 상세 및 검증 내역
 │   ├── agent_workflows.md   # AI 에이전트 워크플로우 가이드
@@ -223,7 +224,7 @@ speak-mango-en/
 
 - **Queries vs Actions 분리**:
   - **Queries (`services/queries/`)**: 데이터 조회(Read) 전용. 서버 컴포넌트뿐만 아니라 클라이언트 컴포넌트(SWR, useEffect 등)에서도 호출될 것을 고려하여 `"use server"`를 필수적으로 선언합니다.
-  - **Actions (`services/actions/`)**: 데이터 생성/수정/삭제(Write) 전용. 유료 사용자 전용 수정 작업은 반드시 `withPro` 래퍼 등을 통해 세션 인증 및 권한 검증이 동반되는 Server Actions로 구현합니다.
+  - **Actions (`services/actions/`)**: 데이터 생성/수정/삭제(Write) 전용. 유료 사용자 전용 수정 작업은 반드시 `withPro` 래퍼 등을 통해 세션 인증, 권한 검증 및 Rate Limit(`lib/server/rateLimiter.ts`)이 동반되는 Server Actions로 구현합니다. ([`rate_limiting.md`](./technical_implementation/rate_limiting.md) 참조)
 - **Request-level Caching (Deduplication)**:
   - 모든 `Queries` 함수는 React의 `cache()`로 래핑하여 **단일 HTTP 요청(Request) 내에서 발생하는 중복된 DB 쿼리를 자동으로 제거**합니다. 이를 통해 컴포넌트 트리 어디에서든 성능 저하 걱정 없이 필요한 데이터를 직접 호출할 수 있는 구조(Prop Drilling 방지)를 지향합니다.
 - **인터페이스 일관성**: 서비스 함수는 가능한 한 명시적인 타입을 반환하며, 에러 발생 시 적절한 `createAppError`를 던져 프론트엔드 에러 핸들러(`useAppErrorHandler`)에서 처리될 수 있도록 합니다.
@@ -252,7 +253,7 @@ speak-mango-en/
   - **Consistency**: 모든 알림은 중앙화된 컨텍스트를 통해 동일한 애니메이션과 디자인으로 제공됩니다.
 - **Error Handling Strategy**:
   - **Hook**: `hooks/useAppErrorHandler.ts`를 사용하여 에러 처리 로직을 중앙화합니다. `try/catch` 블록 내에서 `handleError(e)`를 호출하면 표준화된 로깅과 UI 알림(Toast)이 자동으로 수행됩니다.
-  - **Server Action Wrapper (`withPro`)**: `lib/server/actionUtils.ts`의 `withPro` 고차 함수를 사용하여 서버 액션의 세션 인증 및 Pro 티어 검증을 일원화합니다. 보안이 필요한 모든 원격 액션은 이 래퍼를 통해 보호되어야 합니다.
+  - **Server Action Wrapper (`withPro`)**: `lib/server/actionUtils.ts`의 `withPro` 고차 함수를 사용하여 서버 액션의 세션 인증, Pro 티어 검증 및 Rate Limit(유저당 60회/분)을 일원화합니다. 보안이 필요한 모든 원격 액션은 이 래퍼를 통해 보호되어야 합니다. Auth 라우트(`/api/auth`)에 대한 IP 기반 Rate Limit(20회/분)은 `proxy.ts`에서 처리합니다.
   - **Types**: `types/error.ts`의 `ErrorCode` Enum을 사용하여 에러 케이스를 정의하고, 하드코딩된 문자열 에러 메시지 사용을 지양합니다.
 - **데이터 페칭**: Server Components에서 직접 DB 접근을 선호하며, 클라이언트 측은 필요한 경우에만 최소화.
 - **타입 안정성**: DB 데이터는 Supabase에서 생성된 타입을 사용하거나 명시적 인터페이스로 정의.
