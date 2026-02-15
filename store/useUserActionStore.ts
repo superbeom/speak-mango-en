@@ -77,12 +77,3 @@ export const useUserActionStore = create<UserActionStore>()(
     },
   })),
 );
-
-// Selectors
-export const selectHasAction =
-  (expressionId: string, type: ActionType) => (state: UserActionStore) =>
-    (type === "save" ? state.savedIds : state.learnedIds).has(expressionId);
-
-export const selectIsInitialized =
-  (type: ActionType) => (state: UserActionStore) =>
-    state._initialized[type];

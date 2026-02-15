@@ -12,6 +12,7 @@ import { getLearnedListDetails } from "@/services/queries/vocabulary";
 import { ROUTES } from "@/lib/routes";
 import { SkeletonVocabularyDetail } from "@/components/ui/Skeletons";
 import Pagination from "@/components/ui/Pagination";
+import RefreshGuard from "@/components/ui/RefreshGuard";
 import VocabularyDetailHeader from "@/components/me/vocabulary/VocabularyDetailHeader";
 import VocabularyItemsGrid from "@/components/me/vocabulary/VocabularyItemsGrid";
 
@@ -30,7 +31,11 @@ const RemoteLearnedDetail = memo(function RemoteLearnedDetail({
   // URL의 내부 상태 동기화
   const { handlePageChange: onPageChangeHandler } = usePaginationState();
 
-  const { data, isLoading: isSwrLoading } = useSWR(
+  const {
+    data,
+    isLoading: isSwrLoading,
+    isValidating,
+  } = useSWR(
     ["learned-expressions", initialPage],
     () => getLearnedListDetails(initialPage, EXPRESSION_PAGE_SIZE),
     {
@@ -51,6 +56,7 @@ const RemoteLearnedDetail = memo(function RemoteLearnedDetail({
   const displayTotalCount = data?.total_count || 0;
   const totalPages = Math.ceil(displayTotalCount / EXPRESSION_PAGE_SIZE);
   const isLoading = isSwrLoading && !data;
+  const isRefreshing = isValidating && !!data;
 
   const handlePageChange = (newPage: number) => {
     onPageChangeHandler(newPage);
@@ -77,13 +83,15 @@ const RemoteLearnedDetail = memo(function RemoteLearnedDetail({
       </div>
 
       <div className="mt-8 space-y-10">
-        <VocabularyItemsGrid
-          items={displayItems}
-          isSelectionMode={false}
-          viewMode={VIEW_MODE.FULL}
-          selectedIds={new Set()}
-          onToggleItem={() => {}}
-        />
+        <RefreshGuard isRefreshing={isRefreshing}>
+          <VocabularyItemsGrid
+            items={displayItems}
+            isSelectionMode={false}
+            viewMode={VIEW_MODE.FULL}
+            selectedIds={new Set()}
+            onToggleItem={() => {}}
+          />
+        </RefreshGuard>
 
         {totalPages > 1 && (
           <div className="pagination-container">

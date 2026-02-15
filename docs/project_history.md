@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.5: UI 로딩 상태 및 데이터 정합성 개선 (2026-02-15)
+
+### ✅ 진행 사항
+
+1.  **UI 로딩 상태 및 사용자 경험(UX) 개선**:
+    - **`RefreshGuard` 컴포넌트 도입**: SWR revalidation 중 UI 오조작 방지를 위해 콘텐츠를 반투명(70%)하게 표시하고 클릭을 차단하는 가드를 적용했습니다. (`RemoteVocabularyDetail`, `RemoteLearnedDetail`)
+    - **`LearnButton` 애니메이션**: 로딩/상태 전환 시 `AnimatePresence`와 `motion.span`을 사용하여 부드러운 fade 전환 효과를 구현했습니다.
+
+2.  **`isLoading` 판단 로직 최적화 및 Flicker 제거**:
+    - **SWR 직접 가드 도입**: Zustand의 `_initialized` 플래그 대신 SWR `data === undefined`를 우선 체크하여 데이터 도착 여부를 직접 판단하도록 개선했습니다.
+    - **조합 가드(OR) 적용**: SWR 데이터 도착 시점과 `useEffect`를 통한 스토어 동기화 사이의 1프레임 갭을 제거하기 위해 `data === undefined || !isInitialized` 조합 조건을 적용, 데이터가 확실히 스토어에 반영된 후에만 로딩을 해제합니다.
+
+3.  **Dead Code 정리**:
+    - **Selector 제거**: `useUserActions`에서 캡슐화되어 더 이상 사용되지 않는 `selectHasAction`, `selectIsInitialized` 함수를 `useUserActionStore.ts`에서 삭제했습니다.
+
 ## v0.17.4: Save RPC 통합 — Phase 3 완료 (2026-02-15)
 
 ### ✅ 진행 사항

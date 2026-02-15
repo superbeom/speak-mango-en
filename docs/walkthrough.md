@@ -2,6 +2,39 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.5: UI 로딩 상태 및 데이터 정합성 개선 (2026-02-15)
+
+### 1. Goal (목표)
+
+- SWR revalidation 중 발생하는 UI 오조작을 방지하고 시각적 피드백을 강화합니다.
+- SWR 데이터 도착과 Zustand 스토어 동기화 사이의 타이밍 갭(1프레임 Flicker)을 기술적으로 제거합니다.
+- `useUserActions` 훅으로 캡슐화되어 더 이상 사용되지 않는 스토어 선택자(Dead Code)를 정리합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. RefreshGuard 도입 (`components/ui/RefreshGuard.tsx`)
+
+- SWR의 `isValidating` 상태를 구독하여 비동기 갱신 중 자식 컴포넌트를 반투명(70%)하게 표시하고 `pointer-events: none`을 통해 클릭 등 이벤트를 차단합니다.
+- `RemoteVocabularyDetail`, `RemoteLearnedDetail` 등에 적용하여 데이터 갱신 중 발생할 수 있는 데이터 불일치 조작을 방지했습니다.
+
+#### B. `isLoading` 조합 가드 (`hooks/user/useUserActions.ts`)
+
+- **기존 방식**: `_initialized` 플래그에만 의존하여 SWR 데이터가 메모리에 도착했으나 아직 `useEffect`를 통해 스토어에 동기화되기 전의 짧은 순간(1프레임) 동안 데이터 불일치가 발생할 수 있었습니다.
+- **개선 방식**: `data === undefined || !isInitialized` 조합 조건을 적용했습니다.
+  - SWR 데이터가 아직 Fetch 중일 때 (`undefined`) 로딩.
+  - SWR 데이터가 도착했으나 스토어가 아직 동기화 전일 때 (`!isInitialized`) 로딩 유지.
+  - 두 조건이 모두 충족되어야 로딩을 해제함으로써 flicker-free UI를 구현했습니다.
+
+#### C. Dead Code 제거 (`store/useUserActionStore.ts`)
+
+- `useUserActions` 훅이 내부에서 상태를 직접 구독하게 됨에 따라 외부 노출이 불필요해진 `selectHasAction`, `selectIsInitialized` 선택자를 삭제했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **데이터 정합성 확보**: SWR-Zustand 동기화 타이밍 갭을 기술적으로 해결하여 1프레임 깜빡임 현상을 제거했습니다.
+- ✅ **UX 피드백 강화**: `RefreshGuard`와 `LearnButton` 애니메이션 도입으로 부드럽고 명확한 상태 변화 전이 효과를 제공합니다.
+- ✅ **코드 슬림화**: 불필요한 선택자를 제거하여 스토어의 책임과 인터페이스를 단순화했습니다.
+
 ## v0.17.4: Save RPC 통합 — Phase 3 완료 (2026-02-15)
 
 ### 1. Goal (목표)

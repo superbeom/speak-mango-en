@@ -31,6 +31,7 @@ import {
 import { ROUTES } from "@/lib/routes";
 import { SkeletonVocabularyDetail } from "@/components/ui/Skeletons";
 import Pagination from "@/components/ui/Pagination";
+import RefreshGuard from "@/components/ui/RefreshGuard";
 import VocabularyDetailHeader from "./VocabularyDetailHeader";
 import VocabularyItemsGrid from "./VocabularyItemsGrid";
 import VocabularyToolbar from "./VocabularyToolbar";
@@ -270,11 +271,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
           onToggleAll={handleToggleAll}
         />
 
-        <div
-          className={`transition-opacity duration-300 ${
-            isRefreshing ? "opacity-50 pointer-events-none" : "opacity-100"
-          }`}
-        >
+        <RefreshGuard isRefreshing={isRefreshing}>
           <VocabularyItemsGrid
             items={displayItems}
             isSelectionMode={isSelectionMode}
@@ -285,7 +282,7 @@ const RemoteVocabularyDetail = memo(function RemoteVocabularyDetail({
             onMove={handleMove}
             onDelete={handleItemsDelete}
           />
-        </div>
+        </RefreshGuard>
 
         {totalPages > 1 && (
           <div className="pagination-container">

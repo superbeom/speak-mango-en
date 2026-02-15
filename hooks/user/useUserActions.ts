@@ -4,10 +4,7 @@ import { useCallback, useEffect } from "react";
 import useSWR from "swr";
 import { useAuthUser } from "@/hooks/user/useAuthUser";
 import { useLocalActionStore } from "@/store/useLocalActionStore";
-import {
-  useUserActionStore,
-  selectIsInitialized,
-} from "@/store/useUserActionStore";
+import { useUserActionStore } from "@/store/useUserActionStore";
 import { useVocabularyStore } from "@/store/useVocabularyStore";
 import { ActionType } from "@/services/repositories/UserActionRepository";
 import { getUserActions, getSavedExpressionIds } from "@/services/queries/user";
@@ -54,9 +51,15 @@ export function useUserActions() {
     }
   }, [learnActions]);
 
-  // Zustand 스토어에서 초기화 상태 구독
-  const isSaveInitialized = useUserActionStore(selectIsInitialized("save"));
-  const isLearnInitialized = useUserActionStore(selectIsInitialized("learn"));
+  // _initialized: syncWithServer가 호출되어 스토어에 데이터가 반영된 시점에 true.
+  // SWR data 도착 → useEffect → syncWithServer 순서이므로,
+  // SWR data가 있더라도 _initialized가 false이면 스토어는 아직 빈 상태.
+  const isSaveInitialized = useUserActionStore(
+    (state) => state._initialized.save,
+  );
+  const isLearnInitialized = useUserActionStore(
+    (state) => state._initialized.learn,
+  );
 
   // Zustand 스토어에서 반응적으로 구독 (변경 시 리렌더 트리거)
   const savedIds = useUserActionStore((state) => state.savedIds);
@@ -213,9 +216,16 @@ export function useUserActions() {
   return {
     hasAction,
     toggleAction,
+    // 1차 가드: SWR data === undefined → 아직 페칭 전
+    // 2차 가드: !_initialized → SWR 데이터가 도착했지만 useEffect→syncWithServer가 아직 미실행
+    // 두 가드 중 하나라도 true이면 로딩 상태 유지 → 스토어에 데이터가 확실히 반영된 후에만 해제
     isLoading: {
-      save: isAuthLoading || (isPro ? !isSaveInitialized : false),
-      learn: isAuthLoading || (isPro ? !isLearnInitialized : false),
+      save:
+        isAuthLoading ||
+        (isPro ? saveActions === undefined || !isSaveInitialized : false),
+      learn:
+        isAuthLoading ||
+        (isPro ? learnActions === undefined || !isLearnInitialized : false),
     },
   };
 }
