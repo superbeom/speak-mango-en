@@ -82,15 +82,18 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 #### 5. `user_actions`
 
-표현에 대한 사용자의 상호작용(좋아요, 저장, 학습 등)을 저장하는 테이블입니다.
+표현에 대한 사용자의 학습 완료(learn) 상태를 저장하는 테이블입니다.
 
-| Column Name     | Type          | Key  | Default             | Description                 |
-| --------------- | ------------- | ---- | ------------------- | --------------------------- |
-| `id`            | UUID          | PK   | `gen_random_uuid()` | 고유 식별자                 |
-| `user_id`       | UUID          | FK\* | -                   | `users.id` 참조             |
-| `expression_id` | UUID          | FK\* | -                   | `expressions.id` 참조       |
-| `action_type`   | `action_type` | UK\* | -                   | 액션 종류 ('save', 'learn') |
-| `created_at`    | TIMESTAMPTZ   |      | `now()`             | 액션 발생 일시              |
+> **Note**: [Zustand-First 아키텍처 Phase 3](../technical_implementation/zustand_first_architecture.md#10-phase-3-save-rpc-통합-완료-) 이후 `save` 액션은 `vocabulary_items` 테이블로 통합되었습니다.
+> 이 테이블은 **`learn` 전용**으로 사용됩니다.
+
+| Column Name     | Type          | Key  | Default             | Description              |
+| --------------- | ------------- | ---- | ------------------- | ------------------------ |
+| `id`            | UUID          | PK   | `gen_random_uuid()` | 고유 식별자              |
+| `user_id`       | UUID          | FK\* | -                   | `users.id` 참조          |
+| `expression_id` | UUID          | FK\* | -                   | `expressions.id` 참조    |
+| `action_type`   | `action_type` | UK\* | -                   | 액션 종류 ('learn' 전용) |
+| `created_at`    | TIMESTAMPTZ   |      | `now()`             | 액션 발생 일시           |
 
 #### 6. `vocabulary_lists`
 
@@ -207,11 +210,11 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 
 #### 2. `toggle_user_action`
 
-- **Description**: 사용자 액션(좋아요/저장/학습)을 원자적(Atomic)으로 토글합니다. 존재하면 삭제하고, 없으면 생성합니다.
-- **Usage**: 클라이언트에서 더블 클릭 등으로 인한 Race Condition을 방지하고 네트워크 요청을 최적화(1 RTT)하기 위해 사용합니다.
+- **Description**: 사용자의 학습 완료(learn) 액션을 원자적(Atomic)으로 토글합니다. 존재하면 삭제하고, 없으면 생성합니다.
+- **Usage**: 학습 완료 버튼 클릭 시 사용합니다. 저장(save) 토글은 `toggle_save_expression` RPC로 대체되었습니다.
 - **Parameters**:
   - `p_expression_id` (uuid): 대상 표현 ID.
-  - `p_action_type` (text): 액션 타입 ('save', 'learn').
+  - `p_action_type` (text): 액션 타입 ('learn').
 - **Returns**: `void`
 - **SQL Definition**: [`database/functions/toggle_user_action.sql`](../../database/functions/toggle_user_action.sql) 참조.
 
@@ -273,6 +276,23 @@ NextAuth의 데이터베이스 세션(Refresh Token)을 관리하는 테이블�
 - **Returns**: `void`
 - **SQL Definition**: [`database/functions/move_vocabulary_items.sql`](../../database/functions/move_vocabulary_items.sql) 참조.
 
+#### 9. `toggle_save_expression`
+
+- **Description**: 표현의 저장 상태를 단일 트랜잭션으로 토글합니다. 이미 저장된 표현이면 모든 단어장에서 제거하고, 저장되지 않은 표현이면 기본 단어장에 추가합니다. 최신 단어장 목록(item_count 포함)을 JSON으로 반환하여 SWR 리페치를 대체합니다.
+- **Usage**: 저장 버튼 클릭 시 단일 POST로 저장/해제 + 단어장 데이터 갱신을 처리합니다.
+- **Parameters**:
+  - `p_expression_id` (uuid): 대상 표현 ID.
+- **Returns**: `json` (단어장 목록 배열: id, title, is_default, item_count)
+- **SQL Definition**: [`database/functions/toggle_save_expression.sql`](../../database/functions/toggle_save_expression.sql) 참조.
+
+#### 10. `get_saved_expression_ids`
+
+- **Description**: 현재 사용자가 저장한 모든 표현 ID를 `vocabulary_items` 테이블에서 파생하여 반환합니다. `user_actions(save)` 조회를 대체합니다.
+- **Usage**: 초기 로드 시 `useUserActionStore.savedIds`를 시딩하기 위해 사용합니다.
+- **Parameters**: None (Uses `auth.uid()`)
+- **Returns**: `setof uuid`
+- **SQL Definition**: [`database/functions/get_saved_expression_ids.sql`](../../database/functions/get_saved_expression_ids.sql) 참조.
+
 ### Database Triggers
 
 트리거는 데이터 변경 시 자동으로 실행되는 로직을 정의합니다.
@@ -322,7 +342,7 @@ $$;
 
 사용자가 표현에 대해 수행하는 상호작용의 종류를 정의합니다.
 
-- `save`: 저장/북마크 (나중에 공부하기)
+- ~~`save`: 저장/북마크~~ → [Zustand-First 아키텍처 Phase 3](../technical_implementation/zustand_first_architecture.md#10-phase-3-save-rpc-통합-완료-)에서 `vocabulary_items`로 통합 (더 이상 사용하지 않음)
 - `learn`: 학습 완료 표시
 
 ### Dual-Category System

@@ -2,6 +2,32 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.4: Save RPC 통합 — Phase 3 완료 (2026-02-15)
+
+### ✅ 진행 사항
+
+1.  **Zustand-First Architecture (Phase 3: Save RPC 통합)**:
+    - **단일 RPC 전환**: 저장/해제 시 기존 3개 이상의 병렬 서버 호출(`toggleUserAction` + `addToList` + `getSavedListIds`)을 단일 `toggle_save_expression` RPC로 통합했습니다. 서버 부하와 race condition을 근본적으로 제거했습니다.
+    - **DB 함수 신설**: `toggle_save_expression`(저장 토글 + 단어장 데이터 반환) 및 `get_saved_expression_ids`(`getUserActions("save")` 대체)를 생성했습니다.
+    - **`user_actions(save)` 이관**: 저장 상태의 single source of truth를 `user_actions` 테이블에서 `vocabulary_items` 테이블로 이관했습니다. `ActionType`에서 `save`는 애플리케이션 라우팅 용도로만 유지합니다.
+
+2.  **Free 유저 Save 로직 통합**:
+    - **vocabulary-list 기반 파생**: Free 유저의 `hasAction("save")`를 `actions.save` Set 대신 `getListIdsForExpression` 기반으로 전환하여 Pro 유저와 동일한 데이터 모델을 사용합니다.
+    - **`actions.save` 제거**: `useLocalActionStore`에서 `actions.save` Set을 완전히 제거하고 `LocalActionType = Extract<ActionType, "learn">`을 도입했습니다.
+    - **`handleListActionSync` Free 분기**: Free 유저는 `toggleInList`이 vocabulary list를 직접 수정하므로 추가 동기화가 불필요합니다 (early return).
+
+3.  **Pro 유저 모달 리스트 버그 수정**:
+    - **비디폴트 리스트 중복 추가 방지**: 모달에서 비디폴트 리스트를 선택할 때 `handleListActionSync`가 `toggleAction("save")`를 호출하여 RPC 경유로 디폴트 리스트에도 추가되던 버그를 수정했습니다. `savedIds`를 `useUserActionStore`에서 직접 업데이트하는 방식으로 전환했습니다.
+
+4.  **Dead Code 정리**:
+    - `LocalUserActionRepository.ts`, `RemoteUserActionRepository.ts` 삭제 (미사용)
+    - `UserActionRepository.ts`에서 `UserActionRepository`, `SyncableRepository` 인터페이스 제거 (미사용)
+    - `syncUserActions` 파라미터 타입을 `LocalActionType`으로 좁힘 (learn 전용)
+
+5.  **문서 현행화**:
+    - `zustand_first_architecture.md`: RPC vs `toggleInList` 역할 비교 섹션, 검증 체크리스트 Phase별 세부 테스트 케이스 추가 (전체 통과)
+    - `ActionType` JSDoc 추가: `save`가 Phase 3에서 `vocabulary_items` 기반으로 전환된 사실을 명시
+
 ## v0.17.3: Zustand-First User Actions & Optimistic Sync (2026-02-14)
 
 ### ✅ 진행 사항

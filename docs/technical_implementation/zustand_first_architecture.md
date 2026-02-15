@@ -1,7 +1,7 @@
 # Zustand-First 아키텍처: Pro 유저 상태 관리 리팩토링
 
 > **작성일**: 2026-02-12 (최종 업데이트: 2026-02-14)
-> **상태**: Phase 1 완료 (Vocabulary Lists), Phase 2 완료 (User Actions), Phase 3 계획 (Save RPC 통합)
+> **상태**: Phase 1 완료 (Vocabulary Lists), Phase 2 완료 (User Actions), Phase 3 완료 (Save RPC 통합)
 > **핵심 원칙**: "Zustand 스토어 우선, 서버 데이터는 초기 시드, revalidatePath 불필요"
 
 ---
@@ -12,12 +12,12 @@
 2. [왜 하는가 (Why)](#2-왜-하는가-why)
 3. [어떻게 하는가 (How)](#3-어떻게-하는가-how)
 4. [\_pendingOps 메커니즘](#4-_pendingops-메커니즘)
-5. [Phase 1: Vocabulary Lists (완료)](#5-phase-1-vocabulary-lists-완료)
-6. [Phase 2: User Actions (완료)](#6-phase-2-user-actions-완료)
+5. [Phase 1: Vocabulary Lists (완료 ✅)](#5-phase-1-vocabulary-lists)
+6. [Phase 2: User Actions (완료 ✅)](#6-phase-2-user-actions)
 7. [파일별 검토 결과](#7-파일별-검토-결과)
 8. [데이터 흐름 다이어그램](#8-데이터-흐름-다이어그램)
 9. [신뢰성 및 예외 처리](#9-신뢰성-및-예외-처리)
-10. [Phase 3: Save RPC 통합 (계획)](#10-phase-3-save-rpc-통합-계획)
+10. [Phase 3: Save RPC 통합 (완료 ✅)](#10-phase-3-save-rpc-통합)
 
 ---
 
@@ -76,6 +76,9 @@ T2: 서버 액션 완료 → mutate() → item_count: 6 ✅ (뒤늦게 올라감
   → await Promise.all([toggleSaveState(), syncOnSave()])
   → isSyncing = false → 스피너 해제
 ```
+
+> **Note**: Phase 3에서 `syncOnSave`는 제거되었습니다. 현재는 `toggleSaveState()` 단일 호출로
+> `toggleSaveExpression` RPC가 기본 단어장 추가/제거 + 리스트 반환을 원자적으로 처리합니다.
 
 **증상**: 낙관적 업데이트인데 불필요한 로딩 스피너가 500ms~1s 동안 표시
 
@@ -310,7 +313,7 @@ T4: 카드 B 서버 완료 → resolveOperation(freshDataB)
 
 ---
 
-## 5. Phase 1: Vocabulary Lists (완료)
+## 5. Phase 1: Vocabulary Lists
 
 ### 수정된 파일 목록
 
@@ -323,7 +326,7 @@ T4: 카드 B 서버 완료 → resolveOperation(freshDataB)
 | `components/me/vocabulary/RemoteVocabularyDetail.tsx` | 각 핸들러에 낙관적 업데이트 + `resolveOperation()` 추가, 대량 작업 시 `setLists()`로 `item_count` 직접 조정         | ✅ 완료 |
 | `components/vocabulary/VocabularyListModal.tsx`       | `savedListIds`를 Zustand 스토어 구독으로 전환, `toggleGenRef`로 stale 응답 방지, `onListAction` fire-and-forget     | ✅ 완료 |
 | `components/vocabulary/VocabularyListItem.tsx`        | 프레젠테이셔널 컴포넌트로 전환 (이전 커밋에서 완료)                                                                 | ✅ 완료 |
-| `hooks/user/useVocabularySync.ts`                     | `syncOnSave`에서 `addToVocabularyList` 직접 호출 → `toggleInList` 사용 (Zustand 낙관적 업데이트 포함)               | ✅ 완료 |
+| `hooks/user/useVocabularySync.ts`                     | `syncOnSave`/`syncOnUnsave` 제거, `expressionId` 파라미터 제거 (Phase 3에서 RPC로 대체)                             | ✅ 완료 |
 | `services/actions/vocabulary.ts`                      | `revalidatePath` 전면 제거 (Dynamic Route이므로 불필요, 네비게이션 방해 원인)                                       | ✅ 완료 |
 | `components/vocabulary/EmptyListMessage.tsx`          | 모달 내 중복되던 빈 상태 UI를 순수 UI 컴포넌트로 추출. 서버 컴포넌트 호환성 확보.                                   | ✅ 완료 |
 
@@ -371,7 +374,7 @@ const updatedLists = useVocabularyStore.getState().lists.map((l) => {
 
 ---
 
-## 6. Phase 2: User Actions (완료)
+## 6. Phase 2: User Actions
 
 ### 이전 구조 (`useUserActions.ts`)
 
@@ -506,10 +509,10 @@ interface UserActionStore {
      ▼                                     ▼
 useSaveAction                     VocabularyListContainer (서버)
      │                                     │
-     │ syncOnSave()                        │ getVocabularyLists()
+     │ toggleSaveState()                   │ getVocabularyLists()
      ▼                                     ▼
-useVocabularySync                  VocabularyListManager (클라이언트)
-     │                                     │
+useSaveAction                      VocabularyListManager (클라이언트)
+     │ (→ toggleSaveExpression RPC)        │
      │ toggleInList()                      │ useVocabularyStore(selectLists)
      ▼                                     ▼
 useVocabularyLists              ┌──────────────────────┐
@@ -695,7 +698,7 @@ useEffect(() => {
 
 ---
 
-## 10. Phase 3: Save RPC 통합 (계획)
+## 10. Phase 3: Save RPC 통합
 
 > Phase 1-2에서 구축한 Zustand 인프라 위에서, **서버 측 데이터 모델과 호출 구조를 최적화**하는 단계입니다.
 
@@ -752,6 +755,49 @@ useEffect(() => {
 
   → resolveOperation(freshData)  (~1.5초 후)
 ```
+
+#### 저장 함수 역할 비교: `toggleSaveExpression` RPC vs `toggleInList`
+
+|                     | `toggleSaveExpression` RPC                      | `toggleInList`                                     |
+| ------------------- | ----------------------------------------------- | -------------------------------------------------- |
+| **위치**            | `services/actions/user.ts` → DB 함수            | `hooks/user/useVocabularyLists.ts`                 |
+| **대상**            | **기본 단어장** (저장) / **모든 단어장** (해제) | **특정 단어장 1개**                                |
+| **서버 호출**       | RPC 1회 (DB 함수 내부 일괄 처리)                | Server Action 1회 (`add/removeFromVocabularyList`) |
+| **스토어 업데이트** | `vocabularyStore.resolveOperation(freshLists)`  | `vocabularyStore.optimisticToggle` → SWR mutate    |
+| **Pro/Free**        | Pro 전용                                        | Pro + Free 공용                                    |
+
+**사용 시점:**
+
+- **저장 버튼 클릭** (짧게) → `toggleSaveExpression` RPC — "기본 단어장에 추가" 또는 "모든 단어장에서 제거"라는 일괄 동작
+- **모달에서 특정 리스트 선택/해제** → `toggleInList` — 특정 리스트 1개에 대한 개별 조작
+
+**호출 경로:**
+
+```
+[저장 버튼 짧게 클릭] — toggleSaveExpression RPC 경로
+useSaveAction.handleSaveToggle()
+  → useSaveToggle.toggleSaveState()
+    → useUserActions.toggleAction(id, "save")
+      → toggleSaveExpression(id)         ← RPC
+      → vocabularyStore.resolveOperation(freshLists)
+      → userActionStore.resolveOperation("save")
+
+[모달에서 리스트 선택/해제] — toggleInList 경로
+VocabularyListModal.handleToggle(listId)
+  ├→ onListAction(listId, added)          ← fire-and-forget
+  │   → handleListActionSync
+  │     Pro: savedIds만 직접 업데이트 (북마크 아이콘 동기화, RPC 호출 X)
+  │     Free: return (no-op, save 상태는 vocabularyLists에서 자동 파생)
+  │
+  └→ toggleInList(listId, id, isIn)       ← 개별 리스트 조작
+      Pro: optimisticToggle + addToVocabularyList/removeFromVocabularyList
+      Free: localAddToList/localRemoveFromList
+```
+
+> **⚠️ 주의**: `handleListActionSync`에서 `toggleAction("save")`를 호출하면 안 됨:
+>
+> - Pro: `toggleSaveExpression` RPC가 기본 단어장에도 추가하는 부작용 발생
+> - Free: `toggleInList`이 이미 단어장을 수정하여 역방향 동작 발생
 
 ### 구현 단계
 
@@ -850,16 +896,16 @@ $$;
 | 파일                           | 변경                                                                                                                            |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | `hooks/user/useUserActions.ts` | save SWR 키 → `["saved_expressions"]` + `getSavedExpressionIds`, `toggleAction("save")` → RPC 호출 + vocabulary store 직접 갱신 |
-| `hooks/user/useSaveAction.ts`  | `Promise.all` 제거, 단일 호출로 통합. `syncOnSave`/`syncOnUnsave` 제거 가능                                                     |
+| `hooks/user/useSaveAction.ts`  | `Promise.all` 제거, 단일 `toggleSaveState()` 호출로 통합. `syncOnSave`/`syncOnUnsave` 제거                                      |
 
 #### Step 7-9: Store/Hook 정리
 
-| 파일                              | 변경                                                    |
-| --------------------------------- | ------------------------------------------------------- |
-| `hooks/user/useSaveToggle.ts`     | 내부 동작 변경 없음 (API 유지)                          |
-| `store/useUserActionStore.ts`     | `savedIds` 초기화 소스 변경 (→ `getSavedExpressionIds`) |
-| `store/useVocabularyStore.ts`     | RPC 응답의 lists 데이터로 직접 갱신 경로 추가           |
-| `hooks/user/useVocabularySync.ts` | `syncOnSave`/`syncOnUnsave` 축소/제거                   |
+| 파일                              | 변경                                                           |
+| --------------------------------- | -------------------------------------------------------------- |
+| `hooks/user/useSaveToggle.ts`     | 내부 동작 변경 없음 (API 유지)                                 |
+| `store/useUserActionStore.ts`     | `savedIds` 초기화 소스 변경 (→ `getSavedExpressionIds`)        |
+| `store/useVocabularyStore.ts`     | RPC 응답의 lists 데이터로 직접 갱신 경로 추가                  |
+| `hooks/user/useVocabularySync.ts` | `syncOnSave`/`syncOnUnsave` 제거, `expressionId` 파라미터 제거 |
 
 #### Step 10: 검증 및 정리
 
@@ -878,15 +924,15 @@ $$;
 
 #### 수정 파일
 
-| 파일                              | 변경 내용                                        | 영향도   |
-| --------------------------------- | ------------------------------------------------ | -------- |
-| `services/actions/user.ts`        | `toggleSaveExpression` 추가                      | 낮음     |
-| `services/queries/user.ts`        | `getSavedExpressionIds` 추가                     | 낮음     |
-| `hooks/user/useUserActions.ts`    | save SWR 키 변경, toggleAction("save") 로직 교체 | **높음** |
-| `hooks/user/useSaveAction.ts`     | `Promise.all` 제거, 단일 호출로 단순화           | **높음** |
-| `hooks/user/useVocabularySync.ts` | `syncOnSave`/`syncOnUnsave` 축소/제거            | 중간     |
-| `store/useUserActionStore.ts`     | save 초기화 소스 변경                            | 중간     |
-| `store/useVocabularyStore.ts`     | RPC 응답으로 lists 갱신 경로 추가                | 낮음     |
+| 파일                              | 변경 내용                                                      | 영향도   |
+| --------------------------------- | -------------------------------------------------------------- | -------- |
+| `services/actions/user.ts`        | `toggleSaveExpression` 추가                                    | 낮음     |
+| `services/queries/user.ts`        | `getSavedExpressionIds` 추가                                   | 낮음     |
+| `hooks/user/useUserActions.ts`    | save SWR 키 변경, toggleAction("save") 로직 교체               | **높음** |
+| `hooks/user/useSaveAction.ts`     | `Promise.all` 제거, 단일 호출로 단순화                         | **높음** |
+| `hooks/user/useVocabularySync.ts` | `syncOnSave`/`syncOnUnsave` 제거, `expressionId` 파라미터 제거 | 중간     |
+| `store/useUserActionStore.ts`     | save 초기화 소스 변경                                          | 중간     |
+| `store/useVocabularyStore.ts`     | RPC 응답으로 lists 갱신 경로 추가                              | 낮음     |
 
 #### 변경하지 않는 파일 (API 호환)
 
@@ -899,53 +945,69 @@ $$;
 
 ### 검증 체크리스트
 
-#### 기존 기능 보존 (Regression Test)
+> ✅ Pro, Free 유저 모두 Phase 1, 2, 3에 대해 전체 검증 통과 (2026-02-15)
+
+#### Phase 1: 단어장 실시간 반영
+
+- [x] `me/[listId]`에서 리스트 삭제 후 → `me`로 돌아와서 모달 열면 삭제된 리스트 없음
+- [x] `me/[listId]`에서 단어장 이름 수정 후 → `me`로 돌아오면 수정된 이름 반영
+- [x] `me/[listId]`에서 디폴트 설정 후 → `me`로 돌아오면 순서 즉시 반영
+- [x] `me/[listId]`에서 디폴트 설정 후 → 앱 페이지에서 저장 시 새 디폴트 리스트에 저장
+- [x] 디폴트 리스트 삭제 후 → 새로 설정된 디폴트 리스트 UI 즉시 반영
+- [x] `me/[listId]`에서 디폴트 설정 후 → `me` → 해당 리스트 재진입 시 디폴트 마크 표시
+- [x] `me/[listId]`에서 타이틀 수정 후 → `me` → 해당 리스트 재진입 시 수정된 타이틀 유지
+- [x] 앱 페이지에서 리스트 생성 시 콘텐츠 깜빡임 없음
+- [x] 앱 페이지에서 저장 시 항목 수와 UI 즉시 반영
+- [x] 저장 버튼 여러 개 누른 뒤 `me` → 리스트 항목 수 즉시 반영
+- [x] 저장 버튼 여러 개 누른 뒤 `me` → `me/[listId]` 진입 시 정확한 데이터 표시
+- [x] 앱 페이지에서 여러 개 저장 후 → `me/[listId]` 진입 시 즉시 반영 (표현 카드 + total_count)
+- [x] `me/[listId]`에서 복사/이동 후 깜빡임 없음
+- [x] 벌크 복사 → 동일 아이템 중복 복사 시 항목 수 정확 (중복 제외)
+- [x] 단어장 생성/삭제/이름 변경/기본 단어장 변경 정상 동작
+- [x] 벌크 복사/이동/삭제 → item_count 정확히 반영
+
+#### Phase 2, 3: Save RPC 통합 + 성능
 
 **Pro 유저 — 저장(Save)**:
 
-- [ ] 표현 카드의 저장 버튼 클릭 → 즉시 노란색 북마크로 전환
-- [ ] 저장된 표현의 저장 버튼 클릭 → 즉시 빈 북마크로 전환
-- [ ] 저장 버튼 길게 누름 → 단어장 모달 열림
-- [ ] 모달에서 리스트 선택 → isSelected UI 즉시 반영 + 항목 수 +1
-- [ ] 모달에서 리스트 해제 → isSelected UI 즉시 해제 + 항목 수 -1
-- [ ] 모달에서 모든 리스트 해제 → 저장 버튼 빈 북마크로 전환
-- [ ] 단어장이 없는 상태에서 저장 → 단어장 생성 모달 열림
-- [ ] 페이지 새로고침 후 저장 상태 유지
-- [ ] 탭 전환 후 돌아와도 저장 상태 유지
+- [x] 표현 카드의 저장 버튼 클릭 → 즉시 노란색 북마크로 전환
+- [x] 저장된 표현의 저장 버튼 클릭 → 즉시 빈 북마크로 전환
+- [x] 저장 버튼 렌더링 중 재클릭 가능 (블로킹 없음)
+- [x] 저장 버튼 길게 누름 → 단어장 모달 열림
+- [x] 모달에서 리스트 선택 → isSelected UI 즉시 반영 + 항목 수 +1
+- [x] 모달에서 리스트 해제 → isSelected UI 즉시 해제 + 항목 수 -1
+- [x] 모달에서 모든 리스트 해제 → 저장 버튼 빈 북마크로 전환
+- [x] 모달에서 비디폴트 리스트 선택 → 디폴트 리스트에 중복 추가되지 않음
+- [x] 저장 해제 후 길게 눌러 모달 열면 → isSelected UI 정확히 해제 상태
+- [x] 저장 해제 후 모달 열어도 isSelected UI 다시 선택되지 않음 (flicker 없음)
+- [x] 빠른 연속 토글 (4-5회) 후 모달 열어도 item_count 정확히 반영 (일시적 오차 → 자동 복구)
+- [x] 단어장이 없는 상태에서 저장 → 단어장 생성 모달 열림
+- [x] 페이지 새로고침 후 저장 상태 유지
+- [x] 탭 전환 후 돌아와도 저장 상태 유지
 
 **Pro 유저 — 학습(Learn)**:
 
-- [ ] 학습 버튼 클릭 → 즉시 녹색으로 전환 + 스크롤 이동
-- [ ] 학습 완료된 표현 다시 클릭 → 즉시 해제
-- [ ] `/me/learned` 페이지에서 학습 완료 목록 정상 표시
+- [x] 학습 버튼 클릭 → 즉시 녹색으로 전환 + 스크롤 이동
+- [x] 학습 완료된 표현 다시 클릭 → 즉시 해제
+- [x] `/me/learned` 페이지에서 학습 완료 목록 정상 표시
 
 **Free 유저**:
 
-- [ ] 저장/학습 버튼 클릭 → 즉시 UI 전환 (로컬 스토리지)
-- [ ] 모달에서 리스트 선택/해제 → isSelected UI 즉시 반영
+- [x] 저장/학습 버튼 클릭 → 즉시 UI 전환 (로컬 스토리지)
+- [x] 모달에서 리스트 선택 → isSelected UI 즉시 반영 + 저장 버튼 UI 전환
+- [x] 모달에서 리스트 해제 → isSelected UI 해제 + 항목 수 감소 + 저장 버튼 UI 전환
+- [x] 모달에서 모든 리스트 해제 → 저장 아이콘 빈 북마크로 전환
 
 **비로그인 유저**:
 
-- [ ] 저장/학습 버튼 클릭 → 로그인 모달 표시
-
-**단어장 기능 (Phase 1 보존)**:
-
-- [ ] 단어장 생성/삭제/이름 변경
-- [ ] 기본 단어장 변경
-- [ ] 벌크 복사/이동/삭제 → item_count 정확히 반영
-
-#### 버그 수정 검증
-
-- [ ] **[Bug 1]** 저장 해제 후 바로 모달 열어도 isSelected가 정확히 해제 상태
-- [ ] **[Bug 2]** 빠른 연속 토글 후 모달 열어도 item_count가 정확히 반영
-- [ ] **[Bug 3]** 저장 버튼 빠르게 연속 클릭 가능 (렌더링 중 블로킹 없음)
+- [x] 저장/학습 버튼 클릭 → 로그인 모달 표시
 
 #### 성능 개선 검증
 
-- [ ] 저장 1회 클릭 시 서버 터미널에 POST **1개**만 표시
-- [ ] 해제 1회 클릭 시 서버 터미널에 POST **1개**만 표시
-- [ ] 빠른 연속 토글 (5회) 시 POST **5개** (이전: 15-20개)
-- [ ] 저장/해제 후 item_count 정합 복구 시간: ~1.5초 (이전: ~3-6초)
+- [x] 저장 1회 클릭 시 서버 터미널에 POST **1개**만 표시
+- [x] 해제 1회 클릭 시 서버 터미널에 POST **1개**만 표시
+- [x] 빠른 연속 토글 (5회) 시 POST **5개** (이전: 15-20개)
+- [x] 저장/해제 후 item_count 정합 복구 시간: ~1.5초 (이전: ~3-6초)
 
 ### 롤백 계획
 

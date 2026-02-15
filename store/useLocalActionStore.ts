@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { LOCAL_STORAGE_KEYS } from "@/constants";
-import { ActionType } from "@/services/repositories/UserActionRepository";
+import { LocalActionType } from "@/services/repositories/UserActionRepository";
 
 // Vocabulary Types for Local Store
 export interface LocalVocabularyList {
@@ -14,13 +14,13 @@ export interface LocalVocabularyList {
 }
 
 interface LocalActionState {
-  actions: Record<ActionType, Set<string>>;
+  actions: Record<LocalActionType, Set<string>>;
   actionTimestamps: Record<string, number>; // "type:expressionId" -> timestamp
   vocabularyLists: Record<string, LocalVocabularyList>; // Keyed by ID
 
-  toggleAction: (expressionId: string, type: ActionType) => void;
-  getActions: (type: ActionType) => string[];
-  hasAction: (expressionId: string, type: ActionType) => boolean;
+  toggleAction: (expressionId: string, type: LocalActionType) => void;
+  getActions: (type: LocalActionType) => string[];
+  hasAction: (expressionId: string, type: LocalActionType) => boolean;
 
   // Vocabulary Actions
   createList: (title: string) => string; // Returns new ID
@@ -41,7 +41,7 @@ interface LocalActionState {
 
 // Set persistence helper to serialize/deserialize Set
 type PersistedState = {
-  actions: Record<ActionType, string[]>;
+  actions: Record<LocalActionType, string[]>;
   actionTimestamps: Record<string, number>;
   vocabularyLists: Record<
     string,
@@ -61,7 +61,6 @@ export const useLocalActionStore = create<LocalActionState>()(
     (set, get) => ({
       _hasHydrated: false,
       actions: {
-        save: new Set(),
         learn: new Set(),
       },
       actionTimestamps: {},
@@ -262,7 +261,6 @@ export const useLocalActionStore = create<LocalActionState>()(
       },
       partialize: (state) => ({
         actions: {
-          save: Array.from(state.actions.save),
           learn: Array.from(state.actions.learn),
         },
         actionTimestamps: state.actionTimestamps,
@@ -298,8 +296,7 @@ export const useLocalActionStore = create<LocalActionState>()(
         return {
           ...currentState,
           actions: {
-            save: new Set(persisted.actions.save || []),
-            learn: new Set(persisted.actions.learn || []),
+            learn: new Set(persisted.actions?.learn || []),
           },
           actionTimestamps: persisted.actionTimestamps || {},
           vocabularyLists: rehydratedLists,

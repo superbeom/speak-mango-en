@@ -34,3 +34,28 @@ export const getUserActions = cache(async function getUserActions(
 
   return data?.map((row) => row.expression_id) || [];
 });
+
+/**
+ * 사용자가 저장한 모든 표현 ID 목록을 가져옵니다.
+ * vocabulary_items 테이블을 기반으로 조회하며, user_actions(save)를 대체합니다.
+ *
+ * @returns 저장된 표현 ID 배열을 반환합니다.
+ */
+export const getSavedExpressionIds = cache(
+  async function getSavedExpressionIds(): Promise<string[]> {
+    /**
+     * Note: This function manually handles auth to return essential data (or empty)
+     * instead of throwing, ensuring UI resilience for non-Pro users.
+     */
+    const { userId, isPro } = await getAuthSession();
+
+    if (!userId || !isPro) {
+      return [];
+    }
+
+    const supabase = await createServerSupabase();
+    const { data } = await supabase.rpc("get_saved_expression_ids");
+
+    return (data as string[]) || [];
+  },
+);

@@ -121,12 +121,14 @@ NextAuth의 표준 스키마를 따르되, 서비스에 필요한 커스텀 필�
 
 ### 4.2 사용자 데이터 (User Data)
 
-**4. `user_actions` (통합 상호작용)**
-모든 콘텐츠(Expression)에 대한 사용자 반응을 하나의 테이블에서 관리하여 조회 효율을 높입니다.
+**4. `user_actions` (학습 완료 상태 관리)**
+사용자의 학습 완료(learn) 상태를 관리합니다.
+
+> **Note**: 저장(save) 액션은 `vocabulary_items` 테이블로 통합되었습니다 ([Zustand-First 아키텍처 Phase 3](../technical_implementation/zustand_first_architecture.md#10-phase-3-save-rpc-통합-완료-)).
 
 - `user_id` (FK): 사용자 ID
 - `expression_id` (FK): 콘텐츠 ID
-- `action_type` (enum: 'save', 'learn'): 저장, 학습완료 구분
+- `action_type` (enum: 'learn'): 학습 완료 상태 (저장은 `vocabulary_items`로 대체)
 - `created_at` (timestamptz)
 - **Unique Key**: `(user_id, expression_id, action_type)` - 중복 방지
 

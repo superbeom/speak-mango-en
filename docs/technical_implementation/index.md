@@ -414,15 +414,14 @@ Framer Motion의 선언적 애니메이션(`whileTap`)과 복잡한 중첩 인�
   4. 만약 서버 액션이 실패하면, `catch` 블록에서 `mutate(currentData, { revalidate: false })`를 호출하여 이전 상태로 롤백합니다.
 - **Benefit**: 네트워크 레이턴시에 상관없이 버튼 아이콘과 색상이 즉시 반응하여, 네이티브 앱과 같은Snappy한 사용성을 제공합니다.
 
-### 5.3.2 Parallel Async Operation Optimization
+### 5.3.2 Single RPC Optimization (Phase 3)
 
-복합적인 비동기 작업이 필요한 저장(Save) 로직에서 네트워크 Waterfall을 제거했습니다.
+저장(Save) 로직에서 다중 서버 호출을 단일 RPC로 통합했습니다.
 
-- **File**: `hooks/user/useSaveAction.ts`
-- **Logic**:
-  - 마스터 저장 상태 변경(`toggleSaveState`)과 특정 단어장으로의 동기화(`syncOnSave` 또는 `syncOnUnsave`)는 상호 의존성이 없습니다.
-  - `Promise.all([toggleSaveState(), syncOnSave(availableLists)])`를 사용하여 두 작업을 병렬로 실행합니다.
-- **Impact**: 순차 실행 대비 전체 소요 시간을 약 40~50% 단축하여 사용자 대기 시간을 최소화했습니다.
+- **File**: `hooks/user/useSaveAction.ts`, `hooks/user/useUserActions.ts`
+- **Before**: `Promise.all([toggleSaveState(), syncOnSave(availableLists)])` — 저장 상태 변경과 단어장 동기화를 별도 서버 액션으로 병렬 실행 (2~3 POST)
+- **After**: `toggleSaveState()` → `toggleSaveExpression()` RPC 1개로 통합. 서버에서 기본 단어장 추가/전체 제거 + 최신 리스트 반환을 원자적으로 처리.
+- **Impact**: POST 수 3개 → 1개, Race Condition 제거, `syncOnSave`/`syncOnUnsave` 함수 제거.
 
 ### 5.4 Vocabulary List Optimization & Request Deduplication
 

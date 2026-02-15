@@ -2,6 +2,59 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.4: Save RPC 통합 — Phase 3 완료 (2026-02-15)
+
+### 1. Goal (목표)
+
+- Phase 1-2에서 구축한 Zustand 인프라 위에서, 저장/해제의 서버 측 데이터 모델과 호출 구조를 최적화합니다.
+- `user_actions(save)` 이중 관리를 제거하고 `vocabulary_items` 기반 단일 소스로 통합합니다.
+- 3개 이상의 병렬 서버 호출을 단일 RPC로 통합하여 POST 횟수를 1/3로 줄입니다.
+- Free 유저의 save 로직을 Pro 유저와 동일한 vocabulary-list 기반으로 통합합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. DB 함수 신설
+
+- **`toggle_save_expression` RPC**: 저장/해제를 원자적으로 처리하고 최신 단어장 데이터를 반환합니다.
+  - 저장: 기본 단어장에 추가 + 단어장 목록(item_count 포함) 반환
+  - 해제: 모든 단어장에서 제거 + 단어장 목록 반환
+  - SWR 리페치가 불필요 — RPC 응답이 곧 최신 데이터
+- **`get_saved_expression_ids` 함수**: `getUserActions("save")`를 대체하여 `vocabulary_items` 기반으로 저장된 표현 ID를 조회합니다.
+
+#### B. Save RPC 통합 (`hooks/user/useUserActions.ts`)
+
+- **Before**: `toggleUserAction` + `addToList`/`removeFromList` + `getSavedListIds` (POST 3개+)
+- **After**: `toggleSaveExpression` 단일 RPC (POST 1개)
+- **SWR 키 변경**: `["actions", "save"]` → `["saved_expressions"]` + `getSavedExpressionIds`
+- **vocabularyStore 낙관적 업데이트**: RPC 호출 전 `optimisticToggle`로 `item_count`를 즉시 반영합니다.
+
+#### C. 저장 함수 역할 분리
+
+- **`toggleSaveExpression` RPC**: 저장 버튼(짧게 클릭) 전용. 기본 단어장에 추가 또는 모든 단어장에서 일괄 제거.
+- **`toggleInList`**: 모달 리스트 개별 토글 전용. 특정 리스트 1개에 대한 add/remove.
+- **`handleListActionSync`**: 모달 조작 후 북마크 아이콘(savedIds) 동기화. `toggleAction("save")` 호출 금지 — RPC 부작용(디폴트 리스트 중복 추가) 및 Free 유저 역방향 동작 방지.
+
+#### D. Free 유저 Save 로직 통합
+
+- **`hasAction("save")` 변경**: `actions.save.has(id)` → `getListIdsForExpression(id).length > 0`
+- **`toggleAction("save")` 변경**: `localToggle(id, "save")` → `localAddToList(defaultList.id, id)` / `localRemoveFromList(listId, id)`
+- **`actions.save` 제거**: `useLocalActionStore`에서 `save` Set 완전 제거. `LocalActionType = Extract<ActionType, "learn">` 도입.
+
+#### E. Dead Code 정리
+
+- `LocalUserActionRepository.ts`, `RemoteUserActionRepository.ts` 삭제 (어디에서도 미사용)
+- `UserActionRepository.ts`: `UserActionRepository`, `SyncableRepository` 인터페이스 제거
+- `syncUserActions` 파라미터: `ActionType` → `LocalActionType` (learn 전용)
+- `syncOnSave`/`syncOnUnsave` 참조가 남아있던 문서(`task.md`, `index.md`, `zustand_first_architecture.md`) 정리
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **POST 1/3 감소**: 저장/해제 1회당 POST 3개+ → **1개** (단일 RPC).
+- ✅ **Race Condition 제거**: 병렬 서버 호출 없이 DB 트랜잭션 내에서 원자적 처리.
+- ✅ **Free/Pro 데이터 모델 통합**: 양쪽 모두 vocabulary-list 기반으로 save 상태 파생.
+- ✅ **모달 리스트 버그 수정**: 비디폴트 리스트 선택 시 디폴트 리스트에 중복 추가되던 문제 해결.
+- ✅ **전체 검증 통과**: Phase 1, 2, 3 모든 테스트 케이스 Pro/Free 유저 모두 통과 (2026-02-15).
+
 ## v0.17.3: Zustand-First User Actions & Optimistic Sync (2026-02-14)
 
 ### 1. Goal (목표)

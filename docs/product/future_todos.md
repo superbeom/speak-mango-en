@@ -39,10 +39,11 @@
 
 ### 하이브리드 리포지토리 및 실시간 동기화
 
-- [ ] **Hybrid Repository Layer**: `useUserActions` 훅에서 로그인 상태에 따라 `LocalRepository`와 `RemoteRepository`를 투명하게 전환하는 추상화 계층 구현.
-- [ ] **Bulk Sync Logic**: 사용자가 로그인하거나 구독 결제 완료 시, 로컬 데이터를 서버 DB로 일괄 이동(`Merge`)하는 서버 액션 구현.
+- [ ] **Bulk Sync Logic (Free→Pro 마이그레이션)**: 사용자가 로그인하거나 구독 결제 완료 시, 로컬 데이터를 서버 DB로 일괄 이동(`Merge`)하는 서버 액션 구현.
+  - `learn`: `syncUserActions`를 활용하여 `user_actions` 테이블에 upsert.
+  - `save`: Phase 3에서 `vocabulary_items` 기반으로 이관되었으므로, 로컬 `vocabularyLists`를 서버 단어장에 마이그레이션하는 별도 함수 필요 (현재 미구현).
+  - `localStorage.actions.save` 잔존 데이터 정리도 포함.
 - [ ] **Action Integrity**: 중복 액션 방지 및 네트워크 불안정 시 로컬 캐시 우선 반영 로직 고도화.
-- [ ] **Zustand-First Expansion (Phase 2: User Actions)**: 단어장뿐만 아니라 `Save` (표현 저장 여부) 및 `Learn` (학습 완료 여부) 상태도 전역 Zustand 스토어로 통합하여, 메인 피드와 상세 페이지 간의 동기화 지연을 제거하고 0ms 반응성 확보.
 - [ ] **Beforeunload Guard**: 스토어에 미저장(Pending)된 작업이 있는 상태에서 페이지를 이탈하려고 할 때 브라우저 경고창을 띄워 데이터 유실 방지.
 
 ### 학습 관리 및 마이 페이지
