@@ -161,6 +161,7 @@
   - **SWR Integration**: `useSWR`의 캐싱 능력을 활용하여 캐시된 데이터가 있을 경우 로딩 스켈레톤을 생략하고 즉시 화면을 렌더링함으로써 체감 속도를 극대화합니다.
 - **Refresh & Consistency (데이터 정합성)**:
   - **`RefreshGuard`**: SWR 백그라운드 갱신(Revalidation) 중 사용자 오조작을 방지하기 위해 로딩 오버레이와 상호작용 차단 기능을 제공합니다.
+  - **Session-based Data Gating**: 비로그인(Anonymous) 상태에서는 로컬 스토리지에 남은 이전 세션의 Save/Learn 자료가 UI에 노출되지 않도록 세션 기반 읽기 차단 가드를 적용하여 개인정보 및 세션 보안을 강화했습니다.
 - **시맨틱 스타일 관리**: `bg-surface`, `text-body` 등 의미 기반의 유틸리티 클래스를 통한 전역 테마 관리.
 - **ISR (Incremental Static Regeneration)**: 1시간마다 정적 페이지를 갱신하여 최신 데이터와 빠른 속도 동시 제공.
 - **Framer Motion**: 리스트 정렬, 카드 등장, 호버 효과 등 부드러운 인터랙션 구현.

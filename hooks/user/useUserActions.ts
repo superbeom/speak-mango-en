@@ -14,7 +14,7 @@ import {
 } from "@/services/actions/user";
 
 export function useUserActions() {
-  const { isPro, isLoading: isAuthLoading } = useAuthUser();
+  const { isPro, isAuthenticated, isLoading: isAuthLoading } = useAuthUser();
 
   // Save: vocabulary_items 기반 RPC로 조회 (Phase 3)
   // revalidateOnFocus: true — 탭 복귀 시 서버 데이터와 자동 동기화
@@ -81,8 +81,10 @@ export function useUserActions() {
   const localGetLists = useLocalActionStore((state) => state.getLists);
 
   // O(1) Set 조회 (Pro: Zustand 스토어, Free: 로컬 스토어)
+  // Anonymous(비로그인) → 항상 false (로컬 데이터는 보존하되 UI에 노출하지 않음)
   const hasAction = useCallback(
     (expressionId: string, type: ActionType): boolean => {
+      if (!isAuthenticated) return false;
       if (isPro) {
         const set = type === "save" ? savedIds : learnedIds;
         return set.has(expressionId);
@@ -94,6 +96,7 @@ export function useUserActions() {
       return localActionsState[type].has(expressionId);
     },
     [
+      isAuthenticated,
       isPro,
       savedIds,
       learnedIds,
@@ -219,6 +222,7 @@ export function useUserActions() {
     // 1차 가드: SWR data === undefined → 아직 페칭 전
     // 2차 가드: !_initialized → SWR 데이터가 도착했지만 useEffect→syncWithServer가 아직 미실행
     // 두 가드 중 하나라도 true이면 로딩 상태 유지 → 스토어에 데이터가 확실히 반영된 후에만 해제
+    // Anonymous(비로그인)는 데이터를 사용하지 않으므로 로딩 없음
     isLoading: {
       save:
         isAuthLoading ||
