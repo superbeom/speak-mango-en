@@ -186,7 +186,9 @@ export const ja = {
     metaTitle: "マイページ",
     metaDescription:
       "保存した表現を確認し、自分だけの単語帳と様々な学習モードで復習しましょう。",
-    learnedExpressions: "学習済みの表現",
-    learnedMetaDescription: "これまでに学習した表現を確認・復習しましょう。",
+    learnedExpressions: "学習完了表現",
+    learnedMetaDescription: "これまでに学習した表現を確認して復習しましょう。",
+    noLearnedExpressions: "学習完了した表現がありません",
+    learnExpressionsToSee: "表現を学習完了にするとここに表示されます。",
   },
 };

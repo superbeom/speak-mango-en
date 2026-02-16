@@ -186,5 +186,7 @@ export const ko = {
       "저장한 표현들을 확인하고 나만의 단어장과 다양한 학습 모드로 복습해보세요.",
     learnedExpressions: "학습 완료한 표현",
     learnedMetaDescription: "지금까지 학습한 표현들을 확인하고 복습해보세요.",
+    noLearnedExpressions: "학습 완료한 표현이 없습니다",
+    learnExpressionsToSee: "표현을 학습 완료하면 여기에 나타납니다.",
   },
 };

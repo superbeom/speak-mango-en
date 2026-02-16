@@ -2,6 +2,17 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.9: 학습 완료(Learned) 페이지 Empty State 개선 (2026-02-16)
+
+### ✅ 진행 사항
+
+1.  **Learned Page Localization**:
+    - **Problem**: 학습 완료 페이지(`/me/learned`)가 비어있을 때 "저장된 표현이 없습니다(No saved expressions)"라는 일반적인 메시지가 표시되어, 사용자가 학습 완료라는 문맥을 이해하기 어려웠습니다.
+    - **Solution**: `me.noLearnedExpressions` ("학습 완료한 표현이 없습니다") 및 `me.learnExpressionsToSee` ("표현을 학습 완료하면 여기에 나타납니다") 키를 신설하고 9개 언어 전체에 번역을 적용했습니다.
+
+2.  **Reusable Component Logic**:
+    - **`VocabularyItemsGrid` Refactoring**: `emptyMessage`와 `emptyDescription` optional props를 추가하여, 호출하는 부모 컴포넌트(`RemoteLearnedDetail`, `LocalLearnedDetail`)가 상황에 맞는 구체적인 안내 메시지를 주입할 수 있도록 개선했습니다.
+
 ## v0.17.8: 다국어 Empty State 개선 및 번역 현행화 (2026-02-16)
 
 ### ✅ 진행 사항

@@ -197,5 +197,8 @@ export const fr = {
     learnedExpressions: "Expressions apprises",
     learnedMetaDescription:
       "Révisez les expressions que vous avez apprises jusqu'à présent.",
+    noLearnedExpressions: "Aucune expression apprise",
+    learnExpressionsToSee:
+      "Marquez des expressions comme apprises pour les voir ici.",
   },
 };

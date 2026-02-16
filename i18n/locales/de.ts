@@ -196,6 +196,9 @@ export const de = {
       "Überprüfe deine gespeicherten Ausdrücke und übe mit deinen Vokabelheften und Lernmodi.",
     learnedExpressions: "Gelernte Ausdrücke",
     learnedMetaDescription:
-      "Überprüfen Sie die Ausdrücke, die Sie bisher gelernt haben.",
+      "Überprüfe die Ausdrücke, die du bisher gelernt hast.",
+    noLearnedExpressions: "Keine gelernten Ausdrücke",
+    learnExpressionsToSee:
+      "Markiere Ausdrücke als gelernt, um sie hier zu sehen.",
   },
 };

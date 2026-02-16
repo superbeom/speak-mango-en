@@ -2,6 +2,29 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.9: 학습 완료(Learned) 페이지 Empty State 개선 (2026-02-16)
+
+### 1. Goal (목표)
+
+- '학습 완료(`Learned`)' 페이지의 빈 상태 메시지를 '저장'과 구분하여, 사용자에게 학습 완료 액션을 유도하는 명확한 가이드를 제공합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Dedicated Localization Keys (`i18n/locales/*.ts`)
+
+- **New Keys**: `noLearnedExpressions`, `learnExpressionsToSee`를 추가하여 "학습 완료한 표현이 없음"을 명확히 명시했습니다.
+- **Global Rollout**: 영어, 한국어뿐만 아니라 일본어, 중국어 등 9개 국어 전체에 해당 키를 번역/적용하여 글로벌 일관성을 유지했습니다.
+
+#### B. Component Flexibility (`VocabularyItemsGrid.tsx`)
+
+- **Custom Empty State**: `VocabularyItemsGrid`가 내부적으로 `VocabularyEmptyState`를 렌더링할 때, 외부에서 주입된 커스텀 메시지를 우선 사용하도록 로직을 확장했습니다.
+- **Usage**: `RemoteLearnedDetail`과 `LocalLearnedDetail`에서 이 속성을 활용하여 학습 완료 전용 메시지를 전달합니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Contextual Clarity**: 사용자가 현재 어떤 목록(저장 vs 학습)을 보고 있는지 빈 상태에서도 명확히 인지 가능.
+- ✅ **Actionable Guidance**: "표현을 학습 완료해보세요"라는 구체적인 행동 유도 메시지 제공.
+
 ## v0.17.8: 다국어 Empty State 개선 및 번역 현행화 (2026-02-16)
 
 ### 1. Goal (목표)

@@ -87,6 +87,8 @@ const LocalLearnedDetail = memo(function LocalLearnedDetail() {
           viewMode={VIEW_MODE.FULL}
           selectedIds={new Set()}
           onToggleItem={() => {}}
+          emptyMessage={dict.me.noLearnedExpressions}
+          emptyDescription={dict.me.learnExpressionsToSee}
         />
 
         {totalPages > 1 && (

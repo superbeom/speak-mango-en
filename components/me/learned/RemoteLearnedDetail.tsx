@@ -90,6 +90,8 @@ const RemoteLearnedDetail = memo(function RemoteLearnedDetail({
             viewMode={VIEW_MODE.FULL}
             selectedIds={new Set()}
             onToggleItem={() => {}}
+            emptyMessage={dict.me.noLearnedExpressions}
+            emptyDescription={dict.me.learnExpressionsToSee}
           />
         </RefreshGuard>
 

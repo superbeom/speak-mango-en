@@ -20,6 +20,8 @@ interface VocabularyItemsGridProps {
   onCopy?: (selectedIds: Set<string>) => void;
   onMove?: (selectedIds: Set<string>) => void;
   onDelete?: (selectedIds: Set<string>) => void;
+  emptyMessage?: string;
+  emptyDescription?: string;
 }
 
 const containerVariants = {
@@ -41,13 +43,18 @@ const VocabularyItemsGrid = memo(function VocabularyItemsGrid({
   onCopy,
   onMove,
   onDelete,
+  emptyMessage,
+  emptyDescription,
 }: VocabularyItemsGridProps) {
   const { dict } = useI18n();
 
   if (items.length === 0) {
     return (
       <div className="layout-container">
-        <VocabularyEmptyState />
+        <VocabularyEmptyState
+          message={emptyMessage}
+          description={emptyDescription}
+        />
       </div>
     );
   }

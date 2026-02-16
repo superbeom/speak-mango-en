@@ -181,7 +181,9 @@ export const zh = {
     metaTitle: "个人中心",
     metaDescription:
       "查看已收藏的表达，并通过专属生词本和多种学习模式进行复习。",
-    learnedExpressions: "已学表达",
-    learnedMetaDescription: "复习至今已学的表达。",
+    learnedExpressions: "已掌握表达",
+    learnedMetaDescription: "查看至今已掌握的表达并复习。",
+    noLearnedExpressions: "尚无已掌握的表达",
+    learnExpressionsToSee: "标记为已掌握的表达将显示在这里。",
   },
 };
