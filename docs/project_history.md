@@ -2,6 +2,18 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.10: Staged Area Skeleton & Focus Polish (2026-02-16)
+
+### ✅ 진행 사항
+
+1.  **Staged Area Skeleton Alignment**:
+    - **UI Matching**: 마이페이지의 단어장 목록 섹션 로딩 스켈레톤(`SkeletonVocabularyListSection`)을 실제 UI 헤더 구조(타이틀 + 더보기 버튼)와 일치하도록 업데이트했습니다.
+    - **Visual Consistency**: 로딩 상태와 실제 렌더링 간의 레이아웃 시프트(CLS)를 최소화했습니다.
+
+2.  **Modal Focus Refinement**:
+    - **Focus Ring Removal**: `VocabularyListModal`의 컨텐츠 영역에 `focus:outline-none`을 적용하여, 리스트 생성(Enter 키) 직후 포커스 트랩에 의해 발생하는 불필요한 파란색 테두리를 제거했습니다.
+    - **UX Polish**: 키보드 인터랙션 시의 시각적 잡음을 줄이고 깔끔한 사용자 경험을 제공합니다.
+
 ## v0.17.9: 학습 완료(Learned) 페이지 Empty State 개선 (2026-02-16)
 
 ### ✅ 진행 사항

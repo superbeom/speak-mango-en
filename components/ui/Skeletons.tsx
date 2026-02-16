@@ -338,10 +338,13 @@ export const SkeletonVocabularyListSection = memo(
   function SkeletonVocabularyListSection() {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-7 w-24 rounded-lg mb-6 opacity-30" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="h-32 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
-          <div className="h-32 bg-zinc-200 dark:bg-zinc-800 rounded-2xl" />
+        <div className="flex items-center justify-between px-1">
+          <Skeleton className="h-7 w-24 rounded-lg" />
+          <Skeleton className="h-7 w-7 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <Skeleton className="w-full h-32 rounded-2xl" />
+          <Skeleton className="w-full h-32 rounded-2xl" />
         </div>
       </div>
     );

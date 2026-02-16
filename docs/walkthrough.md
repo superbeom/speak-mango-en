@@ -2,6 +2,27 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.10: Staged Area Skeleton & Focus Polish (2026-02-16)
+
+### 1. Goal (목표)
+
+- 마이페이지 단어장 섹션의 로딩 경험을 실제 UI와 일치시키고, 모달 사용 시의 포커스 스타일을 개선합니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Staged Area Skeleton Update (`Skeletons.tsx`)
+
+- **Header Alignment**: `SkeletonVocabularyListSection`의 헤더 부분에 '더 보기' 버튼에 해당하는 스켈레톤을 추가하고, 타이틀 스켈레톤 배치를 조정했습니다.
+- **Why**: `VocabularyListManager`의 실제 헤더(`Title + DropdownMenu`) 구조와 로딩 화면을 1:1로 매핑하여 자연스러운 전환을 유도합니다.
+
+#### B. Modal Focus Ring Handling (`VocabularyListModal.tsx`)
+
+- **Style Adjustment**: Radix UI Dialog의 자동 포커스 관리로 인해 리스트 생성 후 모달 컨테이너에 생기는 파란색 아웃라인을 제거하기 위해 `focus:outline-none` 유틸리티를 적용했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Aesthetic Polish**: 로딩부터 실제 컨텐츠 표시, 그리고 리스트 생성 인터랙션까지 이어지는 시각적 흐름을 다듬었습니다.
+
 ## v0.17.9: 학습 완료(Learned) 페이지 Empty State 개선 (2026-02-16)
 
 ### 1. Goal (목표)
