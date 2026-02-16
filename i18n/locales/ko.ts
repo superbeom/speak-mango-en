@@ -161,6 +161,10 @@ export const ko = {
     setDefaultSuccess: "기본 단어장으로 설정되었습니다.",
     setDefault: "기본으로 설정",
     default: "기본",
+    addCustom: "추가",
+    customWordTitle: "커스텀 단어",
+    customWordDesc:
+      "곧 나만의 단어와 표현을 직접 추가하여 완전히 맞춤화된 단어장을 만들 수 있게 됩니다.",
   },
   me: {
     studyModes: "학습 모드",

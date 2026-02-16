@@ -366,7 +366,7 @@ export const SkeletonVocabularyDetailHeader = memo(
           <Skeleton className="h-8 w-48 sm:h-9 sm:w-64" />
           <Skeleton className="h-6 w-12 rounded-md" />
         </div>
-        {!readonly && <Skeleton className="h-10 w-10 rounded-lg" />}
+        {!readonly && <Skeleton className="h-9 w-9 rounded-lg" />}
       </div>
     );
   },
@@ -381,6 +381,7 @@ export const SkeletonVocabularyToolbar = memo(
       <div className="sticky-toolbar flex items-center justify-between p-2 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-surface">
         <div className="flex items-center gap-2">
           <Skeleton className="h-9 w-24 rounded-lg" />
+          <Skeleton className="h-9 w-20 rounded-lg" />
         </div>
       </div>
     );

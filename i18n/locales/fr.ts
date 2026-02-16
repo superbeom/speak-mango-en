@@ -171,6 +171,10 @@ export const fr = {
     setDefaultSuccess: "Défini comme carnet par défaut.",
     setDefault: "Définir par défaut",
     default: "Par défaut",
+    addCustom: "Ajouter",
+    customWordTitle: "Mots personnalisés",
+    customWordDesc:
+      "Bientôt, vous pourrez ajouter vos propres mots et expressions pour créer un carnet de vocabulaire entièrement personnalisé.",
   },
   me: {
     studyModes: "Modes d'étude",

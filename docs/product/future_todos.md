@@ -62,6 +62,16 @@
 
 ### Vocabulary Management (단어장 관리 고도화)
 
+- [ ] **Custom Word Addition (커스텀 단어 추가)**: 사용자가 자신만의 단어와 표현을 단어장에 직접 추가할 수 있는 기능.
+  - **Pro 전용 기능**: 유료 사용자만 커스텀 단어를 추가할 수 있음.
+  - **Free 유저 UX**: Free 유저가 '추가' 버튼 클릭 시 Pro 전용 기능임을 안내하며 유료 전환을 유도하는 모달 표시.
+  - **현재 상태**: `VocabularyToolbar`에 '추가' 버튼 배치 완료. 클릭 시 "곧 커스텀 단어를 추가할 수 있다"는 안내 모달(`InfoDialog`) 표시. (i18n 키: `vocabulary.addCustom`, `vocabulary.customWordTitle`, `vocabulary.customWordDesc`)
+  - **구현 예정 사항**:
+    - [ ] 커스텀 단어 입력 폼 (단어, 뜻, 메모 등)
+    - [ ] DB 스키마 확장 (`vocabulary_items` 테이블에 `is_custom` 플래그 또는 별도 테이블)
+    - [ ] Pro/Free 분기 로직: `isPro` 여부에 따라 커스텀 단어 추가 폼 또는 유료 전환 유도 모달 표시
+    - [ ] 커스텀 단어 수정/삭제 기능
+
 - [ ] **Premium Conversion UX**: 유료 플랜 도입 시 수익성 극대화를 위한 UI 요소들 활성화.
   - **ProfileHeader (Membership Badge)**:
     ```tsx

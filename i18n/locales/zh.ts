@@ -158,6 +158,10 @@ export const zh = {
     setDefaultSuccess: "已设为默认单词本。",
     setDefault: "设为默认",
     default: "默认",
+    addCustom: "添加",
+    customWordTitle: "自定义单词",
+    customWordDesc:
+      "很快您就可以添加自己的单词和表达，打造完全个性化的生词本。",
   },
   me: {
     studyModes: "学习模式",

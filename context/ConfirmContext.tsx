@@ -8,28 +8,44 @@ import {
   ReactNode,
 } from "react";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { DIALOG_MODE, DialogMode, DialogVariant } from "@/constants/ui";
 
 interface ConfirmOptions {
   title: string;
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: "default" | "destructive";
+  variant?: DialogVariant;
   onConfirm: () => void;
+}
+
+interface AlertOptions {
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  variant?: DialogVariant;
 }
 
 interface ConfirmContextType {
   confirm: (options: ConfirmOptions) => void;
+  alert: (options: AlertOptions) => void;
 }
 
 const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined);
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [options, setOptions] = useState<ConfirmOptions | null>(null);
+  const [options, setOptions] = useState<
+    (ConfirmOptions & { mode: DialogMode }) | null
+  >(null);
 
   const confirm = useCallback((newOptions: ConfirmOptions) => {
-    setOptions(newOptions);
+    setOptions({ ...newOptions, mode: DIALOG_MODE.CONFIRM });
+    setIsOpen(true);
+  }, []);
+
+  const alert = useCallback((newOptions: AlertOptions) => {
+    setOptions({ ...newOptions, onConfirm: () => {}, mode: DIALOG_MODE.ALERT });
     setIsOpen(true);
   }, []);
 
@@ -41,7 +57,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   }, [options]);
 
   return (
-    <ConfirmContext.Provider value={{ confirm }}>
+    <ConfirmContext.Provider value={{ confirm, alert }}>
       {children}
       {options && (
         <ConfirmDialog
@@ -50,9 +66,14 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           title={options.title}
           description={options.description}
           confirmLabel={options.confirmLabel}
-          cancelLabel={options.cancelLabel}
+          cancelLabel={
+            options.mode === DIALOG_MODE.CONFIRM
+              ? options.cancelLabel
+              : undefined
+          }
           variant={options.variant}
           onConfirm={handleConfirm}
+          mode={options.mode}
         />
       )}
     </ConfirmContext.Provider>

@@ -171,6 +171,10 @@ export const de = {
     setDefaultSuccess: "Als Standard-Vokabelheft festgelegt.",
     setDefault: "Als Standard festlegen",
     default: "Standard",
+    addCustom: "Hinzufügen",
+    customWordTitle: "Eigene Wörter",
+    customWordDesc:
+      "Bald können Sie Ihre eigenen Wörter und Ausdrücke hinzufügen, um ein vollständig personalisiertes Vokabelheft zu erstellen.",
   },
   me: {
     studyModes: "Lernmodi",

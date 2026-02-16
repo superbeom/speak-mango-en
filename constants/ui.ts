@@ -39,3 +39,25 @@ export const VIEW_MODE = {
 } as const;
 
 export type ViewMode = (typeof VIEW_MODE)[keyof typeof VIEW_MODE];
+
+/**
+ * 다이얼로그 모드 (confirm: 2버튼, alert: 1버튼)
+ */
+export const DIALOG_MODE = {
+  CONFIRM: "confirm",
+  ALERT: "alert",
+} as const;
+
+export type DialogMode = (typeof DIALOG_MODE)[keyof typeof DIALOG_MODE];
+
+/**
+ * 다이얼로그 스타일 변형
+ */
+export const DIALOG_VARIANT = {
+  DEFAULT: "default",
+  DESTRUCTIVE: "destructive",
+  INFO: "info",
+} as const;
+
+export type DialogVariant =
+  (typeof DIALOG_VARIANT)[keyof typeof DIALOG_VARIANT];

@@ -163,6 +163,10 @@ export const ja = {
     setDefaultSuccess: "デフォルトの単語帳に設定されました。",
     setDefault: "デフォルトに設定",
     default: "デフォルト",
+    addCustom: "追加",
+    customWordTitle: "カスタム単語",
+    customWordDesc:
+      "まもなく、自分だけの単語や表現を追加して、完全にカスタマイズされた単語帳を作成できるようになります。",
   },
   me: {
     studyModes: "学習モード",

@@ -161,6 +161,10 @@ export const en = {
     setDefaultSuccess: "Set as default list.",
     setDefault: "Set as default",
     default: "Default",
+    addCustom: "Add",
+    customWordTitle: "Custom Words",
+    customWordDesc:
+      "Soon you'll be able to add your own custom words and expressions to build a truly personalized vocabulary list.",
   },
   me: {
     studyModes: "Study Modes",

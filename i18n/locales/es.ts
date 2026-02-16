@@ -170,6 +170,10 @@ export const es = {
     setDefaultSuccess: "Establecido como cuaderno predeterminado.",
     setDefault: "Establecer como predeterminado",
     default: "Predeterminado",
+    addCustom: "Añadir",
+    customWordTitle: "Palabras personalizadas",
+    customWordDesc:
+      "Pronto podrás añadir tus propias palabras y expresiones para crear un cuaderno de vocabulario completamente personalizado.",
   },
   me: {
     studyModes: "Modos de estudio",

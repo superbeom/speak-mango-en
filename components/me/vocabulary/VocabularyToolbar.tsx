@@ -9,10 +9,12 @@ import {
   List,
   CheckSquare,
   Square,
+  Plus,
 } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import { useScroll } from "@/hooks/useScroll";
-import { VIEW_MODE, ViewMode } from "@/constants/ui";
+import { VIEW_MODE, DIALOG_VARIANT, ViewMode } from "@/constants/ui";
 import { cn, formatMessage } from "@/lib/utils";
 import ViewModeButton from "./ViewModeButton";
 
@@ -94,6 +96,7 @@ const VocabularyToolbar = memo(function VocabularyToolbar({
   onToggleAll,
 }: VocabularyToolbarProps) {
   const { dict } = useI18n();
+  const { alert } = useConfirm();
   const isStuck = useScroll(80);
   const isAllSelected = selectedCount === totalCount && totalCount > 0;
 
@@ -141,6 +144,24 @@ const VocabularyToolbar = memo(function VocabularyToolbar({
                     </>
                   )}
                 </motion.button>
+
+                {/* 2. 추가 버튼 (비선택 모드에서만 표시) */}
+                {!isSelectionMode && (
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() =>
+                      alert({
+                        title: dict.vocabulary.customWordTitle,
+                        description: dict.vocabulary.customWordDesc,
+                        variant: DIALOG_VARIANT.INFO,
+                      })
+                    }
+                    className="px-3 sm:px-4 py-2 text-sm font-medium rounded-lg text-zinc-600 dark:text-zinc-400 sm:hover:bg-zinc-100 dark:sm:hover:bg-zinc-800 transition-colors flex items-center gap-2 shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-zinc-400 outline-hidden"
+                  >
+                    <Plus size={16} />
+                    <span>{dict.vocabulary.addCustom}</span>
+                  </motion.button>
+                )}
 
                 {/* 2. 뷰 모드 전환 (선택 모드 시에만 표시) */}
                 {isSelectionMode ? (

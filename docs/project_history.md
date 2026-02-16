@@ -2,6 +2,19 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.11: Custom Word Staging & UI Refactoring (2026-02-16)
+
+### ✅ 진행 사항
+
+1.  **Custom Word Feature Staging**:
+    - **Entry Point**: `VocabularyToolbar`에 '커스텀 단어 추가(Add)' 버튼을 배치했습니다. (비선택 모드에서만 노출, 선택 버튼 옆)
+    - **Guidance UX**: '추가' 버튼 클릭 시 `ConfirmDialog`의 `alert` 모드를 사용하여 "준비 중(Coming Soon)" 안내를 제공합니다. (`DIALOG_VARIANT.INFO` 적용)
+
+2.  **UI/System Improvements**:
+    - **Skeleton Alignment**: `SkeletonVocabularyToolbar`에 '추가' 버튼 자리(`w-20`)에 해당하는 스켈레톤을 추가하여 실제 UI와의 불일치를 해소했습니다.
+    - **Dialog Refactoring**: `ConfirmDialog`와 `ConfirmContext`를 확장하여 `alert` 모드(1버튼)와 `info` 변형(보라색 스타일)을 지원하도록 개선했습니다.
+    - **Constants**: 다이얼로그 관련 상수를 `constants/ui.ts`로 중앙화하여 유지보수성을 높였습니다. (`DIALOG_MODE`, `DIALOG_VARIANT`)
+
 ## v0.17.10: Staged Area Skeleton & Focus Polish (2026-02-16)
 
 ### ✅ 진행 사항

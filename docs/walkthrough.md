@@ -2,6 +2,32 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.11: Custom Word Staging & UI Refactoring (2026-02-16)
+
+### 1. Goal (목표)
+
+- **Custom Word Feature**: 사용자가 직접 단어를 추가할 수 있는 기능을 위한 진입점을 마련하고, 아직 준비 중임을 안내하는 UX를 제공합니다.
+- **UI Refactoring**: 기존 `ConfirmDialog`를 확장하여 단순 알림(Alert) 모달 기능을 통합하고, 로딩 스켈레톤 UI를 실제와 일치시킵니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Custom Word Entry Point & Guidance (`VocabularyToolbar.tsx`)
+
+- **Add Button**: '선택(Select)' 버튼 옆에 '추가(Add)' 버튼을 배치했습니다. (비선택 모드에서만 노출)
+- **Coming Soon UX**: 버튼 클릭 시 `ConfirmContext.alert`를 호출하여 안내 메시지를 표시합니다. 이때 `variant: DIALOG_VARIANT.INFO`를 사용하여 일반 삭제 경고와는 다른 보라색(Violet) 스타일과 별 아이콘(`Sparkles`)을 적용했습니다.
+- **Why**: 새로운 기능에 대한 기대감을 주고, 기존 UI와 자연스럽게 어우러지도록 설계했습니다.
+
+#### B. Dialog System Refactoring (`ConfirmDialog.tsx`)
+
+- **Extended Modes**: `mode` prop을 추가하여 `CONFIRM` (2버튼)과 `ALERT` (1버튼) 모드를 지원하도록 개선했습니다.
+- **New Variant**: `variant` prop에 `INFO` 타입을 추가하여 정보 제공용 모달 스타일을 지원합니다.
+- **Constant Management**: 다이얼로그 모드와 스타일 상수를 `constants/ui.ts`(`DIALOG_MODE`, `DIALOG_VARIANT`)로 분리하여 유지보수성을 높였습니다.
+
+#### C. Skeleton Consistency (`Skeletons.tsx`)
+
+- **Toolbar Update**: `SkeletonVocabularyToolbar`에 '추가' 버튼에 해당하는 너비 `w-20`의 스켈레톤 아이템을 추가했습니다.
+- **Result**: 로딩 시 두 개의 버튼 자리가 확보되어 실제 컴포넌트 렌더링 시 레이아웃 변경(Layout Shift)이 발생하지 않습니다.
+
 ## v0.17.10: Staged Area Skeleton & Focus Polish (2026-02-16)
 
 ### 1. Goal (목표)

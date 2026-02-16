@@ -160,6 +160,10 @@ export const ar = {
     setDefaultSuccess: "تم التعيين كقاموس افتراضي.",
     setDefault: "تعيين كافتراضي",
     default: "افتراضي",
+    addCustom: "إضافة",
+    customWordTitle: "كلمات مخصصة",
+    customWordDesc:
+      "قريبًا ستتمكن من إضافة كلماتك وتعبيراتك الخاصة لإنشاء قاموس مفردات مخصص بالكامل.",
   },
   me: {
     studyModes: "أوضاع الدراسة",
