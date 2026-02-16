@@ -232,7 +232,10 @@ const VocabularyListManager = memo(function VocabularyListManager({
 
       {customLists.length === 0 && (
         <div className="mt-2">
-          <VocabularyEmptyState description={dict.me.emptyState} />
+          <VocabularyEmptyState
+            message={dict.me.noLists}
+            description={dict.me.emptyState}
+          />
         </div>
       )}
     </div>

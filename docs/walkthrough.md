@@ -2,6 +2,29 @@
 
 > 각 버전별 구현 내용과 변경 사항을 상세히 기록합니다. 최신 버전이 상단에 옵니다.
 
+## v0.17.8: 다국어 Empty State 개선 및 번역 현행화 (2026-02-16)
+
+### 1. Goal (목표)
+
+- 단어장 목록이 '비어있는 상태(No Lists)'와 '저장된 표현이 없는 상태(No Items)'를 명확히 구분하여 사용자에게 정확한 경험을 제공합니다.
+- 영어, 한국어 외의 다국어 사용자에게도 문맥에 맞는 자연스러운 안내 메시지를 제공하여 서비스의 완성도를 높입니다.
+
+### 2. Implementation (구현 내용)
+
+#### A. Localization Refinement (`i18n/locales/*.ts`)
+
+- **Semantic Separation**: 기존 `emptyState` 키 하나로 퉁치던 메시지를 `noLists`(타이틀)와 `emptyState`(설명)로 세분화했습니다.
+- **Global Rollout**: 영어(EN), 한국어(KO)를 기준으로 수립된 메시지 가이드를 일본어(JA), 중국어(ZH), 스페인어(ES) 등 7개 언어로 번역/확장하여 `locales` 디렉토리 전체를 현행화했습니다.
+
+#### B. Component Integration (`VocabularyListManager.tsx`)
+
+- **Explicit Message Passing**: `VocabularyEmptyState` 컴포넌트가 기본값(`dict.me.noSavedExpressions`)을 사용하지 않도록, `customLists.length === 0`인 경우 `dict.me.noLists`를 `message` prop으로 명시적으로 주입했습니다.
+
+### 3. Key Achievements (주요 성과)
+
+- ✅ **Better UX Writing**: 시스템의 상태를 더 정확하고 친절하게 설명하는 마이크로카피 적용.
+- ✅ **Global Consistency**: 9개 지원 언어 모두에서 끊김 없는 사용자 경험 제공.
+
 ## v0.17.7: Rate Limiting & Security Hardening (2026-02-15)
 
 ### 1. Goal (목표)

@@ -185,8 +185,8 @@ export const fr = {
     myLists: "Mon Vocabulaire",
     myList: "Mon Carnet",
     learned: "Appris",
-    emptyState:
-      "Aucun carnet créé. Commencez par enregistrer des expressions !",
+    noLists: "Aucune liste créée",
+    emptyState: "Commencez par enregistrer des expressions pour en créer une.",
     noSavedExpressions: "Aucune expression enregistrée",
     saveExpressionsToSee: "Enregistrez des expressions pour les voir ici.",
     proMember: "Membre Pro",

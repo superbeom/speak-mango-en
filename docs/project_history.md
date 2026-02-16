@@ -2,6 +2,21 @@
 
 > 최신 항목이 상단에 위치합니다.
 
+## v0.17.8: 다국어 Empty State 개선 및 번역 현행화 (2026-02-16)
+
+### ✅ 진행 사항
+
+1.  **Empty State 메시지 문맥 개선**:
+    - **Backdrop**: 기존에는 단어장이 하나도 없을 때도 "저장된 표현이 없습니다"라는 모호한 메시지가 출력되어, 사용자가 단어장 기능 자체를 인지하지 못하는 문제가 있었습니다.
+    - **Improvement**: `en.ts` 및 `ko.ts`에서 "아직 생성된 단어장이 없습니다(No lists created yet)"로 문구와 타이틀을 분리하여 상황을 명확히 설명했습니다.
+
+2.  **Global Localization Standardization**:
+    - **New Key Integration**: `ja`, `es`, `fr`, `de`, `ru`, `zh`, `ar` 등 지원하는 7개 국어 전체에 `noLists` 키를 추가하고, `emptyState` 설명 문구를 각 언어의 문맥에 맞게("표현을 저장하여 리스트를 만드세요" 등) 번역하여 적용했습니다.
+    - **Consistency**: 언어 설정에 관계없이 모든 사용자가 동일한 수준의 친절한 안내를 받을 수 있도록 번역 품질을 평준화했습니다.
+
+3.  **UI Component Logic**:
+    - `VocabularyListManager`에서 `customLists`가 비어있을 때 `VocabularyEmptyState` 컴포넌트에 `description`뿐만 아니라 구체적인 `message`(`dict.me.noLists`)를 명시적으로 전달하도록 수정했습니다.
+
 ## v0.17.7: Rate Limiting & Security Hardening (2026-02-15)
 
 ### ✅ 진행 사항
